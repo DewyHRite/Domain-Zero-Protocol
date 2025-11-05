@@ -34,9 +34,14 @@
     "briefing_type": "NONE"
   },
   "passive_monitoring": {
-    "enabled": true,
+    "enabled": false,
+    "consent_given": false,
+    "consent_date": null,
+    "data_retention_days": 14,
     "sessions_since_trigger_19": 0,
-    "last_observation": null
+    "last_observation": null,
+    "storage_location": "local",
+    "notes": "Passive monitoring is OFF by default. Set enabled=true and consent_given=true to activate. Requires explicit user consent per privacy best practices."
   },
   "enhanced_enforcement": {
     "active": false,

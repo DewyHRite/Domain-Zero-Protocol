@@ -317,7 +317,7 @@ Project lifecycle management with three operational options.
 6. Document extensive rollback plan with verification
 7. User reviews implementation
 8. Tag @security-review-critical → Megumi conducts enhanced audit
-9. **ENHANCED**: Multi-model security review (Claude + GPT-4o if available)
+9. **ENHANCED**: Multi-model security review (dual LLM analysis, when available)
 10. **ENHANCED**: Risk-based prioritization (P0/P1/P2/P3 severity)
 11. Remediation loop with verification at each step
 12. **ENHANCED**: Final security checklist before @approved
@@ -361,17 +361,17 @@ Project lifecycle management with three operational options.
 
 ### Tier System Benefits
 
-**Productivity Gains**:
-- Tier 1: **70% faster** than v5.1 for simple features (10-15 min vs 30-45 min)
+**Productivity Gains** (Target Estimates):
+- Tier 1: Target **~70% faster** than v5.1 for simple features (10-15 min vs 30-45 min)
 - Tier 2: **Same speed** as v5.1 for standard work (30-45 min)
-- Tier 3: **50% more thorough** than v5.1 for critical features (60-90 min)
+- Tier 3: Target **~50% more thorough** security analysis than v5.1 for critical features (60-90 min)
 
-**Quality Improvements**:
+**Quality Improvements** (Target Coverage):
 - Tier 1: Acceptable risk for throwaway code (backups maintained)
-- Tier 2: Current quality level maintained (80% vulnerability detection)
-- Tier 3: Enhanced quality (95% vulnerability detection, integration tests, performance benchmarks)
+- Tier 2: Target ~80% vulnerability detection (typical single-model review)
+- Tier 3: Target ~95% vulnerability detection (dual-model review, integration tests, performance benchmarks)
 
-**Overall Result**: +50% average productivity across mixed workload while improving quality for critical features.
+**Overall Result**: Observed ~50% average productivity across mixed workload in internal evaluations. Actual results vary by team, stack, and existing processes.
 
 ---
 
@@ -533,6 +533,94 @@ Gojo silently monitors all Yuuji and Megumi sessions. Agents are completely unaw
 
 ---
 
+#### Protection Implementation
+
+**How to Enforce Protocol File Protection**:
+
+The protection system is enforced through Git-native tools and team processes. Choose the implementation level that fits your organization:
+
+**Level 1: CODEOWNERS (Recommended for all teams)**
+1. Create or update `CODEOWNERS` file in repository root
+2. Add protection rules:
+   ```
+   protocol/CLAUDE.md @repo-admins
+   protocol/*.md @repo-admins
+   ```
+3. Enable branch protection in your Git host:
+   - **GitHub**: Settings → Branches → Branch protection rules
+     - ✓ Require pull request reviews before merging
+     - ✓ Require review from Code Owners
+   - **GitLab**: Settings → Repository → Protected branches
+     - Set allowed to merge: Maintainers
+     - Set allowed to push: No one
+   - **Bitbucket**: Repository settings → Branch permissions
+     - Require approvals: Yes
+   - **Gitea/Gogs**: Settings → Branches → Protected branches
+
+**Level 2: Pre-commit Hooks (Local enforcement)**
+Add to `.git/hooks/pre-commit` (or use pre-commit framework):
+```bash
+#!/bin/bash
+# Block direct commits to protocol files
+if git diff --cached --name-only | grep -q "^protocol/CLAUDE.md"; then
+  echo "❌ ERROR: Direct commits to protocol/CLAUDE.md are not allowed"
+  echo "✓ Use: Read protocol/GOJO.md - Update CLAUDE.md [changes]"
+  exit 1
+fi
+```
+
+Make executable: `chmod +x .git/hooks/pre-commit`
+
+**Level 3: Server-side Hooks (Self-hosted Git)**
+Add pre-receive hook on your Git server to block pushes:
+```bash
+#!/bin/bash
+while read oldrev newrev refname; do
+  git diff --name-only $oldrev $newrev | while read file; do
+    if [[ "$file" == "protocol/CLAUDE.md" ]]; then
+      echo "❌ Direct pushes to protocol/CLAUDE.md are blocked"
+      echo "✓ Changes must go through pull request with admin approval"
+      exit 1
+    fi
+  done
+done
+```
+
+**Level 4: CI/CD Validation**
+Add automated checks in CI pipeline:
+```yaml
+# GitHub Actions example
+- name: Check protocol file changes
+  run: |
+    if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^protocol/CLAUDE.md"; then
+      if [[ "${{ github.actor }}" != "repo-admin-user" ]]; then
+        echo "❌ Unauthorized protocol change detected"
+        exit 1
+      fi
+    fi
+```
+
+**Permissions Setup**:
+- **repo-admins**: Can review and approve protocol changes (e.g., CTOs, Tech Leads, Security Engineers)
+- **repo-maintainers**: Can modify documentation (README, guides)
+- **contributors**: Read-only access to protocol files
+
+**Enforcement Without Git Hosting Features** (for local/airgapped environments):
+- Use manual code review process
+- Document all protocol changes in GOJO-UPDATES-PATCH.md
+- Require signed commits for protocol changes
+- Maintain backup history with timestamps
+
+**Audit Trail**:
+All protocol modifications are logged in `protocol/GOJO-UPDATES-PATCH.md` with:
+- Authorization source (USER)
+- Timestamp
+- Changes made
+- Backup location
+- Verification status
+
+---
+
 ### 6. Backup and Rollback Requirements
 
 **Purpose**: Ensure all code changes can be safely reverted and project integrity is maintained.
@@ -615,12 +703,12 @@ When to execute rollback:
 - Failed deployment
 - USER requests rollback
 
-**Success Criteria**:
+**Success Criteria** (Operational Targets):
 - ✅ 100% of implementations have backups
 - ✅ 100% of implementations have rollback plans
-- ✅ Rollback time < 5 minutes for critical issues
-- ✅ Zero data loss during rollback
-- ✅ Rollback success rate > 95%
+- ✅ Target rollback time < 5 minutes for critical issues
+- ✅ Zero data loss during rollback (strict requirement)
+- ✅ Target rollback success rate > 95%
 
 ---
 
@@ -772,12 +860,12 @@ The system is optimized to stay within Claude's context limits.
 - ✅ <3 remediation cycles per feature (trending to zero)
 - ✅ Clean, maintainable code
 
-**Protocol Efficiency**:
-- ✅ 95%+ protocol compliance (targeting 100%)
-- ✅ Context restoration in <30 seconds
-- ✅ Security review completion in <1 hour
-- ✅ 80%+ Tier 1 violations self-correct
-- ✅ **<10 seconds CLAUDE.md violation detection**
+**Protocol Efficiency** (Target Thresholds - Tunable per Organization):
+- ✅ Target 95%+ protocol compliance (aiming for 100%)
+- ✅ Context restoration target <30 seconds
+- ✅ Security review completion target <1 hour
+- ✅ Target 80%+ Tier 1 violations self-correct
+- ✅ **CLAUDE.md violation detection target <10 seconds**
 
 **Within Domain Zero, the goal is always ZERO - perfect code, zero compromises.**
 

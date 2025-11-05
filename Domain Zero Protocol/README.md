@@ -7,6 +7,89 @@ Domain Zero is a three-agent AI development system that provides specialized exp
 
 ---
 
+## 📋 Table of Contents
+
+- [What is Domain Zero?](#-what-is-domain-zero)
+- [Prerequisites & Optional Integrations](#-prerequisites--optional-integrations)
+- [Quick Setup](#-quick-setup)
+- [Adaptive Workflow Complexity (Tier System)](#-adaptive-workflow-complexity-tier-system)
+- [Tier Selection Guide](#-tier-selection-guide)
+- [Typical Workflow](#-typical-workflow)
+- [File Structure](#-file-structure)
+- [Learning Path](#-learning-path)
+- [Security Features](#-security-features)
+- [Productivity Gains](#-productivity-gains-observed-estimates)
+- [Common Commands](#-common-commands)
+- [Success Criteria](#-success-criteria)
+- [Documentation](#-documentation)
+- [Getting Help](#-getting-help)
+- [License](#-license)
+
+---
+
+## 📦 Distribution Package Contents
+
+This distribution includes everything you need to deploy Domain Zero:
+
+**Core Protocol Files** (`protocol/`):
+- `CLAUDE.md` - Main protocol specification (v6.0)
+- `YUUJI.md` - Implementation agent protocol
+- `MEGUMI.md` - Security review agent protocol
+- `GOJO.md` - Mission control agent protocol
+- `TIER-SELECTION-GUIDE.md` - Quick reference for tier selection
+- `GOJO-UPDATES-PATCH.md` - Protocol change audit trail
+
+**State Templates** (`.protocol-state/`):
+- `project-state.json` - Project configuration template
+- `dev-notes.md` - Implementation log template
+- `security-review.md` - Security findings template
+- `trigger-19.md` - Intelligence report template (gitignored by default)
+- `tier-system-specification.md` - Technical tier system specification
+
+**Setup Files**:
+- `README.md` - This file (comprehensive setup guide)
+- `.gitignore` - Privacy-focused git configuration
+- `LICENSE` - MIT License
+- `CODEOWNERS` - Protocol file protection rules
+
+---
+
+## 🔧 Prerequisites & Optional Integrations
+
+### Required
+- **AI Assistant Access**: Access to Claude (via Anthropic, Claude.ai, or API)
+- **Git**: Version control for change tracking and CODEOWNERS enforcement
+- **Text Editor**: Any editor for viewing/editing markdown files
+
+### Recommended (Optional but Beneficial)
+
+**Security & Quality Tools** (integrates with Tier 2 & 3):
+- **SAST** (Static Application Security Testing): Snyk Code, SonarQube, Semgrep, CodeQL
+- **SCA** (Software Composition Analysis): Snyk Open Source, Dependabot, WhiteSource
+- **DAST** (Dynamic Application Security Testing): OWASP ZAP, Burp Suite (for web apps)
+- **IaC Scanning**: Snyk Infrastructure as Code, Checkov, tfsec (for Terraform/K8s)
+
+**Testing Frameworks** (per language):
+- Python: pytest, unittest
+- JavaScript/TypeScript: Jest, Mocha, Vitest
+- Java: JUnit, TestNG
+- Go: testing package, testify
+- Ruby: RSpec, Minitest
+- C#: xUnit, NUnit, MSTest
+
+**CI/CD Integration**:
+- GitHub Actions, GitLab CI, Jenkins, CircleCI (for automated workflows)
+- Branch protection rules and required status checks
+
+**Development Tools**:
+- Pre-commit hooks (for local validation)
+- Code formatters (Black, Prettier, gofmt, etc.)
+- Linters (ESLint, Pylint, RuboCop, etc.)
+
+_Note: Domain Zero works standalone without these tools, but integration enhances measurable security coverage and automates validation._
+
+---
+
 ## 🌀 What is Domain Zero?
 
 Domain Zero creates a **controlled collaboration space** where three specialized AI agents work together to deliver production-ready code with zero defects.
@@ -37,11 +120,28 @@ Domain Zero creates a **controlled collaboration space** where three specialized
 
 ### Step 1: Copy Protocol to Your Project
 
+**macOS/Linux (bash/zsh)**:
 ```bash
 # Copy the entire protocol structure to your project root
 cp -r "Domain Zero Protocol/protocol" your-project/
 cp -r "Domain Zero Protocol/.protocol-state" your-project/
 cp "Domain Zero Protocol/.gitignore" your-project/
+```
+
+**Windows (PowerShell)**:
+```powershell
+# Copy the entire protocol structure to your project root
+Copy-Item -Recurse -Force "Domain Zero Protocol\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol\.gitignore" -Destination "your-project\"
+```
+
+**Windows (Command Prompt)**:
+```cmd
+REM Copy the entire protocol structure to your project root
+xcopy /E /I /Y "Domain Zero Protocol\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol\.gitignore" "your-project\"
 ```
 
 ### Step 2: Update Project Metadata
@@ -253,26 +353,30 @@ Domain Zero is **security-first by design**:
 - ✅ **Test-first development** (TDD) ensures functionality before deployment
 - ✅ **Mandatory security review** before production (Tier 2+)
 - ✅ **Risk-based prioritization** (P0/P1/P2/P3) for Tier 3
-- ✅ **Multi-model security analysis** (Claude + GPT-4o) for Tier 3
+- ✅ **Multi-model security analysis** (dual LLM review, when available) for Tier 3
 - ✅ **Compliance analysis** (PCI/HIPAA/SOC2) for Tier 3
 - ✅ **Backup and rollback** requirements for ALL tiers
 
-**Security Review Coverage**:
+**Security Review Coverage** (Target Estimates):
 - Tier 1 (Rapid): No security review (acceptable for non-production)
-- Tier 2 (Standard): 80% vulnerability detection
-- Tier 3 (Critical): 95% vulnerability detection
+- Tier 2 (Standard): Target ~80% vulnerability detection (typical single-model review)
+- Tier 3 (Critical): Target ~95% vulnerability detection (dual-model review, when available)
+
+_Note: Detection rates are targets based on internal evaluations. Actual coverage varies by stack, tooling, and team expertise. Consider integrating SAST/SCA tools for measurable results._
 
 ---
 
-## 📊 Productivity Gains
+## 📊 Productivity Gains (Observed Estimates)
 
 **Compared to manual development**:
 
-- **Tier 1**: 70% faster for simple features (10-15 min vs 30-45 min)
+- **Tier 1**: Target ~70% faster for simple features (10-15 min vs 30-45 min)
 - **Tier 2**: Balanced quality and speed (30-45 min)
-- **Tier 3**: 50% more thorough security (60-90 min)
+- **Tier 3**: Target ~50% more thorough security analysis (60-90 min)
 
-**Overall**: +50% average productivity across mixed workload while improving quality for critical features.
+**Overall**: Observed ~50% average productivity gains across mixed workload in internal evaluations.
+
+_Note: Productivity metrics are estimates from internal use. Actual gains vary significantly by team experience, tech stack, existing processes, and feature complexity. Your mileage may vary._
 
 ---
 
@@ -420,7 +524,11 @@ Domain Zero is now set up in your project.
 
 ## 📄 License
 
-This protocol system is provided as-is for use in your projects. Customize and adapt as needed for your workflow.
+Domain Zero Protocol is released under the **MIT License**.
+
+See the [LICENSE](LICENSE) file for full details.
+
+**Summary**: Free to use, modify, and distribute. Provided as-is without warranty. Customize and adapt as needed for your workflow.
 
 ---
 
