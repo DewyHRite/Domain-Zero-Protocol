@@ -12,6 +12,7 @@ Domain Zero is a three-agent AI development system that provides specialized exp
 - [What is Domain Zero?](#-what-is-domain-zero)
 - [Prerequisites & Optional Integrations](#-prerequisites--optional-integrations)
 - [Quick Setup](#-quick-setup)
+- [AI Assistant Integration & Canonical Source](#-ai-assistant-integration--canonical-source)
 - [Adaptive Workflow Complexity (Tier System)](#-adaptive-workflow-complexity-tier-system)
 - [Tier Selection Guide](#-tier-selection-guide)
 - [Typical Workflow](#-typical-workflow)
@@ -48,9 +49,17 @@ This distribution includes everything you need to deploy Domain Zero:
 
 **Setup Files**:
 - `README.md` - This file (comprehensive setup guide)
+- `AI_INSTRUCTIONS.md` - Cross-assistant discovery shim (redirects to CLAUDE.md)
 - `.gitignore` - Privacy-focused git configuration
 - `LICENSE` - MIT License
 - `CODEOWNERS` - Protocol file protection rules
+
+**Integration Scripts** (`scripts/`):
+- `update-instructions.ps1` - PowerShell script to append protocol pointers (Windows)
+- `update-instructions.sh` - Bash script to append protocol pointers (macOS/Linux)
+
+**CI/CD Templates** (`.github/workflows/`):
+- `security-scan-example.yml` - GitHub Actions security scanning template
 
 ---
 
@@ -175,6 +184,124 @@ Gojo will present Mission Control with 3 options:
 ```
 "Read protocol/YUUJI.md and implement [your feature]"
 ```
+
+---
+
+## 🤖 AI Assistant Integration & Canonical Source
+
+**Domain Zero Protocol uses `protocol/CLAUDE.md` as the canonical source of truth.**
+
+### Cross-Assistant Compatibility
+
+Domain Zero works with any AI assistant that can read markdown files:
+
+**✅ Supported Assistants**:
+- Claude (Anthropic) - via Claude.ai, API, or Claude Code
+- GitHub Copilot - via `.github/copilot-instructions.md`
+- Cursor - via `.cursorrules` or project instructions
+- Cody (Sourcegraph) - via project context
+- Tabnine - via project instructions
+- Any AI assistant with file reading capabilities
+
+### Discovery Files
+
+To ensure AI assistants discover the protocol, we provide multiple entry points:
+
+**`AI_INSTRUCTIONS.md`** (included in distribution):
+- Primary discovery file for most AI tools
+- Simple redirect/shim to `protocol/CLAUDE.md`
+- Works cross-assistant without duplication
+
+**Why This Structure?**:
+- **Single source of truth**: `protocol/CLAUDE.md` is authoritative
+- **No duplication**: Prevents drift between instruction files
+- **Protected**: CLAUDE.md is version-controlled with CODEOWNERS
+- **Discoverable**: Multiple entry points all redirect to canonical source
+
+### Integrating with Existing Instructions
+
+If you already have AI instruction files (e.g., `.github/copilot-instructions.md`, `.cursorrules`, `CONTRIBUTING.md`), you can safely append a protocol pointer without replacing your existing content.
+
+**Manual Integration**:
+
+Add this section to your existing instruction files:
+
+```markdown
+## Domain Zero Protocol
+
+This project follows the Domain Zero Protocol for AI-assisted development.
+
+**Primary entrypoint**: [`protocol/CLAUDE.md`](protocol/CLAUDE.md)
+
+**Workflow guidance**:
+- Mission Control: `protocol/GOJO.md`
+- Implementation: `protocol/YUUJI.md`
+- Security Review: `protocol/MEGUMI.md`
+```
+
+**Automated Integration** (Safe & Opt-In):
+
+We provide scripts to safely append protocol pointers to existing files:
+
+**Windows (PowerShell)**:
+```powershell
+# Dry-run (shows what would change)
+.\scripts\update-instructions.ps1
+
+# Actually update files
+.\scripts\update-instructions.ps1 -Apply
+```
+
+**macOS/Linux (Bash)**:
+```bash
+# Dry-run (shows what would change)
+./scripts/update-instructions.sh
+
+# Actually update files
+./scripts/update-instructions.sh --apply
+```
+
+**Script Features**:
+- ✅ **Safe**: Dry-run mode by default
+- ✅ **Idempotent**: Won't add duplicates
+- ✅ **Backup**: Creates `.backup` files before modifying
+- ✅ **Non-destructive**: Appends without replacing existing content
+- ✅ **Reversible**: Easy to undo with backups
+
+**What It Does**:
+1. Scans for common instruction file patterns
+2. Checks if protocol pointer already exists
+3. Appends "Domain Zero Protocol" section if missing
+4. Preserves all existing content
+
+**Files Scanned**:
+- `AI_INSTRUCTIONS.md`, `AI.md`
+- `.github/copilot-instructions.md`, `.github/instructions/*.md`
+- `.cursorrules`
+- `CONTRIBUTING.md`, `DEVELOPMENT.md`
+- `.vscode/instructions.md`, `.idea/instructions.md`
+
+### Best Practices
+
+**DO**:
+- ✅ Always point to `protocol/CLAUDE.md` as canonical source
+- ✅ Use provided shims (`AI_INSTRUCTIONS.md`) for discoverability
+- ✅ Run updater scripts in dry-run mode first
+- ✅ Keep protocol pointers brief (just redirect to CLAUDE.md)
+
+**DON'T**:
+- ❌ Duplicate protocol logic in multiple files
+- ❌ Auto-rewrite CLAUDE.md into other instruction files
+- ❌ Modify `protocol/CLAUDE.md` without going through proper authorization (see CODEOWNERS)
+
+### Migration from Other Systems
+
+If migrating from other AI instruction systems:
+
+1. **Keep existing instructions**: Don't delete them
+2. **Append protocol pointer**: Use updater scripts or manual addition
+3. **Test incrementally**: Verify AI assistants find the protocol
+4. **Gradual adoption**: Can run hybrid (existing + Domain Zero) during transition
 
 ---
 
