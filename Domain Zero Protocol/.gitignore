@@ -1,0 +1,163 @@
+# Domain Zero Protocol - Git Ignore Configuration
+
+# ============================================
+# PROTOCOL STATE FILES
+# ============================================
+
+# Gojo's Intelligence Reports (PRIVATE - Do not commit)
+# Contains passive observations of Yuuji and Megumi
+# Agents are unaware this file exists
+.protocol-state/trigger-19.md
+
+# Project-specific state (Optional - commit if you want to share project state)
+# Uncomment the line below if you want to exclude project state from git:
+# .protocol-state/project-state.json
+
+# Development notes (Optional - commit if you want to share implementation logs)
+# Uncomment the line below if you want to exclude dev notes from git:
+# .protocol-state/dev-notes.md
+
+# Security review logs (Optional - commit if you want to share security findings)
+# Uncomment the line below if you want to exclude security logs from git:
+# .protocol-state/security-review.md
+
+# ============================================
+# BACKUP FILES
+# ============================================
+
+# Protocol backups (created by Gojo before CLAUDE.md modifications)
+protocol/*.backup.*
+protocol/CLAUDE.md.backup.*
+
+# General backup files
+*.backup
+*.bak
+*.old
+*~
+
+# ============================================
+# EDITOR AND IDE FILES
+# ============================================
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs (PyCharm, WebStorm, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================
+# OPERATING SYSTEM FILES
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# ============================================
+# LANGUAGE-SPECIFIC
+# ============================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log*
+
+# ============================================
+# ENVIRONMENT AND SECRETS
+# ============================================
+
+# Environment variables (NEVER commit secrets!)
+.env
+.env.local
+.env.*.local
+*.env
+
+# API keys and credentials
+credentials.json
+secrets.json
+*.pem
+*.key
+*.cert
+
+# ============================================
+# LOGS AND TEMPORARY FILES
+# ============================================
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# ============================================
+# CUSTOM PROJECT FILES
+# ============================================
+
+# Add your project-specific ignores below this line

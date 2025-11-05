@@ -1,0 +1,53 @@
+# JJK AI Protocol - Private Intelligence & State
+.protocol-state/trigger-19.md
+.protocol-state/trigger-19-archive.md
+
+# CLAUDE.md Backups (uncomment to keep backups private)
+# protocol/CLAUDE.md.backup.*
+
+# Optional: Keep all state files private (uncomment if desired)
+# .protocol-state/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project State (uncomment if you want to keep state private)
+# project-state.json
+
+# Logs
+*.log

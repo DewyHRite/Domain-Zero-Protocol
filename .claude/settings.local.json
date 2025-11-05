@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "WebSearch",
+      "Bash(dir /s 'C:\\Users\\Dewy\\OneDrive\\Documents\\Personal IT Projects\\Domain Zero' 2)",
+      "Bash(nul)",
+      "Bash(dir:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

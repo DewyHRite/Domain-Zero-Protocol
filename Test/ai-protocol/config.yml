@@ -1,0 +1,57 @@
+# AI Collaboration Protocol Configuration
+# Generated: 2025-11-04 23:00:59
+# Edit this file to customize your setup
+
+project:
+  name: Project Appointment Webapp
+  type: fullstack
+  description: An appointment app for barbershop clients
+  tech_stack:
+    languages:
+    - html
+    frameworks:
+    - react
+    databases:
+    - mongodb
+    other:
+    - none
+theme: aot
+custom_roles:
+  enabled: false
+workflow:
+  require_security_review: true
+  auto_backup_before_changes: true
+  enforce_isolation: true
+  passive_monitoring: true
+  require_tests: true
+output:
+  style: themed
+  emoji: true
+  detailed_logs: true
+  include_comments: true
+  format: markdown
+notifications:
+  violation_alerts: true
+  session_summaries: true
+  progress_reports: weekly
+  security_alerts: true
+monitoring:
+  track_quality: true
+  track_coverage: true
+  log_violations: true
+  pattern_analysis: true
+security:
+  review_depth: standard
+  auto_scan: true
+  owasp_check: true
+  dependency_scan: false
+documentation:
+  auto_dev_notes: true
+  session_logs: true
+  architecture_docs: false
+  api_docs: false
+advanced:
+  max_session_duration: 240
+  auto_save_interval: 15
+  violation_threshold: medium
+  experimental_features: false
