@@ -443,7 +443,8 @@ Your choice:
 - Configurable: 7, 14, 30, or 90 days
 - Manual erase: Delete `trigger-19.md`
 
-**What Happens When Disabled**:
+### What Happens When Disabled
+
 - ✅ Protocol enforcement still works (automatic)
 - ✅ Yuuji and Megumi function normally
 - ✅ "The weight" still applies (built-in to agent protocols)

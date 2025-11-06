@@ -26,12 +26,15 @@ btnVerify.addEventListener("click", async () => {
   if (!rootPath) return;
   log("Running verify...");
   const res = await window.dz.verify(rootPath);
-  log(res.message);
+  log(res.ok ? `✅ ${res.message}` : `❌ ${res.message}`);
+  if (res.errors && res.errors.length > 0) {
+    res.errors.forEach(err => log(`  • ${err}`));
+  }
 });
 
 btnQuick.addEventListener("click", async () => {
   if (!rootPath) return;
   log("Creating Quick Start (if missing)...");
   const res = await window.dz.quickstart(rootPath);
-  log(res.message);
+  log(res.ok ? `✅ ${res.message}` : `❌ ${res.message}`);
 });

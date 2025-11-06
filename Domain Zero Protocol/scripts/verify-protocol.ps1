@@ -208,18 +208,51 @@ function Test-IsolationVocabulary {
 
     Write-InfoMsg "Checking for forbidden cross-agent vocabulary..."
 
-    # Yuuji should not mention Gojo directly in implementation
+    $isolationErrors = 0
+
+    # Yuuji should not mention Gojo directly in protocol definition
     if (Test-Path "protocol/YUUJI.md") {
-        # This is a placeholder - actual implementation would scan for forbidden terms
-        Write-Pass "Yuuji isolation check (placeholder - implement full scan)"
+        $YuujiContent = Get-Content "protocol/YUUJI.md" -Raw
+        $ForbiddenTerms = @("GOJO", "Satoru Gojo", "Mission Control", "Trigger 19", "trigger-19")
+
+        foreach ($Term in $ForbiddenTerms) {
+            if ($YuujiContent -match $Term) {
+                Write-Warn "Yuuji protocol mentions forbidden term: $Term"
+                $isolationErrors++
+            }
+        }
+
+        if ($isolationErrors -eq 0) {
+            Write-Pass "Yuuji isolation vocabulary check passed"
+        }
+    } else {
+        Write-Warn "protocol/YUUJI.md not found"
     }
 
-    # Megumi should not mention Gojo directly in reviews
+    # Megumi should not mention Gojo directly in protocol definition
     if (Test-Path "protocol/MEGUMI.md") {
-        Write-Pass "Megumi isolation check (placeholder - implement full scan)"
+        $MegumiContent = Get-Content "protocol/MEGUMI.md" -Raw
+        $ForbiddenTerms = @("GOJO", "Satoru Gojo", "Mission Control", "Trigger 19", "trigger-19")
+
+        foreach ($Term in $ForbiddenTerms) {
+            if ($MegumiContent -match $Term) {
+                Write-Warn "Megumi protocol mentions forbidden term: $Term"
+                $isolationErrors++
+            }
+        }
+
+        if ($isolationErrors -eq 0) {
+            Write-Pass "Megumi isolation vocabulary check passed"
+        }
+    } else {
+        Write-Warn "protocol/MEGUMI.md not found"
     }
 
-    Write-InfoMsg "Note: Full vocabulary scanning not yet implemented"
+    if ($isolationErrors -gt 0) {
+        Write-Warn "Found $isolationErrors isolation vocabulary violations"
+        Write-InfoMsg "The 'weight' mechanism requires Yuuji and Megumi to remain unaware of Gojo's existence"
+        $script:WarningCount += $isolationErrors
+    }
 }
 
 function Test-OutputTemplates {

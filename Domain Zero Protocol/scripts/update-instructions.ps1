@@ -124,7 +124,7 @@ function Add-ProtocolPointer {
     }
 
     # Append protocol pointer
-    Add-Content -Path $FilePath -Value $ProtocolSection -NoNewline
+    Add-Content -Path $FilePath -Value $ProtocolSection -NoNewline -Encoding UTF8
     Write-Host "  ${Green}[UPDATED]${Reset} Appended protocol pointer to: $FilePath"
     return $true
 }

@@ -46,10 +46,14 @@ ipcMain.handle("pick-root", async () => {
 
 ipcMain.handle("verify", async (_evt, root) => {
   try {
-    const ok = await verifyProtocol(root);
-    return { ok, message: ok ? "Protocol verify passed" : "Protocol verify failed. See errors above." };
+    const result = await verifyProtocol(root);
+    return {
+      ok: result.ok,
+      message: result.ok ? "Protocol verify passed" : "Protocol verify failed",
+      errors: result.errors || []
+    };
   } catch (e) {
-    return { ok: false, message: String(e?.message || e) };
+    return { ok: false, message: String(e?.message || e), errors: [] };
   }
 });
 

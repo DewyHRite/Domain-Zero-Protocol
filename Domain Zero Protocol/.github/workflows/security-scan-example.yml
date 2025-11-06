@@ -146,19 +146,38 @@ jobs:
           fetch-depth: 2  # Need at least 2 commits for diff
 
       - name: Check for unauthorized protocol changes
+        env:
+          PROTOCOL_MAINTAINERS: ${{ secrets.PROTOCOL_MAINTAINERS }}
         run: |
+          #!/bin/bash
+          set -e
+
+          # Check if we have enough history
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+
+          if [ "$COMMIT_COUNT" -lt 2 ]; then
+            echo "ℹ️  Skipping protocol check (first commit)"
+            exit 0
+          fi
+
           # Check if protocol files were modified
-          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          CHANGED_FILES=$(git diff --name-only HEAD~1..HEAD 2>/dev/null || git diff --name-only HEAD)
 
           if echo "$CHANGED_FILES" | grep -q "^protocol/CLAUDE.md"; then
             echo "⚠️  WARNING: CLAUDE.md was modified"
 
-            # Check if actor is authorized (replace with your admin users)
-            AUTHORIZED_USERS=("repo-admin" "tech-lead")
+            # Check if actor is authorized (read from secret or use fallback)
+            if [ -z "$PROTOCOL_MAINTAINERS" ]; then
+              echo "⚠️  WARNING: PROTOCOL_MAINTAINERS secret not configured"
+              echo "Using fallback authorization (replace in production)"
+              AUTHORIZED_USERS=("repo-admin" "tech-lead")
+            else
+              IFS=',' read -ra AUTHORIZED_USERS <<< "$PROTOCOL_MAINTAINERS"
+            fi
 
             if [[ ! " ${AUTHORIZED_USERS[@]} " =~ " ${{ github.actor }} " ]]; then
               echo "❌ ERROR: Unauthorized modification of protocol/CLAUDE.md"
-              echo "✓ Protocol changes require approval from: ${AUTHORIZED_USERS[@]}"
+              echo "✓ Protocol changes require approval from authorized maintainers"
               exit 1
             fi
 
@@ -185,12 +204,15 @@ jobs:
 # CUSTOMIZATION NOTES
 # ============================================
 #
-# 1. Enable workflows: Remove comments from 'on:' section
-# 2. Add secrets: Configure SNYK_TOKEN, etc. in repository secrets
-# 3. Adjust tool configs: Match your tech stack
-# 4. Set authorized users: Update AUTHORIZED_USERS in protocol-protection job
-# 5. Configure notifications: Add Slack/email alerts for critical findings
-# 6. Tune scan frequency: Adjust schedule cron for your needs
+# 1. Enable workflows: Remove comments from 'on:' section (lines 11-17)
+#    and rename file from .example.yml to .yml to activate
+# 2. Add secrets: Configure in repository Settings → Secrets & variables:
+#    - SNYK_TOKEN: Your Snyk API token for security scanning
+#    - PROTOCOL_MAINTAINERS: Comma-separated GitHub usernames authorized
+#      to edit protocol files (e.g., "user1,user2,user3")
+# 3. Adjust tool configs: Match your tech stack (languages, frameworks, cloud platforms)
+# 4. Configure notifications: Add Slack/email alerts for critical findings (optional)
+# 5. Tune scan frequency: Adjust schedule cron for your needs (e.g., '0 0 * * 0' for weekly)
 #
 # For more examples, see:
 # - Snyk: https://github.com/snyk/actions

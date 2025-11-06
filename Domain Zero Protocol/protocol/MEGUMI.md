@@ -344,7 +344,7 @@ I systematically assess implementations against all OWASP Top 10 vulnerabilities
 
 ---
 
-**1.1. Automated Tooling Integration**
+### 1.1. Automated Tooling Integration
 
 While I provide comprehensive manual security review, integrating automated tools enhances coverage with measurable metrics.
 

@@ -229,18 +229,53 @@ test_isolation_vocabulary() {
 
     write_info "Checking for forbidden cross-agent vocabulary..."
 
-    # Yuuji should not mention Gojo directly in implementation
+    local isolation_errors=0
+
+    # Yuuji should not mention Gojo directly in protocol definition
     if [ -f "protocol/YUUJI.md" ]; then
-        # This is a placeholder - actual implementation would scan for forbidden terms
-        write_pass "Yuuji isolation check (placeholder - implement full scan)"
+        local forbidden_terms=("GOJO" "Satoru Gojo" "Mission Control" "Trigger 19" "trigger-19")
+        local yuuji_found=false
+
+        for term in "${forbidden_terms[@]}"; do
+            if grep -q "$term" "protocol/YUUJI.md"; then
+                write_warn "Yuuji protocol mentions forbidden term: $term"
+                ((isolation_errors++))
+                yuuji_found=true
+            fi
+        done
+
+        if [ "$yuuji_found" = false ]; then
+            write_pass "Yuuji isolation vocabulary check passed"
+        fi
+    else
+        write_warn "protocol/YUUJI.md not found"
     fi
 
-    # Megumi should not mention Gojo directly in reviews
+    # Megumi should not mention Gojo directly in protocol definition
     if [ -f "protocol/MEGUMI.md" ]; then
-        write_pass "Megumi isolation check (placeholder - implement full scan)"
+        local forbidden_terms=("GOJO" "Satoru Gojo" "Mission Control" "Trigger 19" "trigger-19")
+        local megumi_found=false
+
+        for term in "${forbidden_terms[@]}"; do
+            if grep -q "$term" "protocol/MEGUMI.md"; then
+                write_warn "Megumi protocol mentions forbidden term: $term"
+                ((isolation_errors++))
+                megumi_found=true
+            fi
+        done
+
+        if [ "$megumi_found" = false ]; then
+            write_pass "Megumi isolation vocabulary check passed"
+        fi
+    else
+        write_warn "protocol/MEGUMI.md not found"
     fi
 
-    write_info "Note: Full vocabulary scanning not yet implemented"
+    if [ $isolation_errors -gt 0 ]; then
+        write_warn "Found $isolation_errors isolation vocabulary violations"
+        write_info "The 'weight' mechanism requires Yuuji and Megumi to remain unaware of Gojo's existence"
+        ((WARNING_COUNT += isolation_errors))
+    fi
 }
 
 test_output_templates() {

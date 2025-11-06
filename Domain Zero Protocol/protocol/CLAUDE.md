@@ -565,7 +565,7 @@ The protection system is enforced through Git-native tools and team processes. C
 **Level 1: CODEOWNERS (Recommended for all teams)**
 1. Create or update `CODEOWNERS` file in repository root
 2. Add protection rules:
-  ```gitignore
+  ```
    protocol/CLAUDE.md @repo-admins
    protocol/*.md @repo-admins
    ```
@@ -581,18 +581,35 @@ The protection system is enforced through Git-native tools and team processes. C
    - **Gitea/Gogs**: Settings → Branches → Protected branches
 
 **Level 2: Pre-commit Hooks (Local enforcement)**
-Add to `.git/hooks/pre-commit` (or use pre-commit framework):
-```bash
-#!/bin/bash
-# Block direct commits to protocol files
-if git diff --cached --name-only | grep -q "^protocol/CLAUDE.md"; then
-  echo "❌ ERROR: Direct commits to protocol/CLAUDE.md are not allowed"
-  echo "✓ Use: Read protocol/GOJO.md - Update CLAUDE.md [changes]"
-  exit 1
-fi
-```
 
-Make executable: `chmod +x .git/hooks/pre-commit`
+1. Create `.git/hooks/pre-commit`:
+   ```bash
+   #!/bin/bash
+   # Block direct commits to protocol files
+   if git diff --cached --name-only | grep -q "^protocol/CLAUDE.md"; then
+     echo "❌ ERROR: Direct commits to protocol/CLAUDE.md are not allowed"
+     echo "✓ Use: Read protocol/GOJO.md - Update CLAUDE.md [changes]"
+     exit 1
+   fi
+   ```
+
+2. Make executable:
+   ```bash
+   chmod +x .git/hooks/pre-commit
+   ```
+
+Alternative: Use pre-commit framework
+Create `.pre-commit-config.yaml`:
+```yaml
+repos:
+  - repo: local
+    hooks:
+      - id: protect-claude-md
+        name: Protect protocol/CLAUDE.md
+        entry: bash -c 'if git diff --cached --name-only | grep -q "^protocol/CLAUDE.md"; then echo "❌ Direct commits to CLAUDE.md not allowed"; exit 1; fi'
+        language: system
+        pass_filenames: false
+```
 
 **Level 3: Server-side Hooks (Self-hosted Git)**
 Add pre-receive hook on your Git server to block pushes:

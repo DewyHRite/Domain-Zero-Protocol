@@ -1,7 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
 import YAML from "yaml";
-import { globSync } from "glob";
 
 const CONFIG_PATH = "protocol.config.yaml";
 
@@ -17,7 +16,8 @@ export async function verifyProtocol(root) {
   // 1) Config presence
   try {
     await loadConfig(root);
-  } catch {
+  } catch (err) {
+    console.error(`Config loading failed: ${err.message}`);
     errors.push(`Missing or invalid ${CONFIG_PATH}`);
   }
 
@@ -40,20 +40,25 @@ export async function verifyProtocol(root) {
   }
 
   // 3) Workflow bindings present
-  try {
-    await fs.access(path.join(root, "protocol/YUUJI.md"));
-    await fs.access(path.join(root, "protocol/MEGUMI.md"));
-  } catch {
-    errors.push("Missing protocol/YUUJI.md or protocol/MEGUMI.md");
+  const workflowFiles = [
+    { path: "protocol/YUUJI.md", name: "YUUJI.md" },
+    { path: "protocol/MEGUMI.md", name: "MEGUMI.md" }
+  ];
+
+  for (const { path: filePath, name } of workflowFiles) {
+    try {
+      await fs.access(path.join(root, filePath));
+    } catch {
+      errors.push(`Missing protocol/${name}`);
+    }
   }
 
   if (errors.length) {
-    const msg = "Protocol verify failed:\n - " + errors.join("\n - ");
-    console.error(msg);
-    return false;
+    console.error("Protocol verify failed:\n - " + errors.join("\n - "));
+    return { ok: false, errors };
   }
   console.log("Protocol verify passed");
-  return true;
+  return { ok: true, errors: [] };
 }
 
 export async function initQuickstart(root) {
@@ -62,12 +67,16 @@ export async function initQuickstart(root) {
     await fs.access(qs);
     return "Quick Start already present.";
   } catch {
-    const content =
-      "# Protocol Quick Start\n\n" +
-      "1) Edit protocol.config.yaml (user, project, ai.defaultModels)\n" +
-      "2) Run the Verify action from the desktop app\n" +
-      "3) Invoke roles per protocol workflow\n";
-    await fs.writeFile(qs, content, "utf8");
-    return "Created PROTOCOL_QUICKSTART.md";
+    try {
+      const content =
+        "# Protocol Quick Start\n\n" +
+        "1) Edit protocol.config.yaml (user, project, ai.defaultModels)\n" +
+        "2) Run the Verify action from the desktop app\n" +
+        "3) Invoke roles per protocol workflow\n";
+      await fs.writeFile(qs, content, "utf8");
+      return "Created PROTOCOL_QUICKSTART.md";
+    } catch (writeErr) {
+      throw new Error(`Failed to create quickstart file: ${writeErr.message}`);
+    }
   }
 }
