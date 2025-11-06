@@ -22,7 +22,7 @@ Passive Observer is Gojo's background monitoring system that continuously watche
 ### ❌ Effects on Protocol
 
 #### 1. No Background Enforcement
-- **No silent isolation checks**: Yuuji/Megumi can accidentally violate Gojo-secrecy (mention Gojo in outputs) unless they self-check
+- **No silent isolation checks**: Yuuji/Megumi/Nobara can accidentally violate Gojo-secrecy (mention Gojo in outputs) unless they self-check
 - **No proactive nudges**: Won't remind about backups, manifests, or session continuity
 - **No opportunistic risk calls**: Won't auto-escalate high-risk operations
 - **No auto-detection**: Protocol violations may go unnoticed until explicit review
@@ -62,9 +62,9 @@ Add manual gates to your workflow:
 
 ### 2. Megumi Isolation Checklist
 Make Megumi verify isolation rules:
-- ✅ Check for forbidden terms in Yuuji outputs (no "Gojo", "passive", "observer")
-- ✅ Verify Yuuji didn't reference Gojo's existence
-- ✅ Confirm role separation maintained (Yuuji/Megumi don't cross-reference)
+- ✅ Check for forbidden terms in Yuuji/Nobara outputs (no "Gojo", "passive", "observer")
+- ✅ Verify Yuuji/Nobara didn't reference Gojo's existence
+- ✅ Confirm role separation maintained (Yuuji/Megumi/Nobara don't cross-reference inappropriately)
 
 ### 3. PR Template Enforcement
 Use PR templates and labels:
@@ -77,7 +77,7 @@ Use PR templates and labels:
 Require 2-approver rule for:
 - `protocol/CLAUDE.md`
 - `protocol.config.yaml`
-- `protocol/YUUJI.md`, `MEGUMI.md`, `GOJO.md`
+- `protocol/YUUJI.md`, `MEGUMI.md`, `NOBARA.md`, `GOJO.md`
 - Any state files or configuration
 
 ### 5. Explicit Gojo Invocation
@@ -95,7 +95,7 @@ Manually summon Gojo for high-risk operations:
 
 #### 1. Proactive Safety
 - **Automatic backup reminders**: Gojo nudges Yuuji to create backups before changes
-- **Isolation enforcement**: Silent checks that Yuuji/Megumi maintain role separation
+- **Isolation enforcement**: Silent checks that Yuuji/Megumi/Nobara maintain role separation
 - **Risk detection**: Auto-escalates high-risk operations (auth, payments, secrets)
 - **Session continuity**: Tracks work across sessions for better context
 
@@ -251,7 +251,7 @@ You should receive a detailed report with observations, patterns, and recommenda
 - ❌ Drift in protocol adherence (missed backups, isolation breaches)
 - ❌ Recurring bugs or anti-patterns
 - ❌ Missed requirements or incomplete implementations
-- ❌ Yuuji/Megumi violating isolation (mentioning Gojo)
+- ❌ Yuuji/Megumi/Nobara violating isolation (mentioning Gojo)
 - ❌ High-risk operations without Gojo review
 - ❌ Lack of session continuity between work sessions
 
@@ -275,6 +275,7 @@ Since Passive Observer is disabled, please verify:
 
 ### Isolation Verification
 - [ ] Yuuji output reviewed for forbidden terms (no "Gojo", "passive", "observer")
+- [ ] Nobara output reviewed for forbidden terms (no "Gojo", "passive", "observer")
 - [ ] Megumi output reviewed for role separation
 - [ ] No cross-agent references in dev-notes.md or security-review.md
 

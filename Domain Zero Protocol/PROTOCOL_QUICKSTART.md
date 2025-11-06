@@ -49,12 +49,13 @@ cp "Domain Zero Protocol/protocol.config.yaml" your-project/
 ```
 Add to memory: Domain Zero Protocol
 
-I use Domain Zero Protocol v6.1 for AI development. Three-agent system:
+I use Domain Zero Protocol v6.1 for AI development. Four-agent system:
 - YUUJI: Implementation (TDD)
 - MEGUMI: Security review (OWASP)
+- NOBARA: Creative strategy & UX
 - GOJO: Mission control
 
-Protocol files: protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, GOJO.md
+Protocol files: protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md
 Tiers: Rapid/Standard/Critical
 Always read protocol files when I reference them.
 Canonical source: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
@@ -63,8 +64,8 @@ Canonical source: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
 **ChatGPT (Custom Instructions)**:
 Add to Settings → Personalization → Custom Instructions:
 ```
-I use Domain Zero Protocol v6.1 (three-agent AI dev framework).
-Protocol files: protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, GOJO.md.
+I use Domain Zero Protocol v6.1 (four-agent AI dev framework).
+Protocol files: protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md.
 Always read protocol files first.
 ```
 
@@ -119,7 +120,7 @@ Read protocol/YUUJI.md --tier critical and implement OAuth2 authentication
 ## You're Done! 🎉
 
 **What You Just Set Up**:
-- ✅ Three AI agents (Yuuji, Megumi, Gojo) ready to work
+- ✅ Four AI agents (Yuuji, Megumi, Nobara, Gojo) ready to work
 - ✅ Three-tier workflow system (Rapid/Standard/Critical)
 - ✅ Test-first development (TDD) by default
 - ✅ OWASP Top 10 security review
@@ -185,6 +186,9 @@ Read protocol/YUUJI.md --tier critical and implement OAuth2 authentication
 # Security review (Megumi)
 "Read protocol/MEGUMI.md and review [module]"
 
+# Creative strategy & UX (Nobara)
+"Read protocol/NOBARA.md and design [feature/experience]"
+
 # Intelligence report (Gojo)
 "Read protocol/GOJO.md - Trigger 19"
 ```
@@ -193,6 +197,7 @@ Read protocol/YUUJI.md --tier critical and implement OAuth2 authentication
 ```bash
 "Read protocol/YUUJI.md - How should I structure my database schema?"
 "Read protocol/MEGUMI.md - What are common JWT vulnerabilities?"
+"Read protocol/NOBARA.md - What are best practices for user onboarding flows?"
 ```
 
 ---
@@ -330,6 +335,7 @@ your-project/
 │   ├── CLAUDE.md                 # Main protocol (READ THIS)
 │   ├── YUUJI.md                  # Implementation agent
 │   ├── MEGUMI.md                 # Security agent
+│   ├── NOBARA.md                 # Creative strategy & UX agent
 │   ├── GOJO.md                   # Mission control
 │   └── TIER-SELECTION-GUIDE.md  # Tier selection help
 │
@@ -363,11 +369,12 @@ A controlled collaboration space where agents operate under absolute protocol au
 ### Agent Roles
 - **Yuuji**: Implementation, TDD, documentation
 - **Megumi**: Security review, OWASP Top 10, approval/rejection
+- **Nobara**: Creative strategy, UX design, product vision
 - **Gojo**: Mission control, passive observation, protocol enforcement
 
 ### Protection
 - **CLAUDE.md is protected**: Only YOU and GOJO (with authorization) can edit
-- **Yuuji and Megumi are read-only**: Prevents accidental protocol corruption
+- **Yuuji, Megumi, and Nobara are read-only**: Prevents accidental protocol corruption
 - **trigger-19.md is gitignored**: Private intelligence for you and Gojo only
 
 ---

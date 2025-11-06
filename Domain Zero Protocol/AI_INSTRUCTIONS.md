@@ -8,7 +8,7 @@
 
 **Primary Instructions**: Read [`protocol/CLAUDE.md`](protocol/CLAUDE.md)
 
-This project uses the **Domain Zero Protocol** - a three-agent AI development framework with security-first approach and adaptive workflow complexity.
+This project uses the **Domain Zero Protocol** - a four-agent AI development framework with security-first approach, creative strategy, and adaptive workflow complexity.
 
 ---
 
@@ -29,6 +29,11 @@ Read protocol/YUUJI.md and [your task]
 Read protocol/MEGUMI.md and review [module/feature]
 ```
 
+**For Creative Strategy & UX** (Product design, user experience):
+```
+Read protocol/NOBARA.md and [design/strategy task]
+```
+
 ---
 
 ## Protocol Files
@@ -39,6 +44,7 @@ All protocol specifications are in the `protocol/` directory:
 - `protocol/GOJO.md` - Mission Control & Protocol Guardian
 - `protocol/YUUJI.md` - Implementation Specialist
 - `protocol/MEGUMI.md` - Security Analyst
+- `protocol/NOBARA.md` - Creative Strategy & UX
 - `protocol/TIER-SELECTION-GUIDE.md` - Quick reference for workflow tiers
 
 ---
@@ -73,6 +79,7 @@ For workflow guidance:
 - Mission Control: `protocol/GOJO.md`
 - Implementation: `protocol/YUUJI.md`
 - Security Review: `protocol/MEGUMI.md`
+- Creative Strategy & UX: `protocol/NOBARA.md`
 ```
 
 **Automated updater**: See `scripts/update-instructions.ps1` (Windows) or `scripts/update-instructions.sh` (macOS/Linux) for safe, opt-in appending of protocol pointers to existing instruction files.
@@ -101,6 +108,6 @@ This approach works with:
 
 ---
 
-**Version**: 6.0
-**Last Updated**: 2025-11-05
+**Version**: 6.1
+**Last Updated**: 2025-11-06
 **Canonical Source**: `protocol/CLAUDE.md` (always refer to this for authoritative protocol)

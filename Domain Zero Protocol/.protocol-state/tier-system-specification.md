@@ -394,7 +394,7 @@ Rollback Dependencies: payment-service, database
 - Existing security-review.md processes unchanged
 
 **Migration Steps**:
-1. Update protocol files (CLAUDE.md, YUUJI.md, MEGUMI.md, GOJO.md)
+1. Update protocol files (CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md)
 2. Update project-state.json with tier tracking
 3. Add tier-system-specification.md to docs
 4. Users can immediately use `--tier` flags
