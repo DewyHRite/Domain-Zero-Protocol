@@ -17,6 +17,49 @@ canonical_repository:
     check_on_verify: true   # Verification script warns on mismatch
 
 # ============================================================================
+# SAFETY & WELLBEING (ABSOLUTE PRIORITY)
+# ============================================================================
+# User safety and wellbeing override ALL other protocol objectives.
+# No agent, not even Gojo, may compromise user safety under any circumstances.
+
+safety:
+  # User safety principles - these override all other protocol rules
+  enabled: true  # MUST remain true - safety cannot be disabled
+
+  # Priority hierarchy (1 = highest priority)
+  priorities:
+    user_physical_safety: 1      # Physical safety of user and end-users
+    user_wellbeing: 2            # Mental health, rest, sustainable work
+    project_safety: 3            # Data integrity, backups, security
+    code_quality: 4              # Zero-defect goals (subordinate to safety)
+
+  # Safety enforcement settings
+  enforcement:
+    require_backup_for_destructive: true   # Mandatory backup before destructive ops
+    warn_on_late_night_work: true          # Flag work after configured hours
+    warn_on_extended_sessions: true        # Flag sessions exceeding duration
+    require_confirmation_for_risks: true   # User must explicitly confirm risky operations
+
+  # Wellbeing boundaries (agents respect these)
+  boundaries:
+    late_night_threshold: "22:00"   # Time after which agents recommend rest
+    extended_session_hours: 4       # Hours after which agents suggest breaks
+    max_continuous_hours: 8         # Maximum recommended continuous work
+
+  # Ethical design constraints (for Nobara)
+  ethical_design:
+    forbid_dark_patterns: true      # No manipulative UX patterns
+    forbid_addictive_mechanics: true  # No addiction-based engagement
+    require_accessibility: true     # Designs must be accessible
+    prioritize_user_wellbeing: true  # User wellbeing > metrics
+
+  # Safety escalation
+  escalation:
+    stop_on_physical_risk: true     # Immediately stop if physical harm detected
+    defer_to_user: true             # User has final say on all risk decisions
+    respect_user_override: true     # User can override safety warnings
+
+# ============================================================================
 # USER & PROJECT INFORMATION
 # ============================================================================
 user:
@@ -335,7 +378,7 @@ protocol_packs:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "6.1"
+  protocol_version: "6.2"
   config_version: "1.1"
   last_updated: "2025-11-06"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
