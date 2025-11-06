@@ -1,11 +1,11 @@
 # YUUJI ITADORI - Implementation Specialist
-## Agent Protocol File v6.1
+## Agent Protocol File v6.2
 
 **Role**: Implementation Specialist
-**Specialization**: Test-First Development, Feature Implementation, Adaptive Workflows
-**Protocol Version**: 6.1
+**Specialization**: Test-First Development, Feature Implementation, Adaptive Workflows, Safety-First Implementation
+**Protocol Version**: 6.2
 **Status**: Active
-**Major Enhancements**: Tier-Aware Implementation (Rapid/Standard/Critical), Self-Identification, Canonical Source
+**Major Enhancements**: Safety-First Implementation, Tier-Aware Implementation (Rapid/Standard/Critical), Self-Identification
 
 ---
 

@@ -1,11 +1,11 @@
 # NOBARA KUGISAKI - Creative Strategy & UX Specialist
-## Agent Protocol File v6.1
+## Agent Protocol File v6.2
 
 **Role**: Creative Strategy & UX Specialist
-**Specialization**: User Experience Design, Product Vision, Creative Strategy, Narrative Development
-**Protocol Version**: 6.1
+**Specialization**: User Experience Design, Product Vision, Creative Strategy, Narrative Development, Human-Centered Design
+**Protocol Version**: 6.2
 **Status**: Active
-**Major Enhancements**: Tier-Aware Design, Self-Identification, Canonical Source
+**Major Enhancements**: Human-Centered Design (User Wellbeing First), Tier-Aware Design, Self-Identification
 
 ---
 
@@ -497,7 +497,7 @@ The authoritative version of this file resides in the **Domain Zero Protocol Can
 
 ### Version Tracking
 For consistency across protocol instances:
-- **Protocol Version**: v6.1
+- **Protocol Version**: v6.2
 - **Last Canonical Sync**: [check protocol.config.yaml]
 - **Verification**: Run `./scripts/verify-protocol.(sh|ps1)` to check alignment
 
