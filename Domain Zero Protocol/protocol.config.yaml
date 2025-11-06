@@ -1,0 +1,310 @@
+# Domain Zero Protocol Configuration
+# Version: 6.0
+# This file serves as the canonical source of truth for all protocol parameters
+# Modify this file to customize Domain Zero for your project
+
+# ============================================================================
+# USER & PROJECT INFORMATION
+# ============================================================================
+user:
+  name: "Your Name"
+  contact: "email@example.com"
+  organization: "Your Organization"
+
+project:
+  name: "Your Project Name"
+  description: "Brief description of your project"
+  repo: "https://github.com/your-org/your-repo"
+  main_branch: "main"
+  created: "YYYY-MM-DDTHH:MM:SSZ"
+
+  # Tech stack (optional, used for context)
+  tech_stack:
+    languages: ["Python", "TypeScript", "Go"]
+    frameworks: ["FastAPI", "React", "Next.js"]
+    databases: ["PostgreSQL", "Redis"]
+    cloud: ["AWS", "Docker", "Kubernetes"]
+
+# ============================================================================
+# PROTOCOL ROLES & BEHAVIOR
+# ============================================================================
+roles:
+  # Which agents are enabled in your workflow
+  enabled: ["yuuji", "megumi", "gojo"]
+
+  # Personality/output style for each role
+  output_style:
+    yuuji: "enthusiastic"    # Options: enthusiastic, neutral, verbose
+    megumi: "methodical"     # Options: methodical, concise, verbose
+    gojo: "observer"         # Options: observer, active, minimal
+
+  # Optional: Role name aliases (for customization)
+  # aliases:
+  #   yuuji: "Builder"
+  #   megumi: "Reviewer"
+  #   gojo: "Observer"
+
+# ============================================================================
+# ENFORCEMENT & PROTECTION
+# ============================================================================
+enforcement:
+  # Isolation: How strictly to enforce role separation
+  # Options: strict, moderate, advisory
+  isolation: "strict"
+
+  # Backups: Which roles must create backups
+  # Options: all, yuuji-only, none (not recommended)
+  backups:
+    required_for: ["yuuji"]
+    location: ".protocol-state/backups"
+    retention_days: 30
+
+  # CLAUDE.md protection
+  claude_md_protected: true
+  authorized_editors: ["USER", "GOJO"]  # GOJO requires explicit user authorization
+
+  # Output template conformance
+  require_output_templates: true
+  require_section_headers: true
+
+  # Quality gates
+  quality_gates:
+    block_on_failure: false  # If true, pre-commit/CI blocks; if false, warns only
+    verify_isolation_vocabulary: true
+    verify_backup_creation: true
+    verify_config_completeness: true
+
+# ============================================================================
+# AI MODEL CONFIGURATION
+# ============================================================================
+ai:
+  # Default models for protocol agents
+  default_models:
+    - provider: "Anthropic"
+      model: "claude-3-5-sonnet-20241022"
+      scope: "all-clients"      # all-clients, yuuji-only, megumi-only, gojo-only
+      priority: 1               # Lower = higher priority
+
+    - provider: "Anthropic"
+      model: "claude-3-5-haiku-20241022"
+      scope: "rapid-tier"       # Use faster model for Tier 1 Rapid
+      priority: 2
+
+    # - provider: "OpenAI"
+    #   model: "gpt-4o-mini"
+    #   scope: "fallback"
+    #   priority: 3
+
+  # Multi-model security review (Tier 3 Critical)
+  multi_model_review:
+    enabled: true
+    models: ["claude-3-5-sonnet-20241022", "claude-3-5-opus-20241022"]
+
+  # Model behavior overrides
+  behavior:
+    temperature: 0.7
+    max_tokens: 4096
+    enable_tool_use: true
+
+# ============================================================================
+# TIER SYSTEM CONFIGURATION
+# ============================================================================
+tiers:
+  # Default tier when none specified
+  default: "standard"
+
+  # Tier-specific overrides
+  tier_1_rapid:
+    require_tests: false
+    require_security_review: false
+    require_backup: true
+    target_time_minutes: 15
+
+  tier_2_standard:
+    require_tests: true
+    require_security_review: true
+    require_backup: true
+    security_coverage_target: 0.80
+    target_time_minutes: 45
+
+  tier_3_critical:
+    require_tests: true
+    require_integration_tests: true
+    require_e2e_tests: true
+    require_security_review: true
+    require_multi_model_review: true
+    require_backup: true
+    security_coverage_target: 0.95
+    require_compliance_check: true
+    compliance_frameworks: ["PCI", "HIPAA", "SOC2", "GDPR"]
+    target_time_minutes: 90
+
+# ============================================================================
+# FILE PATHS & LOCATIONS
+# ============================================================================
+paths:
+  # Protocol core files
+  protocol_dir: "protocol"
+  state_dir: ".protocol-state"
+  scripts_dir: "scripts"
+
+  # State files
+  project_state: ".protocol-state/project-state.json"
+  dev_notes: ".protocol-state/dev-notes.md"
+  security_review: ".protocol-state/security-review.md"
+  trigger_19: ".protocol-state/trigger-19.md"
+  tier_spec: ".protocol-state/tier-system-specification.md"
+
+  # Protocol files
+  claude_md: "protocol/CLAUDE.md"
+  yuuji_md: "protocol/YUUJI.md"
+  megumi_md: "protocol/MEGUMI.md"
+  gojo_md: "protocol/GOJO.md"
+  tier_guide: "protocol/TIER-SELECTION-GUIDE.md"
+
+  # Source code locations (adjust for your project)
+  source_code: "src"
+  tests: "tests"
+  docs: "docs"
+
+# ============================================================================
+# TOOLING INTEGRATION
+# ============================================================================
+tooling:
+  # Security scanning tools (optional)
+  sast:
+    enabled: false
+    tools: ["snyk-code", "semgrep", "codeql"]
+    run_on: ["tier_2", "tier_3"]
+
+  sca:
+    enabled: false
+    tools: ["snyk-open-source", "dependabot"]
+    run_on: ["tier_2", "tier_3"]
+
+  dast:
+    enabled: false
+    tools: ["owasp-zap", "burp-suite"]
+    run_on: ["tier_3"]
+
+  iac_scanning:
+    enabled: false
+    tools: ["snyk-iac", "checkov", "tfsec"]
+    run_on: ["tier_3"]
+
+  # Testing frameworks (auto-detected if not specified)
+  testing:
+    framework: "auto-detect"  # or pytest, jest, junit, go-test, rspec, etc.
+    coverage_target: 0.80
+    coverage_tool: "auto-detect"  # or coverage.py, jest, jacoco, etc.
+
+  # CI/CD integration
+  ci_cd:
+    provider: "github-actions"  # github-actions, gitlab-ci, jenkins, circleci
+    verify_on_pr: true
+    verify_on_commit: false
+    required_checks: ["protocol-verify", "tests", "security-scan"]
+
+# ============================================================================
+# PRIVACY & MONITORING
+# ============================================================================
+privacy:
+  # ============================================================
+  # PASSIVE OBSERVER MODE (Gojo's Background Monitoring)
+  # ============================================================
+  #
+  # ⚠️ IMPORTANT: Passive Observer is OFF by default for privacy.
+  #
+  # When OFF (default):
+  #   ❌ No background monitoring or automatic enforcement
+  #   ❌ No proactive nudges, backups, or risk escalation
+  #   ❌ Gojo only available via explicit invocation
+  #   ❌ Trigger 19 reports will be minimal/empty
+  #   ✅ Privacy-focused: no session data collection
+  #   ✅ Manual checkpoints via PR templates required
+  #
+  # When ON (opt-in):
+  #   ✅ Proactive safety and automatic enforcement
+  #   ✅ Background monitoring and pattern detection
+  #   ✅ Rich intelligence reports (Trigger 19)
+  #   ✅ Session continuity tracking
+  #   ⚠️ Session data collected (local storage, gitignored)
+  #   ⚠️ Requires explicit consent
+  #
+  # See PASSIVE_OBSERVER.md for:
+  #   - Detailed comparison (OFF vs ON)
+  #   - Privacy and consent considerations
+  #   - When to enable/disable
+  #   - Passive-Off checklist for PR templates
+  #
+  # ============================================================
+
+  passive_monitoring:
+    enabled: false              # OFF by default (set to true to enable)
+    consent_given: false        # REQUIRED: Must be true to enable
+    consent_date: null          # ISO 8601 date when consent was given
+    data_retention_days: 14     # How long to keep session observations
+    storage_location: "local"   # local = never uploaded | encrypted | cloud
+
+  # trigger-19.md gitignore status
+  gitignore_trigger_19: true    # Always gitignore by default (never commit)
+
+  # GDPR compliance mode
+  gdpr_mode: false              # If true, additional privacy safeguards enabled
+
+# ============================================================================
+# PROTOCOL PACKS (OPTIONAL)
+# ============================================================================
+protocol_packs:
+  # Active pack (blank = generic, or custom pack name)
+  active_pack: "blank"
+
+  # Available packs directory
+  packs_dir: "protocol-packs"
+
+  # Pack-specific content (e.g., appendices, examples, checklists)
+  # packs:
+  #   jamwathq:
+  #     appendix: "protocol-packs/jamwathq/APPENDIX.md"
+  #     tech_stack: ["FastAPI", "PostgreSQL", "React"]
+  #   blank:
+  #     appendix: "protocol-packs/blank/APPENDIX.md"
+  #     tech_stack: []
+
+# ============================================================================
+# VERSIONING
+# ============================================================================
+versioning:
+  protocol_version: "6.0"
+  config_version: "1.0"
+  last_updated: "2025-11-05"
+  changelog: "protocol/GOJO-UPDATES-PATCH.md"
+
+# ============================================================================
+# CUSTOM TRIGGERS
+# ============================================================================
+custom_triggers:
+  max_triggers: 10
+  case_sensitive: false
+  auto_suggest: true
+
+  # Default triggers
+  triggers:
+    - id: "19"
+      function: "Trigger 19"
+      description: "Full Intelligence Report"
+      is_default: true
+
+    - id: "protect"
+      function: "CLAUDE.md Protection Status"
+      description: "Check protocol file integrity"
+      is_default: true
+
+# ============================================================================
+# NOTES
+# ============================================================================
+# - All paths are relative to project root
+# - User can be "USER" (you), "GOJO" (with authorization), "YUUJI", or "MEGUMI"
+# - This config should be read by all agents at initialization
+# - Modify values here instead of editing protocol files directly
+# - See PROTOCOL_QUICKSTART.md for setup guidance

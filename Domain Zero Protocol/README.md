@@ -49,6 +49,9 @@ This distribution includes everything you need to deploy Domain Zero:
 
 **Setup Files**:
 - `README.md` - This file (comprehensive setup guide)
+- `PROTOCOL_QUICKSTART.md` - **NEW** 2-minute quick start guide
+- `PASSIVE_OBSERVER.md` - **NEW** Gojo's Passive Observer mode guide
+- `protocol.config.yaml` - **NEW** Canonical configuration (single source of truth)
 - `AI_INSTRUCTIONS.md` - Cross-assistant discovery shim (redirects to CLAUDE.md)
 - `.gitignore` - Privacy-focused git configuration
 - `LICENSE` - MIT License
@@ -57,9 +60,13 @@ This distribution includes everything you need to deploy Domain Zero:
 **Integration Scripts** (`scripts/`):
 - `update-instructions.ps1` - PowerShell script to append protocol pointers (Windows)
 - `update-instructions.sh` - Bash script to append protocol pointers (macOS/Linux)
+- `verify-protocol.ps1` - **NEW** Protocol verification script (Windows)
+- `verify-protocol.sh` - **NEW** Protocol verification script (macOS/Linux)
 
-**CI/CD Templates** (`.github/workflows/`):
-- `security-scan-example.yml` - GitHub Actions security scanning template
+**CI/CD Templates** (`.github/`):
+- `copilot-instructions.md` - **NEW** GitHub Copilot integration instructions
+- `PULL_REQUEST_TEMPLATE.md` - **NEW** PR template with Passive-Off checklist
+- `workflows/security-scan-example.yml` - GitHub Actions security scanning template
 
 ---
 
@@ -127,6 +134,8 @@ Domain Zero creates a **controlled collaboration space** where three specialized
 
 ## 🚀 Quick Setup
 
+> **⚡ Want to get started in 2 minutes?** See [`PROTOCOL_QUICKSTART.md`](PROTOCOL_QUICKSTART.md) for the express setup guide.
+
 ### Step 1: Copy Protocol to Your Project
 
 **macOS/Linux (bash/zsh)**:
@@ -134,6 +143,7 @@ Domain Zero creates a **controlled collaboration space** where three specialized
 # Copy the entire protocol structure to your project root
 cp -r "Domain Zero Protocol/protocol" your-project/
 cp -r "Domain Zero Protocol/.protocol-state" your-project/
+cp "Domain Zero Protocol/protocol.config.yaml" your-project/
 cp "Domain Zero Protocol/.gitignore" your-project/
 ```
 
@@ -142,6 +152,7 @@ cp "Domain Zero Protocol/.gitignore" your-project/
 # Copy the entire protocol structure to your project root
 Copy-Item -Recurse -Force "Domain Zero Protocol\protocol" -Destination "your-project\"
 Copy-Item -Recurse -Force "Domain Zero Protocol\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol\protocol.config.yaml" -Destination "your-project\"
 Copy-Item -Force "Domain Zero Protocol\.gitignore" -Destination "your-project\"
 ```
 
@@ -150,12 +161,27 @@ Copy-Item -Force "Domain Zero Protocol\.gitignore" -Destination "your-project\"
 REM Copy the entire protocol structure to your project root
 xcopy /E /I /Y "Domain Zero Protocol\protocol" "your-project\protocol"
 xcopy /E /I /Y "Domain Zero Protocol\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol\protocol.config.yaml" "your-project\"
 copy /Y "Domain Zero Protocol\.gitignore" "your-project\"
 ```
 
-### Step 2: Update Project Metadata
+### Step 2: Configure Your Project
 
-Edit `.protocol-state/project-state.json`:
+Edit `protocol.config.yaml` (recommended) OR `.protocol-state/project-state.json`:
+
+**Option A: protocol.config.yaml** (recommended - single source of truth):
+```yaml
+user:
+  name: "Your Name"
+  contact: "your.email@example.com"
+
+project:
+  name: "Your Project Name"
+  description: "What your project does"
+  repo: "https://github.com/your-org/your-repo"
+```
+
+**Option B: .protocol-state/project-state.json** (legacy):
 ```json
 {
   "project_metadata": {
@@ -534,6 +560,28 @@ _Note: Productivity metrics are estimates from internal use. Actual gains vary s
 "Read protocol/MEGUMI.md - What are common XSS vulnerabilities?"
 ```
 
+### Protocol Verification
+
+```bash
+# Windows PowerShell
+.\scripts\verify-protocol.ps1
+
+# macOS/Linux
+./scripts/verify-protocol.sh
+```
+
+**What it checks**:
+- ✅ File existence (required protocol files)
+- ✅ Configuration completeness (protocol.config.yaml)
+- ✅ Isolation vocabulary (forbidden cross-agent terms)
+- ✅ Output template conformance
+- ✅ CLAUDE.md protection rules
+- ✅ Backup configuration
+
+**Options**:
+- `--verbose` - Show detailed information
+- `--help` - Show help message
+
 ---
 
 ## 🎯 Success Criteria
@@ -555,13 +603,27 @@ Within Domain Zero, the goal is always **ZERO**:
 
 ## 📚 Documentation
 
+### Getting Started
+
+1. **PROTOCOL_QUICKSTART.md** - 2-minute quick start guide (START HERE)
+2. **README.md** - This file (comprehensive setup guide)
+3. **protocol.config.yaml** - Central configuration file
+
 ### Essential Reading
 
 1. **protocol/CLAUDE.md** - Main protocol file (comprehensive system overview)
 2. **protocol/TIER-SELECTION-GUIDE.md** - Quick tier selection reference
-3. **protocol/YUUJI.md** - Implementation agent specifications
-4. **protocol/MEGUMI.md** - Security agent specifications
-5. **protocol/GOJO.md** - Mission control specifications
+3. **PASSIVE_OBSERVER.md** - Gojo's Passive Observer mode explained
+4. **protocol/YUUJI.md** - Implementation agent specifications
+5. **protocol/MEGUMI.md** - Security agent specifications
+6. **protocol/GOJO.md** - Mission control specifications
+
+### Integration & Tooling
+
+- **.github/copilot-instructions.md** - GitHub Copilot integration guide
+- **.github/PULL_REQUEST_TEMPLATE.md** - PR template with protocol compliance checklist
+- **scripts/verify-protocol.(ps1|sh)** - Protocol verification scripts
+- **scripts/update-instructions.(ps1|sh)** - AI instruction updater scripts
 
 ### Advanced Topics
 
