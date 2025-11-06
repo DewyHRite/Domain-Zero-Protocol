@@ -149,28 +149,28 @@ Domain Zero creates a **controlled collaboration space** where four specialized 
 **macOS/Linux (bash/zsh)**:
 ```bash
 # Copy the entire protocol structure to your project root
-cp -r "Domain Zero Protocol/protocol" your-project/
-cp -r "Domain Zero Protocol/.protocol-state" your-project/
-cp "Domain Zero Protocol/protocol.config.yaml" your-project/
-cp "Domain Zero Protocol/.gitignore" your-project/
+cp -r "Domain Zero Protocol v6.1/protocol" your-project/
+cp -r "Domain Zero Protocol v6.1/.protocol-state" your-project/
+cp "Domain Zero Protocol v6.1/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v6.1/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
 # Copy the entire protocol structure to your project root
-Copy-Item -Recurse -Force "Domain Zero Protocol\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol\protocol.config.yaml" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol\.gitignore" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v6.1\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v6.1\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v6.1\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v6.1\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
 ```cmd
 REM Copy the entire protocol structure to your project root
-xcopy /E /I /Y "Domain Zero Protocol\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol\protocol.config.yaml" "your-project\"
-copy /Y "Domain Zero Protocol\.gitignore" "your-project\"
+xcopy /E /I /Y "Domain Zero Protocol v6.1\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v6.1\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v6.1\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v6.1\.gitignore" "your-project\"
 ```
 
 ### Step 2: Configure Your Project

@@ -115,10 +115,10 @@ scripts/*.ps1      @dev-leads
 
 ---
 ## 8. Desktop Wrapper Sample Path Corrections
-Existing hard-coded paths use `domain_zero/` while actual layout is `Domain Zero Protocol/` or if installed inside a consumer repo, recommended flattening. Provide dual-mode logic:
+Existing hard-coded paths use `domain_zero/` while actual layout is `Domain Zero Protocol v6.1/` or if installed inside a consumer repo, recommended flattening. Provide dual-mode logic:
 ```js
-const LEGACY_ROOT = "Domain Zero Protocol"; // current
-const ALT_ROOT = "domain_zero";             // target standard name (future)
+const LEGACY_ROOT = "Domain Zero Protocol v6.1"; // current (v6.1 versioned folder)
+const ALT_ROOT = "domain_zero";                  // target standard name (future)
 
 function resolveConfigPath(root) {
   const candidates = [

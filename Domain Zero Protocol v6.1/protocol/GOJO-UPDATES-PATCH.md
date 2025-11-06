@@ -486,7 +486,7 @@ Audit Trail Complete ✓
 
 **Additional Deliverable**: Domain Zero Protocol distribution folder created for new users
 
-**Folder Name**: "Domain Zero Protocol"
+**Folder Name**: "Domain Zero Protocol v6.1"
 **Location**: Project root
 **Purpose**: Copy-paste ready package for new users to deploy Domain Zero in their projects
 **Status**: ✓ READY FOR GIT PUSH
