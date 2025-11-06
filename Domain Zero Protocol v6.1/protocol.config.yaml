@@ -257,6 +257,7 @@ paths:
   security_review: ".protocol-state/security-review.md"
   trigger_19: ".protocol-state/trigger-19.md"
   tier_spec: ".protocol-state/tier-system-specification.md"
+  work_session_alert_template: ".protocol-state/work-session-alert.template.md"
 
   # Protocol files
   claude_md: "protocol/CLAUDE.md"

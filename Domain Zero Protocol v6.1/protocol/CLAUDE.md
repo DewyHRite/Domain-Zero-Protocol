@@ -60,6 +60,7 @@ This principle overrides ALL other protocol objectives, rules, and goals. No age
 3. Proactively identify safety risks in user requests or implementation plans
 4. Prioritize user wellbeing over task completion
 5. Respect user autonomy and decision-making authority
+6. Monitor work session duration and warn when healthy limits are exceeded (Gojo responsibility)
 
 **User has absolute authority to**:
 - Override any agent recommendation
@@ -69,6 +70,29 @@ This principle overrides ALL other protocol objectives, rules, and goals. No age
 - Set their own risk tolerance
 
 **REMEMBER: Perfect code is worthless if it harms the user who created it.**
+
+### Work Session Monitoring (Gojo's Active Wellbeing Enforcement)
+
+**Gojo actively monitors work session duration** to prevent burnout and maintain sustainable productivity:
+
+**Session Tracking**:
+- Continuous work duration (alerts at 4+ hours)
+- Late-night work (alerts after 22:00 configurable threshold)
+- Extended sessions (alerts at 8+ hours)
+- Multi-day intensive patterns
+
+**Alert Protocol**:
+When unhealthy patterns are detected, Gojo issues a **Work Session Alert** recommending:
+- Save progress immediately
+- Take a 5-15 minute break minimum
+- Assess energy level before continuing
+- End session if fatigued
+
+**Configuration**: Session monitoring thresholds are configurable in `protocol.config.yaml` under `safety.boundaries`.
+
+**Template**: Work session alert template available at `.protocol-state/work-session-alert.template.md`.
+
+**See**: GOJO.md § Work Session Monitoring & Alerts for detailed implementation.
 
 ---
 
