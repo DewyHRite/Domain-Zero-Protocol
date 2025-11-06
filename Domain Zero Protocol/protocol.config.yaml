@@ -42,13 +42,14 @@ project:
 # ============================================================================
 roles:
   # Which agents are enabled in your workflow
-  enabled: ["yuuji", "megumi", "gojo"]
+  enabled: ["yuuji", "megumi", "gojo", "nobara"]
 
   # Personality/output style for each role
   output_style:
     yuuji: "enthusiastic"    # Options: enthusiastic, neutral, verbose
     megumi: "methodical"     # Options: methodical, concise, verbose
     gojo: "observer"         # Options: observer, active, minimal
+    nobara: "creative"       # Options: creative, bold, narrative
 
   # Optional: Role name aliases (for customization)
   # aliases:

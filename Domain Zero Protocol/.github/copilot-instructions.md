@@ -22,6 +22,7 @@ This project uses the **Domain Zero Protocol** for AI-assisted development.
 - **Mission Control**: [`protocol/GOJO.md`](../protocol/GOJO.md)
 - **Implementation**: [`protocol/YUUJI.md`](../protocol/YUUJI.md)
 - **Security Review**: [`protocol/MEGUMI.md`](../protocol/MEGUMI.md)
+- **Creative Strategy & UX**: [`protocol/NOBARA.md`](../protocol/NOBARA.md)
 
 ### Quick Reference
 - **Tier Selection**: [`protocol/TIER-SELECTION-GUIDE.md`](../protocol/TIER-SELECTION-GUIDE.md)
@@ -151,6 +152,7 @@ project/
 │   ├── CLAUDE.md                 # Main protocol (READ THIS)
 │   ├── YUUJI.md                  # Implementation
 │   ├── MEGUMI.md                 # Security
+│   ├── NOBARA.md                 # Creative strategy & UX
 │   ├── GOJO.md                   # Mission control
 │   └── TIER-SELECTION-GUIDE.md  # Tier selection
 │
@@ -260,7 +262,7 @@ Read protocol/GOJO.md - Trigger 19
 → Edit `ai.default_models` in `protocol.config.yaml`
 
 **"What's the difference between agents?"**
-→ Yuuji = Implementation | Megumi = Security | Gojo = Mission Control
+→ Yuuji = Implementation | Megumi = Security | Nobara = Creative Strategy & UX | Gojo = Mission Control
 
 ---
 

@@ -3,7 +3,7 @@
 
 **"Perfect Code Through Infinite Collaboration"**
 
-Domain Zero is a three-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with test-first development, comprehensive security review, and adaptive workflow complexity.
+Domain Zero is a four-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with test-first development, comprehensive security review, creative strategy, and adaptive workflow complexity.
 
 ---
 
@@ -37,6 +37,7 @@ This distribution includes everything you need to deploy Domain Zero:
 - `YUUJI.md` - Implementation agent protocol
 - `MEGUMI.md` - Security review agent protocol
 - `GOJO.md` - Mission control agent protocol
+- `NOBARA.md` - Creative strategy & UX agent protocol
 - `TIER-SELECTION-GUIDE.md` - Quick reference for tier selection
 - `GOJO-UPDATES-PATCH.md` - Protocol change audit trail
 
@@ -109,9 +110,9 @@ _Note: Domain Zero works standalone without these tools, but integration enhance
 
 ## 🌀 What is Domain Zero?
 
-Domain Zero creates a **controlled collaboration space** where three specialized AI agents work together to deliver production-ready code with zero defects.
+Domain Zero creates a **controlled collaboration space** where four specialized AI agents work together to deliver production-ready code with zero defects.
 
-### The Three Agents
+### The Four Agents
 
 **🔥 YUUJI ITADORI** - Implementation Specialist
 - Test-first development (TDD)
@@ -124,6 +125,12 @@ Domain Zero creates a **controlled collaboration space** where three specialized
 - Vulnerability detection
 - Performance analysis
 - Code approval/rejection
+
+**🎯 NOBARA KUGISAKI** - Creative Strategy & UX
+- User experience design
+- Product vision & strategy
+- Narrative development
+- Creative problem solving
 
 **♾️ SATORU GOJO** - Mission Control
 - Project lifecycle management
@@ -249,15 +256,17 @@ Many AI assistants now support memory features that allow them to remember impor
 ```
 You: "Add to memory: Domain Zero Protocol
 
-I use the Domain Zero Protocol for AI-assisted development. This is a three-agent system:
+I use the Domain Zero Protocol for AI-assisted development. This is a four-agent system:
 - YUUJI (Implementation Specialist): Test-first development, feature implementation
 - MEGUMI (Security Analyst): OWASP Top 10 security reviews
+- NOBARA (Creative Strategy & UX): User experience design, product vision
 - GOJO (Mission Control): Project lifecycle, protocol guardian
 
 The protocol files are located in my project at:
 - protocol/CLAUDE.md (main protocol, v6.1)
 - protocol/YUUJI.md (implementation agent)
 - protocol/MEGUMI.md (security agent)
+- protocol/NOBARA.md (creative strategy agent)
 - protocol/GOJO.md (mission control)
 
 The protocol uses a three-tier workflow system:
@@ -273,12 +282,13 @@ The canonical source is: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v6.1) for development projects. This is a three-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v6.1) for development projects. This is a four-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
+- NOBARA: Creative strategy and user experience design
 - GOJO: Mission control and protocol enforcement
 
-When working on my projects, refer to protocol files at protocol/CLAUDE.md, protocol/YUUJI.md, protocol/MEGUMI.md, and protocol/GOJO.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
+When working on my projects, refer to protocol files at protocol/CLAUDE.md, protocol/YUUJI.md, protocol/MEGUMI.md, protocol/NOBARA.md, and protocol/GOJO.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
 
 Canonical source: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
 ```
@@ -295,8 +305,8 @@ Canonical source: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
 
 **What to Include in Memory**:
 - ✅ Protocol name and version (Domain Zero Protocol v6.1)
-- ✅ The three agent roles and their specializations
-- ✅ Protocol file locations (protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, GOJO.md)
+- ✅ The four agent roles and their specializations
+- ✅ Protocol file locations (protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md)
 - ✅ Tier system overview (Rapid/Standard/Critical)
 - ✅ Canonical source URL (https://github.com/DewyHRite/Domain_Zero_Protocol_DZP)
 - ✅ Key principles: test-first development, OWASP security review, zero-defect philosophy
@@ -349,6 +359,7 @@ This project follows the Domain Zero Protocol for AI-assisted development.
 - Mission Control: `protocol/GOJO.md`
 - Implementation: `protocol/YUUJI.md`
 - Security Review: `protocol/MEGUMI.md`
+- Creative Strategy & UX: `protocol/NOBARA.md`
 ```
 
 **Automated Integration** (Safe & Opt-In):
@@ -537,6 +548,7 @@ your-project/
 │   ├── CLAUDE.md                    # Main protocol (READ THIS FIRST)
 │   ├── YUUJI.md                     # Implementation agent
 │   ├── MEGUMI.md                    # Security agent
+│   ├── NOBARA.md                    # Creative strategy & UX agent
 │   ├── GOJO.md                      # Mission control
 │   ├── TIER-SELECTION-GUIDE.md     # Quick tier reference
 │   └── GOJO-UPDATES-PATCH.md       # Protocol change log
@@ -636,6 +648,10 @@ _Note: Productivity metrics are estimates from internal use. Actual gains vary s
 # Megumi (Security Review)
 "Read protocol/MEGUMI.md and review [module]"
 "Read protocol/MEGUMI.md --tier critical and review [module]"
+
+# Nobara (Creative Strategy & UX)
+"Read protocol/NOBARA.md and design [feature/experience]"
+"Read protocol/NOBARA.md and develop product vision for [feature]"
 ```
 
 ### Standalone Consultation
@@ -644,6 +660,7 @@ _Note: Productivity metrics are estimates from internal use. Actual gains vary s
 # Ask questions without implementation
 "Read protocol/YUUJI.md - How do I handle JWT tokens?"
 "Read protocol/MEGUMI.md - What are common XSS vulnerabilities?"
+"Read protocol/NOBARA.md - What are best practices for user onboarding?"
 ```
 
 ### Protocol Verification
@@ -702,8 +719,9 @@ Within Domain Zero, the goal is always **ZERO**:
 3. **PASSIVE_OBSERVER.md** - Gojo's Passive Observer mode explained
 4. **protocol/YUUJI.md** - Implementation agent specifications
 5. **protocol/MEGUMI.md** - Security agent specifications
-6. **protocol/GOJO.md** - Mission control specifications
-7. **protocol/MODE_INDICATORS.md** - Agent identification and display systems guide
+6. **protocol/NOBARA.md** - Creative strategy & UX agent specifications
+7. **protocol/GOJO.md** - Mission control specifications
+8. **protocol/MODE_INDICATORS.md** - Agent identification and display systems guide
 
 ### Integration & Tooling
 
