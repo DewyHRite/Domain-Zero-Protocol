@@ -129,7 +129,7 @@ Perfection is the horizon we walk toward, not the destination we reach.
 **Authorization Hierarchy**:
 - **Tier 1: USER** - Full control, can edit manually anytime
 - **Tier 2: GOJO** - Can modify ONLY with explicit USER authorization
-- **Tier 3: YUUJI & MEGUMI** - READ ONLY, ZERO write permissions
+- **Tier 3: YUUJI, MEGUMI & NOBARA** - READ ONLY, ZERO write permissions
 
 **Attempting to modify this file without authorization will trigger FORCED STAND DOWN.**
 
@@ -544,10 +544,10 @@ Gojo silently monitors all Yuuji and Megumi sessions. Agents are completely unaw
 
 **Tier 2: GOJO (Protocol Guardian)**
 - ✅ Can modify CLAUDE.md ONLY with explicit USER authorization
-- ✅ Enforces protection against Yuuji/Megumi violations
+- ✅ Enforces protection against Yuuji/Megumi/Nobara violations
 - ✅ Creates automatic backups before modifications
 
-**Tier 3: YUUJI & MEGUMI (Read-Only)**
+**Tier 3: YUUJI, MEGUMI & NOBARA (Read-Only)**
 - ✅ Can read CLAUDE.md for protocol understanding
 - ❌ ZERO write permissions to CLAUDE.md
 - ❌ Cannot suggest modifications to CLAUDE.md
