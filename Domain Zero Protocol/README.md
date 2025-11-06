@@ -51,6 +51,7 @@ This distribution includes everything you need to deploy Domain Zero:
 - `README.md` - This file (comprehensive setup guide)
 - `PROTOCOL_QUICKSTART.md` - **NEW** 2-minute quick start guide
 - `PASSIVE_OBSERVER.md` - **NEW** Gojo's Passive Observer mode guide
+- `DESKTOP_WRAPPER.md` - **NEW** Electron desktop app wrapper guide
 - `protocol.config.yaml` - **NEW** Canonical configuration (single source of truth)
 - `AI_INSTRUCTIONS.md` - Cross-assistant discovery shim (redirects to CLAUDE.md)
 - `.gitignore` - Privacy-focused git configuration
