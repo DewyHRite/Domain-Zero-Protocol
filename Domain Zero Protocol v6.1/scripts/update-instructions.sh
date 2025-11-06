@@ -143,7 +143,7 @@ append_protocol_pointer() {
     fi
 
     # Append protocol pointer
-    echo "$PROTOCOL_SECTION" >> "$file"
+    printf '%s\n' "$PROTOCOL_SECTION" >> "$file"
     echo -e "  ${GREEN}[UPDATED]${RESET} Appended protocol pointer to: $file"
     return 0
 }

@@ -154,7 +154,7 @@ foreach ($pattern in $InstructionFilePatterns) {
 
     foreach ($file in $files) {
         # Skip if it's in protocol/ directory (those are canonical sources)
-        if ($file.FullName -match "\\protocol\\") {
+        if ($file.FullName -match "[/\\]protocol[/\\]") {
             continue
         }
 

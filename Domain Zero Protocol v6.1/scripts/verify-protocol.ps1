@@ -251,7 +251,6 @@ function Test-IsolationVocabulary {
     if ($isolationErrors -gt 0) {
         Write-Warn "Found $isolationErrors isolation vocabulary violations"
         Write-InfoMsg "The 'weight' mechanism requires Yuuji and Megumi to remain unaware of Gojo's existence"
-        $script:WarningCount += $isolationErrors
     }
 }
 

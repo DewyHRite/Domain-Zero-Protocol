@@ -13,7 +13,6 @@ ERROR_COUNT=0
 WARNING_COUNT=0
 PASS_COUNT=0
 VERBOSE=false
-FIX=false
 
 # Colors for output
 COLOR_RESET='\033[0m'
@@ -64,7 +63,6 @@ USAGE:
 
 OPTIONS:
     --verbose   Show detailed information during verification
-    --fix       Attempt to auto-fix issues (NOT IMPLEMENTED YET)
     --help      Show this help message
 
 DESCRIPTION:
@@ -85,9 +83,6 @@ EXAMPLES:
     # Verbose output
     ./scripts/verify-protocol.sh --verbose
 
-    # Auto-fix issues (future feature)
-    ./scripts/verify-protocol.sh --fix
-
 EXIT CODES:
     0 - All checks passed
     1 - Errors found
@@ -105,10 +100,6 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         --verbose)
             VERBOSE=true
-            shift
-            ;;
-        --fix)
-            FIX=true
             shift
             ;;
         --help)
@@ -178,6 +169,11 @@ test_config_completeness() {
     write_info "Reading protocol.config.yaml..."
     local config_content
     config_content=$(cat "protocol.config.yaml")
+
+    if [ -z "$config_content" ]; then
+        write_fail "protocol.config.yaml is empty"
+        return
+    fi
 
     # Check for placeholder values that need to be updated
     local placeholders=(
@@ -315,7 +311,7 @@ test_claude_md_protection() {
 
     # Check if config has protection enabled
     if [ -f "protocol.config.yaml" ]; then
-        if grep -q "claude_md_protected:\s*true" "protocol.config.yaml"; then
+        if grep -q "claude_md_protected:[[:space:]]*true" "protocol.config.yaml"; then
             write_pass "Config has CLAUDE.md protection enabled"
         else
             write_warn "Config does not explicitly enable CLAUDE.md protection"
@@ -340,7 +336,7 @@ test_backup_configuration() {
         write_warn "Backup requirement for Yuuji not found in config"
     fi
 
-    if echo "$config_content" | grep -q "retention_days:\s*[0-9]\+"; then
+    if echo "$config_content" | grep -q "retention_days:[[:space:]]*[0-9]\+"; then
         write_pass "Backup retention policy configured"
     else
         write_warn "Backup retention policy not found in config"
