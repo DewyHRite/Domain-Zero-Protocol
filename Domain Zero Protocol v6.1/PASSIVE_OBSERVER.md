@@ -1,6 +1,6 @@
 # Passive Observer Mode - Gojo's Background Monitoring
 
-**Understanding Gojo's Passive Observer capability and when to enable it**
+## Understanding Gojo's Passive Observer Capability and When to Enable It
 
 ---
 

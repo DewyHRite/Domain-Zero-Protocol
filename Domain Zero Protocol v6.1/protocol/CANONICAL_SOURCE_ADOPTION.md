@@ -1,5 +1,5 @@
 # Canonical Source Adoption & Repository Referencing Strategy
-## Repository: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
+## Repository: <https://github.com/DewyHRite/Domain_Zero_Protocol_DZP>
 
 **Date**: 2025-11-06  
 **Protocol Version Target**: v6.1.x (Transition from distributed copies to canonical reference)  
@@ -16,6 +16,7 @@ Adopting a single canonical public repository for the Domain Zero Protocol ("DZP
 ---
 
 ## 2. Benefits Overview
+
 | Area | Impact | Description |
 |------|--------|-------------|
 | Single Source of Truth | ★★★★★ | All agents & tools resolve to one URL; no stale variants |
@@ -58,6 +59,7 @@ canonical_repository:
 ---
 
 ## 4. Required File Adjustments (Phase 1)
+
 | File | Addition | Purpose |
 |------|----------|---------|
 | `protocol/CLAUDE.md` | Canonical Source block | Declares authority & current version |
@@ -112,6 +114,7 @@ Example invocation:
 ---
 
 ## 7. Rollout Plan
+
 | Phase | Goal | Tasks | Success Metric |
 |-------|------|-------|----------------|
 | 1 | Preparation | Add canonical blocks & config | All key files reference URL |
@@ -123,6 +126,7 @@ Example invocation:
 ---
 
 ## 8. Risk & Mitigation
+
 | Risk | Impact | Mitigation |
 |------|--------|-----------|
 | Link rot / repo rename | Breaks all references | Keep redirect stub repo or GitHub rename redirect; version badges still work |
@@ -134,6 +138,7 @@ Example invocation:
 ---
 
 ## 9. Semantic Versioning Policy
+
 | Increment | Trigger | Examples |
 |----------|---------|----------|
 | PATCH (x.y.Z) | Typos, non-functional doc updates | v6.1.1 |
@@ -171,6 +176,7 @@ Verification script marks overrides as INFO (not WARN) when rationale present.
 ---
 
 ## 12. AI Assistant Integration Notes
+
 | Assistant | Benefit of Canonical Reference | Action |
 |-----------|-------------------------------|--------|
 | Copilot | Faster resolution of main protocol context | Add link in `.github/copilot-instructions.md` |
@@ -181,6 +187,7 @@ Verification script marks overrides as INFO (not WARN) when rationale present.
 ---
 
 ## 13. Success Metrics (Post-Adoption)
+
 | Metric | Target | Measurement Method |
 |--------|--------|--------------------|
 | Downstream alignment rate | ≥ 90% within 30 days | Verification script reports |

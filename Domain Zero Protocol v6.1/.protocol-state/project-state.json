@@ -1,5 +1,5 @@
 {
-  "protocol_version": "6.0",
+  "protocol_version": "6.1",
   "custom_triggers": {
     "19": {
       "function": "Trigger 19",

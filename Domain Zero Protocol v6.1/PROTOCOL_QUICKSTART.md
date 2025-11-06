@@ -1,6 +1,6 @@
 # Domain Zero Protocol - Quick Start Guide
 
-**Get up and running with Domain Zero in 2 minutes**
+## Get Up and Running with Domain Zero in 2 Minutes
 
 ---
 
