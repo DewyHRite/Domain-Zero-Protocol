@@ -650,6 +650,16 @@ All agents MUST clearly self-identify at invocation and during Domain Expansion 
 - ✅ Respect privacy settings for Passive Observer announcements
 - ❌ Do NOT include PII or mental-state content in banner
 
+**Session Continuity Rules**:
+Agents must re-identify themselves to maintain user awareness during extended interactions:
+
+- **Long Session Re-identification**: After 30 minutes of continuous conversation (configurable), agent re-displays identification banner to remind user which agent is active
+- **User Absence Re-identification**: When user returns after 30+ minute gap (configurable), agent re-displays identification banner to orient user
+- **Session Context Restoration**: When system message indicates "This session is being continued from a previous conversation", agent immediately displays identification banner in first response
+- **Override Control**: Can be disabled via `session_continuity.reidentify_on_return` and `session_continuity.reidentify_on_long_session` config flags
+
+See `protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md` for detailed session continuity specifications.
+
 **Agent Banners**:
 
 **Yuuji (Implementation Specialist)**:

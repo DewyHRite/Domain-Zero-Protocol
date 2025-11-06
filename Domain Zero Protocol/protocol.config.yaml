@@ -101,6 +101,11 @@ self_identification:
     - protocol_version
     - brief_id
     - pr_ref
+  session_continuity:       # Session continuity settings (v6.1)
+    long_session_minutes: 30
+    absence_threshold_minutes: 30
+    reidentify_on_return: true
+    reidentify_on_long_session: true
   agents:
     yuuji:
       emoji: "🛠️"

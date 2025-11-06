@@ -26,7 +26,11 @@ Outcomes: predictable agent start cues, consistent UX, reduced context confusion
 ## 3) Contract (tiny and explicit)
 - When to emit
   - On agent invocation and on Domain Expansion activation (configurable to one/both).
-  - Debounced: at most once per “session thread” or after a material context shift (tier change, role handoff, explicit domain activation).
+  - Debounced: at most once per "session thread" or after a material context shift (tier change, role handoff, explicit domain activation).
+  - **Session continuity triggers** (see §3.1 for details):
+    - After long_session_minutes of continuous conversation (default: 30 min)
+    - When user returns after absence_threshold_minutes gap (default: 30 min)
+    - On session context restoration (e.g., "This session is being continued...")
 - What to emit
   - Two-line banner:
     - Line 1: [EMOJI] [DOMAIN NAME] ACTIVATED [EMOJI]
@@ -36,6 +40,29 @@ Outcomes: predictable agent start cues, consistent UX, reduced context confusion
   - No PII. No mental-state content in the banner. Passive Observer announcements respect opt-in.
 
 Success criteria: Every invocation/domain activation includes the banner (per debounce rules), content matches template, and configuration gates are respected.
+
+### 3.1) Session Continuity Rules
+To maintain user awareness during extended interactions and prevent confusion when returning after absence:
+
+- **Long Session Re-identification**
+  - Threshold: After `long_session_minutes` of active conversation (default: 30 minutes)
+  - Behavior: Agent re-displays identification banner to remind user which agent is active
+  - Debounce: Once per threshold period (e.g., at 30min, 60min, 90min marks)
+
+- **User Absence Re-identification**
+  - Threshold: Gap of `absence_threshold_minutes` between messages (default: 30 minutes)
+  - Behavior: Agent re-displays identification banner when user returns
+  - Purpose: Orient user who may have forgotten which agent they were working with
+
+- **Session Context Restoration**
+  - Trigger: System message indicating "This session is being continued from a previous conversation"
+  - Behavior: Agent immediately displays identification banner in first response
+  - Purpose: Clear signal of agent identity when context is summarized/restored
+
+- **Override Control**
+  - Config flag: `session_continuity.reidentify_on_return` (default: true)
+  - Config flag: `session_continuity.reidentify_on_long_session` (default: true)
+  - Allows users to disable re-identification if preferred
 
 ---
 
@@ -89,6 +116,11 @@ self_identification:
     - protocol_version
     - brief_id
     - pr_ref
+  session_continuity:       # NEW: Session continuity settings
+    long_session_minutes: 30
+    absence_threshold_minutes: 30
+    reidentify_on_return: true
+    reidentify_on_long_session: true
   agents:
     yuuji:
       emoji: "🛠️"

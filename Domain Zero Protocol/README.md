@@ -787,10 +787,10 @@ Domain Zero is now set up in your project.
 
 **Version**: 6.1
 **Release Date**: November 6, 2025
-**Major Enhancements**: Canonical Source Adoption, Agent Self-Identification Standard
+**Major Enhancements**: Canonical Source Adoption, Agent Self-Identification Standard, Session Continuity
 
 **Version History**:
-- v6.1 - MINOR: Canonical Source Adoption, Agent Self-Identification, AI Memory Integration
+- v6.1 - MINOR: Canonical Source Adoption, Agent Self-Identification, AI Memory Integration, Session Continuity (long sessions & user absence re-identification)
 - v6.0 - MAJOR: Adaptive Workflow Complexity (Tier System)
 - v5.1 - CLAUDE.md Protection System, Backup & Rollback Requirements
 - v5.0 - Mission Control, Passive Observation, Three-Tier Enforcement
