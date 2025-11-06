@@ -9,7 +9,8 @@
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain_Zero_Protocol_DZP"
   version: "v6.1.0"
-  commit: "<PINNED_SHA>"  # Update with specific commit SHA for version pinning
+  commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
+                           # Leave as placeholder if tracking version tag instead
   auto_update:
     enabled: false          # Set true if downstream wants automatic pulls
     strategy: "tag"         # tag | commit | latest
@@ -132,21 +133,22 @@ self_identification:
 # ============================================================================
 ai:
   # Default models for protocol agents
+  # NOTE: Model versions should be verified periodically against provider availability
   default_models:
     - provider: "Anthropic"
-      model: "claude-3-5-sonnet-20241022"
-      scope: "all-clients"      # all-clients, yuuji-only, megumi-only, gojo-only
-      priority: 1               # Lower = higher priority
-
-    - provider: "Anthropic"
       model: "claude-3-5-haiku-20241022"
-      scope: "rapid-tier"       # Use faster model for Tier 1 Rapid
+      scope: "rapid-tier"       # Fast, cost-effective for Tier 1 Rapid
       priority: 2
 
     - provider: "Anthropic"
-      model: "claude-3-5-opus-20241022"
-      scope: "megumi-only"      # High-rigor model for security reviews
-      priority: 1
+      model: "claude-3-5-sonnet-20241022"  # LEGACY: Retired Oct 2025, replace when newer version available
+      scope: "all-clients"      # all-clients, yuuji-only, megumi-only, gojo-only
+      priority: 3               # Lower priority due to legacy status
+
+    - provider: "Anthropic"
+      model: "claude-opus-4-20250514"      # High-rigor model for security reviews (Tier 3)
+      scope: "megumi-only"
+      priority: 1                          # Highest priority for security work
 
     # - provider: "OpenAI"
     #   model: "gpt-4o-mini"
