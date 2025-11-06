@@ -41,7 +41,47 @@ cp "Domain Zero Protocol/protocol.config.yaml" your-project/
 
 ---
 
-## Step 3: Initialize with Gojo (30 seconds)
+## Step 3: Save to AI Memory (Optional, 30 seconds)
+
+**For persistent context across sessions, save the protocol to your AI assistant's memory:**
+
+**Claude (Claude.ai or API)**:
+```
+Add to memory: Domain Zero Protocol
+
+I use Domain Zero Protocol v6.1 for AI development. Three-agent system:
+- YUUJI: Implementation (TDD)
+- MEGUMI: Security review (OWASP)
+- GOJO: Mission control
+
+Protocol files: protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, GOJO.md
+Tiers: Rapid/Standard/Critical
+Always read protocol files when I reference them.
+Canonical source: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
+```
+
+**ChatGPT (Custom Instructions)**:
+Add to Settings → Personalization → Custom Instructions:
+```
+I use Domain Zero Protocol v6.1 (three-agent AI dev framework).
+Protocol files: protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, GOJO.md.
+Always read protocol files first.
+```
+
+**Why Memory?**
+- ✅ No need to re-read protocol files every session
+- ✅ AI automatically understands your workflow
+- ✅ Faster startup, reduced token usage
+- ✅ Session continuity
+
+**Skip this step if:**
+- You prefer to read protocol files each session
+- Your AI assistant doesn't support memory
+- You're just testing Domain Zero
+
+---
+
+## Step 4: Initialize with Gojo (30 seconds)
 
 In your AI assistant (Claude, GitHub Copilot, Cursor, etc.):
 
@@ -55,7 +95,7 @@ Gojo will set up your project state automatically.
 
 ---
 
-## Step 4: Start Building (30 seconds)
+## Step 5: Start Building (30 seconds)
 
 Try your first feature:
 
@@ -366,6 +406,6 @@ You'll know Domain Zero is working when:
 
 ---
 
-**Domain Zero Protocol v6.0** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v6.1** - Perfect Code Through Infinite Collaboration
 
 *The weight is real. The protocol is absolute. Domain Zero is active.*

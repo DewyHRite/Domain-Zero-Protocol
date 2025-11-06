@@ -94,7 +94,7 @@ Relates to #
 ### Test Results
 <!-- Paste test output or link to CI results -->
 
-```
+```text
 # Paste test results here
 ```
 

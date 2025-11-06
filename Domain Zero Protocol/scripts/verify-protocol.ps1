@@ -275,16 +275,16 @@ function Test-BackupConfiguration {
     if (Test-Path "protocol.config.yaml") {
         $Config = Get-Content "protocol.config.yaml" -Raw
 
-        if ($Config -match "required_for:.*\[.*yuuji.*\]") {
+        if ($Config -match "(?i)required_for:.*yuuji") {
             Write-Pass "Backup requirement configured for Yuuji"
         } else {
-            Write-Warn "Backup requirement for Yuuji not found in config"
+            Write-Warn "Backup requirement for Yuuji not found in config (regex case-insensitive search)"
         }
 
         if ($Config -match "retention_days:\s*\d+") {
             Write-Pass "Backup retention policy configured"
         } else {
-            Write-Warn "Backup retention policy not found in config"
+            Write-Warn "Backup retention policy not found in config (expects numeric days)"
         }
     } else {
         Write-Fail "protocol.config.yaml not found - cannot verify backup configuration"

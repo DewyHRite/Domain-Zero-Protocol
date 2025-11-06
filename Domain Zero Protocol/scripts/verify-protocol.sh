@@ -299,13 +299,13 @@ test_backup_configuration() {
     local config_content
     config_content=$(cat "protocol.config.yaml")
 
-    if echo "$config_content" | grep -q "required_for:.*\[.*yuuji.*\]"; then
+    if echo "$config_content" | grep -qi "required_for:.*yuuji"; then
         write_pass "Backup requirement configured for Yuuji"
     else
         write_warn "Backup requirement for Yuuji not found in config"
     fi
 
-    if echo "$config_content" | grep -q "retention_days:\s*[0-9]"; then
+    if echo "$config_content" | grep -q "retention_days:\s*[0-9]\+"; then
         write_pass "Backup retention policy configured"
     else
         write_warn "Backup retention policy not found in config"

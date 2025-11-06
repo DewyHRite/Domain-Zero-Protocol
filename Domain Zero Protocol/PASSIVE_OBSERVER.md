@@ -189,7 +189,7 @@ Edit `.protocol-state/project-state.json`:
 ### Step 3: Invoke Gojo to Activate
 
 In your AI assistant:
-```
+```text
 Read protocol/GOJO.md
 ```
 
@@ -198,7 +198,7 @@ Gojo will detect Passive Observer is enabled and begin monitoring.
 ### Step 4: Test with Trigger 19
 
 After a few work sessions, request an intelligence report:
-```
+```text
 Read protocol/GOJO.md - Trigger 19
 ```
 

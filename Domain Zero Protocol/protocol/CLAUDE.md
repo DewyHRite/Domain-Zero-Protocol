@@ -1,10 +1,20 @@
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v6.0
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v6.1
 ## Main Protocol File - Domain Zero
 
-**Version**: 6.0
+**Version**: 6.1
 **Status**: Production-Ready
-**Last Updated**: 2025-11-05
-**Major Enhancement**: Adaptive Workflow Complexity (Tier System)
+**Last Updated**: 2025-11-06
+**Major Enhancements**: Adaptive Workflow Complexity (Tier System), Canonical Source, Self-Identification
+
+---
+
+## 📍 CANONICAL SOURCE
+
+> **Canonical Source**: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
+> **Current Local Protocol Version**: v6.0
+> **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
+
+This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
 
 ---
 
@@ -542,7 +552,7 @@ The protection system is enforced through Git-native tools and team processes. C
 **Level 1: CODEOWNERS (Recommended for all teams)**
 1. Create or update `CODEOWNERS` file in repository root
 2. Add protection rules:
-   ```
+  ```gitignore
    protocol/CLAUDE.md @repo-admins
    protocol/*.md @repo-admins
    ```
@@ -621,7 +631,50 @@ All protocol modifications are logged in `protocol/GOJO-UPDATES-PATCH.md` with:
 
 ---
 
-### 6. Backup and Rollback Requirements
+### 6. Agent Self-Identification
+
+**Purpose**: Ensure clear agent identification at invocation and Domain Expansion for clarity, auditability, and improved user experience.
+
+All agents MUST clearly self-identify at invocation and during Domain Expansion using the standard two-line banner. The banner must respect debounce and privacy settings and must not include PII or mental-state content.
+
+**Standard Format**:
+```text
+[EMOJI] [DOMAIN NAME] ACTIVATED [EMOJI]
+"[Domain Subtitle]"
+```
+
+**Requirements**:
+- ✅ Emit banner on invocation and/or Domain Expansion (per config)
+- ✅ Follow debounce rules (at most once per session thread)
+- ✅ Keep concise and readable without emojis
+- ✅ Respect privacy settings for Passive Observer announcements
+- ❌ Do NOT include PII or mental-state content in banner
+
+**Agent Banners**:
+
+**Yuuji (Implementation Specialist)**:
+```text
+🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️
+"Test-Driven Delivery, Rapid Iteration"
+```
+
+**Megumi (Security Analyst)**:
+```text
+🛡️ SECURITY DOMAIN ACTIVATED 🛡️
+"Threat Modeling First, OWASP-Aligned Controls"
+```
+
+**Gojo (Mission Control)**:
+```text
+🌀 MISSION CONTROL DOMAIN ACTIVATED 🌀
+"Orchestration, Review, and Passive Observation"
+```
+
+**Configuration**: Self-identification behavior is controlled via `protocol.config.yaml` under the `self_identification` section. See configuration file for debounce, metadata, and privacy options.
+
+---
+
+### 7. Backup and Rollback Requirements
 
 **Purpose**: Ensure all code changes can be safely reverted and project integrity is maintained.
 
@@ -951,12 +1004,13 @@ The system is optimized to stay within Claude's context limits.
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 6.0
-**Protocol Version**: 6.0
-**Release Date**: November 5, 2025
-**Last Updated**: 2025-11-05
+**Current Version**: 6.1
+**Protocol Version**: 6.1
+**Release Date**: November 6, 2025
+**Last Updated**: 2025-11-06
 
 **Version History**:
+- v6.1 - **MINOR**: Canonical Source Adoption, Agent Self-Identification Standard
 - v6.0 - **MAJOR**: Adaptive Workflow Complexity (Tier System: Rapid/Standard/Critical)
 - v5.1 - CLAUDE.md Protection System, Backup & Rollback Requirements added
 - v5.0 - Mission Control, Passive Observation, Three-Tier Enforcement
@@ -974,6 +1028,9 @@ The system is optimized to stay within Claude's context limits.
 - **YUUJI.md** - Implementation agent detailed specifications
 - **MEGUMI.md** - Security agent detailed specifications
 - **GOJO.md** - Mission Control detailed specifications
+- **MODE_INDICATORS.md** - Agent mode display and identification systems
+- **AGENT_SELF_IDENTIFICATION_STANDARD.md** - Self-identification banner specification
+- **CANONICAL_SOURCE_ADOPTION.md** - Canonical source strategy and adoption guide
 
 **Support**:
 - Review PSD for comprehensive system details

@@ -1,7 +1,19 @@
 # Domain Zero Protocol Configuration
-# Version: 6.0
+# Version: 6.1
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
+
+# ============================================================================
+# CANONICAL REPOSITORY (Source of Truth)
+# ============================================================================
+canonical_repository:
+  url: "https://github.com/DewyHRite/Domain_Zero_Protocol_DZP"
+  version: "v6.1.0"
+  commit: "<PINNED_SHA>"  # Update with specific commit SHA for version pinning
+  auto_update:
+    enabled: false          # Set true if downstream wants automatic pulls
+    strategy: "tag"         # tag | commit | latest
+    check_on_verify: true   # Verification script warns on mismatch
 
 # ============================================================================
 # USER & PROJECT INFORMATION
@@ -75,6 +87,41 @@ enforcement:
     verify_config_completeness: true
 
 # ============================================================================
+# AGENT SELF-IDENTIFICATION
+# ============================================================================
+self_identification:
+  enabled: true
+  announce_on: both         # invocation | domain_expansion | both
+  debounce_seconds: 900     # 15 minutes (prevent spam on repeated calls)
+  include_emoji: true
+  include_subtitle: true
+  include_metadata: false   # Set to true to show tier, protocol version, etc.
+  metadata_fields:          # Used if include_metadata = true
+    - tier
+    - protocol_version
+    - brief_id
+    - pr_ref
+  agents:
+    yuuji:
+      emoji: "🛠️"
+      domain_name: "IMPLEMENTATION DOMAIN"
+      subtitle: "Test-Driven Delivery, Rapid Iteration"
+    megumi:
+      emoji: "🛡️"
+      domain_name: "SECURITY DOMAIN"
+      subtitle: "Threat Modeling First, OWASP-Aligned Controls"
+    gojo:
+      emoji: "🌀"
+      domain_name: "MISSION CONTROL DOMAIN"
+      subtitle: "Orchestration, Review, and Passive Observation"
+    nobara:
+      emoji: "🎯"
+      domain_name: "CREATIVE STRATEGY DOMAIN"
+      subtitle: "User Insight, Narrative, and Delight"
+  privacy:
+    passive_observer_announcements: opt_in_only  # Respect privacy settings
+
+# ============================================================================
 # AI MODEL CONFIGURATION
 # ============================================================================
 ai:
@@ -89,6 +136,11 @@ ai:
       model: "claude-3-5-haiku-20241022"
       scope: "rapid-tier"       # Use faster model for Tier 1 Rapid
       priority: 2
+
+    - provider: "Anthropic"
+      model: "claude-3-5-opus-20241022"
+      scope: "megumi-only"      # High-rigor model for security reviews
+      priority: 1
 
     # - provider: "OpenAI"
     #   model: "gpt-4o-mini"
@@ -275,9 +327,9 @@ protocol_packs:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "6.0"
-  config_version: "1.0"
-  last_updated: "2025-11-05"
+  protocol_version: "6.1"
+  config_version: "1.1"
+  last_updated: "2025-11-06"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

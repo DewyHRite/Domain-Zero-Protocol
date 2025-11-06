@@ -91,7 +91,7 @@ jobs:
     name: Container Image Scanning
     runs-on: ubuntu-latest
     # Only run if Dockerfile exists
-    if: hashFiles('Dockerfile') != ''
+    if: ${{ hashFiles('Dockerfile') != '' }}
 
     steps:
       - name: Checkout code
@@ -114,7 +114,7 @@ jobs:
     name: IaC Security Scanning
     runs-on: ubuntu-latest
     # Only run if Terraform/K8s files exist
-    if: hashFiles('**/*.tf', '**/*.yaml', '**/*.yml') != ''
+    if: ${{ hashFiles('**/*.tf', '**/*.yaml', '**/*.yml') != '' }}
 
     steps:
       - name: Checkout code
