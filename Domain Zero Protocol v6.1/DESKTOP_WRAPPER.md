@@ -239,7 +239,7 @@ import path from "path";
 import YAML from "yaml";
 import glob from "glob";
 
-const CONFIG_PATH = "domain_zero/protocol.config.yaml";
+const CONFIG_PATH = "protocol.config.yaml";
 
 async function loadConfig(root) {
   const p = path.join(root, CONFIG_PATH);
@@ -258,8 +258,9 @@ export async function verifyProtocol(root) {
   }
 
   // 2) Isolation: Yuuji/Megumi files must not mention Gojo
-  const yFiles = glob.sync(path.join(root, "domain_zero/**/*yuuji*.md").replace(/\\/g, "/"));
-  const mFiles = glob.sync(path.join(root, "domain_zero/**/*megumi*.md").replace(/\\/g, "/"));
+  const protocolDir = path.join(root, "protocol");
+  const yFiles = glob.sync(path.join(protocolDir, "**/*yuuji*.md").replace(/\\/g, "/"));
+  const mFiles = glob.sync(path.join(protocolDir, "**/*megumi*.md").replace(/\\/g, "/"));
   for (const f of [...yFiles, ...mFiles]) {
     const txt = await fs.readFile(f, "utf8");
     if (/gojo/i.test(txt)) {
@@ -269,9 +270,9 @@ export async function verifyProtocol(root) {
 
   // 3) Workflow bindings present
   try {
-    await fs.access(path.join(root, "domain_zero/bindings/workflow.md"));
+    await fs.access(path.join(root, ".protocol-state/dev-notes.md"));
   } catch {
-    errors.push("Missing domain_zero/bindings/workflow.md");
+    errors.push("Missing .protocol-state/dev-notes.md");
   }
 
   if (errors.length) {
@@ -291,9 +292,9 @@ export async function initQuickstart(root) {
   } catch {
     const content =
       "# Protocol Quick Start\n\n" +
-      "1) Edit domain_zero/protocol.config.yaml (user, project, ai.defaultModels)\n" +
+      "1) Edit protocol.config.yaml (user, project, ai.defaultModels)\n" +
       "2) Run the Verify action from the desktop app\n" +
-      "3) Invoke roles per domain_zero/bindings/workflow.md\n";
+      "3) Invoke roles per protocol/CLAUDE.md guidance\n";
     await fs.writeFile(qs, content, "utf8");
     return "Created PROTOCOL_QUICKSTART.md";
   }

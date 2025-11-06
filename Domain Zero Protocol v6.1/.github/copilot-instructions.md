@@ -13,7 +13,7 @@ This project uses the **Domain Zero Protocol** for AI-assisted development.
 ## Protocol Entry Points
 
 ### Canonical Source of Truth
-**[`protocol/CLAUDE.md`](../protocol/CLAUDE.md)** - Main protocol specification (v6.0)
+**[`protocol/CLAUDE.md`](../protocol/CLAUDE.md)** - Main protocol specification (v6.1)
 
 ### Central Configuration
 **[`protocol.config.yaml`](../protocol.config.yaml)** - All project parameters and settings
@@ -268,9 +268,9 @@ Read protocol/GOJO.md - Trigger 19
 
 ## Version Information
 
-**Protocol Version**: 6.0
-**Release Date**: November 5, 2025
-**Major Enhancement**: Adaptive Workflow Complexity (Tier System)
+**Protocol Version**: 6.1
+**Release Date**: November 6, 2025
+**Major Enhancement**: v6.1 Remediation (Canonical Source, Four-Agent Model, Self-ID)
 
 ---
 
