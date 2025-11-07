@@ -3,14 +3,14 @@
 **Branch**: `protocol-v6.1-no-desktop`
 **Commits**: 7 (including remediation fixes)
 **Base**: `main`
-**Protocol Version**: v6.1.0
+**Protocol Version**: v6.2.1
 **Release Date**: 2025-11-06
 
 ---
 
 ## Executive Summary
 
-Domain Zero Protocol v6.1 introduces comprehensive enhancements to agent self-identification, canonical source adoption, privacy-first passive observation, and protocol integrity enforcement. This release establishes a mature, auditable, and enterprise-ready collaborative AI framework while maintaining zero breaking changes for existing implementations.
+Domain Zero Protocol v6.2.1 introduces comprehensive enhancements to agent self-identification, canonical source adoption, privacy-first passive observation, and protocol integrity enforcement. This release establishes a mature, auditable, and enterprise-ready collaborative AI framework while maintaining zero breaking changes for existing implementations.
 
 ---
 
@@ -80,7 +80,7 @@ Domain Zero Protocol v6.1 introduces comprehensive enhancements to agent self-id
 ## Modified Files (Selected)
 
 ### Core Protocol
-- `protocol/CLAUDE.md` - Version v6.1, canonical source block, self-identification principles, protection implementation
+- `protocol/CLAUDE.md` - Version: 6.2.1, canonical source block, self-identification principles, protection implementation
 - `protocol/YUUJI.md` - Self-identification banner, session continuity rules
 - `protocol/MEGUMI.md` - Self-identification banner, tooling integration expansion
 - `protocol/GOJO.md` - Privacy consent framework, passive observer OFF by default

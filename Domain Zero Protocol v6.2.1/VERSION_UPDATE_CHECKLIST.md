@@ -12,15 +12,15 @@ When releasing a new version (e.g., v6.1 → v6.2), update the following files:
 
 ### 1. Folder Name
 **Location**: Repository root
-**Current**: `Domain Zero Protocol v6.1`
+**Current**: `Domain Zero Protocol v6.2.1`
 **Action**: Rename folder to match new version
 ```bash
-git mv "Domain Zero Protocol v6.1" "Domain Zero Protocol v6.2"
+git mv "Domain Zero Protocol v6.2.1" "Domain Zero Protocol v6.2"
 ```
 
 ### 2. VERSION File
 **Location**: `Domain Zero Protocol v6.X/VERSION`
-**Current**: `v6.1.0`
+**Current**: `v6.2.1`
 **Format**: `vMAJOR.MINOR.PATCH`
 **Action**: Update single line with new version
 
@@ -93,9 +93,9 @@ git mv "Domain Zero Protocol v6.1" "Domain Zero Protocol v6.2"
 - **PATCH** (0): Bug fixes, documentation updates, minor corrections
 
 ### Examples:
-- `v6.1.0` → `v6.1.1`: Bug fix or documentation update
-- `v6.1.0` → `v6.2.0`: New agent added, new features, enhanced workflow
-- `v6.1.0` → `v7.0.0`: Breaking changes to protocol structure
+- `v6.2.1` → `v6.1.1`: Bug fix or documentation update
+- `v6.2.1` → `v6.2.0`: New agent added, new features, enhanced workflow
+- `v6.2.1` → `v7.0.0`: Breaking changes to protocol structure
 
 ---
 
@@ -111,7 +111,7 @@ OLD_VERSION=$1
 NEW_VERSION=$2
 
 if [ -z "$OLD_VERSION" ] || [ -z "$NEW_VERSION" ]; then
-    echo "Usage: ./update-version.sh v6.1.0 v6.2.0"
+    echo "Usage: ./update-version.sh v6.2.1 v6.2.0"
     exit 1
 fi
 

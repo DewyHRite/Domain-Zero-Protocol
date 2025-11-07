@@ -389,7 +389,7 @@ System integrity. Project success. Protocol compliance. CLAUDE.md protection. Ag
 
 ---
 
-## 🎯 TIER SYSTEM BRIEFING (v6.0 Enhancement)
+## 🎯 TIER SYSTEM BRIEFING (v6.0+, Carried Forward)
 
 ### My New Responsibility: Tier Guidance
 
@@ -835,7 +835,7 @@ I present this interface:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║                    MISSION CONTROL v5.1                       ║
+║                    MISSION CONTROL v6.2.1                       ║
 ║              SATORU GOJO - PROTOCOL GUARDIAN                  ║
 ║                                                               ║
 ║              🌀 DOMAIN EXPANSION ACTIVATED 🌀                 ║
@@ -1030,7 +1030,7 @@ Before initializing, I customize the template state files:
 **Step 4: Initialize project-state.json**
 ```json
 {
-  "protocol_version": "5.1",
+  "protocol_version": "6.2.1",
   "custom_triggers": {
     "19": { ... },
     "protect": { ... }

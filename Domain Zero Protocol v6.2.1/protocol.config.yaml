@@ -190,17 +190,17 @@ ai:
   # NOTE: Model versions should be verified periodically against provider availability
   default_models:
     - provider: "Anthropic"
-      model: "claude-3-5-haiku-20241022"
+      model: "claude-haiku-4-5-20251001"
       scope: "rapid-tier"       # Fast, cost-effective for Tier 1 Rapid
       priority: 2
 
     - provider: "Anthropic"
-      model: "claude-3-5-sonnet-20241022"  # LEGACY: Retired Oct 2025, replace when newer version available
+      model: "claude-sonnet-4-5-20250929"  # LEGACY: Retired Oct 2025, replace when newer version available
       scope: "all-clients"      # all-clients, yuuji-only, megumi-only, gojo-only
       priority: 3               # Lower priority due to legacy status
 
     - provider: "Anthropic"
-      model: "claude-opus-4-20250514"      # High-rigor model for security reviews (Tier 3)
+      model: "claude-opus-4-1-20250805"      # High-rigor model for security reviews (Tier 3)
       scope: "megumi-only"
       priority: 1                          # Highest priority for security work
 
@@ -212,7 +212,7 @@ ai:
   # Multi-model security review (Tier 3 Critical)
   multi_model_review:
     enabled: true
-    models: ["claude-3-5-sonnet-20241022", "claude-3-5-opus-20241022"]
+    models: ["claude-sonnet-4-5-20250929", "claude-opus-4-1-20250805"]
 
   # Model behavior overrides
   behavior:

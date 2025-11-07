@@ -34,7 +34,7 @@ Adopting a single canonical public repository for the Domain Zero Protocol ("DZP
 ### 3.1 Canonical Block (Add to `protocol/CLAUDE.md` header)
 ```markdown
 > Canonical Source: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP  
-> Current Local Protocol Version: v6.1.0  
+> Current Local Protocol Version: v6.2.1  
 > Pinned Commit: <SHA>  
 > Verification: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 ```
@@ -43,7 +43,7 @@ Adopting a single canonical public repository for the Domain Zero Protocol ("DZP
 ```yaml
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain_Zero_Protocol_DZP"
-  version: "v6.1.0"
+  version: "v6.2.1"
   commit: "<PINNED_SHA>"
   auto_update:
     enabled: false          # Set true if downstream wants automatic pulls
@@ -201,7 +201,7 @@ Verification script marks overrides as INFO (not WARN) when rationale present.
 ## 14. Implementation Checklist
 - [ ] Add canonical block to `protocol/CLAUDE.md`
 - [ ] Insert `canonical_repository` section in `protocol.config.yaml`
-- [ ] Create `VERSION` file in canonical repo (initial: v6.1.0)
+- [ ] Create `VERSION` file in canonical repo (initial: v6.2.1)
 - [ ] Add README badge & Canonical Source section
 - [ ] Upgrade verification scripts with version compare
 - [ ] Extend update scripts with `--canonical-sync`

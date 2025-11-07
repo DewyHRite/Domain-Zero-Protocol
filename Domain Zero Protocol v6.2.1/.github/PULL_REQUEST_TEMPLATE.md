@@ -214,6 +214,6 @@ Relates to #
 
 ---
 
-**Domain Zero Protocol v6.1** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v6.2.1** - Perfect Code Through Infinite Collaboration
 
 *The weight is real. The protocol is absolute. Domain Zero is active.*
