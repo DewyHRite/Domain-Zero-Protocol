@@ -37,7 +37,6 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Tuple, Dict, List, Optional
-import shutil
 import argparse
 
 # Fix Windows console encoding
