@@ -63,7 +63,7 @@ Gojo requires you to make a conscious decision about how to proceed:
 **When to choose this**:
 - You've been working for 2+ hours continuously
 - You're feeling fatigued or losing focus
-- It's late evening or night time
+- It's late evening or nighttime
 - You notice quality/concentration declining
 
 **Action checklist**:

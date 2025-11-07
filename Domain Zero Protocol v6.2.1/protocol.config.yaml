@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 6.1
+# Version: 6.2.1
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -195,9 +195,9 @@ ai:
       priority: 2
 
     - provider: "Anthropic"
-      model: "claude-sonnet-4-5-20250929"  # LEGACY: Retired Oct 2025, replace when newer version available
+      model: "claude-sonnet-4-5-20250929"
       scope: "all-clients"      # all-clients, yuuji-only, megumi-only, gojo-only
-      priority: 3               # Lower priority due to legacy status
+      priority: 3
 
     - provider: "Anthropic"
       model: "claude-opus-4-1-20250805"      # High-rigor model for security reviews (Tier 3)

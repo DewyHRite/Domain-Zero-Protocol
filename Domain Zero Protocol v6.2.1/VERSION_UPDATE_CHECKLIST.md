@@ -93,8 +93,8 @@ git mv "Domain Zero Protocol v6.2.1" "Domain Zero Protocol v6.2"
 - **PATCH** (0): Bug fixes, documentation updates, minor corrections
 
 ### Examples:
-- `v6.2.1` → `v6.1.1`: Bug fix or documentation update
-- `v6.2.1` → `v6.2.0`: New agent added, new features, enhanced workflow
+- `v6.2.0` → `v6.2.1`: Bug fix or documentation update
+- `v6.1.0` → `v6.2.0`: New agent added, new features, enhanced workflow
 - `v6.2.1` → `v7.0.0`: Breaking changes to protocol structure
 
 ---
@@ -111,23 +111,23 @@ OLD_VERSION=$1
 NEW_VERSION=$2
 
 if [ -z "$OLD_VERSION" ] || [ -z "$NEW_VERSION" ]; then
-    echo "Usage: ./update-version.sh v6.2.1 v6.2.0"
+    echo "Usage: ./update-version.sh v6.2.0 v6.2.1"
     exit 1
 fi
 
 echo "Updating version from $OLD_VERSION to $NEW_VERSION..."
 
-# Update VERSION file
-echo "$NEW_VERSION" > "Domain Zero Protocol v${NEW_VERSION}/VERSION"
-
 # Update folder name
 git mv "Domain Zero Protocol v${OLD_VERSION}" "Domain Zero Protocol v${NEW_VERSION}"
 
+# Update VERSION file (now the folder exists)
+echo "$NEW_VERSION" > "Domain Zero Protocol v${NEW_VERSION}/VERSION"
+
 # Update protocol.config.yaml
-sed -i "s/version: \"$OLD_VERSION\"/version: \"$NEW_VERSION\"/" protocol.config.yaml
+sed -i "s/version: \"$OLD_VERSION\"/version: \"$NEW_VERSION\"/" "Domain Zero Protocol v${NEW_VERSION}/protocol.config.yaml"
 
 # Update CLAUDE.md
-sed -i "s/v${OLD_VERSION}/v${NEW_VERSION}/g" protocol/CLAUDE.md
+sed -i "s/v${OLD_VERSION}/v${NEW_VERSION}/g" "Domain Zero Protocol v${NEW_VERSION}/protocol/CLAUDE.md"
 
 # ... (add more automated replacements)
 

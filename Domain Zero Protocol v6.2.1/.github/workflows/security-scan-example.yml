@@ -175,7 +175,16 @@ jobs:
               IFS=',' read -ra AUTHORIZED_USERS <<< "$PROTOCOL_MAINTAINERS"
             fi
 
-            if [[ ! " ${AUTHORIZED_USERS[@]} " =~ " ${{ github.actor }} " ]]; then
+            ACTOR="${{ github.actor }}"
+            IS_AUTHORIZED=false
+            for USER in "${AUTHORIZED_USERS[@]}"; do
+              if [ "$USER" = "$ACTOR" ]; then
+                IS_AUTHORIZED=true
+                break
+              fi
+            done
+
+            if [ "$IS_AUTHORIZED" = false ]; then
               echo "❌ ERROR: Unauthorized modification of protocol/CLAUDE.md"
               echo "✓ Protocol changes require approval from authorized maintainers"
               exit 1

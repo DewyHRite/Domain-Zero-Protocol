@@ -1,10 +1,10 @@
 # ADAPTIVE WORKFLOW COMPLEXITY - TIER SYSTEM SPECIFICATION
-## Domain Zero v6.0 Enhancement
+## Domain Zero v6.2.1 Enhancement
 
 **Enhancement ID**: ENH-001
 **Priority**: CRITICAL
 **Status**: IMPLEMENTATION IN PROGRESS
-**Version**: 6.0.0
+**Version**: 6.2.1
 **Date**: 2025-11-05
 
 ---
@@ -441,6 +441,6 @@ Rollback Dependencies: payment-service, database
 
 **END OF TIER SYSTEM SPECIFICATION**
 
-**Version**: 6.0.0
+**Version**: 6.2.1
 **Status**: Ready for Implementation
 **Next Action**: Update protocol files with tier system

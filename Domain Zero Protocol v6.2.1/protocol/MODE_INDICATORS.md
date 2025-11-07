@@ -181,7 +181,7 @@ For environments where emoji display is inconsistent or inaccessible:
 ## Version Information
 
 **Document Version**: 1.0
-**Protocol Version**: 6.1
+**Protocol Version: 6.2.1
 **Last Updated**: 2025-11-06
 **Status**: Active
 

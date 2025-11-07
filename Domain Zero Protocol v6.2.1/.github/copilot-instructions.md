@@ -268,7 +268,7 @@ Read protocol/GOJO.md - Trigger 19
 
 ## Version Information
 
-**Protocol Version**: 6.1
+**Protocol Version: 6.2.1
 **Release Date**: November 6, 2025
 **Major Enhancement**: v6.1 Remediation (Canonical Source, Four-Agent Model, Self-ID)
 

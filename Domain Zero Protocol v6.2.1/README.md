@@ -803,7 +803,7 @@ Domain Zero is now set up in your project.
 
 ## 📝 Version Information
 
-**Version**: 6.1
+**Version**: 6.2.1
 **Release Date**: November 6, 2025
 **Major Enhancements**: Canonical Source Adoption, Agent Self-Identification Standard, Session Continuity
 

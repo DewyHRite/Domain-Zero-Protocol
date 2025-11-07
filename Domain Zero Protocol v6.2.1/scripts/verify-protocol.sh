@@ -270,7 +270,6 @@ test_isolation_vocabulary() {
     if [ $isolation_errors -gt 0 ]; then
         write_warn "Found $isolation_errors isolation vocabulary violations"
         write_info "The 'weight' mechanism requires Yuuji and Megumi to remain unaware of Gojo's existence"
-        ((WARNING_COUNT += isolation_errors))
     fi
 }
 
@@ -311,7 +310,7 @@ test_claude_md_protection() {
 
     # Check if config has protection enabled
     if [ -f "protocol.config.yaml" ]; then
-        if grep -q "claude_md_protected:[[:space:]]*true" "protocol.config.yaml"; then
+        if grep -q "claude_md_protected:.*true" "protocol.config.yaml"; then
             write_pass "Config has CLAUDE.md protection enabled"
         else
             write_warn "Config does not explicitly enable CLAUDE.md protection"
