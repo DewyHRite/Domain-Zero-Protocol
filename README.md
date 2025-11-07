@@ -24,6 +24,8 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 - [Success Criteria](#-success-criteria)
 - [Documentation](#-documentation)
 - [Getting Help](#-getting-help)
+- [Troubleshooting](#-troubleshooting) ⭐ NEW
+- [Important Notes](#-important-notes)
 - [License](#-license)
 
 ---
@@ -757,6 +759,304 @@ Within Domain Zero, the goal is always **ZERO**:
 
 **"What's Trigger 19?"**
 → Intelligence report from Gojo's passive observations: "Read protocol/GOJO.md - Trigger 19"
+
+---
+
+## 🔧 Troubleshooting
+
+### Configuration Issues
+
+**Problem: Verification script fails with "placeholder values detected"**
+
+```
+[FAIL] Configuration contains placeholder values that must be updated:
+      [X] Your Name
+      [X] email@example.com
+```
+
+**Solution:**
+1. Open `protocol.config.yaml` in your editor
+2. Replace all placeholder values with your actual information:
+   ```yaml
+   user:
+     name: "John Smith"              # Your actual name
+     contact: "john@example.com"     # Your actual email
+     organization: "Acme Corp"       # Your organization
+
+   project:
+     name: "My Project"              # Your project name
+     repo: "https://github.com/user/repo"  # Your repo URL
+     created: "2025-11-07T12:00:00Z"      # ISO 8601 timestamp
+   ```
+3. Run verification script again
+
+---
+
+**Problem: "CODEOWNERS file not found"**
+
+**Solution:**
+- If using GitHub: Create `CODEOWNERS` file in repository root (see `scripts/verify-protocol.sh` for template)
+- If not using GitHub: This is optional - warning can be safely ignored
+- Template:
+  ```
+  protocol/CLAUDE.md @YourGitHubUsername
+  protocol/*.md @YourGitHubUsername
+  protocol.config.yaml @YourGitHubUsername
+  ```
+
+---
+
+### Agent Behavior Issues
+
+**Problem: Agent doesn't recognize protocol files**
+
+**Symptoms:**
+- Agent asks "What is Domain Zero?"
+- Agent doesn't follow tier system
+- Agent doesn't use proper output format
+
+**Solution:**
+1. Verify protocol files exist in `protocol/` directory
+2. Re-read the protocol: `"Read protocol/CLAUDE.md"`
+3. For persistent sessions, check if AI memory has protocol saved
+4. Verify file paths are correct (use absolute paths if needed)
+
+---
+
+**Problem: Agent skips security review**
+
+**Symptoms:**
+- Yuuji completes implementation but Megumi never appears
+- No `@security-review` tag in output
+
+**Solution:**
+- Check tier setting in conversation (Tier 1 skips security review)
+- Verify MEGUMI.md exists in `protocol/` directory
+- Manually invoke: `"Read protocol/MEGUMI.md - review the changes"`
+- For Tier 2+: Ensure Yuuji's output includes `@security-review` tag
+
+---
+
+**Problem: Gojo doesn't initialize project**
+
+**Symptoms:**
+- No `.protocol-state/` directory created
+- No `project-state.json` generated
+
+**Solution:**
+1. Explicitly request: `"Read protocol/GOJO.md"`
+2. Choose option 2: "New Project Initialization"
+3. Answer all prompts about project configuration
+4. Verify `.protocol-state/` directory was created
+5. Check `project-state.json` contains your project info
+
+---
+
+### Tier System Issues
+
+**Problem: Unsure which tier to use**
+
+**Solution:**
+- Read `protocol/TIER-SELECTION-GUIDE.md` for decision tree
+- Quick rules:
+  - **Tier 1 (Rapid):** Prototypes, experiments, throwaway code
+  - **Tier 2 (Standard):** Production features, bug fixes, refactoring [DEFAULT]
+  - **Tier 3 (Critical):** Authentication, payments, sensitive data, security
+
+---
+
+**Problem: Want to change tier mid-workflow**
+
+**Solution:**
+- **Upgrading (Tier 1 → 2 or 2 → 3):** Always allowed
+  - Say: "Upgrade to Tier 3" or "I need security review"
+  - Gojo will backfill missing steps (tests, security review)
+
+- **Downgrading (Tier 3 → 2 or 2 → 1):** Requires justification
+  - Gojo must approve downgrade
+  - Say: "Can we downgrade to Tier 2? This feature isn't security-critical"
+  - Gojo will assess risk and approve/deny
+
+---
+
+### Verification Script Issues
+
+**Problem: Scripts won't run (Permission denied)**
+
+**Unix/Linux/macOS:**
+```bash
+chmod +x scripts/verify-protocol.sh
+./scripts/verify-protocol.sh
+```
+
+**Windows PowerShell:**
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\scripts\verify-protocol.ps1
+```
+
+---
+
+**Problem: "Command not found" error**
+
+**Solution:**
+- Ensure you're in the project root directory
+- Use relative paths: `./scripts/verify-protocol.sh`
+- Or absolute paths: `/full/path/to/scripts/verify-protocol.sh`
+
+---
+
+**Problem: Unicode symbols display incorrectly (PowerShell)**
+
+**Fixed in v6.2.4:** PowerShell script now uses ASCII symbols `[PASS]`, `[WARN]`, `[FAIL]` instead of Unicode.
+
+**For older versions:**
+```powershell
+# Set console to UTF-8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+```
+
+---
+
+### Git & GitHub Issues
+
+**Problem: trigger-19.md accidentally committed**
+
+**Solution:**
+1. Verify `.gitignore` exists and contains:
+   ```
+   .protocol-state/trigger-19.md
+   ```
+2. Remove from git history:
+   ```bash
+   git rm --cached .protocol-state/trigger-19.md
+   git commit -m "Remove trigger-19.md from tracking"
+   ```
+3. Add to `.gitignore` if not already present
+
+---
+
+**Problem: CODEOWNERS not enforcing reviews**
+
+**Solution:**
+1. Verify `CODEOWNERS` file exists in repository root
+2. Enable branch protection in GitHub:
+   - Settings → Branches → Add rule for `main`
+   - Check "Require pull request reviews before merging"
+   - Check "Require review from Code Owners"
+3. Ensure usernames in CODEOWNERS are correct (with `@` prefix)
+
+---
+
+### Integration Issues
+
+**Problem: AI assistant doesn't remember protocol between sessions**
+
+**Solution:**
+1. **Use AI Memory (Recommended):**
+   - Claude: Add to memory via Settings or "Add to memory" command
+   - ChatGPT: Add to Custom Instructions
+   - Template: See `PROTOCOL_QUICKSTART.md` Step 3
+
+2. **Manual Re-read:**
+   - Start each session: `"Read protocol/CLAUDE.md"`
+   - This works but increases token usage
+
+---
+
+**Problem: GitHub Copilot not following protocol**
+
+**Solution:**
+1. Verify `.github/copilot-instructions.md` exists
+2. Copilot reads this automatically in GitHub Codespaces
+3. For VS Code: Restart editor after adding file
+4. Copilot works best for code completion, not workflow management
+5. Consider using Claude or ChatGPT for workflow orchestration
+
+---
+
+### Performance Issues
+
+**Problem: Tier 2/3 workflows take too long**
+
+**Optimization Strategies:**
+1. **Batch small changes:** Group minor fixes into one Tier 2 session
+2. **Use Tier 1 for prototypes:** Don't over-engineer experiments
+3. **Parallelize reviews:** Run linters/tests while waiting for AI responses
+4. **Prepare context:** Have requirements ready before starting workflow
+5. **Consider async:** For non-urgent features, let agents work while you do other tasks
+
+---
+
+**Problem: Too many tokens used**
+
+**Cost Reduction Tips:**
+1. **Use AI Memory:** Avoids re-reading protocol files every session
+2. **Be specific:** Clear requirements reduce back-and-forth
+3. **Leverage Quick Start:** Use `PROTOCOL_QUICKSTART.md` for common tasks
+4. **Archive old sessions:** Don't carry unnecessary context
+5. **Use cheaper models:** Tier 1 can use faster/cheaper AI models
+
+---
+
+### Common Error Messages
+
+**Error: "Protocol violation - unauthorized CLAUDE.md modification"**
+
+**Cause:** Yuuji or Megumi tried to modify CLAUDE.md directly
+
+**Solution:**
+- Only YOU and GOJO (with authorization) can modify CLAUDE.md
+- If you want protocol changes, edit CLAUDE.md manually
+- Agents will re-read automatically
+
+---
+
+**Error: "Missing required output tag: @security-review"**
+
+**Cause:** Yuuji completed Tier 2+ implementation without tagging for security review
+
+**Solution:**
+1. Ask Yuuji: "Please add @security-review tag to your output"
+2. Then invoke Megumi manually: `"Read protocol/MEGUMI.md - review changes"`
+
+---
+
+**Error: "Backup verification failed"**
+
+**Cause:** No backup created before code changes (protocol requirement)
+
+**Solution:**
+1. Create backup immediately:
+   ```bash
+   git add .
+   git commit -m "Backup before implementing feature X"
+   ```
+2. Or use git stash:
+   ```bash
+   git stash save "Backup before feature X"
+   ```
+3. Document in `dev-notes.md`
+
+---
+
+### Still Need Help?
+
+**Resources:**
+- **Quick Start:** See `PROTOCOL_QUICKSTART.md` (2-minute setup)
+- **Verification:** Run `scripts/verify-protocol.sh` or `verify-protocol.ps1`
+- **Security:** See `SECURITY.md` for vulnerability reporting
+- **Examples:** Check `protocol/TIER-SELECTION-GUIDE.md` for workflow examples
+- **Source Code:** https://github.com/DewyHRite/Domain-Zero-Protocol
+
+**Community Support:**
+- GitHub Issues: https://github.com/DewyHRite/Domain-Zero-Protocol/issues
+- Tag questions with `question` label
+
+**Advanced Customization:**
+- All protocol behaviors are configurable in `protocol.config.yaml`
+- Agent prompts are in `protocol/*.md` files (edit freely!)
+- Tier requirements defined in `.protocol-state/tier-system-specification.md`
 
 ---
 
