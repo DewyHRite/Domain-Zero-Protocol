@@ -1,0 +1,31 @@
+# Root-level CODEOWNERS for Domain Zero Protocol repository
+# Ensures GitHub recognizes ownership without relying on versioned subfolders.
+# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global default owner (fallback)
+* @DewyHRite
+
+# Core protocol (must be reviewed by owner)
+protocol/CLAUDE.md @DewyHRite
+protocol/GOJO.md @DewyHRite
+protocol/YUUJI.md @DewyHRite
+protocol/MEGUMI.md @DewyHRite
+protocol/NOBARA.md @DewyHRite
+protocol.config.yaml @DewyHRite
+
+# Integrity & verification scripts
+scripts/verify-protocol.sh @DewyHRite
+scripts/verify-protocol.ps1 @DewyHRite
+
+# Security & CI workflows
+.github/workflows/*.yml @DewyHRite
+
+# Changelog & key meta docs
+CHANGELOG.md @DewyHRite
+SYSTEM_UPDATE_MODE_IMPLEMENTATION.md @DewyHRite
+DZP_COMPREHENSIVE_REVIEW.md @DewyHRite
+DZP_IMPLEMENTATION_ACTION_PLAN.md @DewyHRite
+DZP_REAL_WORLD_USE_CASES.md @DewyHRite
+
+# Prevent accidental modifications to backups
+Domain Zero Protocol Backups/ @DewyHRite

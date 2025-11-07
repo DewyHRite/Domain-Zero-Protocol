@@ -1,0 +1,159 @@
+# Domain Zero Protocol - Privacy & State Management
+# This file ensures sensitive information stays local and never reaches version control
+
+# ============================================================================
+# PRIVATE INTELLIGENCE (NEVER COMMIT)
+# ============================================================================
+
+# Trigger 19 Intelligence - Contains private work session data
+.protocol-state/trigger-19.md
+
+# ============================================================================
+# BACKUPS (KEEP LOCAL ONLY)
+# ============================================================================
+
+# Backup files created by system update or manual saves
+.protocol-state/backups/
+*.backup
+*.backup.*
+*_backup.*
+
+# Versioned folder backups (OLD SYSTEM - keep external)
+Domain Zero Protocol Backups/
+Domain Zero Protocol v*/
+
+# ============================================================================
+# WORK SESSION TRACKING (LOCAL ONLY)
+# ============================================================================
+
+# Work session alert file (local productivity tool)
+WORK_SESSION_ALERT.md
+
+# ============================================================================
+# DEVELOPMENT & INTERNAL FILES (USER-ONLY)
+# ============================================================================
+
+# System update mode implementation (user-only tool, never in releases)
+SYSTEM_UPDATE_MODE_IMPLEMENTATION.md
+
+# Internal development notes and planning
+notes/
+conversion/
+*_INTERNAL.*
+*_ACTIONABLE.md
+*_REMEDIATION.md
+
+# Comprehensive reviews (kept in development, not in releases)
+DZP_COMPREHENSIVE_REVIEW.md
+IMPLEMENTATION_REVIEW.md
+
+# Documentation drafts and session summaries (keep external or in docs/)
+*_DRAFT.md
+*_WIP.md
+SESSION_SUMMARY_*.md
+*_PROGRESS.md
+*_COMPLETE.md
+*_ACTION_PLAN.md
+
+# Apps folder (if experimental/not production)
+apps/
+
+# ============================================================================
+# IDE AND EDITOR FILES
+# ============================================================================
+
+# Claude Code settings (local user configuration)
+.claude/
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs (IntelliJ, PyCharm, etc.)
+.idea/
+*.iml
+*.iws
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ============================================================================
+# OPERATING SYSTEM FILES
+# ============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.Trash-*
+
+# ============================================================================
+# TEMPORARY FILES
+# ============================================================================
+
+*.tmp
+*.temp
+*.log
+*.cache
+
+# ============================================================================
+# LANGUAGE-SPECIFIC (if protocol extends to include code)
+# ============================================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Ruby
+*.gem
+.bundle/
+vendor/bundle/
+
+# Go
+vendor/
+
+# ============================================================================
+# CONFIGURATION OVERRIDES (if using local config pattern)
+# ============================================================================
+
+# Local configuration overrides (if implemented)
+protocol.config.local.yaml
+.env
+.env.local
