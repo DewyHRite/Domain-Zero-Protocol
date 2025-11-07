@@ -1,5 +1,5 @@
 # Canonical Source Adoption & Repository Referencing Strategy
-## Repository: <https://github.com/DewyHRite/Domain_Zero_Protocol_DZP>
+## Repository: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 
 **Date**: 2025-11-06
 **Protocol Version**: v6.2.1.x (Transition from distributed copies to canonical reference)
@@ -33,16 +33,16 @@ Adopting a single canonical public repository for the Domain Zero Protocol ("DZP
 ## 3. Repository Referencing Pattern
 ### 3.1 Canonical Block (Add to `protocol/CLAUDE.md` header)
 ```markdown
-> Canonical Source: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP  
-> Current Local Protocol Version: v6.2.1  
-> Pinned Commit: <SHA>  
+> Canonical Source: https://github.com/DewyHRite/Domain-Zero-Protocol
+> Current Local Protocol Version: v6.2.1
+> Pinned Commit: <SHA>
 > Verification: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 ```
 
 ### 3.2 Config Injection (`protocol.config.yaml`)
 ```yaml
 canonical_repository:
-  url: "https://github.com/DewyHRite/Domain_Zero_Protocol_DZP"
+  url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
   version: "v6.2.1"
   commit: "<PINNED_SHA>"
   auto_update:
@@ -53,7 +53,7 @@ canonical_repository:
 
 ### 3.3 README Badge
 ```markdown
-[![Canonical Protocol](https://img.shields.io/badge/Protocol-Domain_Zero_Canonical-blue)](https://github.com/DewyHRite/Domain_Zero_Protocol_DZP)
+[![Canonical Protocol](https://img.shields.io/badge/Protocol-Domain_Zero_Canonical-blue)](https://github.com/DewyHRite/Domain-Zero-Protocol)
 ```
 
 ---
@@ -77,7 +77,7 @@ Add a new step:
 # Pseudocode for verify-protocol.sh
 if [ -f protocol.config.yaml ]; then
   LOCAL_VER=$(yq '.canonical_repository.version' protocol.config.yaml)
-  REMOTE_VER=$(curl -s https://raw.githubusercontent.com/DewyHRite/Domain_Zero_Protocol_DZP/main/VERSION 2>/dev/null || echo "unknown")
+  REMOTE_VER=$(curl -s https://raw.githubusercontent.com/DewyHRite/Domain-Zero-Protocol/main/VERSION 2>/dev/null || echo "unknown")
   if [ "$REMOTE_VER" != "unknown" ] && [ "$LOCAL_VER" != "$REMOTE_VER" ]; then
     write_warn "Canonical version mismatch: local=$LOCAL_VER remote=$REMOTE_VER"
   else
@@ -88,7 +88,7 @@ fi
 PowerShell equivalent:
 ```powershell
 $LocalVer = (Select-String -Path protocol.config.yaml -Pattern 'version:' | ForEach-Object { $_.ToString().Split(':')[1].Trim() })
-$RemoteVer = try { (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/DewyHRite/Domain_Zero_Protocol_DZP/main/VERSION).Content.Trim() } catch { 'unknown' }
+$RemoteVer = try { (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/DewyHRite/Domain-Zero-Protocol/main/VERSION).Content.Trim() } catch { 'unknown' }
 if ($RemoteVer -ne 'unknown' -and $LocalVer -ne $RemoteVer) {
   Write-Warn "Canonical version mismatch: local=$LocalVer remote=$RemoteVer"
 } else {

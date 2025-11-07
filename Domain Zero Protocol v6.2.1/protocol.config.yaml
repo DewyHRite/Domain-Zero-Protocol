@@ -7,7 +7,7 @@
 # CANONICAL REPOSITORY (Source of Truth)
 # ============================================================================
 canonical_repository:
-  url: "https://github.com/DewyHRite/Domain_Zero_Protocol_DZP"
+  url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
   version: "v6.2.1"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead

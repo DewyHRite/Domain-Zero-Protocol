@@ -10,7 +10,7 @@
 
 ## 📍 CANONICAL SOURCE
 
-> **Canonical Source**: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
+> **Canonical Source**: https://github.com/DewyHRite/Domain-Zero-Protocol
 > **Current Local Protocol Version**: v6.2.1
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 

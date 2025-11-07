@@ -111,3 +111,4 @@ This approach works with:
 **Version**: 6.2.1
 **Last Updated**: 2025-11-06
 **Canonical Source**: `protocol/CLAUDE.md` (always refer to this for authoritative protocol)
+**Repository**: https://github.com/DewyHRite/Domain-Zero-Protocol

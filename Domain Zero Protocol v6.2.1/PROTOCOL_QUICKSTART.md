@@ -58,7 +58,7 @@ I use Domain Zero Protocol v6.2.1 for AI development. Four-agent system:
 Protocol files: protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md
 Tiers: Rapid/Standard/Critical
 Always read protocol files when I reference them.
-Canonical source: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
+Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 ```
 
 **ChatGPT (Custom Instructions)**:

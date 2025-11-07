@@ -161,6 +161,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-**Canonical Source**: <https://github.com/DewyHRite/Domain_Zero_Protocol_DZP>
+**Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 **Maintainer**: Protocol Guardians
 **Last Updated**: 2025-11-06

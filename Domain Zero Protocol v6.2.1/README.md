@@ -275,7 +275,7 @@ The protocol uses a three-tier workflow system:
 - Tier 3 (Critical): Enhanced testing + multi-model security review for auth/payments/sensitive data
 
 When I say 'Read protocol/[AGENT].md', always read the file first to follow the protocol.
-The canonical source is: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP"
+The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 ```
 
 **For ChatGPT (Custom Instructions)**:
@@ -290,7 +290,7 @@ I use the Domain Zero Protocol (v6.1) for development projects. This is a four-a
 
 When working on my projects, refer to protocol files at protocol/CLAUDE.md, protocol/YUUJI.md, protocol/MEGUMI.md, protocol/NOBARA.md, and protocol/GOJO.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
 
-Canonical source: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
+Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 ```
 
 **For GitHub Copilot**:
@@ -308,7 +308,7 @@ Canonical source: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
 - ✅ The four agent roles and their specializations
 - ✅ Protocol file locations (protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md)
 - ✅ Tier system overview (Rapid/Standard/Critical)
-- ✅ Canonical source URL (https://github.com/DewyHRite/Domain_Zero_Protocol_DZP)
+- ✅ Canonical source URL (https://github.com/DewyHRite/Domain-Zero-Protocol)
 - ✅ Key principles: test-first development, OWASP security review, zero-defect philosophy
 
 **Benefits of Memory Integration**:
