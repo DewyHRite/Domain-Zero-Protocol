@@ -33,8 +33,17 @@ WORK_SESSION_ALERT.md
 # DEVELOPMENT & INTERNAL FILES (USER-ONLY)
 # ============================================================================
 
+# ============================================================================
+# INTERNAL DOCUMENTS (NEVER PUSH TO GITHUB)
+# ============================================================================
+
 # System update mode implementation (user-only tool, never in releases)
 SYSTEM_UPDATE_MODE_IMPLEMENTATION.md
+SYSTEM_UPDATE_MODE_REVIEW.md
+SYSTEM_UPDATE_V2_IMPLEMENTATION.md
+SYSTEM_UPDATE_TEST_REPORT.md
+SYSTEM_UPDATE_COMPLETE.md
+VERSION_MANAGEMENT_GUIDE.md
 
 # Internal development notes and planning
 notes/
@@ -45,7 +54,12 @@ conversion/
 
 # Comprehensive reviews (kept in development, not in releases)
 DZP_COMPREHENSIVE_REVIEW.md
+DZP_IMPLEMENTATION_ACTION_PLAN.md
+DZP_REAL_WORLD_USE_CASES.md
 IMPLEMENTATION_REVIEW.md
+ABSOLUTE_ZERO_PROTOCOL_IMPLEMENTATION.md
+AZP_DZP_IMPLEMENTATION_GUIDE.md
+AGENT_BANNER_COLOR_IMPLEMENTATION.md
 
 # Documentation drafts and session summaries (keep external or in docs/)
 *_DRAFT.md
@@ -54,9 +68,24 @@ SESSION_SUMMARY_*.md
 *_PROGRESS.md
 *_COMPLETE.md
 *_ACTION_PLAN.md
+*_DESIGN.md
+*_REVIEW.md
+
+# P0/P1/P2/P3 implementation tracking documents
+P0_*.md
+P1_*.md
+P2_*.md
+P3_*.md
+
+# Release notes (archived separately, not in main repo)
+RELEASE_NOTES_*.md
 
 # Apps folder (if experimental/not production)
 apps/
+
+# Test directories (if not part of protocol)
+Test/
+tests/ (unless containing protocol tests)
 
 # ============================================================================
 # IDE AND EDITOR FILES
