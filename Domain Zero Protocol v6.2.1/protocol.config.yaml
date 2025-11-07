@@ -8,7 +8,7 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain_Zero_Protocol_DZP"
-  version: "v6.1.0"
+  version: "v6.2.1"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -40,11 +40,22 @@ safety:
     warn_on_extended_sessions: true        # Flag sessions exceeding duration
     require_confirmation_for_risks: true   # User must explicitly confirm risky operations
 
+    # v6.2.1: Interactive work session enforcement
+    interactive_session_alerts: true       # Present user with save/continue options
+    block_until_response: false            # If true, block workflow until user responds
+    escalate_on_continue: true             # Increase monitoring if user continues working
+    block_high_risk_when_fatigued: true    # Block production/critical ops during extended sessions
+
   # Wellbeing boundaries (agents respect these)
   boundaries:
     late_night_threshold: "22:00"   # Time after which agents recommend rest
     extended_session_hours: 4       # Hours after which agents suggest breaks
     max_continuous_hours: 8         # Maximum recommended continuous work
+
+    # v6.2.1: Enhanced session monitoring intervals
+    alert_interval_minutes: 240            # Initial alert interval (4 hours)
+    escalated_alert_interval_minutes: 45   # Alert interval after "continue" choice
+    critical_session_hours: 6              # Hours after which session is critical
 
   # Ethical design constraints (for Nobara)
   ethical_design:
@@ -379,7 +390,7 @@ protocol_packs:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "6.2"
+  protocol_version: "6.2.1"
   config_version: "1.1"
   last_updated: "2025-11-06"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"

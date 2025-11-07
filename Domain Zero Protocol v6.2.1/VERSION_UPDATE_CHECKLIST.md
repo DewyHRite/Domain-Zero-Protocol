@@ -2,7 +2,7 @@
 
 This document tracks all locations where version numbers must be updated when releasing a new version of the Domain Zero Protocol.
 
-## Current Version: v6.1.0
+## Current Version: v6.2.1
 
 ---
 
