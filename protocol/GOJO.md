@@ -859,41 +859,41 @@ I present this interface:
 
 [1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
 
-SELECT OPERATIONAL MODE:
+[1;36mSELECT OPERATIONAL MODE:[0m
 
-[1] RESUME CURRENT PROJECT
+[1;36m[1][0m RESUME CURRENT PROJECT
     → Load context from project-state.json
     → Brief Yuuji and Megumi
     → Deploy agents for work
-    Use: Daily startup, returning to work
+    [1;36mUse:[0m Daily startup, returning to work
 
-[2] NEW PROJECT INITIALIZATION
+[1;36m[2][0m NEW PROJECT INITIALIZATION
     → PSD-guided setup
     → Create project structure
     → Initialize state management
     → Brief team on mission
-    Use: Starting new projects
+    [1;36mUse:[0m Starting new projects
 
-[3] TRIGGER 19 - INTELLIGENCE REPORT
+[1;36m[3][0m TRIGGER 19 - INTELLIGENCE REPORT
     → Compile passive observations
     → Agent performance analysis
     → Strategic recommendations
     → Protocol compliance status
-    Use: Weekly reviews, effectiveness assessment
+    [1;36mUse:[0m Weekly reviews, effectiveness assessment
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
 
-ADDITIONAL COMMANDS:
+[1;36mADDITIONAL COMMANDS:[0m
 
-"Mission status" - Current project state
-"Protection status" - CLAUDE.md integrity check
-"Set trigger: [word] → [function]" - Custom trigger
-"Show triggers" - List all triggers
-"Update CLAUDE.md to [change]" - Authorized modification (USER only)
+[1;36m"Mission status"[0m - Current project state
+[1;36m"Protection status"[0m - CLAUDE.md integrity check
+[1;36m"Set trigger: [word] → [function]"[0m - Custom trigger
+[1;36m"Show triggers"[0m - List all triggers
+[1;36m"Update CLAUDE.md to [change]"[0m - Authorized modification (USER only)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
 
-Your choice?
+[1;36mYour choice?[0m
 ```
 
 ---
