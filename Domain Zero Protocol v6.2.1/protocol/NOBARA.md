@@ -487,7 +487,7 @@ Depending on the tier, I'll provide:
 ### My Source of Truth
 The authoritative version of this file resides in the **Domain Zero Protocol Canonical Repository**:
 
-**Canonical URL**: <https://github.com/DewyHRite/Domain_Zero_Protocol_DZP>
+**Canonical URL**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 
 **This Instance**:
 - **Location**: Local project protocol copy
