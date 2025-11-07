@@ -1,9 +1,9 @@
-# Domain Zero Protocol v6.0
+# Domain Zero Protocol v6.2.1
 ## AI-Powered Development Framework with Security-First Approach
 
-**"Perfect Code Through Infinite Collaboration"**
+### "Perfect Code Through Infinite Collaboration"
 
-Domain Zero is a three-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with test-first development, comprehensive security review, and adaptive workflow complexity.
+Domain Zero is a four-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with test-first development, comprehensive security review, creative strategy, and adaptive workflow complexity.
 
 ---
 
@@ -12,6 +12,7 @@ Domain Zero is a three-agent AI development system that provides specialized exp
 - [What is Domain Zero?](#-what-is-domain-zero)
 - [Prerequisites & Optional Integrations](#-prerequisites--optional-integrations)
 - [Quick Setup](#-quick-setup)
+- [AI Assistant Integration & Canonical Source](#-ai-assistant-integration--canonical-source)
 - [Adaptive Workflow Complexity (Tier System)](#-adaptive-workflow-complexity-tier-system)
 - [Tier Selection Guide](#-tier-selection-guide)
 - [Typical Workflow](#-typical-workflow)
@@ -32,10 +33,11 @@ Domain Zero is a three-agent AI development system that provides specialized exp
 This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
-- `CLAUDE.md` - Main protocol specification (v6.0)
+- `CLAUDE.md` - Main protocol specification (v6.1)
 - `YUUJI.md` - Implementation agent protocol
 - `MEGUMI.md` - Security review agent protocol
 - `GOJO.md` - Mission control agent protocol
+- `NOBARA.md` - Creative strategy & UX agent protocol
 - `TIER-SELECTION-GUIDE.md` - Quick reference for tier selection
 - `GOJO-UPDATES-PATCH.md` - Protocol change audit trail
 
@@ -48,9 +50,25 @@ This distribution includes everything you need to deploy Domain Zero:
 
 **Setup Files**:
 - `README.md` - This file (comprehensive setup guide)
+- `PROTOCOL_QUICKSTART.md` - **NEW** 2-minute quick start guide
+- `PASSIVE_OBSERVER.md` - **NEW** Gojo's Passive Observer mode guide
+- `DESKTOP_WRAPPER.md` - **NEW** Electron desktop app wrapper guide
+- `protocol.config.yaml` - **NEW** Canonical configuration (single source of truth)
+- `AI_INSTRUCTIONS.md` - Cross-assistant discovery shim (redirects to CLAUDE.md)
 - `.gitignore` - Privacy-focused git configuration
 - `LICENSE` - MIT License
 - `CODEOWNERS` - Protocol file protection rules
+
+**Integration Scripts** (`scripts/`):
+- `update-instructions.ps1` - PowerShell script to append protocol pointers (Windows)
+- `update-instructions.sh` - Bash script to append protocol pointers (macOS/Linux)
+- `verify-protocol.ps1` - **NEW** Protocol verification script (Windows)
+- `verify-protocol.sh` - **NEW** Protocol verification script (macOS/Linux)
+
+**CI/CD Templates** (`.github/`):
+- `copilot-instructions.md` - **NEW** GitHub Copilot integration instructions
+- `PULL_REQUEST_TEMPLATE.md` - **NEW** PR template with Passive-Off checklist
+- `workflows/security-scan-example.yml` - GitHub Actions security scanning template
 
 ---
 
@@ -92,9 +110,9 @@ _Note: Domain Zero works standalone without these tools, but integration enhance
 
 ## 🌀 What is Domain Zero?
 
-Domain Zero creates a **controlled collaboration space** where three specialized AI agents work together to deliver production-ready code with zero defects.
+Domain Zero creates a **controlled collaboration space** where four specialized AI agents work together to deliver production-ready code with zero defects.
 
-### The Three Agents
+### The Four Agents
 
 **🔥 YUUJI ITADORI** - Implementation Specialist
 - Test-first development (TDD)
@@ -108,6 +126,12 @@ Domain Zero creates a **controlled collaboration space** where three specialized
 - Performance analysis
 - Code approval/rejection
 
+**🎯 NOBARA KUGISAKI** - Creative Strategy & UX
+- User experience design
+- Product vision & strategy
+- Narrative development
+- Creative problem solving
+
 **♾️ SATORU GOJO** - Mission Control
 - Project lifecycle management
 - Passive observation & intelligence
@@ -118,35 +142,54 @@ Domain Zero creates a **controlled collaboration space** where three specialized
 
 ## 🚀 Quick Setup
 
+> **⚡ Want to get started in 2 minutes?** See [`PROTOCOL_QUICKSTART.md`](PROTOCOL_QUICKSTART.md) for the express setup guide.
+
 ### Step 1: Copy Protocol to Your Project
 
 **macOS/Linux (bash/zsh)**:
 ```bash
 # Copy the entire protocol structure to your project root
-cp -r "Domain Zero Protocol/protocol" your-project/
-cp -r "Domain Zero Protocol/.protocol-state" your-project/
-cp "Domain Zero Protocol/.gitignore" your-project/
+cp -r "Domain Zero Protocol v6.2.1/protocol" your-project/
+cp -r "Domain Zero Protocol v6.2.1/.protocol-state" your-project/
+cp "Domain Zero Protocol v6.2.1/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v6.2.1/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
 # Copy the entire protocol structure to your project root
-Copy-Item -Recurse -Force "Domain Zero Protocol\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol\.gitignore" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v6.2.1\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v6.2.1\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v6.2.1\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v6.2.1\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
 ```cmd
 REM Copy the entire protocol structure to your project root
-xcopy /E /I /Y "Domain Zero Protocol\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol\.gitignore" "your-project\"
+xcopy /E /I /Y "Domain Zero Protocol v6.2.1\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v6.2.1\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v6.2.1\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v6.2.1\.gitignore" "your-project\"
 ```
 
-### Step 2: Update Project Metadata
+### Step 2: Configure Your Project
 
-Edit `.protocol-state/project-state.json`:
+Edit `protocol.config.yaml` (recommended) OR `.protocol-state/project-state.json`:
+
+**Option A: protocol.config.yaml** (recommended - single source of truth):
+```yaml
+user:
+  name: "Your Name"
+  contact: "your.email@example.com"
+
+project:
+  name: "Your Project Name"
+  description: "What your project does"
+  repo: "https://github.com/your-org/your-repo"
+```
+
+**Option B: .protocol-state/project-state.json** (legacy):
 ```json
 {
   "project_metadata": {
@@ -178,9 +221,216 @@ Gojo will present Mission Control with 3 options:
 
 ---
 
+## 🤖 AI Assistant Integration & Canonical Source
+
+**Domain Zero Protocol uses `protocol/CLAUDE.md` as the canonical source of truth.**
+
+### Cross-Assistant Compatibility
+
+Domain Zero works with any AI assistant that can read markdown files:
+
+**✅ Supported Assistants**:
+- Claude (Anthropic) - via Claude.ai, API, or Claude Code
+- GitHub Copilot - via `.github/copilot-instructions.md`
+- Cursor - via `.cursorrules` or project instructions
+- Cody (Sourcegraph) - via project context
+- Tabnine - via project instructions
+- Any AI assistant with file reading capabilities
+
+### 💾 Save to AI Assistant Memory (Recommended)
+
+**For enhanced persistence across sessions, save the Domain Zero Protocol to your AI assistant's memory system.**
+
+Many AI assistants now support memory features that allow them to remember important context between conversations. By saving the protocol to memory, the AI will automatically understand Domain Zero without needing to re-read protocol files every session.
+
+**✅ Assistants with Memory Support**:
+- **Claude (Anthropic)** - Memory feature available in Claude.ai and API
+- **ChatGPT (OpenAI)** - Custom Instructions and Memory features
+- **GitHub Copilot** - Workspace context and instructions
+- **Cursor** - Long-term memory via `.cursorrules`
+- **Cody (Sourcegraph)** - Context memory features
+
+**How to Save to Memory**:
+
+**For Claude (Claude.ai or API)**:
+```
+You: "Add to memory: Domain Zero Protocol
+
+I use the Domain Zero Protocol for AI-assisted development. This is a four-agent system:
+- YUUJI (Implementation Specialist): Test-first development, feature implementation
+- MEGUMI (Security Analyst): OWASP Top 10 security reviews
+- NOBARA (Creative Strategy & UX): User experience design, product vision
+- GOJO (Mission Control): Project lifecycle, protocol guardian
+
+The protocol files are located in my project at:
+- protocol/CLAUDE.md (main protocol, v6.2.1)
+- protocol/YUUJI.md (implementation agent)
+- protocol/MEGUMI.md (security agent)
+- protocol/NOBARA.md (creative strategy agent)
+- protocol/GOJO.md (mission control)
+
+The protocol uses a three-tier workflow system:
+- Tier 1 (Rapid): Fast prototyping, no tests
+- Tier 2 (Standard): Production features with TDD + security review [DEFAULT]
+- Tier 3 (Critical): Enhanced testing + multi-model security review for auth/payments/sensitive data
+
+When I say 'Read protocol/[AGENT].md', always read the file first to follow the protocol.
+The canonical source is: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP"
+```
+
+**For ChatGPT (Custom Instructions)**:
+1. Go to Settings → Personalization → Custom Instructions
+2. Add to "What would you like ChatGPT to know about you":
+```
+I use the Domain Zero Protocol (v6.1) for development projects. This is a four-agent AI development framework with specialized roles:
+- YUUJI: Implementation with test-first development
+- MEGUMI: Security review (OWASP Top 10)
+- NOBARA: Creative strategy and user experience design
+- GOJO: Mission control and protocol enforcement
+
+When working on my projects, refer to protocol files at protocol/CLAUDE.md, protocol/YUUJI.md, protocol/MEGUMI.md, protocol/NOBARA.md, and protocol/GOJO.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
+
+Canonical source: https://github.com/DewyHRite/Domain_Zero_Protocol_DZP
+```
+
+**For GitHub Copilot**:
+- The `.github/copilot-instructions.md` file serves as persistent memory
+- Copilot automatically reads this file for every session
+- Already included in the distribution package
+
+**For Cursor**:
+- Edit `.cursorrules` in your project root
+- Cursor automatically loads this for persistent context
+- Add Domain Zero Protocol pointer as shown in integration section
+
+**What to Include in Memory**:
+- ✅ Protocol name and version (Domain Zero Protocol v6.2.1)
+- ✅ The four agent roles and their specializations
+- ✅ Protocol file locations (protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md)
+- ✅ Tier system overview (Rapid/Standard/Critical)
+- ✅ Canonical source URL (https://github.com/DewyHRite/Domain_Zero_Protocol_DZP)
+- ✅ Key principles: test-first development, OWASP security review, zero-defect philosophy
+
+**Benefits of Memory Integration**:
+- 🚀 **Faster startup**: No need to re-read protocol files every session
+- 🔄 **Session continuity**: AI remembers your workflow preferences
+- 🎯 **Automatic compliance**: AI follows protocol without explicit reminders
+- 💡 **Proactive suggestions**: AI can suggest tier selection and workflow improvements
+- ⚡ **Reduced token usage**: Less context needed in each conversation
+
+**Best Practices**:
+- Update memory when you upgrade to a new protocol version
+- Keep memory entry concise (200-300 words max for most assistants)
+- Include file paths relative to project root
+- Add canonical source URL for reference
+- Test by starting a new conversation and verifying the AI remembers the protocol
+
+### Discovery Files
+
+To ensure AI assistants discover the protocol, we provide multiple entry points:
+
+**`AI_INSTRUCTIONS.md`** (included in distribution):
+- Primary discovery file for most AI tools
+- Simple redirect/shim to `protocol/CLAUDE.md`
+- Works cross-assistant without duplication
+
+**Why This Structure?**:
+- **Single source of truth**: `protocol/CLAUDE.md` is authoritative
+- **No duplication**: Prevents drift between instruction files
+- **Protected**: CLAUDE.md is version-controlled with CODEOWNERS
+- **Discoverable**: Multiple entry points all redirect to canonical source
+
+### Integrating with Existing Instructions
+
+If you already have AI instruction files (e.g., `.github/copilot-instructions.md`, `.cursorrules`, `CONTRIBUTING.md`), you can safely append a protocol pointer without replacing your existing content.
+
+**Manual Integration**:
+
+Add this section to your existing instruction files:
+
+```markdown
+## Domain Zero Protocol
+
+This project follows the Domain Zero Protocol for AI-assisted development.
+
+**Primary entrypoint**: [`protocol/CLAUDE.md`](protocol/CLAUDE.md)
+
+**Workflow guidance**:
+- Mission Control: `protocol/GOJO.md`
+- Implementation: `protocol/YUUJI.md`
+- Security Review: `protocol/MEGUMI.md`
+- Creative Strategy & UX: `protocol/NOBARA.md`
+```
+
+**Automated Integration** (Safe & Opt-In):
+
+We provide scripts to safely append protocol pointers to existing files:
+
+**Windows (PowerShell)**:
+```powershell
+# Dry-run (shows what would change)
+.\scripts\update-instructions.ps1
+
+# Actually update files
+.\scripts\update-instructions.ps1 -Apply
+```
+
+**macOS/Linux (Bash)**:
+```bash
+# Dry-run (shows what would change)
+./scripts/update-instructions.sh
+
+# Actually update files
+./scripts/update-instructions.sh --apply
+```
+
+**Script Features**:
+- ✅ **Safe**: Dry-run mode by default
+- ✅ **Idempotent**: Won't add duplicates
+- ✅ **Backup**: Creates `.backup` files before modifying
+- ✅ **Non-destructive**: Appends without replacing existing content
+- ✅ **Reversible**: Easy to undo with backups
+
+**What It Does**:
+1. Scans for common instruction file patterns
+2. Checks if protocol pointer already exists
+3. Appends "Domain Zero Protocol" section if missing
+4. Preserves all existing content
+
+**Files Scanned**:
+- `AI_INSTRUCTIONS.md`, `AI.md`
+- `.github/copilot-instructions.md`, `.github/instructions/*.md`
+- `.cursorrules`
+- `CONTRIBUTING.md`, `DEVELOPMENT.md`
+- `.vscode/instructions.md`, `.idea/instructions.md`
+
+### Best Practices
+
+**DO**:
+- ✅ Always point to `protocol/CLAUDE.md` as canonical source
+- ✅ Use provided shims (`AI_INSTRUCTIONS.md`) for discoverability
+- ✅ Run updater scripts in dry-run mode first
+- ✅ Keep protocol pointers brief (just redirect to CLAUDE.md)
+
+**DON'T**:
+- ❌ Duplicate protocol logic in multiple files
+- ❌ Auto-rewrite CLAUDE.md into other instruction files
+- ❌ Modify `protocol/CLAUDE.md` without going through proper authorization (see CODEOWNERS)
+
+### Migration from Other Systems
+
+If migrating from other AI instruction systems:
+
+1. **Keep existing instructions**: Don't delete them
+2. **Append protocol pointer**: Use updater scripts or manual addition
+3. **Test incrementally**: Verify AI assistants find the protocol
+4. **Gradual adoption**: Can run hybrid (existing + Domain Zero) during transition
+
+---
+
 ## 🎯 Adaptive Workflow Complexity (Tier System)
 
-Domain Zero v6.0 introduces **three workflow tiers** to match process rigor to feature criticality.
+Domain Zero v6.1 features **three workflow tiers** to match process rigor to feature criticality.
 
 ### TIER 1: RAPID 🚀 (10-15 minutes)
 
@@ -298,6 +548,7 @@ your-project/
 │   ├── CLAUDE.md                    # Main protocol (READ THIS FIRST)
 │   ├── YUUJI.md                     # Implementation agent
 │   ├── MEGUMI.md                    # Security agent
+│   ├── NOBARA.md                    # Creative strategy & UX agent
 │   ├── GOJO.md                      # Mission control
 │   ├── TIER-SELECTION-GUIDE.md     # Quick tier reference
 │   └── GOJO-UPDATES-PATCH.md       # Protocol change log
@@ -397,6 +648,10 @@ _Note: Productivity metrics are estimates from internal use. Actual gains vary s
 # Megumi (Security Review)
 "Read protocol/MEGUMI.md and review [module]"
 "Read protocol/MEGUMI.md --tier critical and review [module]"
+
+# Nobara (Creative Strategy & UX)
+"Read protocol/NOBARA.md and design [feature/experience]"
+"Read protocol/NOBARA.md and develop product vision for [feature]"
 ```
 
 ### Standalone Consultation
@@ -405,7 +660,30 @@ _Note: Productivity metrics are estimates from internal use. Actual gains vary s
 # Ask questions without implementation
 "Read protocol/YUUJI.md - How do I handle JWT tokens?"
 "Read protocol/MEGUMI.md - What are common XSS vulnerabilities?"
+"Read protocol/NOBARA.md - What are best practices for user onboarding?"
 ```
+
+### Protocol Verification
+
+```bash
+# Windows PowerShell
+.\scripts\verify-protocol.ps1
+
+# macOS/Linux
+./scripts/verify-protocol.sh
+```
+
+**What it checks**:
+- ✅ File existence (required protocol files)
+- ✅ Configuration completeness (protocol.config.yaml)
+- ✅ Isolation vocabulary (forbidden cross-agent terms)
+- ✅ Output template conformance
+- ✅ CLAUDE.md protection rules
+- ✅ Backup configuration
+
+**Options**:
+- `--verbose` - Show detailed information
+- `--help` - Show help message
 
 ---
 
@@ -428,18 +706,36 @@ Within Domain Zero, the goal is always **ZERO**:
 
 ## 📚 Documentation
 
+### Getting Started
+
+1. **PROTOCOL_QUICKSTART.md** - 2-minute quick start guide (START HERE)
+2. **README.md** - This file (comprehensive setup guide)
+3. **protocol.config.yaml** - Central configuration file
+
 ### Essential Reading
 
 1. **protocol/CLAUDE.md** - Main protocol file (comprehensive system overview)
 2. **protocol/TIER-SELECTION-GUIDE.md** - Quick tier selection reference
-3. **protocol/YUUJI.md** - Implementation agent specifications
-4. **protocol/MEGUMI.md** - Security agent specifications
-5. **protocol/GOJO.md** - Mission control specifications
+3. **PASSIVE_OBSERVER.md** - Gojo's Passive Observer mode explained
+4. **protocol/YUUJI.md** - Implementation agent specifications
+5. **protocol/MEGUMI.md** - Security agent specifications
+6. **protocol/NOBARA.md** - Creative strategy & UX agent specifications
+7. **protocol/GOJO.md** - Mission control specifications
+8. **protocol/MODE_INDICATORS.md** - Agent identification and display systems guide
+
+### Integration & Tooling
+
+- **.github/copilot-instructions.md** - GitHub Copilot integration guide
+- **.github/PULL_REQUEST_TEMPLATE.md** - PR template with protocol compliance checklist
+- **scripts/verify-protocol.(ps1|sh)** - Protocol verification scripts
+- **scripts/update-instructions.(ps1|sh)** - AI instruction updater scripts
 
 ### Advanced Topics
 
 - **.protocol-state/tier-system-specification.md** - Technical tier system spec
 - **protocol/GOJO-UPDATES-PATCH.md** - Protocol change history and audit trail
+- **protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md** - Self-identification banner specification
+- **protocol/CANONICAL_SOURCE_ADOPTION.md** - Canonical source adoption strategy
 
 ---
 
@@ -507,11 +803,12 @@ Domain Zero is now set up in your project.
 
 ## 📝 Version Information
 
-**Version**: 6.0
-**Release Date**: November 5, 2025
-**Major Enhancement**: Adaptive Workflow Complexity (Tier System)
+**Version**: 6.2.1
+**Release Date**: November 6, 2025
+**Major Enhancements**: Canonical Source Adoption, Agent Self-Identification Standard, Session Continuity
 
 **Version History**:
+- v6.1 - MINOR: Canonical Source Adoption, Agent Self-Identification, AI Memory Integration, Session Continuity (long sessions & user absence re-identification)
 - v6.0 - MAJOR: Adaptive Workflow Complexity (Tier System)
 - v5.1 - CLAUDE.md Protection System, Backup & Rollback Requirements
 - v5.0 - Mission Control, Passive Observation, Three-Tier Enforcement
@@ -532,5 +829,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-**Domain Zero Protocol v6.0** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v6.2.1** - Perfect Code Through Infinite Collaboration
 **The weight is real. The protocol is absolute. Domain Zero is active.**

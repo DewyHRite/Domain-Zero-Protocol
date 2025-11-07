@@ -1,0 +1,21 @@
+# Patch for GitHub workflow security fix
+# Replace the unsafe regex authorization check with a safe string comparison loop
+
+# Original problematic line (around 178):
+# if [[ ! " ${AUTHORIZED_USERS[@]} " =~ " ${{ github.actor }} " ]]; then
+
+# Replacement (safe exact match):
+ACTOR="${{ github.actor }}"
+IS_AUTHORIZED=false
+for USER in "${AUTHORIZED_USERS[@]}"; do
+  if [ "$USER" = "$ACTOR" ]; then
+    IS_AUTHORIZED=true
+    break
+  fi
+done
+
+if [ "$IS_AUTHORIZED" = false ]; then
+  echo "❌ ERROR: Unauthorized modification of protocol/CLAUDE.md"
+  echo "✓ Protocol changes require approval from authorized maintainers"
+  exit 1
+fi

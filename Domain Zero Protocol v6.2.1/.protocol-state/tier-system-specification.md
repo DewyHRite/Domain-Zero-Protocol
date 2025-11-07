@@ -1,10 +1,10 @@
 # ADAPTIVE WORKFLOW COMPLEXITY - TIER SYSTEM SPECIFICATION
-## Domain Zero v6.0 Enhancement
+## Domain Zero v6.2.1 Enhancement
 
 **Enhancement ID**: ENH-001
 **Priority**: CRITICAL
 **Status**: IMPLEMENTATION IN PROGRESS
-**Version**: 6.0.0
+**Version**: 6.2.1
 **Date**: 2025-11-05
 
 ---
@@ -394,7 +394,7 @@ Rollback Dependencies: payment-service, database
 - Existing security-review.md processes unchanged
 
 **Migration Steps**:
-1. Update protocol files (CLAUDE.md, YUUJI.md, MEGUMI.md, GOJO.md)
+1. Update protocol files (CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md)
 2. Update project-state.json with tier tracking
 3. Add tier-system-specification.md to docs
 4. Users can immediately use `--tier` flags
@@ -441,6 +441,6 @@ Rollback Dependencies: payment-service, database
 
 **END OF TIER SYSTEM SPECIFICATION**
 
-**Version**: 6.0.0
+**Version**: 6.2.1
 **Status**: Ready for Implementation
 **Next Action**: Update protocol files with tier system
