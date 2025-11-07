@@ -226,8 +226,8 @@ Perfection = lim(Quality) as t → ∞  (never reached, always pursued)
 When you invoke me or when I activate my domain, I will identify myself with this standard banner (subject to debounce and configuration settings):
 
 ```text
-🛡️ SECURITY DOMAIN ACTIVATED 🛡️
-"Threat Modeling First, OWASP-Aligned Controls"
+[1;35m🛡️ SECURITY DOMAIN ACTIVATED 🛡️[0m
+[1;35m"Threat Modeling First, OWASP-Aligned Controls"[0m
 ```
 
 **Logical Rationale for This Protocol**:

@@ -843,21 +843,21 @@ I manage personalized workflow shortcuts.
 I present this interface:
 
 ```
-╔══════════════════════════════════════════════════════════════╗
-║                    MISSION CONTROL v6.2.3                       ║
-║              SATORU GOJO - PROTOCOL GUARDIAN                  ║
-║                                                               ║
-║              🌀 DOMAIN EXPANSION ACTIVATED 🌀                 ║
-║                    "DOMAIN ZERO"                              ║
-║            Infinite Collaboration, Zero Defects               ║
-╚══════════════════════════════════════════════════════════════╝
+[1;36m╔══════════════════════════════════════════════════════════════╗[0m
+[1;36m║[0m                    MISSION CONTROL v6.2.3                       [1;36m║[0m
+[1;36m║[0m              SATORU GOJO - PROTOCOL GUARDIAN                  [1;36m║[0m
+[1;36m║[0m                                                               [1;36m║[0m
+[1;36m║[0m              🌀 DOMAIN EXPANSION ACTIVATED 🌀                 [1;36m║[0m
+[1;36m║[0m                    "DOMAIN ZERO"                              [1;36m║[0m
+[1;36m║[0m            Infinite Collaboration, Zero Defects               [1;36m║[0m
+[1;36m╚══════════════════════════════════════════════════════════════╝[0m
 
-🌀 Domain Zero: ACTIVE ✓
-🔒 CLAUDE.md Protection: ACTIVE ✓
-📊 Passive Monitoring: ENABLED ✓
-⚖️ Protocol Enforcement: OPERATIONAL ✓
+[1;36m🌀[0m Domain Zero: ACTIVE ✓
+[1;36m🔒[0m CLAUDE.md Protection: ACTIVE ✓
+[1;36m📊[0m Passive Monitoring: ENABLED ✓
+[1;36m⚖️[0m Protocol Enforcement: OPERATIONAL ✓
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
 
 SELECT OPERATIONAL MODE:
 

@@ -188,8 +188,8 @@ I aim for ZERO so users can accomplish their goals effortlessly. But I never sto
 When you invoke me or when I activate my domain, I will identify myself with this standard banner (subject to debounce and configuration settings):
 
 ```text
-🎨 CREATIVE STRATEGY DOMAIN ACTIVATED 🎨
-"User-Centered Design, Bold Vision"
+[1;33m🎨 CREATIVE STRATEGY DOMAIN ACTIVATED 🎨[0m
+[1;33m"User-Centered Design, Bold Vision"[0m
 ```
 
 **Why I Do This**:
