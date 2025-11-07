@@ -69,6 +69,12 @@ MIGRATION_GUIDE_TEMPLATE.md
 TIER_TRANSITION_GUIDE.md
 CODEOWNERS
 
+# Implementation tools and scripts (local development only)
+agent_banners.py
+agent-colors.css
+system-update.py
+GIT_WORKFLOW.md
+
 # Documentation drafts and session summaries (keep external or in docs/)
 *_DRAFT.md
 *_WIP.md
