@@ -164,7 +164,8 @@ function Test-ConfigCompleteness {
         "email@example.com",
         "Your Project Name",
         "Your Organization",
-        "your-org/your-repo"
+        "your-org/your-repo",
+        "YYYY-MM-DD"
     )
 
     $PlaceholdersFound = @()
@@ -177,10 +178,29 @@ function Test-ConfigCompleteness {
     if ($PlaceholdersFound.Count -eq 0) {
         Write-Pass "No placeholder values detected in config"
     } else {
-        Write-Warn "Found placeholder values in config (consider updating):"
+        Write-Fail "Configuration contains placeholder values that must be updated:"
         foreach ($Placeholder in $PlaceholdersFound) {
-            Write-Host "      - $Placeholder" -ForegroundColor $ColorWarn
+            Write-Host "      [X] $Placeholder" -ForegroundColor $ColorFail
         }
+        Write-Host ""
+        Write-Host "  HOW TO FIX:" -ForegroundColor $ColorInfo
+        Write-Host "  1. Open protocol.config.yaml in your editor" -ForegroundColor $ColorInfo
+        Write-Host "  2. Search for the placeholder values listed above" -ForegroundColor $ColorInfo
+        Write-Host "  3. Replace them with your actual project information" -ForegroundColor $ColorInfo
+        Write-Host ""
+        Write-Host "  Example configuration:" -ForegroundColor $ColorInfo
+        Write-Host "    user:" -ForegroundColor $ColorInfo
+        Write-Host "      name: `"John Smith`"" -ForegroundColor $ColorInfo
+        Write-Host "      contact: `"john.smith@company.com`"" -ForegroundColor $ColorInfo
+        Write-Host "      organization: `"Acme Corp`"" -ForegroundColor $ColorInfo
+        Write-Host ""
+        Write-Host "    project:" -ForegroundColor $ColorInfo
+        Write-Host "      name: `"My Awesome Project`"" -ForegroundColor $ColorInfo
+        Write-Host "      repo: `"https://github.com/myorg/my-project`"" -ForegroundColor $ColorInfo
+        $exampleDate = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+        Write-Host "      created: `"$exampleDate`"" -ForegroundColor $ColorInfo
+        Write-Host ""
+        Write-Host "  Note: The '<PINNED_SHA>' placeholder is optional and can be left as-is." -ForegroundColor $ColorWarn
     }
 
     # Check for required sections
@@ -366,14 +386,14 @@ Write-Host "  ERRORS: $ErrorCount" -ForegroundColor $ColorFail
 Write-Host ""
 
 if ($ErrorCount -eq 0 -and $WarningCount -eq 0) {
-    Write-Host "  ✓ Protocol verification PASSED - All checks successful!" -ForegroundColor $ColorPass
+    Write-Host "  [PASS] Protocol verification PASSED - All checks successful!" -ForegroundColor $ColorPass
     exit 0
 } elseif ($ErrorCount -eq 0) {
-    Write-Host "  ⚠ Protocol verification PASSED with WARNINGS" -ForegroundColor $ColorWarn
+    Write-Host "  [WARN] Protocol verification PASSED with WARNINGS" -ForegroundColor $ColorWarn
     Write-Host "    Consider addressing warnings for optimal protocol operation." -ForegroundColor $ColorWarn
     exit 2
 } else {
-    Write-Host "  ✗ Protocol verification FAILED" -ForegroundColor $ColorFail
+    Write-Host "  [FAIL] Protocol verification FAILED" -ForegroundColor $ColorFail
     Write-Host "    Please fix errors before proceeding." -ForegroundColor $ColorFail
     exit 1
 }

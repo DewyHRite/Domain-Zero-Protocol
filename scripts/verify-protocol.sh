@@ -182,6 +182,7 @@ test_config_completeness() {
         "Your Project Name"
         "Your Organization"
         "your-org/your-repo"
+        "YYYY-MM-DD"
     )
 
     local placeholders_found=()
@@ -194,10 +195,28 @@ test_config_completeness() {
     if [ ${#placeholders_found[@]} -eq 0 ]; then
         write_pass "No placeholder values detected in config"
     else
-        write_warn "Found placeholder values in config (consider updating):"
+        write_fail "Configuration contains placeholder values that must be updated:"
         for placeholder in "${placeholders_found[@]}"; do
-            echo -e "      ${COLOR_WARN}- $placeholder${COLOR_RESET}"
+            echo -e "      ${COLOR_FAIL}✗ $placeholder${COLOR_RESET}"
         done
+        echo ""
+        echo -e "  ${COLOR_INFO}HOW TO FIX:${COLOR_RESET}"
+        echo -e "  ${COLOR_INFO}1. Open protocol.config.yaml in your editor${COLOR_RESET}"
+        echo -e "  ${COLOR_INFO}2. Search for the placeholder values listed above${COLOR_RESET}"
+        echo -e "  ${COLOR_INFO}3. Replace them with your actual project information${COLOR_RESET}"
+        echo ""
+        echo -e "  ${COLOR_INFO}Example configuration:${COLOR_RESET}"
+        echo -e "    ${COLOR_INFO}user:${COLOR_RESET}"
+        echo -e "      ${COLOR_INFO}name: \"John Smith\"${COLOR_RESET}"
+        echo -e "      ${COLOR_INFO}contact: \"john.smith@company.com\"${COLOR_RESET}"
+        echo -e "      ${COLOR_INFO}organization: \"Acme Corp\"${COLOR_RESET}"
+        echo ""
+        echo -e "    ${COLOR_INFO}project:${COLOR_RESET}"
+        echo -e "      ${COLOR_INFO}name: \"My Awesome Project\"${COLOR_RESET}"
+        echo -e "      ${COLOR_INFO}repo: \"https://github.com/myorg/my-project\"${COLOR_RESET}"
+        echo -e "      ${COLOR_INFO}created: \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"${COLOR_RESET}"
+        echo ""
+        echo -e "  ${COLOR_WARN}Note: The '<PINNED_SHA>' placeholder is optional and can be left as-is.${COLOR_RESET}"
     fi
 
     # Check for required sections

@@ -10,14 +10,18 @@ Edit `protocol.config.yaml` and update these essential fields:
 
 ```yaml
 user:
-  name: "Your Name"
-  contact: "your.email@example.com"
+  name: "Your Name"                          # Replace with your actual name
+  contact: "your.email@example.com"          # Replace with your email
+  organization: "Your Organization"          # Replace with your org name
 
 project:
-  name: "Your Project Name"
-  description: "What your project does"
-  repo: "https://github.com/your-org/your-repo"
+  name: "Your Project Name"                  # Replace with project name
+  description: "What your project does"      # Replace with description
+  repo: "https://github.com/your-org/your-repo"  # Replace with repo URL
+  created: "YYYY-MM-DDTHH:MM:SSZ"            # Replace with creation date
 ```
+
+**⚠️ Important:** The verification scripts will fail if you leave placeholder values unchanged. This ensures your protocol is properly configured before use.
 
 That's it! Everything else has sensible defaults.
 

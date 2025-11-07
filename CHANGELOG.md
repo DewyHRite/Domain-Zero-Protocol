@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Changed
+- **Enhanced placeholder validation** - Verification scripts now fail (not warn) when configuration placeholders are detected
+- **Improved error messages** - Added helpful "HOW TO FIX" guidance with examples when placeholders found
+- **Updated PROTOCOL_QUICKSTART.md** - Added warning about placeholder validation requirement
+
+### Fixed
+- Configuration placeholder detection now treats placeholders as errors instead of warnings
+
+---
+
 ## [6.2.3] - 2025-11-07
 
 ### Changed
