@@ -29,12 +29,12 @@ We provide security updates for the following versions:
 
 | Version | Supported          | Status |
 | ------- | ------------------ | ------ |
-| 6.2.3   | :white_check_mark: | Current stable release |
+| 6.2.7   | :white_check_mark: | Current stable release |
 | 6.2.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
 | 6.1.x   | :x:                | End of life (EOL) |
 | < 6.1   | :x:                | End of life (EOL) |
 
-**Upgrade Recommendation**: Users on unsupported versions should upgrade to v6.2.3 immediately.
+**Upgrade Recommendation**: Users on unsupported versions should upgrade to v6.2.7 immediately.
 
 ---
 
@@ -275,7 +275,7 @@ When reporting, please indicate:
 
 This security policy is versioned alongside the Domain Zero Protocol:
 
-- **Current Version**: 1.0.0 (matches Domain Zero Protocol v6.2.3)
+- **Current Version**: 1.0.0 (matches Domain Zero Protocol v6.2.7)
 - **Last Updated**: November 7, 2025
 - **Next Review**: January 2026 (or upon major protocol update)
 

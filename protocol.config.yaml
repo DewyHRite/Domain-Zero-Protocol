@@ -74,16 +74,16 @@ safety:
 # USER & PROJECT INFORMATION
 # ============================================================================
 user:
-  name: "Your Name"
-  contact: "email@example.com"
-  organization: "Your Organization"
+  name: "Dewy"
+  contact: "dewy@domain-zero-protocol.dev"
+  organization: "Domain Zero Protocol"
 
 project:
-  name: "Your Project Name"
-  description: "Brief description of your project"
-  repo: "https://github.com/your-org/your-repo"
+  name: "Domain Zero Protocol"
+  description: "AI-assisted development protocol with specialized agents for implementation, security, creative strategy, and mission control"
+  repo: "https://github.com/DewyHRite/Domain-Zero-Protocol"
   main_branch: "main"
-  created: "YYYY-MM-DDTHH:MM:SSZ"
+  created: "2025-11-05T00:00:00Z"
 
   # Tech stack (optional, used for context)
   tech_stack:

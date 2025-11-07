@@ -323,30 +323,78 @@ validate_yaml_syntax() {
     # Try Python validation first
     if command -v python3 &> /dev/null; then
         write_info "Validating YAML syntax with Python..."
-        if python3 -c "import yaml; yaml.safe_load(open('protocol.config.yaml'))" 2>&1; then
+        local validation_output
+        validation_output=$(python3 -c "import yaml; yaml.safe_load(open('protocol.config.yaml'))" 2>&1)
+        if [ $? -eq 0 ]; then
             write_pass "YAML syntax valid (verified with Python)"
-        else
-            write_fail_with_context \
-                "Invalid YAML syntax in protocol.config.yaml" \
-                "Configuration file cannot be parsed" \
-                "Fix syntax errors using a YAML validator" \
-                "https://www.yamllint.com/"
-            CRITICAL_ERROR=true
-            return 1
+            return 0
         fi
+
+        if echo "$validation_output" | grep -q "ModuleNotFoundError: No module named 'yaml'"; then
+            write_warn "PyYAML not installed; skipping python-based YAML validation"
+            if command -v yamllint &> /dev/null; then
+                write_info "Falling back to yamllint for syntax validation..."
+                if yamllint -d relaxed protocol.config.yaml > /dev/null 2>&1; then
+                    write_pass "YAML syntax valid (verified with yamllint)"
+                    return 0
+                fi
+                write_fail_with_context \
+                    "Invalid YAML syntax in protocol.config.yaml" \
+                    "Configuration file has syntax errors" \
+                    "Run 'yamllint protocol.config.yaml' for details" \
+                    ""
+                CRITICAL_ERROR=true
+                return 1
+            fi
+
+            write_info "Install PyYAML or yamllint for syntax validation"
+            return 0
+        fi
+
+        write_fail_with_context \
+            "Invalid YAML syntax in protocol.config.yaml" \
+            "Configuration file cannot be parsed" \
+            "Fix syntax errors using a YAML validator" \
+            "https://www.yamllint.com/"
+        CRITICAL_ERROR=true
+        return 1
     elif command -v python &> /dev/null; then
         write_info "Validating YAML syntax with Python..."
-        if python -c "import yaml; yaml.safe_load(open('protocol.config.yaml'))" 2>&1; then
+        local validation_output
+        validation_output=$(python -c "import yaml; yaml.safe_load(open('protocol.config.yaml'))" 2>&1)
+        if [ $? -eq 0 ]; then
             write_pass "YAML syntax valid (verified with Python)"
-        else
-            write_fail_with_context \
-                "Invalid YAML syntax in protocol.config.yaml" \
-                "Configuration file cannot be parsed" \
-                "Fix syntax errors using a YAML validator" \
-                "https://www.yamllint.com/"
-            CRITICAL_ERROR=true
-            return 1
+            return 0
         fi
+
+        if echo "$validation_output" | grep -q "ModuleNotFoundError: No module named 'yaml'"; then
+            write_warn "PyYAML not installed; skipping python-based YAML validation"
+            if command -v yamllint &> /dev/null; then
+                write_info "Falling back to yamllint for syntax validation..."
+                if yamllint -d relaxed protocol.config.yaml > /dev/null 2>&1; then
+                    write_pass "YAML syntax valid (verified with yamllint)"
+                    return 0
+                fi
+                write_fail_with_context \
+                    "Invalid YAML syntax in protocol.config.yaml" \
+                    "Configuration file has syntax errors" \
+                    "Run 'yamllint protocol.config.yaml' for details" \
+                    ""
+                CRITICAL_ERROR=true
+                return 1
+            fi
+
+            write_info "Install PyYAML or yamllint for syntax validation"
+            return 0
+        fi
+
+        write_fail_with_context \
+            "Invalid YAML syntax in protocol.config.yaml" \
+            "Configuration file cannot be parsed" \
+            "Fix syntax errors using a YAML validator" \
+            "https://www.yamllint.com/"
+        CRITICAL_ERROR=true
+        return 1
     elif command -v yamllint &> /dev/null; then
         write_info "Validating YAML syntax with yamllint..."
         if yamllint -d relaxed protocol.config.yaml > /dev/null 2>&1; then

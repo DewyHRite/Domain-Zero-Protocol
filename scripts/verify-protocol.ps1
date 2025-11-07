@@ -326,15 +326,37 @@ function Test-YamlSyntax {
         $yamlTest = & $pythonCmd -c "import yaml; yaml.safe_load(open('protocol.config.yaml'))" 2>&1
         if ($LASTEXITCODE -eq 0) {
             Write-Pass "YAML syntax valid (verified with Python)"
-        } else {
-            Write-FailWithContext `
-                -Message "Invalid YAML syntax in protocol.config.yaml" `
-                -Impact "Configuration file cannot be parsed" `
-                -Action "Fix syntax errors using a YAML validator" `
-                -DocLink "https://www.yamllint.com/"
-            $script:CriticalError = $true
             return
         }
+
+        if ($yamlTest -match "ModuleNotFoundError: No module named 'yaml'") {
+            Write-Warn "PyYAML not installed; skipping python-based YAML validation"
+            if (Get-Command yamllint -ErrorAction SilentlyContinue) {
+                Write-InfoMsg "Falling back to yamllint for syntax validation..."
+                $null = yamllint -d relaxed protocol.config.yaml 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Pass "YAML syntax valid (verified with yamllint)"
+                } else {
+                    Write-FailWithContext `
+                        -Message "Invalid YAML syntax in protocol.config.yaml" `
+                        -Impact "Configuration file has syntax errors" `
+                        -Action "Run 'yamllint protocol.config.yaml' for details" `
+                        -DocLink ""
+                    $script:CriticalError = $true
+                }
+            } else {
+                Write-InfoMsg "Install PyYAML or yamllint for syntax validation"
+            }
+            return
+        }
+
+        Write-FailWithContext `
+            -Message "Invalid YAML syntax in protocol.config.yaml" `
+            -Impact "Configuration file cannot be parsed" `
+            -Action "Fix syntax errors using a YAML validator" `
+            -DocLink "https://www.yamllint.com/"
+        $script:CriticalError = $true
+        return
     } elseif (Get-Command yamllint -ErrorAction SilentlyContinue) {
         Write-InfoMsg "Validating YAML syntax with yamllint..."
         $yamlTest = yamllint -d relaxed protocol.config.yaml 2>&1
