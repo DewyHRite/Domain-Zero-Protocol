@@ -36,8 +36,7 @@ import subprocess
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Tuple, Dict, List, Optional
-import shutil
+from typing import Tuple, List
 import argparse
 
 # Fix Windows console encoding
@@ -46,7 +45,8 @@ if sys.platform == 'win32':
         import codecs
         sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
         sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
-    except:
+    except (AttributeError, IOError, UnicodeError):
+        # Fallback if encoding setup fails
         pass
 
 # ==============================================================================

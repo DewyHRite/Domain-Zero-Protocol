@@ -112,13 +112,14 @@ class AgentBanner:
         Returns:
             Markdown-formatted banner
         """
-        agent = AgentBanner.AGENTS.get(agent_key.lower())
+        normalized_key = agent_key.lower()
+        agent = AgentBanner.AGENTS.get(normalized_key)
         if not agent:
             raise ValueError(f"Unknown agent: {agent_key}")
 
         if use_html:
             # Determine text color based on background
-            text_color = "#000" if agent_key in ["gojo", "nobara"] else "#FFF"
+            text_color = "#000" if normalized_key in ["gojo", "nobara"] else "#FFF"
 
             return f"""<div style="background: linear-gradient(135deg, {agent['hex_primary']} 0%, {agent['hex_alt']} 100%); padding: 20px; border-radius: 8px; color: {text_color}; margin: 20px 0;">
   <h2 style="margin: 0; font-weight: bold;">{agent['emoji']} {agent['name']} - {agent['title']}</h2>

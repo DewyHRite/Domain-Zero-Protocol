@@ -1,7 +1,7 @@
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v6.2.3
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v6.2.7
 ## Main Protocol File - Domain Zero
 
-**Version**: 6.2.1
+**Version**: 6.2.7
 **Status**: Production-Ready
 **Last Updated**: 2025-11-06
 **Major Enhancements**: Absolute Safety Principles, Version Control Enforcement, Canonical Source
@@ -11,7 +11,7 @@
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: https://github.com/DewyHRite/Domain-Zero-Protocol
-> **Current Local Protocol Version**: v6.2.3
+> **Current Local Protocol Version**: v6.2.7
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -124,7 +124,7 @@ Following semantic versioning principles:
 - Use when: New agent capabilities, new sections added, significant feature enhancements
 
 **Patch Version (6.2.X)**: Bug fixes, documentation polish, minor corrections
-- Example: v6.2.3 → v6.2.3
+- Example: v6.2.3 → v6.2.4
 - Use when: Typo fixes, documentation clarifications, minor adjustments
 
 ### Update Triggers (When to Increment Version)
