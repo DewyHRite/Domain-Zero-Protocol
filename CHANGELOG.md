@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [6.2.4] - 2025-11-07
+
+### Added
+- **SECURITY.md** - Comprehensive vulnerability disclosure policy with coordinated disclosure timeline, CVSS-based severity levels, and safe harbor protections for security researchers
 
 ### Changed
 - **Enhanced placeholder validation** - Verification scripts now fail (not warn) when configuration placeholders are detected
@@ -15,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Updated PROTOCOL_QUICKSTART.md** - Added warning about placeholder validation requirement
 
 ### Fixed
-- Configuration placeholder detection now treats placeholders as errors instead of warnings
+- **Configuration placeholder detection** - Now treats placeholders as errors instead of warnings
+- **PowerShell Unicode encoding** - Fixed Unicode symbol issues in verify-protocol.ps1
 
 ---
 
