@@ -61,6 +61,14 @@ ABSOLUTE_ZERO_PROTOCOL_IMPLEMENTATION.md
 AZP_DZP_IMPLEMENTATION_GUIDE.md
 AGENT_BANNER_COLOR_IMPLEMENTATION.md
 
+# Implementation and design documents (internal only)
+PASSIVE_OBSERVER.md
+DESKTOP_WRAPPER.md
+AI_INSTRUCTIONS.md
+MIGRATION_GUIDE_TEMPLATE.md
+TIER_TRANSITION_GUIDE.md
+CODEOWNERS
+
 # Documentation drafts and session summaries (keep external or in docs/)
 *_DRAFT.md
 *_WIP.md
