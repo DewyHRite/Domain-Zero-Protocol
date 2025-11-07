@@ -120,11 +120,11 @@ Following semantic versioning principles:
 - Use when: Complete protocol redesign, incompatible changes, major architectural shifts
 
 **Minor Version (6.X.0)**: New features, significant enhancements, or additions
-- Example: v6.2.1 → v6.2.0
+- Example: v6.2.0 → v6.3.0
 - Use when: New agent capabilities, new sections added, significant feature enhancements
 
-**Patch Version (6.1.X)**: Bug fixes, documentation polish, minor corrections
-- Example: v6.2.1 → v6.1.1
+**Patch Version (6.2.X)**: Bug fixes, documentation polish, minor corrections
+- Example: v6.2.1 → v6.2.2
 - Use when: Typo fixes, documentation clarifications, minor adjustments
 
 ### Update Triggers (When to Increment Version)

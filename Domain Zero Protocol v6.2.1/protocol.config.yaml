@@ -290,22 +290,22 @@ tooling:
   sast:
     enabled: false
     tools: ["snyk-code", "semgrep", "codeql"]
-    run_on: ["tier_2", "tier_3"]
+    run_on: ["tier_2_standard", "tier_3_critical"]
 
   sca:
     enabled: false
     tools: ["snyk-open-source", "dependabot"]
-    run_on: ["tier_2", "tier_3"]
+    run_on: ["tier_2_standard", "tier_3_critical"]
 
   dast:
     enabled: false
     tools: ["owasp-zap", "burp-suite"]
-    run_on: ["tier_3"]
+    run_on: ["tier_3_critical"]
 
   iac_scanning:
     enabled: false
     tools: ["snyk-iac", "checkov", "tfsec"]
-    run_on: ["tier_3"]
+    run_on: ["tier_3_critical"]
 
   # Testing frameworks (auto-detected if not specified)
   testing:

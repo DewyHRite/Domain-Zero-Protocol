@@ -13,71 +13,71 @@ When releasing a new version (e.g., v6.1 → v6.2), update the following files:
 ### 1. Folder Name
 **Location**: Repository root
 **Current**: `Domain Zero Protocol v6.2.1`
-**Action**: Rename folder to match new version
+**Action**: Rename folder to match new version (example: patch increment)
 ```bash
-git mv "Domain Zero Protocol v6.2.1" "Domain Zero Protocol v6.2"
+git mv "Domain Zero Protocol v6.2.1" "Domain Zero Protocol v6.2.2"
 ```
 
 ### 2. VERSION File
-**Location**: `Domain Zero Protocol v6.X/VERSION`
+**Location**: `Domain Zero Protocol v6.X.Y/VERSION`
 **Current**: `v6.2.1`
 **Format**: `vMAJOR.MINOR.PATCH`
 **Action**: Update single line with new version
 
 ### 3. protocol.config.yaml
-**Location**: `Domain Zero Protocol v6.X/protocol.config.yaml`
+**Location**: `Domain Zero Protocol v6.X.Y/protocol.config.yaml`
 **Lines to Update**:
-- Line 11: `version: "v6.X.0"`
+- Line 11: `version: "v6.X.Y"`
 
 ### 4. protocol/CLAUDE.md
-**Location**: `Domain Zero Protocol v6.X/protocol/CLAUDE.md`
+**Location**: `Domain Zero Protocol v6.X.Y/protocol/CLAUDE.md`
 **Lines to Update**:
-- Line 1: `# JUJUTSU KAISEN AI PROTOCOL SYSTEM v6.X`
+- Line 1: `# JUJUTSU KAISEN AI PROTOCOL SYSTEM v6.X.Y`
 - Line 4: `**Version**: 6.X`
 - Line 6: `**Last Updated**: YYYY-MM-DD`
-- Line 14: `> **Current Local Protocol Version**: v6.X`
+- Line 14: `> **Current Local Protocol Version**: v6.X.Y`
 - Line 657: Update version history entry
 
 ### 5. protocol/YUUJI.md
-**Location**: `Domain Zero Protocol v6.X/protocol/YUUJI.md`
+**Location**: `Domain Zero Protocol v6.X.Y/protocol/YUUJI.md`
 **Lines to Update**:
-- Line 2: `## Agent Protocol File v6.X`
+- Line 2: `## Agent Protocol File v6.X.Y`
 - Line 6: `**Protocol Version**: 6.X`
 
 ### 6. protocol/MEGUMI.md
-**Location**: `Domain Zero Protocol v6.X/protocol/MEGUMI.md`
+**Location**: `Domain Zero Protocol v6.X.Y/protocol/MEGUMI.md`
 **Lines to Update**:
-- Line 2: `## Agent Protocol File v6.X`
+- Line 2: `## Agent Protocol File v6.X.Y`
 - Line 6: `**Protocol Version**: 6.X`
 
 ### 7. protocol/NOBARA.md
-**Location**: `Domain Zero Protocol v6.X/protocol/NOBARA.md`
+**Location**: `Domain Zero Protocol v6.X.Y/protocol/NOBARA.md`
 **Lines to Update**:
-- Line 2: `## Agent Protocol File v6.X`
+- Line 2: `## Agent Protocol File v6.X.Y`
 - Line 6: `**Protocol Version**: 6.X`
 
 ### 8. protocol/GOJO.md
-**Location**: `Domain Zero Protocol v6.X/protocol/GOJO.md`
+**Location**: `Domain Zero Protocol v6.X.Y/protocol/GOJO.md`
 **Lines to Update**:
-- Line 2: `## Agent Protocol File v6.X`
+- Line 2: `## Agent Protocol File v6.X.Y`
 - Line 6: `**Protocol Version**: 6.X`
 
 ### 9. PR_SUMMARY.md
-**Location**: `Domain Zero Protocol v6.X/PR_SUMMARY.md`
+**Location**: `Domain Zero Protocol v6.X.Y/PR_SUMMARY.md`
 **Lines to Update**:
-- Line 6: `**Protocol Version**: v6.X.0`
+- Line 6: `**Protocol Version**: v6.X.Y`
 - Line 7: `**Release Date**: YYYY-MM-DD`
 
 ### 10. README.md
-**Location**: `Domain Zero Protocol v6.X/README.md`
+**Location**: `Domain Zero Protocol v6.X.Y/README.md`
 **Lines to Update**:
 - Line 152-155: Update folder name in bash cp commands
 - Line 161-164: Update folder name in PowerShell commands
 - Line 170-173: Update folder name in cmd commands
-- Various: Update references to "Domain Zero Protocol v6.X"
+- Various: Update references to "Domain Zero Protocol v6.X.Y"
 
 ### 11. REVIEW_REMEDIATION_vX.X.md
-**Location**: `Domain Zero Protocol v6.X/REVIEW_REMEDIATION_v6.X.md`
+**Location**: `Domain Zero Protocol v6.X.Y/REVIEW_REMEDIATION_v6.X.md`
 **Action**:
 - Rename file to match new version
 - Update version references inside
@@ -148,9 +148,9 @@ After updating version numbers, verify:
 - [ ] README.md installation commands reference correct folder name
 - [ ] PR_SUMMARY.md reflects new version
 - [ ] All documentation paths updated
-- [ ] No references to old version remain (search: `grep -r "v6.0" .`)
+- [ ] No references to old version remain (search: `grep -r "$OLD_VERSION" .`)
 - [ ] Git commit message includes version change
-- [ ] Git tag created: `git tag v6.X.0`
+- [ ] Git tag created: `git tag v6.X.Y`
 
 ---
 
@@ -159,8 +159,8 @@ After updating version numbers, verify:
 1. **Update all version numbers** (use this checklist)
 2. **Update CHANGELOG.md** (create if doesn't exist)
 3. **Run verification scripts**: `./scripts/verify-protocol.sh`
-4. **Commit changes**: `git commit -m "Domain Zero v6.X.0 Release"`
-5. **Create git tag**: `git tag -a v6.X.0 -m "Domain Zero Protocol v6.X.0"`
+4. **Commit changes**: `git commit -m "Domain Zero v6.X.Y Release"`
+5. **Create git tag**: `git tag -a v6.X.Y -m "Domain Zero Protocol v6.X.Y"`
 6. **Push to remote**: `git push && git push --tags`
 7. **Create GitHub release** with release notes
 8. **Update canonical repository** if this is the canonical source

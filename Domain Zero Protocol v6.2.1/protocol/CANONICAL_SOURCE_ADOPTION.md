@@ -1,9 +1,9 @@
 # Canonical Source Adoption & Repository Referencing Strategy
 ## Repository: <https://github.com/DewyHRite/Domain_Zero_Protocol_DZP>
 
-**Date**: 2025-11-06  
-**Protocol Version: v6.2.1.x (Transition from distributed copies to canonical reference)  
-**Status**: Proposed – Ready for Implementation  
+**Date**: 2025-11-06
+**Protocol Version**: v6.2.1.x (Transition from distributed copies to canonical reference)
+**Status**: Proposed – Ready for Implementation
 **Owner**: Protocol Guardian (Gojo) / Repository Admins  
 
 ---

@@ -1,4 +1,4 @@
-# Domain Zero Protocol v6.1
+# Domain Zero Protocol v6.2.1
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
@@ -263,7 +263,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a four-agent
 - GOJO (Mission Control): Project lifecycle, protocol guardian
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v6.1)
+- protocol/CLAUDE.md (main protocol, v6.2.1)
 - protocol/YUUJI.md (implementation agent)
 - protocol/MEGUMI.md (security agent)
 - protocol/NOBARA.md (creative strategy agent)
