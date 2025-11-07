@@ -296,19 +296,33 @@ Run protocol verification (optional, requires setup):
 
 **Windows PowerShell**:
 ```powershell
+# Quick verification (recommended for first run)
+.\scripts\verify-protocol.ps1 -Quick
+
+# Full verification
 .\scripts\verify-protocol.ps1
 ```
 
 **macOS/Linux**:
 ```bash
+# Quick verification (recommended for first run)
+./scripts/verify-protocol.sh --quick
+
+# Full verification
 ./scripts/verify-protocol.sh
 ```
 
 **What it checks**:
-- ✅ Config file completeness
+- ✅ Dependencies (required command-line tools)
+- ✅ File existence (all protocol files present)
+- ✅ Config file completeness (no placeholders)
+- ✅ YAML syntax validation
 - ✅ Role isolation vocabulary (no forbidden cross-talk)
 - ✅ Output template conformance
 - ✅ CLAUDE.md protection rules
+- ✅ Backup configuration
+
+**Tip:** Use `--quick` / `-Quick` for faster verification (runs only critical checks)
 
 ---
 

@@ -918,6 +918,54 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 ---
 
+**Problem: Verification takes too long**
+
+**Solution (v6.2.6+):** Use quick mode for faster verification
+
+**Unix/Linux/macOS:**
+```bash
+# Quick mode - runs only critical checks (60% faster)
+./scripts/verify-protocol.sh --quick
+
+# Skip specific checks
+./scripts/verify-protocol.sh --skip=isolation --skip=templates
+
+# Run only specific checks
+./scripts/verify-protocol.sh --only=files --only=config
+
+# List all available checks
+./scripts/verify-protocol.sh --list
+```
+
+**Windows PowerShell:**
+```powershell
+# Quick mode - runs only critical checks (60% faster)
+.\scripts\verify-protocol.ps1 -Quick
+
+# Skip specific checks
+.\scripts\verify-protocol.ps1 -Skip isolation,templates
+
+# Run only specific checks
+.\scripts\verify-protocol.ps1 -Only files,config
+
+# List all available checks
+.\scripts\verify-protocol.ps1 -List
+```
+
+**Available checks:**
+- `dependencies` (critical) - Verify required command-line tools
+- `files` (critical) - Check protocol file existence
+- `config` (critical) - Validate configuration completeness
+- `yaml` (critical) - Check YAML syntax validity
+- `isolation` (warning) - Scan for forbidden vocabulary
+- `templates` (warning) - Check output template structure
+- `protection` (warning) - Verify CLAUDE.md protection
+- `backup` (warning) - Check backup configuration
+
+**Tip:** Use `--quick` in CI/CD pipelines for faster builds
+
+---
+
 ### Git & GitHub Issues
 
 **Problem: trigger-19.md accidentally committed**

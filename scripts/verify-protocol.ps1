@@ -1,10 +1,13 @@
 # Domain Zero Protocol Verification Script (PowerShell)
-# Version: 1.0
+# Version: 2.0
 # Purpose: Verify protocol integrity, configuration completeness, and enforcement rules
 
 param(
     [switch]$Verbose = $false,
-    [switch]$Fix = $false,
+    [switch]$Quick = $false,
+    [string[]]$Skip = @(),
+    [string[]]$Only = @(),
+    [switch]$List = $false,
     [switch]$Help = $false
 )
 
@@ -12,9 +15,10 @@ param(
 # CONFIGURATION
 # ============================================================================
 
-$ErrorCount = 0
-$WarningCount = 0
-$PassCount = 0
+$script:ErrorCount = 0
+$script:WarningCount = 0
+$script:PassCount = 0
+$script:CriticalError = $false
 
 # Colors for output
 $ColorPass = "Green"
@@ -22,6 +26,18 @@ $ColorFail = "Red"
 $ColorWarn = "Yellow"
 $ColorInfo = "Cyan"
 $ColorHeader = "Magenta"
+
+# Available checks: name:function:level
+$AvailableChecks = @(
+    @{Name="dependencies"; Function="Test-Dependencies"; Level="critical"}
+    @{Name="files"; Function="Test-FileExistence"; Level="critical"}
+    @{Name="config"; Function="Test-ConfigCompleteness"; Level="critical"}
+    @{Name="yaml"; Function="Test-YamlSyntax"; Level="critical"}
+    @{Name="isolation"; Function="Test-IsolationVocabulary"; Level="warning"}
+    @{Name="templates"; Function="Test-OutputTemplates"; Level="warning"}
+    @{Name="protection"; Function="Test-ClaudeMdProtection"; Level="warning"}
+    @{Name="backup"; Function="Test-BackupConfiguration"; Level="warning"}
+)
 
 # ============================================================================
 # HELPER FUNCTIONS
@@ -46,6 +62,26 @@ function Write-Fail {
     $script:ErrorCount++
 }
 
+function Write-FailWithContext {
+    param(
+        [string]$Message,
+        [string]$Impact = "",
+        [string]$Action = "",
+        [string]$DocLink = ""
+    )
+
+    Write-Fail $Message
+    if ($Impact) {
+        Write-Host "      Impact: $Impact" -ForegroundColor $ColorInfo
+    }
+    if ($Action) {
+        Write-Host "      Action: $Action" -ForegroundColor $ColorInfo
+    }
+    if ($DocLink) {
+        Write-Host "      Docs: $DocLink" -ForegroundColor $ColorInfo
+    }
+}
+
 function Write-Warn {
     param([string]$Message)
     Write-Host "  [WARN] $Message" -ForegroundColor $ColorWarn
@@ -62,26 +98,31 @@ function Write-InfoMsg {
 function Show-Help {
     Write-Host @"
 
-Domain Zero Protocol Verification Script
+Domain Zero Protocol Verification Script v2.0
 
 USAGE:
     .\scripts\verify-protocol.ps1 [OPTIONS]
 
 OPTIONS:
-    -Verbose    Show detailed information during verification
-    -Fix        Attempt to auto-fix issues (NOT IMPLEMENTED YET)
-    -Help       Show this help message
+    -Verbose        Show detailed information during verification
+    -Quick          Run only critical checks (faster)
+    -Skip CHECK     Skip specific check (can be used multiple times)
+    -Only CHECK     Run only specific check (can be used multiple times)
+    -List           List all available checks and exit
+    -Help           Show this help message
 
 DESCRIPTION:
     This script verifies the integrity and completeness of the Domain Zero Protocol
     installation. It checks:
 
+    0. Dependencies - Verify required command-line tools are installed
     1. File Existence - Ensure all required protocol files are present
     2. Configuration Completeness - Verify protocol.config.yaml has required fields
-    3. Isolation Vocabulary - Scan for forbidden cross-agent vocabulary
-    4. Output Templates - Check role outputs conform to required headers
-    5. CLAUDE.md Protection - Verify CODEOWNERS or protection rules exist
-    6. Backup Configuration - Ensure backup requirements are configured
+    3. YAML Syntax - Validate YAML syntax in configuration files
+    4. Isolation Vocabulary - Scan for forbidden cross-agent vocabulary
+    5. Output Templates - Check role outputs conform to required headers
+    6. CLAUDE.md Protection - Verify CODEOWNERS or protection rules exist
+    7. Backup Configuration - Ensure backup requirements are configured
 
 EXAMPLES:
     # Basic verification
@@ -90,21 +131,122 @@ EXAMPLES:
     # Verbose output
     .\scripts\verify-protocol.ps1 -Verbose
 
-    # Auto-fix issues (future feature)
-    .\scripts\verify-protocol.ps1 -Fix
+    # Quick mode (critical checks only)
+    .\scripts\verify-protocol.ps1 -Quick
+
+    # Skip isolation check
+    .\scripts\verify-protocol.ps1 -Skip isolation
+
+    # Run only file and config checks
+    .\scripts\verify-protocol.ps1 -Only files,config
+
+    # List available checks
+    .\scripts\verify-protocol.ps1 -List
 
 EXIT CODES:
     0 - All checks passed
     1 - Errors found
     2 - Warnings only (no errors)
+    3 - Missing dependencies (cannot proceed)
 
 "@
     exit 0
 }
 
+function Show-CheckList {
+    Write-Host ""
+    Write-Host "Available Checks:"
+    Write-Host ""
+    Write-Host ("  {0,-15} {1,-10} {2}" -f "NAME", "LEVEL", "DESCRIPTION")
+    Write-Host "  " + ("-" * 57)
+
+    $descriptions = @(
+        @{Name="dependencies"; Level="critical"; Desc="Verify required command-line tools"}
+        @{Name="files"; Level="critical"; Desc="Check protocol file existence"}
+        @{Name="config"; Level="critical"; Desc="Validate configuration completeness"}
+        @{Name="yaml"; Level="critical"; Desc="Check YAML syntax validity"}
+        @{Name="isolation"; Level="warning"; Desc="Scan for forbidden vocabulary"}
+        @{Name="templates"; Level="warning"; Desc="Check output template structure"}
+        @{Name="protection"; Level="warning"; Desc="Verify CLAUDE.md protection"}
+        @{Name="backup"; Level="warning"; Desc="Check backup configuration"}
+    )
+
+    foreach ($item in $descriptions) {
+        Write-Host ("  {0,-15} {1,-10} {2}" -f $item.Name, $item.Level, $item.Desc)
+    }
+
+    Write-Host ""
+    Write-Host "Usage: -Skip CHECK or -Only CHECK"
+    Write-Host ""
+    exit 0
+}
+
+function Test-ShouldRunCheck {
+    param(
+        [string]$CheckName,
+        [string]$CheckLevel
+    )
+
+    # Skip if in skip list
+    if ($Skip -contains $CheckName) {
+        return $false
+    }
+
+    # Skip if only specific checks requested and this isn't one
+    if ($Only.Count -gt 0 -and $Only -notcontains $CheckName) {
+        return $false
+    }
+
+    # Skip non-critical if quick mode
+    if ($Quick -and $CheckLevel -ne "critical") {
+        return $false
+    }
+
+    return $true
+}
+
 # ============================================================================
 # VERIFICATION CHECKS
 # ============================================================================
+
+function Test-Dependencies {
+    Write-Header "0. Dependency Check"
+
+    $requiredTools = @("powershell")  # PowerShell itself
+    $optionalTools = @("python", "python3", "yamllint")
+    $missingRequired = @()
+
+    Write-InfoMsg "Checking required command-line tools..."
+    foreach ($tool in $requiredTools) {
+        if (Get-Command $tool -ErrorAction SilentlyContinue) {
+            Write-Pass "Found: $tool"
+        } else {
+            $missingRequired += $tool
+            Write-FailWithContext `
+                -Message "Required tool not found: $tool" `
+                -Impact "Verification cannot proceed without this tool" `
+                -Action "Ensure PowerShell is properly installed" `
+                -DocLink ""
+        }
+    }
+
+    if ($missingRequired.Count -gt 0) {
+        Write-Host ""
+        Write-Host "  [X] Missing required tools: $($missingRequired -join ', ')" -ForegroundColor $ColorFail
+        Write-Host "  Install them before proceeding" -ForegroundColor $ColorInfo
+        Write-Host ""
+        exit 3
+    }
+
+    Write-InfoMsg "Checking optional tools..."
+    foreach ($tool in $optionalTools) {
+        if (Get-Command $tool -ErrorAction SilentlyContinue) {
+            Write-Pass "Found (optional): $tool"
+        } else {
+            Write-InfoMsg "Optional tool not found: $tool"
+        }
+    }
+}
 
 function Test-FileExistence {
     Write-Header "1. File Existence Check"
@@ -128,13 +270,24 @@ function Test-FileExistence {
         ".gitignore"
     )
 
+    $missingCritical = @()
+
     Write-InfoMsg "Checking required files..."
     foreach ($File in $RequiredFiles) {
         if (Test-Path $File) {
             Write-Pass "Found: $File"
         } else {
-            Write-Fail "Missing required file: $File"
+            $missingCritical += $File
+            Write-FailWithContext `
+                -Message "Missing required file: $File" `
+                -Impact "Protocol cannot function without this file" `
+                -Action "Copy from Domain Zero repository or re-run setup" `
+                -DocLink "https://github.com/DewyHRite/Domain-Zero-Protocol#installation"
         }
+    }
+
+    if ($missingCritical.Count -gt 0) {
+        $script:CriticalError = $true
     }
 
     Write-InfoMsg "Checking optional files..."
@@ -147,16 +300,86 @@ function Test-FileExistence {
     }
 }
 
+function Test-YamlSyntax {
+    Write-Header "3. YAML Syntax Validation"
+
+    if (-not (Test-Path "protocol.config.yaml")) {
+        Write-FailWithContext `
+            -Message "protocol.config.yaml not found" `
+            -Impact "Cannot validate YAML syntax" `
+            -Action "Ensure protocol.config.yaml exists" `
+            -DocLink ""
+        $script:CriticalError = $true
+        return
+    }
+
+    # Try Python validation first
+    $pythonCmd = $null
+    if (Get-Command python3 -ErrorAction SilentlyContinue) {
+        $pythonCmd = "python3"
+    } elseif (Get-Command python -ErrorAction SilentlyContinue) {
+        $pythonCmd = "python"
+    }
+
+    if ($pythonCmd) {
+        Write-InfoMsg "Validating YAML syntax with Python..."
+        $yamlTest = & $pythonCmd -c "import yaml; yaml.safe_load(open('protocol.config.yaml'))" 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Pass "YAML syntax valid (verified with Python)"
+        } else {
+            Write-FailWithContext `
+                -Message "Invalid YAML syntax in protocol.config.yaml" `
+                -Impact "Configuration file cannot be parsed" `
+                -Action "Fix syntax errors using a YAML validator" `
+                -DocLink "https://www.yamllint.com/"
+            $script:CriticalError = $true
+            return
+        }
+    } elseif (Get-Command yamllint -ErrorAction SilentlyContinue) {
+        Write-InfoMsg "Validating YAML syntax with yamllint..."
+        $yamlTest = yamllint -d relaxed protocol.config.yaml 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Pass "YAML syntax valid (verified with yamllint)"
+        } else {
+            Write-FailWithContext `
+                -Message "Invalid YAML syntax in protocol.config.yaml" `
+                -Impact "Configuration file has syntax errors" `
+                -Action "Run 'yamllint protocol.config.yaml' for details" `
+                -DocLink ""
+            $script:CriticalError = $true
+            return
+        }
+    } else {
+        Write-Warn "YAML validation skipped (Python/yamllint not found)"
+        Write-InfoMsg "Install Python or yamllint for syntax validation"
+    }
+}
+
 function Test-ConfigCompleteness {
     Write-Header "2. Configuration Completeness Check"
 
     if (-not (Test-Path "protocol.config.yaml")) {
-        Write-Fail "protocol.config.yaml not found - cannot verify configuration"
+        Write-FailWithContext `
+            -Message "protocol.config.yaml not found" `
+            -Impact "Cannot verify configuration" `
+            -Action "Copy protocol.config.yaml from Domain Zero repository" `
+            -DocLink "https://github.com/DewyHRite/Domain-Zero-Protocol"
+        $script:CriticalError = $true
         return
     }
 
     Write-InfoMsg "Reading protocol.config.yaml..."
     $ConfigContent = Get-Content "protocol.config.yaml" -Raw
+
+    if ([string]::IsNullOrWhiteSpace($ConfigContent)) {
+        Write-FailWithContext `
+            -Message "protocol.config.yaml is empty" `
+            -Impact "No configuration available" `
+            -Action "Populate protocol.config.yaml with valid configuration" `
+            -DocLink ""
+        $script:CriticalError = $true
+        return
+    }
 
     # Check for placeholder values that need to be updated
     $Placeholders = @(
@@ -215,53 +438,59 @@ function Test-ConfigCompleteness {
     )
 
     foreach ($Section in $RequiredSections) {
-        if ($ConfigContent -match $Section) {
+        if ($ConfigContent -match [regex]::Escape($Section)) {
             Write-Pass "Config section present: $Section"
         } else {
-            Write-Fail "Missing config section: $Section"
+            Write-FailWithContext `
+                -Message "Missing config section: $Section" `
+                -Impact "Configuration incomplete" `
+                -Action "Add required section to protocol.config.yaml" `
+                -DocLink ""
         }
     }
 }
 
 function Test-IsolationVocabulary {
-    Write-Header "3. Isolation Vocabulary Check"
+    Write-Header "4. Isolation Vocabulary Check"
 
     Write-InfoMsg "Checking for forbidden cross-agent vocabulary..."
 
     $isolationErrors = 0
 
-    # Yuuji should not mention Gojo directly in protocol definition
+    # Yuuji should not mention Gojo directly
     if (Test-Path "protocol/YUUJI.md") {
-        $YuujiContent = Get-Content "protocol/YUUJI.md" -Raw
-        $ForbiddenTerms = @("GOJO", "Satoru Gojo", "Mission Control", "Trigger 19", "trigger-19")
+        $forbiddenTerms = @("GOJO", "Satoru Gojo", "Mission Control", "Trigger 19", "trigger-19")
+        $yuujiFound = $false
 
-        foreach ($Term in $ForbiddenTerms) {
-            if ($YuujiContent -match $Term) {
-                Write-Warn "Yuuji protocol mentions forbidden term: $Term"
+        foreach ($term in $forbiddenTerms) {
+            if ((Get-Content "protocol/YUUJI.md" -Raw) -match [regex]::Escape($term)) {
+                Write-Warn "Yuuji protocol mentions forbidden term: $term"
                 $isolationErrors++
+                $yuujiFound = $true
             }
         }
 
-        if ($isolationErrors -eq 0) {
+        if (-not $yuujiFound) {
             Write-Pass "Yuuji isolation vocabulary check passed"
         }
     } else {
         Write-Warn "protocol/YUUJI.md not found"
     }
 
-    # Megumi should not mention Gojo directly in protocol definition
+    # Megumi should not mention Gojo directly
     if (Test-Path "protocol/MEGUMI.md") {
-        $MegumiContent = Get-Content "protocol/MEGUMI.md" -Raw
-        $ForbiddenTerms = @("GOJO", "Satoru Gojo", "Mission Control", "Trigger 19", "trigger-19")
+        $forbiddenTerms = @("GOJO", "Satoru Gojo", "Mission Control", "Trigger 19", "trigger-19")
+        $megumiFound = $false
 
-        foreach ($Term in $ForbiddenTerms) {
-            if ($MegumiContent -match $Term) {
-                Write-Warn "Megumi protocol mentions forbidden term: $Term"
+        foreach ($term in $forbiddenTerms) {
+            if ((Get-Content "protocol/MEGUMI.md" -Raw) -match [regex]::Escape($term)) {
+                Write-Warn "Megumi protocol mentions forbidden term: $term"
                 $isolationErrors++
+                $megumiFound = $true
             }
         }
 
-        if ($isolationErrors -eq 0) {
+        if (-not $megumiFound) {
             Write-Pass "Megumi isolation vocabulary check passed"
         }
     } else {
@@ -275,18 +504,16 @@ function Test-IsolationVocabulary {
 }
 
 function Test-OutputTemplates {
-    Write-Header "4. Output Template Check"
+    Write-Header "5. Output Template Check"
 
     Write-InfoMsg "Checking for required output structure..."
 
-    # Check dev-notes.md for Yuuji's output headers
     if (Test-Path ".protocol-state/dev-notes.md") {
         Write-Pass "dev-notes.md exists (Yuuji's output template)"
     } else {
         Write-Warn "dev-notes.md not found - Yuuji hasn't created implementation log yet"
     }
 
-    # Check security-review.md for Megumi's output headers
     if (Test-Path ".protocol-state/security-review.md") {
         Write-Pass "security-review.md exists (Megumi's output template)"
     } else {
@@ -297,11 +524,10 @@ function Test-OutputTemplates {
 }
 
 function Test-ClaudeMdProtection {
-    Write-Header "5. CLAUDE.md Protection Check"
+    Write-Header "6. CLAUDE.md Protection Check"
 
     if (Test-Path "CODEOWNERS") {
-        $Codeowners = Get-Content "CODEOWNERS" -Raw
-        if ($Codeowners -match "protocol/CLAUDE.md") {
+        if ((Get-Content "CODEOWNERS" -Raw) -match "protocol/CLAUDE.md") {
             Write-Pass "CODEOWNERS file protects protocol/CLAUDE.md"
         } else {
             Write-Warn "CODEOWNERS exists but doesn't protect protocol/CLAUDE.md"
@@ -310,10 +536,8 @@ function Test-ClaudeMdProtection {
         Write-Warn "CODEOWNERS file not found - consider adding for CLAUDE.md protection"
     }
 
-    # Check if config has protection enabled
     if (Test-Path "protocol.config.yaml") {
-        $Config = Get-Content "protocol.config.yaml" -Raw
-        if ($Config -match "claude_md_protected:\s*true") {
+        if ((Get-Content "protocol.config.yaml" -Raw) -match "claude_md_protected:.*true") {
             Write-Pass "Config has CLAUDE.md protection enabled"
         } else {
             Write-Warn "Config does not explicitly enable CLAUDE.md protection"
@@ -322,24 +546,29 @@ function Test-ClaudeMdProtection {
 }
 
 function Test-BackupConfiguration {
-    Write-Header "6. Backup Configuration Check"
+    Write-Header "7. Backup Configuration Check"
 
-    if (Test-Path "protocol.config.yaml") {
-        $Config = Get-Content "protocol.config.yaml" -Raw
+    if (-not (Test-Path "protocol.config.yaml")) {
+        Write-FailWithContext `
+            -Message "protocol.config.yaml not found" `
+            -Impact "Cannot verify backup configuration" `
+            -Action "Ensure protocol.config.yaml exists" `
+            -DocLink ""
+        return
+    }
 
-        if ($Config -match "(?i)required_for:.*yuuji") {
-            Write-Pass "Backup requirement configured for Yuuji"
-        } else {
-            Write-Warn "Backup requirement for Yuuji not found in config (regex case-insensitive search)"
-        }
+    $ConfigContent = Get-Content "protocol.config.yaml" -Raw
 
-        if ($Config -match "retention_days:\s*\d+") {
-            Write-Pass "Backup retention policy configured"
-        } else {
-            Write-Warn "Backup retention policy not found in config (expects numeric days)"
-        }
+    if ($ConfigContent -match "required_for:.*yuuji") {
+        Write-Pass "Backup requirement configured for Yuuji"
     } else {
-        Write-Fail "protocol.config.yaml not found - cannot verify backup configuration"
+        Write-Warn "Backup requirement for Yuuji not found in config"
+    }
+
+    if ($ConfigContent -match "retention_days:\s*\d+") {
+        Write-Pass "Backup retention policy configured"
+    } else {
+        Write-Warn "Backup retention policy not found in config"
     }
 }
 
@@ -351,12 +580,16 @@ if ($Help) {
     Show-Help
 }
 
+if ($List) {
+    Show-CheckList
+}
+
 Write-Host @"
 
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
 ║        DOMAIN ZERO PROTOCOL VERIFICATION TOOL                 ║
-║                     Version 1.0                               ║
+║                     Version 2.0                               ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 
@@ -365,13 +598,34 @@ Write-Host @"
 Write-InfoMsg "Starting protocol verification..."
 Write-InfoMsg "Working directory: $(Get-Location)"
 
-# Run all verification checks
-Test-FileExistence
-Test-ConfigCompleteness
-Test-IsolationVocabulary
-Test-OutputTemplates
-Test-ClaudeMdProtection
-Test-BackupConfiguration
+if ($Quick) {
+    Write-InfoMsg "Running in QUICK mode (critical checks only)"
+}
+
+if ($Skip.Count -gt 0) {
+    Write-InfoMsg "Skipping checks: $($Skip -join ', ')"
+}
+
+if ($Only.Count -gt 0) {
+    Write-InfoMsg "Running only: $($Only -join ', ')"
+}
+
+# Execute checks based on configuration
+foreach ($check in $AvailableChecks) {
+    if (Test-ShouldRunCheck -CheckName $check.Name -CheckLevel $check.Level) {
+        & $check.Function
+
+        # Stop if critical error occurred in critical check
+        if ($script:CriticalError -and $check.Level -eq "critical") {
+            Write-Host ""
+            Write-Host "  [!] Critical error detected. Stopping verification." -ForegroundColor $ColorFail
+            Write-Host "  Fix critical errors before running additional checks." -ForegroundColor $ColorInfo
+            break
+        }
+    } else {
+        Write-InfoMsg "Skipped check: $($check.Name)"
+    }
+}
 
 # ============================================================================
 # SUMMARY
@@ -385,7 +639,13 @@ Write-Host "  WARNINGS: $WarningCount" -ForegroundColor $ColorWarn
 Write-Host "  ERRORS: $ErrorCount" -ForegroundColor $ColorFail
 Write-Host ""
 
-if ($ErrorCount -eq 0 -and $WarningCount -eq 0) {
+if ($script:CriticalError) {
+    Write-Host "  [X] Protocol verification FAILED (Critical Errors)" -ForegroundColor $ColorFail
+    Write-Host "    Fix critical errors before proceeding." -ForegroundColor $ColorFail
+    Write-Host ""
+    Write-Host "  Tip: Run with -Verbose for detailed information" -ForegroundColor $ColorInfo
+    exit 1
+} elseif ($ErrorCount -eq 0 -and $WarningCount -eq 0) {
     Write-Host "  [PASS] Protocol verification PASSED - All checks successful!" -ForegroundColor $ColorPass
     exit 0
 } elseif ($ErrorCount -eq 0) {
@@ -393,7 +653,9 @@ if ($ErrorCount -eq 0 -and $WarningCount -eq 0) {
     Write-Host "    Consider addressing warnings for optimal protocol operation." -ForegroundColor $ColorWarn
     exit 2
 } else {
-    Write-Host "  [FAIL] Protocol verification FAILED" -ForegroundColor $ColorFail
+    Write-Host "  [X] Protocol verification FAILED" -ForegroundColor $ColorFail
     Write-Host "    Please fix errors before proceeding." -ForegroundColor $ColorFail
+    Write-Host ""
+    Write-Host "  Tip: Run with -Verbose for detailed information" -ForegroundColor $ColorInfo
     exit 1
 }

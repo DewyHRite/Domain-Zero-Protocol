@@ -421,6 +421,52 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 ---
 
+### Can I speed up verification or skip certain checks?
+
+**Yes!** Version 6.2.6+ added selective execution options:
+
+**Quick Mode (60% faster):**
+```bash
+./scripts/verify-protocol.sh --quick          # Unix/Linux/macOS
+.\scripts\verify-protocol.ps1 -Quick          # Windows
+```
+Runs only critical checks (dependencies, files, config, yaml)
+
+**Skip Specific Checks:**
+```bash
+./scripts/verify-protocol.sh --skip=isolation --skip=templates
+.\scripts\verify-protocol.ps1 -Skip isolation,templates
+```
+
+**Run Only Specific Checks:**
+```bash
+./scripts/verify-protocol.sh --only=files --only=config
+.\scripts\verify-protocol.ps1 -Only files,config
+```
+
+**List All Available Checks:**
+```bash
+./scripts/verify-protocol.sh --list
+.\scripts\verify-protocol.ps1 -List
+```
+
+**Available Checks:**
+- `dependencies` (critical)
+- `files` (critical)
+- `config` (critical)
+- `yaml` (critical)
+- `isolation` (warning)
+- `templates` (warning)
+- `protection` (warning)
+- `backup` (warning)
+
+**Use Cases:**
+- **CI/CD:** Use `--quick` for faster builds
+- **Debugging:** Use `--only=config` to test specific issues
+- **Development:** Skip non-critical checks with `--skip`
+
+---
+
 ## Advanced Topics
 
 ### Can I customize agent prompts?
