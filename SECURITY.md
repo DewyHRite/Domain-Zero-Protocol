@@ -44,7 +44,7 @@ We provide security updates for the following versions:
 
 For sensitive security issues, use GitHub's private vulnerability reporting:
 
-1. Navigate to: https://github.com/DewyHRite/Domain-Zero-Protocol/security/advisories
+1. Navigate to: [GitHub Security Advisories](https://github.com/DewyHRite/Domain-Zero-Protocol/security/advisories)
 2. Click "Report a vulnerability"
 3. Fill out the advisory form with:
    - **Title**: Brief, non-sensational description (e.g., "Tier bypass in agent handoff logic")
@@ -64,7 +64,7 @@ For sensitive security issues, use GitHub's private vulnerability reporting:
 
 For low-severity issues or general security improvements:
 
-1. Create a new issue: https://github.com/DewyHRite/Domain-Zero-Protocol/issues/new
+1. Create a new issue: [New Issue](https://github.com/DewyHRite/Domain-Zero-Protocol/issues/new)
 2. Use the `[SECURITY]` prefix in the title
 3. Label the issue with `security` tag
 4. Provide:
@@ -86,7 +86,7 @@ For low-severity issues or general security improvements:
 
 For critical vulnerabilities requiring immediate attention (e.g., active exploitation, data breach risk):
 
-- **Email**: dwaynewright1@outlook.com
+- **Email**: [dwaynewright1@outlook.com](mailto:dwaynewright1@outlook.com)
 - **GitHub**: Open an issue with `[SECURITY - URGENT]` prefix
 - **Expected Response**: Best effort (prioritized over non-critical issues)
 - **Definition of Critical**:
@@ -101,7 +101,7 @@ For critical vulnerabilities requiring immediate attention (e.g., active exploit
 
 We follow **coordinated disclosure** principles:
 
-```
+```text
 Day 0:   Vulnerability reported via private advisory
 Day 7:   Initial response & acknowledgment (best effort)
 Day 14:  Triage completed, severity assigned (best effort)
@@ -269,10 +269,10 @@ When reporting, please indicate:
 
 ## Contact Information
 
-- **Security Email**: dwaynewright1@outlook.com (for critical/private reports)
-- **Security Advisories**: https://github.com/DewyHRite/Domain-Zero-Protocol/security/advisories
-- **Public Issues**: https://github.com/DewyHRite/Domain-Zero-Protocol/issues
-- **Project Repository**: https://github.com/DewyHRite/Domain-Zero-Protocol
+- **Security Email**: [dwaynewright1@outlook.com](mailto:dwaynewright1@outlook.com) (for critical/private reports)
+- **Security Advisories**: [GitHub Security Advisories](https://github.com/DewyHRite/Domain-Zero-Protocol/security/advisories)
+- **Public Issues**: [GitHub Issues](https://github.com/DewyHRite/Domain-Zero-Protocol/issues)
+- **Project Repository**: [Domain Zero Protocol Repository](https://github.com/DewyHRite/Domain-Zero-Protocol)
 - **Documentation**: See `README.md` and `PROTOCOL_QUICKSTART.md`
 
 ---

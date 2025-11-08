@@ -212,32 +212,30 @@ function Test-ShouldRunCheck {
 function Test-Dependencies {
     Write-Header "0. Dependency Check"
 
-    $requiredTools = @("powershell")  # PowerShell itself
-    $optionalTools = @("python", "python3", "yamllint")
-    $missingRequired = @()
+    # Check for PowerShell (accept either pwsh or powershell executable)
+    $foundPowerShell = $false
+    $psExecutables = @("pwsh", "powershell")
 
-    Write-InfoMsg "Checking required command-line tools..."
-    foreach ($tool in $requiredTools) {
-        if (Get-Command $tool -ErrorAction SilentlyContinue) {
-            Write-Pass "Found: $tool"
-        } else {
-            $missingRequired += $tool
-            Write-FailWithContext `
-                -Message "Required tool not found: $tool" `
-                -Impact "Verification cannot proceed without this tool" `
-                -Action "Ensure PowerShell is properly installed" `
-                -DocLink ""
+    Write-InfoMsg "Checking for PowerShell executable..."
+    foreach ($exe in $psExecutables) {
+        if (Get-Command $exe -ErrorAction SilentlyContinue) {
+            Write-Pass "Found PowerShell executable: $exe"
+            $foundPowerShell = $true
+            break
         }
     }
 
-    if ($missingRequired.Count -gt 0) {
-        Write-Host ""
-        Write-Host "  [X] Missing required tools: $($missingRequired -join ', ')" -ForegroundColor $ColorFail
-        Write-Host "  Install them before proceeding" -ForegroundColor $ColorInfo
-        Write-Host ""
+    if (-not $foundPowerShell) {
+        Write-FailWithContext `
+            -Message "No PowerShell executable found in PATH" `
+            -Impact "Verification cannot proceed without PowerShell" `
+            -Action "Install PowerShell (pwsh) or ensure it's in PATH" `
+            -DocLink "https://learn.microsoft.com/powershell/"
         exit 3
     }
 
+    # Check optional tools
+    $optionalTools = @("python", "python3", "yamllint")
     Write-InfoMsg "Checking optional tools..."
     foreach ($tool in $optionalTools) {
         if (Get-Command $tool -ErrorAction SilentlyContinue) {
