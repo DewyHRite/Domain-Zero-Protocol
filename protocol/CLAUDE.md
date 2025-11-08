@@ -185,7 +185,7 @@ All version numbers must remain synchronized:
 ### Pre-Push Version Verification (MANDATORY)
 
 **BEFORE ANY PUSH TO GITHUB**:
-A comprehensive and full codebase review MUST be done to ensure ALL version numbers across ALL files are updated and verified extensively.
+The person preparing the release (typically Gojo or the protocol maintainer) MUST conduct a comprehensive and full codebase review to ensure ALL version numbers across ALL files are updated and verified extensively. This step is mandatory and non-delegable.
 
 **Required Pre-Push Checklist**:
 - ✅ Run `./scripts/verify-protocol.(ps1|sh)` to validate version consistency
@@ -204,8 +204,8 @@ A comprehensive and full codebase review MUST be done to ensure ALL version numb
 ./scripts/verify-protocol.sh          # Linux/Mac
 ./scripts/verify-protocol.ps1         # Windows PowerShell
 
-# Manual grep check for old versions (example)
-grep -r "v6.2.6" --include="*.md" .   # Replace with old version number
+# Manual grep check for old versions (replace X.Y.Z with the previous version)
+grep -r "vX.Y.Z" --include="*.md" .
 ```
 
 **Failure to verify version consistency before push will result**:
