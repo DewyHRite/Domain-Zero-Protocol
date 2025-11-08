@@ -1,7 +1,9 @@
-# Domain Zero Protocol v7.0.0
+# Domain Zero Protocol v7.1.0
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
+
+> **New in v7.1.0**: [Mask Mode](#mask-mode) - Toggle between JJK-themed personality responses and professional mode. [REALITY_CHECK.md](REALITY_CHECK.md) provides an honest assessment of what Domain Zero actually is.
 
 Domain Zero is a four-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with test-first development, comprehensive security review, creative strategy, and adaptive workflow complexity.
 
@@ -10,6 +12,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 ## 📋 Table of Contents
 
 - [What is Domain Zero?](#-what-is-domain-zero)
+- [Mask Mode](#-mask-mode) ⭐ NEW in v7.1.0
 - [Prerequisites & Optional Integrations](#-prerequisites--optional-integrations)
 - [Quick Setup](#-quick-setup)
 - [AI Assistant Integration & Canonical Source](#-ai-assistant-integration--canonical-source)
@@ -24,7 +27,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 - [Success Criteria](#-success-criteria)
 - [Documentation](#-documentation)
 - [Getting Help](#-getting-help)
-- [Troubleshooting](#-troubleshooting) ⭐ NEW
+- [Troubleshooting](#-troubleshooting)
 - [Important Notes](#-important-notes)
 - [License](#-license)
 
@@ -142,6 +145,71 @@ Domain Zero creates a **controlled collaboration space** where four specialized 
 
 ---
 
+## 🎭 Mask Mode
+
+**New in v7.1.0**: Domain Zero now supports **Mask Mode**, allowing you to toggle between JJK-themed personality responses and professional mode.
+
+### What is Mask Mode?
+
+As explained in [REALITY_CHECK.md](REALITY_CHECK.md), the "agents" (Yuuji, Megumi, Nobara, Gojo) are **the same AI reading different instruction files** - they're prompt engineering, not true multi-agent systems. Mask Mode gives you control over the presentation style.
+
+### The Two Modes
+
+**🎭 MASK ON (Default)** - JJK Theme:
+- Personality-driven responses (enthusiastic, methodical, bold, confident)
+- Agent names: Yuuji, Megumi, Nobara, Gojo
+- Domain banners: `🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️`
+- JJK terminology: "Domain Zero", "The Weight", "Trigger 19"
+
+**👔 MASK OFF** - Professional Mode:
+- Straightforward, professional responses
+- Role names: Implementation Specialist, Security Analyst, Creative Strategist, Mission Control
+- Minimal banners: `Implementation Specialist - Active`
+- Standard terminology: "Protocol", "Workflow", "Review"
+
+### Core Functionality is Identical
+
+**Regardless of mask setting, you always get:**
+- ✅ Test-driven development (TDD)
+- ✅ OWASP Top 10 security reviews
+- ✅ Tier system (Rapid/Standard/Critical)
+- ✅ Backup and rollback requirements
+- ✅ Documentation and audit trails
+- ✅ Protocol enforcement
+
+**The mask changes HOW agents communicate, not WHAT they enforce.**
+
+### How to Toggle Mask Mode
+
+Edit `protocol.config.yaml`:
+
+```yaml
+mask_mode:
+  enabled: true  # true = JJK theme, false = professional mode
+```
+
+Restart your AI session for changes to take effect.
+
+### When to Use Each Mode
+
+**Use MASK ON** (JJK Theme) when:
+- ✅ Working on personal projects
+- ✅ You enjoy the engaging personality-driven responses
+- ✅ The JJK theme helps you remember role boundaries
+
+**Use MASK OFF** (Professional) when:
+- ✅ Corporate/enterprise environments
+- ✅ Client-facing demonstrations
+- ✅ Team collaboration (neutral terminology)
+- ✅ Formal documentation and audit trails
+
+### Learn More
+
+- **[MASK_MODE.md](protocol/MASK_MODE.md)** - Complete specification with examples and configuration options
+- **[REALITY_CHECK.md](REALITY_CHECK.md)** - Honest assessment of what Domain Zero actually is (no marketing fluff)
+
+---
+
 ## 🚀 Quick Setup
 
 > **⚡ Want to get started in 2 minutes?** See [`PROTOCOL_QUICKSTART.md`](PROTOCOL_QUICKSTART.md) for the express setup guide.
@@ -151,28 +219,28 @@ Domain Zero creates a **controlled collaboration space** where four specialized 
 **macOS/Linux (bash/zsh)**:
 ```bash
 # Copy the entire protocol structure to your project root
-cp -r "Domain Zero Protocol v7.0.0/protocol" your-project/
-cp -r "Domain Zero Protocol v7.0.0/.protocol-state" your-project/
-cp "Domain Zero Protocol v7.0.0/protocol.config.yaml" your-project/
-cp "Domain Zero Protocol v7.0.0/.gitignore" your-project/
+cp -r "Domain Zero Protocol v7.1.0/protocol" your-project/
+cp -r "Domain Zero Protocol v7.1.0/.protocol-state" your-project/
+cp "Domain Zero Protocol v7.1.0/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v7.1.0/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
 # Copy the entire protocol structure to your project root
-Copy-Item -Recurse -Force "Domain Zero Protocol v7.0.0\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol v7.0.0\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v7.0.0\protocol.config.yaml" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v7.0.0\.gitignore" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v7.1.0\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v7.1.0\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v7.1.0\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v7.1.0\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
 ```cmd
 REM Copy the entire protocol structure to your project root
-xcopy /E /I /Y "Domain Zero Protocol v7.0.0\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol v7.0.0\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol v7.0.0\protocol.config.yaml" "your-project\"
-copy /Y "Domain Zero Protocol v7.0.0\.gitignore" "your-project\"
+xcopy /E /I /Y "Domain Zero Protocol v7.1.0\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v7.1.0\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v7.1.0\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v7.1.0\.gitignore" "your-project\"
 ```
 
 ### Step 2: Configure Your Project
@@ -306,7 +374,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 - Add Domain Zero Protocol pointer as shown in integration section
 
 **What to Include in Memory**:
-- ✅ Protocol name and version (Domain Zero Protocol v7.0.0)
+- ✅ Protocol name and version (Domain Zero Protocol v7.1.0)
 - ✅ The four agent roles and their specializations
 - ✅ Protocol file locations (protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md)
 - ✅ Tier system overview (Rapid/Standard/Critical)
@@ -1177,5 +1245,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-**Domain Zero Protocol v6.2.8** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v7.1.0** - Perfect Code Through Infinite Collaboration
 **The weight is real. The protocol is absolute. Domain Zero is active.**

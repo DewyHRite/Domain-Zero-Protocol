@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 7.0.0
+# Version: 7.1.0
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -111,6 +111,44 @@ roles:
   #   yuuji: "Builder"
   #   megumi: "Reviewer"
   #   gojo: "Observer"
+
+# ============================================================================
+# MASK MODE CONFIGURATION (v7.1.0+)
+# ============================================================================
+# Controls whether agents use JJK-themed personality prompts or professional mode
+# See protocol/MASK_MODE.md for detailed documentation
+#
+# MASK ON (enabled: true):  JJK theme, personality-driven responses, domain banners
+# MASK OFF (enabled: false): Professional mode, straightforward responses, standard terminology
+#
+# All core functionality (TDD, security, tiers, backups) remains identical regardless of mask setting.
+
+mask_mode:
+  # Master toggle: true = JJK theme, false = professional mode
+  enabled: true
+
+  # Granular settings (fine-tune mask behavior)
+  settings:
+    use_domain_banners: true     # Show "DOMAIN ACTIVATED" banners
+    use_personality_traits: true  # Agent personalities (enthusiastic, methodical, bold, confident)
+    use_jjk_terminology: true     # "Domain Zero", "The Weight", "Trigger 19", etc.
+    use_emoji_identifiers: true   # 🛠️, 🛡️, 🌀, 🎯 symbols
+    use_narrative_framing: true   # "I'm Yuuji..." vs "Implementation Specialist will..."
+
+  # Alternative naming when mask is OFF
+  unmasked_names:
+    yuuji: "Implementation Specialist"
+    megumi: "Security Analyst"
+    nobara: "Creative Strategist"
+    gojo: "Mission Control"
+
+  # Terminology overrides (MASK OFF mode)
+  unmasked_terminology:
+    domain_zero: "Protocol Environment"
+    domain_expansion: "Project Initialization"
+    the_weight: "Protocol Compliance"
+    trigger_19: "Intelligence Report"
+    zero_defects: "Quality Standards"
 
 # ============================================================================
 # ENFORCEMENT & PROTECTION
@@ -399,9 +437,9 @@ protocol_packs:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "7.0.0"
-  config_version: "1.1"
-  last_updated: "2025-11-06"
+  protocol_version: "7.1.0"
+  config_version: "1.2"
+  last_updated: "2025-11-08"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

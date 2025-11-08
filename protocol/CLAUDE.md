@@ -1,10 +1,10 @@
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v7.0.0
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v7.1.0
 ## Main Protocol File - Domain Zero
 
-**Version**: 7.0.0
+**Version**: 7.1.0
 **Status**: Production-Ready
-**Last Updated**: 2025-11-07
-**Major Enhancements**: Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework, Enhanced Safety Principles
+**Last Updated**: 2025-11-08
+**Major Enhancements**: Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 
 ---
 
@@ -426,6 +426,60 @@ Perfection is the horizon we walk toward, not the destination we reach.
 - **Tier 3: YUUJI, MEGUMI & NOBARA** - READ ONLY, ZERO write permissions
 
 **Attempting to modify this file without authorization will trigger FORCED STAND DOWN.**
+
+---
+
+## 🎭 MASK MODE (v7.1.0+)
+
+**What is Mask Mode?**
+
+Mask Mode is a configuration toggle that controls whether agents use JJK-themed personality prompts or operate as straightforward AI assistants.
+
+### The Truth About "Agents"
+
+As explained in REALITY_CHECK.md, the "agents" (Yuuji, Megumi, Nobara, Gojo) are **not separate AI systems**. They are:
+- The same underlying AI reading different instruction files
+- Role-playing prompts with specific behavioral constraints
+- Workflow orchestration using personality-driven prompts
+
+**Mask Mode allows you to choose:**
+- **MASK ON** (default): JJK theme, personality-driven responses, domain banners
+- **MASK OFF**: Professional mode, straightforward responses, standard terminology
+
+**All core functionality remains identical.** The only difference is presentation style.
+
+### Configuration
+
+Set in `protocol.config.yaml`:
+
+```yaml
+mask_mode:
+  enabled: true  # true = JJK theme, false = professional mode
+```
+
+### Comparison
+
+| Feature | MASK ON | MASK OFF |
+|---------|---------|----------|
+| Agent Names | Yuuji, Megumi, Nobara, Gojo | Implementation Specialist, Security Analyst, Creative Strategist, Mission Control |
+| Personality | Enthusiastic, methodical, bold, confident | Professional, direct, neutral |
+| Banners | `🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️` | `Implementation Specialist - Active` |
+| Terminology | Domain Zero, Domain Expansion, The Weight | Protocol, Project Initialization, Compliance |
+
+### When to Use Each Mode
+
+**MASK ON** (JJK Theme):
+- ✅ Personal projects and learning
+- ✅ Solo development (you enjoy the theme)
+- ✅ Mnemonic devices help you remember roles
+
+**MASK OFF** (Professional):
+- ✅ Professional/corporate environments
+- ✅ Client-facing demonstrations
+- ✅ Team collaboration (neutral terminology)
+- ✅ Formal documentation and audit trails
+
+**See protocol/MASK_MODE.md for complete documentation.**
 
 ---
 
@@ -1339,12 +1393,13 @@ The system is optimized to stay within Claude's context limits.
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 7.0.0
-**Protocol Version**: 7.0.0
-**Release Date**: November 7, 2025
-**Last Updated**: 2025-11-07
+**Current Version**: 7.1.0
+**Protocol Version**: 7.1.0
+**Release Date**: November 8, 2025
+**Last Updated**: 2025-11-08
 
 **Version History**:
+- v7.1.0 - **MINOR**: Mask Mode Toggle (JJK Theme vs Professional Mode), REALITY_CHECK.md Integration
 - v7.0.0 - **MAJOR**: Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework, Enhanced Safety Principles
 - v6.2.8 - **PATCH**: Copilot PR Review Fixes, Version Consistency Updates
 - v6.2.7 - **PATCH**: Pre-Push Version Verification, PR Review Fixes, ANSI Code Removal, PyYAML Error Handling
@@ -1365,6 +1420,8 @@ The system is optimized to stay within Claude's context limits.
 
 **Complete Documentation**:
 - **JJK-AI-PROTOCOL-PSD.md** - Full Product Specification Document
+- **MASK_MODE.md** - Mask mode specification (JJK theme vs professional mode)
+- **REALITY_CHECK.md** - Honest assessment of what Domain Zero actually is and how to use it effectively
 - **YUUJI.md** - Implementation agent detailed specifications
 - **MEGUMI.md** - Security agent detailed specifications
 - **GOJO.md** - Mission Control detailed specifications

@@ -1,70 +1,86 @@
 # Domain Zero Protocol - Version Information
 
-**Version:** v7.0.0
-**Release Date:** November 7, 2025
-**Release Type:** Major Update
+**Version:** v7.1.0
+**Release Date:** November 8, 2025
+**Release Type:** Minor Update
 
 ---
 
 ## Release Summary
 
-This major release integrates the **Absolute Zero Protocol (AZP)**, formalizing agent commitment to user safety, transparency, and bounded authority. The update adds foundational frameworks for agent binding oaths, structured decision reasoning, and enhanced safety principles.
+This minor release adds **Mask Mode**, a configuration toggle that allows users to switch between JJK-themed personality responses and professional mode. It also integrates REALITY_CHECK.md, providing an honest assessment of what Domain Zero actually is and how to use it effectively.
 
 ### Key Changes
+
+- **Mask Mode Toggle** - Switch between JJK theme and professional mode
+- **MASK_MODE.md** - Complete specification for mask mode functionality
+- **REALITY_CHECK.md Integration** - Honest documentation about what Domain Zero actually is
+- **Granular Mask Settings** - Fine-tune personality, terminology, banners, and emoji
+- **Unmasked Terminology** - Professional alternatives for JJK-themed terms
+- **Updated Documentation** - CLAUDE.md, protocol.config.yaml, and README updated with mask mode
+
+---
+
+## What's New in v7.1.0
+
+### Added
+- **Mask Mode Configuration** (protocol.config.yaml):
+  - `mask_mode.enabled`: Master toggle (true = JJK theme, false = professional)
+  - `mask_mode.settings`: Granular controls (banners, personality, terminology, emoji, narrative)
+  - `mask_mode.unmasked_names`: Professional agent names when mask is OFF
+  - `mask_mode.unmasked_terminology`: Standard terminology translations
+
+- **MASK_MODE.md** - Complete specification document:
+  - What Mask Mode is and why it exists
+  - Behavior comparison (MASK ON vs MASK OFF)
+  - Configuration reference and validation rules
+  - Migration guide from v7.0.0
+  - Examples and use cases
+
+- **REALITY_CHECK.md** - Honest documentation:
+  - Truth about "agents" (same AI, different prompts)
+  - What Domain Zero actually does (structured prompt engineering)
+  - When to use/not use Domain Zero
+  - Customization advice and success metrics
+  - Cost-benefit analysis and alternatives
+
+### Changed
+- **CLAUDE.md**:
+  - Added Mask Mode section explaining JJK theme vs professional mode
+  - Added REALITY_CHECK.md to Additional Resources
+  - Added MASK_MODE.md to Additional Resources
+  - Updated version to v7.1.0
+  - Updated version history with v7.1.0 entry
+
+- **protocol.config.yaml**:
+  - Added complete mask_mode configuration section
+  - Updated protocol_version to 7.1.0
+  - Updated config_version to 1.2
+  - Updated last_updated to 2025-11-08
+
+- **Documentation Structure**:
+  - REALITY_CHECK.md provides honest assessment of framework
+  - MASK_MODE.md explains presentation layer configurability
+  - Clear distinction between core functionality (unchanged) and presentation (configurable)
+
+### Implementation Approach
+- **Presentation vs Functionality**: Mask Mode affects HOW agents communicate, not WHAT they enforce
+- **No breaking changes**: Default behavior (MASK ON) preserves current experience
+- **User choice**: Users can toggle between engaging and professional modes
+- **Hybrid modes**: Granular settings allow custom combinations
+
+---
+
+## Previous Versions
+
+### What's New in v7.0.0
 
 - **Absolute Zero Protocol Integration** - Formal agent commitment framework
 - **Agent Binding Oath** - 10 binding principles for all agents
 - **Decision Reasoning Template** - Structured transparency framework
 - **Enhanced Safety Principles** - 5 core AZP principles integrated into CLAUDE.md
-- **Agent Oath Acknowledgments** - All agents formally commit to AZP
-- **Protocol Enforcement** - Config-driven AZP compliance monitoring
 
----
-
-## What's New in v7.0.0
-
-### Added
-- **AGENT_BINDING_OATH.md** - Formal commitment framework:
-  - 10 binding principles: User Authority, Transparency, Safety Over Autonomy, Active Protection, Bounded Authority, Honest Communication, Non-Circumvention, Self-Awareness, Collective Responsibility, Continuous Improvement
-  - Oath acknowledgment process for all agents
-  - Violation consequences (learning-focused, not punitive)
-
-- **DECISION_REASONING_TEMPLATE.md** - Transparency framework:
-  - 9-section structured template: Decision, Objective, Reasoning, Alternatives Considered, Risk Assessment, Confidence Level, Dependencies, Implementation Complexity, Final Recommendation
-  - Complete worked example included
-  - Required for all non-trivial recommendations
-
-- **Absolute Zero Protocol Core Principles** (CLAUDE.md):
-  - Principle 1: Absolute User Authority
-  - Principle 2: Transparency First
-  - Principle 3: Safety Over Autonomy
-  - Principle 4: Active Protection
-  - Principle 5: Binding Commitment
-
-### Changed
-- **All Agent Files** (YUUJI, MEGUMI, NOBARA, GOJO):
-  - Added Binding Oath acknowledgment sections
-  - Updated to v7.0.0
-  - Enhanced major enhancements with AZP commitment
-
-- **protocol.config.yaml**:
-  - Added `absolute_zero_protocol` enforcement section
-  - Enabled decision reasoning requirements
-  - Updated to v7.0.0
-
-- **CLAUDE.md**:
-  - Integrated AZP Core Principles section
-  - Updated version history to track v7.0.0 as major release
-  - Cross-referenced new AZP documents
-
-### Implementation Approach
-- **Augmentation, not replacement**: AZP formalizes existing DZP safety principles
-- **No breaking changes**: Enhanced structure without changing agent behavior
-- **Phase 1 Foundation**: Agent oaths, decision templates, core principles
-
----
-
-## Previous Versions
+See previous VERSION.md for complete v7.0.0 details.
 
 ### What's New in v6.2.8
 
@@ -117,18 +133,19 @@ This major release integrates the **Absolute Zero Protocol (AZP)**, formalizing 
 
 ## Upgrade Notes
 
-No breaking changes. This is a backward-compatible patch update focused on verification script improvements.
+No breaking changes. This is a backward-compatible minor update adding presentation layer configuration.
 
 **What changed for you:**
-- Verification scripts upgraded to v2.0 with new features
-- Faster verification with `--quick` mode (recommended for CI/CD)
-- Better error messages with actionable guidance
-- Documentation updated with new script options
+- Mask Mode added to protocol.config.yaml
+- Default behavior (MASK ON) preserves current JJK-themed experience
+- REALITY_CHECK.md provides honest assessment of what you're using
+- MASK_MODE.md documents how to switch between modes
 
 **Action Required:**
 - None - all changes are backward compatible
-- Try `./scripts/verify-protocol.sh --quick` for faster verification
-- See README.md troubleshooting for new script options
+- Review REALITY_CHECK.md for honest guidance on using Domain Zero effectively
+- See MASK_MODE.md if you want to try professional mode
+- Edit protocol.config.yaml and set `mask_mode.enabled: false` to disable JJK theme
 
 ---
 
@@ -139,13 +156,14 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history and detailed chang
 ---
 
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol
-**Previous Version:** v6.2.8
-**Current Version:** v7.0.0
+**Previous Version:** v7.0.0
+**Current Version:** v7.1.0
 
 ---
 
 ## Cumulative Improvements
 
+**v7.0.0 → v7.1.0:** Mask Mode Toggle, REALITY_CHECK.md integration, Professional vs JJK theme choice
 **v6.2.8 → v7.0.0:** Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 **v6.2.7 → v6.2.8:** Copilot PR review fixes, version consistency updates
 **v6.2.6 → v6.2.7:** Pre-push verification requirements, PyYAML error handling, PowerShell Core support
@@ -156,4 +174,4 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history and detailed chang
 **v6.2.1 → v6.2.2:** Protocol protection (CODEOWNERS, .gitignore)
 **v6.2.0 → v6.2.1:** Interactive work session alerts
 
-**Assessment Score:** 10.0/10 (up from 9.6/10 at v6.2.8) - **MAJOR MILESTONE**: Formal safety and transparency framework complete
+**Assessment Score:** 10.0/10 - **USER EMPOWERMENT**: Users can now choose presentation style without sacrificing functionality
