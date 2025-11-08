@@ -336,17 +336,17 @@ function Test-YamlSyntax {
                 $null = yamllint -d relaxed protocol.config.yaml 2>&1
                 if ($LASTEXITCODE -eq 0) {
                     Write-Pass "YAML syntax valid (verified with yamllint)"
-                } else {
-                    Write-FailWithContext `
-                        -Message "Invalid YAML syntax in protocol.config.yaml" `
-                        -Impact "Configuration file has syntax errors" `
-                        -Action "Run 'yamllint protocol.config.yaml' for details" `
-                        -DocLink ""
-                    $script:CriticalError = $true
+                    return
                 }
-            } else {
-                Write-InfoMsg "Install PyYAML or yamllint for syntax validation"
+                Write-FailWithContext `
+                    -Message "Invalid YAML syntax in protocol.config.yaml" `
+                    -Impact "Configuration file has syntax errors" `
+                    -Action "Run 'yamllint protocol.config.yaml' for details" `
+                    -DocLink ""
+                $script:CriticalError = $true
+                return
             }
+            Write-InfoMsg "Install PyYAML or yamllint for syntax validation"
             return
         }
 

@@ -22,10 +22,9 @@ scripts/verify-protocol.ps1 @DewyHRite
 
 # Changelog & key meta docs
 CHANGELOG.md @DewyHRite
-SYSTEM_UPDATE_MODE_IMPLEMENTATION.md @DewyHRite
-DZP_COMPREHENSIVE_REVIEW.md @DewyHRite
-DZP_IMPLEMENTATION_ACTION_PLAN.md @DewyHRite
-DZP_REAL_WORLD_USE_CASES.md @DewyHRite
+VERSION.md @DewyHRite
+SECURITY.md @DewyHRite
+FAQ.md @DewyHRite
 
 # Prevent accidental modifications to backups
 Domain Zero Protocol Backups/ @DewyHRite
