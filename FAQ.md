@@ -1,6 +1,6 @@
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
-**Version:** v6.2.7
+**Version:** v6.2.8
 **Last Updated:** November 7, 2025
 
 ---
