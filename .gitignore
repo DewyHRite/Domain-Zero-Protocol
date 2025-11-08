@@ -67,7 +67,6 @@ DESKTOP_WRAPPER.md
 AI_INSTRUCTIONS.md
 MIGRATION_GUIDE_TEMPLATE.md
 TIER_TRANSITION_GUIDE.md
-CODEOWNERS
 
 # Implementation tools and scripts (local development only)
 agent_banners.py
