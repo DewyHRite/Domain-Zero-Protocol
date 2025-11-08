@@ -1,4 +1,4 @@
-# Domain Zero Protocol v6.2.8
+# Domain Zero Protocol v7.0.0
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
@@ -35,7 +35,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
-- `CLAUDE.md` - Main protocol specification (v6.1)
+- `CLAUDE.md` - Main protocol specification (v7.0.0)
 - `YUUJI.md` - Implementation agent protocol
 - `MEGUMI.md` - Security review agent protocol
 - `GOJO.md` - Mission control agent protocol
@@ -151,28 +151,28 @@ Domain Zero creates a **controlled collaboration space** where four specialized 
 **macOS/Linux (bash/zsh)**:
 ```bash
 # Copy the entire protocol structure to your project root
-cp -r "Domain Zero Protocol v6.2.8/protocol" your-project/
-cp -r "Domain Zero Protocol v6.2.8/.protocol-state" your-project/
-cp "Domain Zero Protocol v6.2.8/protocol.config.yaml" your-project/
-cp "Domain Zero Protocol v6.2.8/.gitignore" your-project/
+cp -r "Domain Zero Protocol v7.0.0/protocol" your-project/
+cp -r "Domain Zero Protocol v7.0.0/.protocol-state" your-project/
+cp "Domain Zero Protocol v7.0.0/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v7.0.0/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
 # Copy the entire protocol structure to your project root
-Copy-Item -Recurse -Force "Domain Zero Protocol v6.2.8\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol v6.2.8\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v6.2.8\protocol.config.yaml" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v6.2.8\.gitignore" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v7.0.0\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v7.0.0\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v7.0.0\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v7.0.0\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
 ```cmd
 REM Copy the entire protocol structure to your project root
-xcopy /E /I /Y "Domain Zero Protocol v6.2.8\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol v6.2.8\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol v6.2.8\protocol.config.yaml" "your-project\"
-copy /Y "Domain Zero Protocol v6.2.8\.gitignore" "your-project\"
+xcopy /E /I /Y "Domain Zero Protocol v7.0.0\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v7.0.0\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v7.0.0\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v7.0.0\.gitignore" "your-project\"
 ```
 
 ### Step 2: Configure Your Project
@@ -265,7 +265,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a four-agent
 - GOJO (Mission Control): Project lifecycle, protocol guardian
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v6.2.7)
+- protocol/CLAUDE.md (main protocol, v7.0.0)
 - protocol/YUUJI.md (implementation agent)
 - protocol/MEGUMI.md (security agent)
 - protocol/NOBARA.md (creative strategy agent)
@@ -284,7 +284,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v6.1) for development projects. This is a four-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v7.0.0) for development projects. This is a four-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
@@ -306,7 +306,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 - Add Domain Zero Protocol pointer as shown in integration section
 
 **What to Include in Memory**:
-- ✅ Protocol name and version (Domain Zero Protocol v6.2.8)
+- ✅ Protocol name and version (Domain Zero Protocol v7.0.0)
 - ✅ The four agent roles and their specializations
 - ✅ Protocol file locations (protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md)
 - ✅ Tier system overview (Rapid/Standard/Critical)
