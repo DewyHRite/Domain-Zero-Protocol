@@ -506,7 +506,7 @@ The authoritative version of this file resides in the **Domain Zero Protocol Can
 
 ### Version Tracking
 For consistency across protocol instances:
-- **Protocol Version**: v6.2.3
+- **Protocol Version**: v6.2.7
 - **Last Canonical Sync**: [check protocol.config.yaml]
 - **Verification**: Run `./scripts/verify-protocol.(sh|ps1)` to check alignment
 

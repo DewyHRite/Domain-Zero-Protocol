@@ -1,20 +1,28 @@
 # Domain Zero - Security Scanning Example (GitHub Actions)
 #
 # This is a TEMPLATE workflow demonstrating security tool integration.
-# Customize for your stack and enable by removing .example extension.
+# This workflow is DISABLED by default (workflow_dispatch only).
+#
+# To enable automatic scanning:
+# 1. Review and customize tool configurations for your stack
+# 2. Add required secrets (SNYK_TOKEN, PROTOCOL_MAINTAINERS)
+# 3. Uncomment the desired trigger events in the 'on:' section below
+# 4. Test with manual workflow_dispatch first
 #
 # IMPORTANT: Review and adjust tool configurations before enabling in production.
 
 name: Security Scan (Example - Disabled)
 
-# Uncomment to enable:
-# on:
-#   pull_request:
-#     branches: [ main, develop ]
-#   push:
-#     branches: [ main ]
-#   schedule:
-#     - cron: '0 0 * * *'  # Daily at midnight
+# This workflow is disabled by default - only runs on manual trigger
+# Uncomment additional events to enable automatic scanning:
+on:
+  workflow_dispatch:  # Manual trigger only (keeps workflow valid but inactive)
+  # pull_request:
+  #   branches: [ main, develop ]
+  # push:
+  #   branches: [ main ]
+  # schedule:
+  #   - cron: '0 0 * * *'  # Daily at midnight
 
 jobs:
   sast-scan:
@@ -113,8 +121,8 @@ jobs:
   iac-scan:
     name: IaC Security Scanning
     runs-on: ubuntu-latest
-    # Only run if Terraform/K8s files exist
-    if: hashFiles('**/*.tf', '**/*.yaml', '**/*.yml') != ''
+    # Only run if Terraform or K8s infrastructure files exist (not workflow files)
+    if: hashFiles('**/*.tf', '**/k8s/**/*.yaml', '**/kubernetes/**/*.yml') != ''
 
     steps:
       - name: Checkout code
