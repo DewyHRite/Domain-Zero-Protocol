@@ -1,6 +1,6 @@
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
-**Version:** v6.2.4
+**Version:** v6.2.7
 **Last Updated:** November 7, 2025
 
 ---
@@ -559,5 +559,5 @@ Runs only critical checks (dependencies, files, config, yaml)
 ---
 
 **Last Updated:** November 7, 2025
-**Protocol Version:** v6.2.4
+**Protocol Version:** v6.2.7
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol

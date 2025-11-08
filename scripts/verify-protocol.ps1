@@ -212,32 +212,30 @@ function Test-ShouldRunCheck {
 function Test-Dependencies {
     Write-Header "0. Dependency Check"
 
-    $requiredTools = @("powershell")  # PowerShell itself
-    $optionalTools = @("python", "python3", "yamllint")
-    $missingRequired = @()
+    # Check for PowerShell (accept either pwsh or powershell executable)
+    $foundPowerShell = $false
+    $psExecutables = @("pwsh", "powershell")
 
-    Write-InfoMsg "Checking required command-line tools..."
-    foreach ($tool in $requiredTools) {
-        if (Get-Command $tool -ErrorAction SilentlyContinue) {
-            Write-Pass "Found: $tool"
-        } else {
-            $missingRequired += $tool
-            Write-FailWithContext `
-                -Message "Required tool not found: $tool" `
-                -Impact "Verification cannot proceed without this tool" `
-                -Action "Ensure PowerShell is properly installed" `
-                -DocLink ""
+    Write-InfoMsg "Checking for PowerShell executable..."
+    foreach ($exe in $psExecutables) {
+        if (Get-Command $exe -ErrorAction SilentlyContinue) {
+            Write-Pass "Found PowerShell executable: $exe"
+            $foundPowerShell = $true
+            break
         }
     }
 
-    if ($missingRequired.Count -gt 0) {
-        Write-Host ""
-        Write-Host "  [X] Missing required tools: $($missingRequired -join ', ')" -ForegroundColor $ColorFail
-        Write-Host "  Install them before proceeding" -ForegroundColor $ColorInfo
-        Write-Host ""
+    if (-not $foundPowerShell) {
+        Write-FailWithContext `
+            -Message "No PowerShell executable found in PATH" `
+            -Impact "Verification cannot proceed without PowerShell" `
+            -Action "Install PowerShell (pwsh) or ensure it's in PATH" `
+            -DocLink "https://learn.microsoft.com/powershell/"
         exit 3
     }
 
+    # Check optional tools
+    $optionalTools = @("python", "python3", "yamllint")
     Write-InfoMsg "Checking optional tools..."
     foreach ($tool in $optionalTools) {
         if (Get-Command $tool -ErrorAction SilentlyContinue) {
@@ -326,15 +324,37 @@ function Test-YamlSyntax {
         $yamlTest = & $pythonCmd -c "import yaml; yaml.safe_load(open('protocol.config.yaml'))" 2>&1
         if ($LASTEXITCODE -eq 0) {
             Write-Pass "YAML syntax valid (verified with Python)"
-        } else {
-            Write-FailWithContext `
-                -Message "Invalid YAML syntax in protocol.config.yaml" `
-                -Impact "Configuration file cannot be parsed" `
-                -Action "Fix syntax errors using a YAML validator" `
-                -DocLink "https://www.yamllint.com/"
-            $script:CriticalError = $true
             return
         }
+
+        if ($yamlTest -match "ModuleNotFoundError: No module named 'yaml'") {
+            Write-Warn "PyYAML not installed; skipping python-based YAML validation"
+            if (Get-Command yamllint -ErrorAction SilentlyContinue) {
+                Write-InfoMsg "Falling back to yamllint for syntax validation..."
+                $null = yamllint -d relaxed protocol.config.yaml 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Pass "YAML syntax valid (verified with yamllint)"
+                    return
+                }
+                Write-FailWithContext `
+                    -Message "Invalid YAML syntax in protocol.config.yaml" `
+                    -Impact "Configuration file has syntax errors" `
+                    -Action "Run 'yamllint protocol.config.yaml' for details" `
+                    -DocLink ""
+                $script:CriticalError = $true
+                return
+            }
+            Write-InfoMsg "Install PyYAML or yamllint for syntax validation"
+            return
+        }
+
+        Write-FailWithContext `
+            -Message "Invalid YAML syntax in protocol.config.yaml" `
+            -Impact "Configuration file cannot be parsed" `
+            -Action "Fix syntax errors using a YAML validator" `
+            -DocLink "https://www.yamllint.com/"
+        $script:CriticalError = $true
+        return
     } elseif (Get-Command yamllint -ErrorAction SilentlyContinue) {
         Write-InfoMsg "Validating YAML syntax with yamllint..."
         $yamlTest = yamllint -d relaxed protocol.config.yaml 2>&1

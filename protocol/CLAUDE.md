@@ -1,7 +1,7 @@
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v6.2.3
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v6.2.7
 ## Main Protocol File - Domain Zero
 
-**Version**: 6.2.1
+**Version**: 6.2.7
 **Status**: Production-Ready
 **Last Updated**: 2025-11-06
 **Major Enhancements**: Absolute Safety Principles, Version Control Enforcement, Canonical Source
@@ -11,7 +11,7 @@
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: https://github.com/DewyHRite/Domain-Zero-Protocol
-> **Current Local Protocol Version**: v6.2.3
+> **Current Local Protocol Version**: v6.2.7
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -124,7 +124,7 @@ Following semantic versioning principles:
 - Use when: New agent capabilities, new sections added, significant feature enhancements
 
 **Patch Version (6.2.X)**: Bug fixes, documentation polish, minor corrections
-- Example: v6.2.3 → v6.2.3
+- Example: v6.2.3 → v6.2.4
 - Use when: Typo fixes, documentation clarifications, minor adjustments
 
 ### Update Triggers (When to Increment Version)
@@ -172,8 +172,57 @@ All version numbers must remain synchronized:
 2. `CLAUDE.md` → Header (line 1 and line 4)
 3. `.protocol-state/project-state.json` → `protocol_version`
 4. Agent files (YUUJI.md, MEGUMI.md, GOJO.md, NOBARA.md) → Headers
+5. `VERSION.md` → All version metadata
+6. `SECURITY.md` → Supported versions table
+7. `CHANGELOG.md` → Version references
+8. `FAQ.md` → Version header
+9. `README.md` → All version references
+10. `.protocol-state/*.md` → Version metadata fields
+11. `protocol/CANONICAL_SOURCE_ADOPTION.md` → Version references
 
 **CRITICAL**: Version drift creates confusion, breaks canonical alignment, and undermines protocol integrity. NO exceptions.
+
+### Pre-Push Version Verification (MANDATORY)
+
+**BEFORE ANY PUSH TO GITHUB**:
+A comprehensive and full codebase review MUST be done to ensure ALL version numbers across ALL files are updated and verified extensively.
+
+**Required Pre-Push Checklist**:
+- ✅ Run `./scripts/verify-protocol.(ps1|sh)` to validate version consistency
+- ✅ Manually verify all version references in documentation files
+- ✅ Check CHANGELOG.md has entry for new version
+- ✅ Verify README.md version badges and references are updated
+- ✅ Confirm all protocol agent files (YUUJI.md, MEGUMI.md, GOJO.md, NOBARA.md) match version
+- ✅ Validate protocol.config.yaml version matches all other files
+- ✅ Review VERSION.md for accuracy
+- ✅ Check SECURITY.md supported versions table is current
+- ✅ Scan for any stray old version references in documentation
+
+**Verification Commands**:
+```bash
+# Run automated verification
+./scripts/verify-protocol.sh          # Linux/Mac
+./scripts/verify-protocol.ps1         # Windows PowerShell
+
+# Manual grep check for old versions (example)
+grep -r "v6.2.6" --include="*.md" .   # Replace with old version number
+```
+
+**Failure to verify version consistency before push will result**:
+- Inconsistent documentation
+- Broken canonical source alignment
+- User confusion
+- Protocol integrity violations
+- Failed PR reviews
+
+**Gojo's Pre-Push Enforcement**:
+When preparing releases or major updates, Gojo MUST:
+1. Run verification scripts
+2. Manually audit all documentation
+3. Create comprehensive version consistency report
+4. Block push if ANY version mismatches detected
+
+**NO EXCEPTIONS**: Version consistency is non-negotiable for protocol integrity.
 
 ---
 
@@ -1204,12 +1253,13 @@ The system is optimized to stay within Claude's context limits.
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 6.2.1
-**Protocol Version**: 6.2.1
-**Release Date**: November 6, 2025
-**Last Updated**: 2025-11-06
+**Current Version**: 6.2.7
+**Protocol Version**: 6.2.7
+**Release Date**: November 7, 2025
+**Last Updated**: 2025-11-07
 
 **Version History**:
+- v6.2.7 - **PATCH**: Pre-Push Version Verification, PR Review Fixes, ANSI Code Removal, PyYAML Error Handling
 - v6.2.3 - **PATCH**: Interactive Work Session Alerts (Save/Continue User Choice), Enhanced Gojo Enforcement
 - v6.2 - **MINOR**: Absolute Safety Principles, Version Control Enforcement, Work Session Monitoring
 - v6.1 - **MINOR**: Canonical Source Adoption, Agent Self-Identification Standard

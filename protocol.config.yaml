@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 6.2.6
+# Version: 6.2.7
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,7 +8,7 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v6.2.6"
+  version: "v6.2.7"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -74,16 +74,16 @@ safety:
 # USER & PROJECT INFORMATION
 # ============================================================================
 user:
-  name: "Your Name"
-  contact: "email@example.com"
-  organization: "Your Organization"
+  name: "Dewy"
+  contact: "dewy@domain-zero-protocol.dev"
+  organization: "Domain Zero Protocol"
 
 project:
-  name: "Your Project Name"
-  description: "Brief description of your project"
-  repo: "https://github.com/your-org/your-repo"
+  name: "Domain Zero Protocol"
+  description: "AI-assisted development protocol with specialized agents for implementation, security, creative strategy, and mission control"
+  repo: "https://github.com/DewyHRite/Domain-Zero-Protocol"
   main_branch: "main"
-  created: "YYYY-MM-DDTHH:MM:SSZ"
+  created: "2025-11-05T00:00:00Z"
 
   # Tech stack (optional, used for context)
   tech_stack:
@@ -390,7 +390,7 @@ protocol_packs:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "6.2.3"
+  protocol_version: "6.2.7"
   config_version: "1.1"
   last_updated: "2025-11-06"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"

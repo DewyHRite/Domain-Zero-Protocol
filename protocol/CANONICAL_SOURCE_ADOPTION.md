@@ -2,7 +2,7 @@
 ## Repository: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 
 **Date**: 2025-11-06
-**Protocol Version**: v6.2.3.x (Transition from distributed copies to canonical reference)
+**Protocol Version**: v6.2.7.x (Transition from distributed copies to canonical reference)
 **Status**: Proposed – Ready for Implementation
 **Owner**: Protocol Guardian (Gojo) / Repository Admins  
 
@@ -34,7 +34,7 @@ Adopting a single canonical public repository for the Domain Zero Protocol ("DZP
 ### 3.1 Canonical Block (Add to `protocol/CLAUDE.md` header)
 ```markdown
 > Canonical Source: https://github.com/DewyHRite/Domain-Zero-Protocol
-> Current Local Protocol Version: v6.2.3
+> Current Local Protocol Version: v6.2.7
 > Pinned Commit: <SHA>
 > Verification: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 ```
@@ -43,7 +43,7 @@ Adopting a single canonical public repository for the Domain Zero Protocol ("DZP
 ```yaml
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v6.2.3"
+  version: "v6.2.7"
   commit: "<PINNED_SHA>"
   auto_update:
     enabled: false          # Set true if downstream wants automatic pulls
@@ -201,7 +201,7 @@ Verification script marks overrides as INFO (not WARN) when rationale present.
 ## 14. Implementation Checklist
 - [ ] Add canonical block to `protocol/CLAUDE.md`
 - [ ] Insert `canonical_repository` section in `protocol.config.yaml`
-- [ ] Create `VERSION` file in canonical repo (initial: v6.2.3)
+- [ ] Create `VERSION` file in canonical repo (initial: v6.2.7)
 - [ ] Add README badge & Canonical Source section
 - [ ] Upgrade verification scripts with version compare
 - [ ] Extend update scripts with `--canonical-sync`
