@@ -1,4 +1,4 @@
-# Domain Zero Protocol v6.2.7
+# Domain Zero Protocol v6.2.8
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
@@ -151,28 +151,28 @@ Domain Zero creates a **controlled collaboration space** where four specialized 
 **macOS/Linux (bash/zsh)**:
 ```bash
 # Copy the entire protocol structure to your project root
-cp -r "Domain Zero Protocol v6.2.7/protocol" your-project/
-cp -r "Domain Zero Protocol v6.2.7/.protocol-state" your-project/
-cp "Domain Zero Protocol v6.2.7/protocol.config.yaml" your-project/
-cp "Domain Zero Protocol v6.2.7/.gitignore" your-project/
+cp -r "Domain Zero Protocol v6.2.8/protocol" your-project/
+cp -r "Domain Zero Protocol v6.2.8/.protocol-state" your-project/
+cp "Domain Zero Protocol v6.2.8/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v6.2.8/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
 # Copy the entire protocol structure to your project root
-Copy-Item -Recurse -Force "Domain Zero Protocol v6.2.7\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol v6.2.7\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v6.2.7\protocol.config.yaml" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v6.2.7\.gitignore" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v6.2.8\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v6.2.8\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v6.2.8\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v6.2.8\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
 ```cmd
 REM Copy the entire protocol structure to your project root
-xcopy /E /I /Y "Domain Zero Protocol v6.2.7\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol v6.2.7\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol v6.2.7\protocol.config.yaml" "your-project\"
-copy /Y "Domain Zero Protocol v6.2.7\.gitignore" "your-project\"
+xcopy /E /I /Y "Domain Zero Protocol v6.2.8\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v6.2.8\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v6.2.8\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v6.2.8\.gitignore" "your-project\"
 ```
 
 ### Step 2: Configure Your Project
@@ -306,7 +306,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 - Add Domain Zero Protocol pointer as shown in integration section
 
 **What to Include in Memory**:
-- ✅ Protocol name and version (Domain Zero Protocol v6.2.7)
+- ✅ Protocol name and version (Domain Zero Protocol v6.2.8)
 - ✅ The four agent roles and their specializations
 - ✅ Protocol file locations (protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md)
 - ✅ Tier system overview (Rapid/Standard/Critical)
@@ -1177,5 +1177,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-**Domain Zero Protocol v6.2.7** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v6.2.8** - Perfect Code Through Infinite Collaboration
 **The weight is real. The protocol is absolute. Domain Zero is active.**

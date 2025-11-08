@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 6.2.7
+# Version: 6.2.8
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -390,7 +390,7 @@ protocol_packs:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "6.2.7"
+  protocol_version: "6.2.8"
   config_version: "1.1"
   last_updated: "2025-11-06"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
