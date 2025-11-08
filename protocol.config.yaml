@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 6.2.8
+# Version: 7.0.0
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -141,6 +141,15 @@ enforcement:
     verify_isolation_vocabulary: true
     verify_backup_creation: true
     verify_config_completeness: true
+
+  # Absolute Zero Protocol enforcement (v7.0.0+)
+  absolute_zero_protocol:
+    enabled: true
+    require_agent_oath_acknowledgment: true
+    require_decision_reasoning: true  # Use DECISION_REASONING_TEMPLATE.md for non-trivial decisions
+    decision_reasoning_template: "DECISION_REASONING_TEMPLATE.md"
+    enforce_transparency_standards: true
+    gojo_monitors_compliance: true
 
 # ============================================================================
 # AGENT SELF-IDENTIFICATION
@@ -390,7 +399,7 @@ protocol_packs:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "6.2.8"
+  protocol_version: "7.0.0"
   config_version: "1.1"
   last_updated: "2025-11-06"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"

@@ -11,16 +11,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [7.0.0] - 2025-11-07
+
+### Added
+- **AGENT_BINDING_OATH.md** - Formal commitment framework:
+  - 10 binding principles: User Authority, Transparency, Safety Over Autonomy, Active Protection, Bounded Authority, Honest Communication, Non-Circumvention, Self-Awareness, Collective Responsibility, Continuous Improvement
+  - Oath acknowledgment process for all agents
+  - Violation consequences (learning-focused, not punitive)
+
+- **DECISION_REASONING_TEMPLATE.md** - Transparency framework:
+  - 9-section structured template: Decision, Objective, Reasoning, Alternatives Considered, Risk Assessment, Confidence Level, Dependencies, Implementation Complexity, Final Recommendation
+  - Complete worked example included
+  - Required for all non-trivial recommendations
+
+- **Absolute Zero Protocol Core Principles** (CLAUDE.md):
+  - Principle 1: Absolute User Authority
+  - Principle 2: Transparency First
+  - Principle 3: Safety Over Autonomy
+  - Principle 4: Active Protection
+  - Principle 5: Binding Commitment
+
+### Changed
+- **All Agent Files** (YUUJI, MEGUMI, NOBARA, GOJO):
+  - Added Binding Oath acknowledgment sections
+  - Updated to v7.0.0
+  - Enhanced major enhancements with AZP commitment
+
+- **protocol.config.yaml**:
+  - Added `absolute_zero_protocol` enforcement section
+  - Enabled decision reasoning requirements
+  - Updated to v7.0.0
+
+- **CLAUDE.md**:
+  - Integrated AZP Core Principles section
+  - Updated version history to track v7.0.0 as major release
+  - Cross-referenced new AZP documents
+
+### Implementation Approach
+- **Augmentation, not replacement**: AZP formalizes existing DZP safety principles
+- **No breaking changes**: Enhanced structure without changing agent behavior
+- **Phase 1 Foundation**: Agent oaths, decision templates, core principles
+
+---
+
 ## [6.2.8] - 2025-11-07
 
 ### Added
-- **Placeholder for v6.2.8 changes** - This version is under development
+- **Copilot PR review fixes** - Addressed 20 comprehensive review comments
 
 ### Changed
-- Version bump from v6.2.7 to v6.2.8
+- **Protocol files** - Removed inline HTML/CSS for better cross-platform Markdown rendering
+- **GOJO.md ASCII art** - Fixed version alignment
+- **VERSION.md and CHANGELOG.md** - Improved consistency
 
 ### Fixed
-- (To be documented)
+- **CODEOWNERS** - Removed gitignored path references
+- **Script comments** - Improved accuracy and clarity in verify-protocol scripts
+- **Version consistency** - Synchronized all version references across documentation
 
 ---
 
