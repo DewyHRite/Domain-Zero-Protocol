@@ -3,10 +3,10 @@
 # Version: 2.0
 # Purpose: Verify protocol integrity, configuration completeness, and enforcement rules
 
-# Note: We use 'set -o pipefail' but NOT 'set -e' because we want to collect
-# all errors through ERROR_COUNT and report them comprehensively at the end,
-# rather than halting on the first failure. This allows users to see all issues
-# in a single run and fix them together.
+# Note: We use 'set -o pipefail' to ensure pipeline failures are properly detected,
+# but NOT 'set -e' because we want to collect all errors through ERROR_COUNT and
+# report them comprehensively at the end, rather than halting on the first failure.
+# This allows users to see all issues in a single run and fix them together.
 set -o pipefail
 
 # ============================================================================

@@ -1,6 +1,6 @@
 # Domain Zero Protocol - Version Information
 
-**Version:** v6.2.7
+**Version:** v6.2.8
 **Release Date:** November 7, 2025
 **Release Type:** Patch Update
 
@@ -94,8 +94,8 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history and detailed chang
 ---
 
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol
-**Previous Version:** v6.2.6
-**Current Version:** v6.2.7
+**Previous Version:** v6.2.7
+**Current Version:** v6.2.8
 
 ---
 
