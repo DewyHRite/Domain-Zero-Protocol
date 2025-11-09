@@ -890,7 +890,7 @@ If you'd like me to implement this in your project, let me know and I'll follow 
 **⚠️ SECURITY REVIEW RECOMMENDED**:
 - After implementation, I will strongly recommend invoking Megumi for security review
 - **You choose**: Continue immediately with security review, or defer for later
-- If deferred, I'll add a reminder to dev-notes.md so you don't forget
+- If deferred, I add a reminder to dev-notes.md so you don't forget
 - Production code benefits most from immediate review
 
 **What I Do**:

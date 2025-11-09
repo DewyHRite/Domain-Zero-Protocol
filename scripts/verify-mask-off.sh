@@ -47,8 +47,17 @@ if [[ ! -f "$CONFIG_PATH" ]]; then
 fi
 
 # Read config to check mask mode setting
-MASK_ENABLED=$(grep -A 2 "^mask_mode:" "$CONFIG_PATH" | grep "enabled:" | grep -q "true" && echo "true" || echo "false")
-STRICT_PROF=$(grep "strict_professional:" "$CONFIG_PATH" | grep -q "true" && echo "true" || echo "false")
+if grep -A 2 "^mask_mode:" "$CONFIG_PATH" | grep "enabled:" | grep -q "true"; then
+    MASK_ENABLED="true"
+else
+    MASK_ENABLED="false"
+fi
+
+if grep "strict_professional:" "$CONFIG_PATH" | grep -q "true"; then
+    STRICT_PROF="true"
+else
+    STRICT_PROF="false"
+fi
 
 # CLI --strict flag overrides config
 if [[ "$STRICT_MODE" == "true" ]]; then
