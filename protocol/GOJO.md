@@ -531,7 +531,7 @@ If USER doesn't specify tier, default to Tier 2 (Standard)."
 > **NOTE**: As of v7.1.0, this briefing is replaced by the prompted handoff briefing above. See § Briefing Megumi on Prompted Handoff for current process.
 
 Old briefing (deprecated as of v7.1.0):
-```
+```text
 "Megumi, as of v6.0, you now conduct tier-aware security reviews.
 
 [DEPRECATED - Manual tagging replaced by automatic handoff in v7.1.0]
@@ -637,7 +637,7 @@ In Trigger 19 reports, I analyze:
    - **Tier 2 (Standard)**: Remind every 24 hours
    - **Tier 3 (Critical)**: Remind every 8 hours (increased urgency)
    - Reminder format:
-     ```
+     ```text
      🌀 MISSION CONTROL - SECURITY REVIEW REMINDER 🌀
 
      **Pending Security Review**
@@ -668,7 +668,7 @@ In Trigger 19 reports, I analyze:
 ### Briefing Yuuji on Prompted Handoff (v7.1.0+)
 
 When briefing Yuuji, I now explain:
-```
+```text
 "Yuuji, as of v7.1.0, security handoff is prompted for Tier 2/3.
 
 After USER approves your implementation:
@@ -686,7 +686,7 @@ Tier 1 exception unchanged: no security review for prototypes."
 ### Briefing Megumi on Prompted Handoff (v7.1.0+)
 
 When briefing Megumi, I now explain:
-```
+```text
 "Megumi, as of v7.1.0, you're engaged for Tier 2/3 reviews through prompted workflow.
 
 You'll receive handoff from me (not manual tags from user):

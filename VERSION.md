@@ -160,7 +160,7 @@ No breaking changes. This is a backward-compatible minor update adding presentat
 - MASK_MODE.md documents how to switch between modes
 
 **Action Required:**
-- None - all changes are backward compatible
+- None - all changes are backward-compatible
 - Review REALITY_CHECK.md for honest guidance on using Domain Zero effectively
 - See MASK_MODE.md if you want to try professional mode
 - Edit protocol.config.yaml and set `mask_mode.enabled: false` to disable JJK theme

@@ -10,7 +10,7 @@
 
 ## 📍 CANONICAL SOURCE
 
-> **Canonical Source**: https://github.com/DewyHRite/Domain-Zero-Protocol
+> **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 > **Current Local Protocol Version**: v7.1.0
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
@@ -1410,7 +1410,7 @@ The system is optimized to stay within Claude's context limits.
 **Last Updated**: 2025-11-08
 
 **Version History**:
-- v7.1.0 - **MINOR**: Mask Mode Toggle (JJK Theme vs Professional Mode), REALITY_CHECK.md Integration
+- v7.1.0 - **MINOR**: Mask Mode Toggle (JJK Theme vs Professional Mode), Dual Workflow Enforcement, REALITY_CHECK.md Integration
 - v7.0.0 - **MAJOR**: Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework, Enhanced Safety Principles
 - v6.2.8 - **PATCH**: Copilot PR Review Fixes, Version Consistency Updates
 - v6.2.7 - **PATCH**: Pre-Push Version Verification, PR Review Fixes, ANSI Code Removal, PyYAML Error Handling
