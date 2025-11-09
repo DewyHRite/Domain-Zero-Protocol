@@ -3,7 +3,7 @@
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v7.1.0**: [Mask Mode](#-mask-mode) - Toggle between JJK-themed personality responses and professional mode.
+> **New in v7.1.0**: [Mask Mode](#mask-mode) - Toggle between JJK-themed personality responses and professional mode.
 
 ---
 
@@ -87,7 +87,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 ## 📋 Table of Contents
 
 - [What is Domain Zero?](#-what-is-domain-zero)
-- [Mask Mode](#-mask-mode) ⭐ NEW in v7.1.0
+- [Mask Mode](#mask-mode) ⭐ NEW in v7.1.0
 - [Prerequisites & Optional Integrations](#-prerequisites--optional-integrations)
 - [Quick Setup](#-quick-setup)
 - [AI Assistant Integration & Canonical Source](#-ai-assistant-integration--canonical-source)
@@ -277,6 +277,27 @@ Restart your AI session for changes to take effect.
 - ✅ Client-facing demonstrations
 - ✅ Team collaboration (neutral terminology)
 - ✅ Formal documentation and audit trails
+
+### Detailed Comparison
+
+| Feature | MASK ON (JJK Theme) | MASK OFF (Professional) |
+|---------|---------------------|-------------------------|
+| **Agent Names** | Yuuji, Megumi, Nobara, Gojo | Implementation Specialist, Security Analyst, Creative Strategist, Mission Control |
+| **Implementation Banner** | `🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️` | `Implementation Specialist - Active` |
+| **Security Banner** | `🛡️ SECURITY DOMAIN ACTIVATED 🛡️` | `Security Analyst - Active` |
+| **Mission Control Banner** | `🌀 MISSION CONTROL DOMAIN ACTIVATED 🌀` | `Mission Control - Active` |
+| **Creative Banner** | `🎯 CREATIVE STRATEGY DOMAIN ACTIVATED 🎯` | `Creative Strategist - Active` |
+| **Security Handoff** | "Domain Zero auto-handoff engaged" | "Automated security review initiated" |
+| **Intelligence Report** | "Trigger 19" | "Intelligence Report" |
+| **Goal Phrasing** | "Zero Flaws", "Domain Expansion" | "Quality Standards", "Project Initialization" |
+| **Protocol Environment** | "Domain Zero" | "Protocol Environment" |
+| **Compliance Concept** | "The Weight" | "Protocol Compliance" |
+| **Personality** | Enthusiastic, methodical, bold, confident | Professional, direct, neutral |
+| **Tone** | Engaging, character-driven | Straightforward, efficiency-focused |
+| **Emojis** | ✅ Used throughout | ❌ Minimal (or none in strict mode) |
+| **Audit Suitability** | Personal/Team Use | ✅ Compliance-ready |
+
+**Strict Professional Mode**: Add `strict_professional: true` to completely remove ALL emojis and themed metaphors for regulated environments (finance, healthcare, legal).
 
 ### Learn More
 
@@ -656,18 +677,22 @@ Yuuji:
 
 ```
 You: Review the implementation in .protocol-state/dev-notes.md
-You: "Looks good, proceed with security review"
+You: "Looks good, proceed"
 ```
 
-### 3. Security Review (Megumi)
+### 3. Security Review (Megumi) - **AUTOMATIC HANDOFF (v7.1.0+)**
 
 ```
-Yuuji: Tags @security-review
+**NEW**: Gojo automatically facilitates handoff to Megumi for Tier 2/3 features
 Megumi:
-- Reads implementation
+- Receives handoff context (files, scope, tier)
+- Reads implementation from dev-notes.md
 - Conducts OWASP Top 10 review
 - Documents findings in security-review.md
 - Tags @approved or @remediation-required
+
+**User Option**: You can skip security review with "Skip security review for [feature]"
+              (Gojo will track and send periodic reminders)
 ```
 
 ### 4. Remediation (if needed)
@@ -895,7 +920,7 @@ Within Domain Zero, the goal is always **ZERO**:
 → See protocol/TIER-SELECTION-GUIDE.md for decision tree and examples
 
 **"How do I get a security review?"**
-→ Yuuji will automatically tag @security-review after you approve implementation
+→ **NEW (v7.1.0)**: Automatic handoff! After you approve Yuuji's implementation, Megumi is automatically engaged for Tier 2/3 features. No manual tagging needed.
 
 **"Can I modify the protocol?"**
 → Yes! Edit protocol/CLAUDE.md manually. Agents will re-read for updates.
@@ -1294,9 +1319,9 @@ Domain Zero is now set up in your project.
 
 ## 📝 Version Information
 
-**Version**: 6.2.1
-**Release Date**: November 6, 2025
-**Major Enhancements**: Canonical Source Adoption, Agent Self-Identification Standard, Session Continuity
+**Version**: 7.1.0
+**Release Date**: November 8, 2025
+**Major Enhancements**: Mask Mode (presentation toggle), Dual Workflow Enforcement (Tier 2/3), REALITY_CHECK.md
 
 **Version History**:
 - v6.1 - MINOR: Canonical Source Adoption, Agent Self-Identification, AI Memory Integration, Session Continuity (long sessions & user absence re-identification)

@@ -245,7 +245,7 @@ Use this to adapt Domain Zero to your needs:
 **Measure these to know if it's working:**
 
 #### Code Quality Metrics
-```
+```text
 Before Domain Zero:
 - Test coverage: __%
 - Bugs found in production per month: __
@@ -258,7 +258,7 @@ After 3 Months of Domain Zero:
 ```
 
 #### Productivity Metrics
-```
+```text
 Before Domain Zero:
 - Time to implement typical feature: __ hours
 - Time to fix typical bug: __ hours
@@ -271,7 +271,7 @@ After 3 Months of Domain Zero:
 ```
 
 #### Process Metrics
-```
+```text
 Before Domain Zero:
 - Features shipped without tests: __%
 - Features shipped without security review: __%
