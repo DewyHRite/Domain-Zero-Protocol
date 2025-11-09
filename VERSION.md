@@ -151,16 +151,21 @@ See previous VERSION.md for complete v7.0.0 details.
 
 ## Upgrade Notes
 
-No breaking changes. This is a backward-compatible minor update adding presentation layer configuration.
+**Protocol structure changes**: Backward-compatible (Tier 1 unchanged)
+**Workflow changes**: Tier 2/3 requires new prompted handoff pattern (breaking change)
 
 **What changed for you:**
-- Mask Mode added to protocol.config.yaml
+- **Mask Mode** added to protocol.config.yaml (presentation only, non-breaking)
+- **Dual Workflow Enforcement** for Tier 2/3 (workflow breaking change)
+  - Old: Invoke Yuuji → manually tag @security-review → invoke Megumi separately
+  - New: Invoke Yuuji → Yuuji prompts for Megumi invocation (you manually execute)
 - Default behavior (MASK ON) preserves current JJK-themed experience
 - REALITY_CHECK.md provides honest assessment of what you're using
 - MASK_MODE.md documents how to switch between modes
 
 **Action Required:**
-- None - all changes are backward-compatible
+- **Tier 2/3 users**: Adopt new prompted workflow (see DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md)
+- **Tier 1 users**: No changes required (rapid prototyping unchanged)
 - Review REALITY_CHECK.md for honest guidance on using Domain Zero effectively
 - See MASK_MODE.md if you want to try professional mode
 - Edit protocol.config.yaml and set `mask_mode.enabled: false` to disable JJK theme

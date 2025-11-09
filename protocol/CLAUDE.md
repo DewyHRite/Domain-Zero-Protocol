@@ -536,8 +536,9 @@ Complete implementation and security review cycle with remediation.
    └─> Gives go-ahead
 
 3. **PROMPTED SECURITY HANDOFF** (v7.1.0+)
-   ├─> Gojo facilitates handoff to Megumi
-   ├─> Handoff includes context (files, scope, tier)
+   ├─> Yuuji outputs instruction to invoke Megumi
+   ├─> User receives instruction but must manually execute
+   ├─> Context passed (files, scope, tier)
    └─> User CAN skip with explicit choice (tracked + reminded)
 
 4. Megumi conducts security audit
