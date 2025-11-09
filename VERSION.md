@@ -156,7 +156,7 @@ See previous VERSION.md for complete v7.0.0 details.
 
 **What changed for you:**
 - **Mask Mode** added to protocol.config.yaml (presentation only, non-breaking)
-- **Dual Workflow Enforcement** for Tier 2/3 (workflow breaking change)
+- **Dual Workflow Enforcement** for Tier 2/3 (breaking workflow change)
   - Old: Invoke Yuuji → manually tag @security-review → invoke Megumi separately
   - New: Invoke Yuuji → Yuuji prompts for Megumi invocation (you manually execute)
 - Default behavior (MASK ON) preserves current JJK-themed experience
