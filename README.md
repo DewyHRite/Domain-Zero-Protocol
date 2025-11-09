@@ -3,7 +3,82 @@
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v7.1.0**: [Mask Mode](#mask-mode) - Toggle between JJK-themed personality responses and professional mode. [REALITY_CHECK.md](REALITY_CHECK.md) provides an honest assessment of what Domain Zero actually is.
+> **New in v7.1.0**: [Mask Mode](#mask-mode) - Toggle between JJK-themed personality responses and professional mode.
+
+---
+
+## 🎯 Start Here: Honest Assessment
+
+**Before you dive in**, read [REALITY_CHECK.md](REALITY_CHECK.md) for an **honest, no-marketing-fluff assessment** of what Domain Zero actually is:
+
+### What You're Actually Getting
+- ✅ **Structured prompt engineering** for AI-assisted development (not magic AI)
+- ✅ **The "agents" are the same AI** reading different instruction files (not separate systems)
+- ✅ **Test-driven development enforcement** through prompts
+- ✅ **OWASP Top 10 security checklists** for systematic reviews
+- ✅ **Workflow structure** (Tier system: Rapid/Standard/Critical)
+- ✅ **Audit trails** through markdown documentation files
+
+### Real Benefits (Measured, Not Claimed)
+- ✅ **Better test coverage** if you currently skip testing
+- ✅ **Systematic security reviews** if you don't have a dedicated security engineer
+- ✅ **Documented decisions** through dev-notes.md and security-review.md
+- ✅ **Repeatable process** across multiple projects
+- ✅ **Learning framework** for TDD and security practices
+
+### Honest Limitations
+- ❌ **Not zero defects** - "Zero" is aspirational, not guaranteed
+- ❌ **Not true multi-agent AI** - It's one AI with different prompts
+- ❌ **Not for mission-critical systems** - AI reviews can't replace human security experts
+- ❌ **Productivity gains vary** - Depends heavily on your existing process
+
+**Read the full honest assessment**: [REALITY_CHECK.md](REALITY_CHECK.md)
+
+---
+
+## 🚀 Why Use Domain Zero?
+
+Domain Zero is a **structured prompt engineering framework** that enforces discipline through AI collaboration. Here's when it actually helps:
+
+### ✅ Best For:
+- **Solo developers** who need more structure and discipline
+- **Small teams** without formal CI/CD or security review processes
+- **Learning projects** where you want to build good habits (TDD, security thinking)
+- **Side projects** that might scale to production
+- **Prototyping** with a clear path to production-ready code
+
+### ✅ Real Value Delivered:
+1. **Forces test-first development** - You get test coverage as a byproduct
+2. **Systematic security reviews** - OWASP Top 10 checklist applied to every feature
+3. **Three-tier workflow** - Scale rigor based on risk (Rapid/Standard/Critical)
+4. **Documented decisions** - Implementation rationale captured in dev-notes.md
+5. **Backup requirements** - Destructive changes require verified backups first
+6. **Consistent process** - Same workflow across all your projects
+
+### ⚠️ Not Recommended For:
+- Mission-critical systems (banking, healthcare, safety) - need human security experts
+- Teams with mature DevOps practices - likely redundant with existing processes
+- Performance-critical systems - AI can't replace profiling and optimization
+- Projects requiring regulatory compliance - markdown files don't satisfy audits
+
+---
+
+## 📖 Quick Decision Guide
+
+**Should YOU use Domain Zero?**
+
+| Your Situation | Recommendation |
+|----------------|----------------|
+| Solo developer, skip tests often | ✅ **YES** - Adds needed discipline |
+| Team with mature CI/CD already | ❌ **NO** - Likely redundant overhead |
+| Learning/side project | ✅ **YES** - Great for building habits |
+| Mission-critical production system | ❌ **NO** - Need human experts |
+| Want structure for AI-assisted dev | ✅ **YES** - That's what this is |
+| Building sensitive features (auth/payments) | ⚠️ **MAYBE** - Use Tier 3, but still get human review |
+
+**Read the complete decision framework**: [REALITY_CHECK.md](REALITY_CHECK.md)
+
+---
 
 Domain Zero is a four-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with test-first development, comprehensive security review, creative strategy, and adaptive workflow complexity.
 
