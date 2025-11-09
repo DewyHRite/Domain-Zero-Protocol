@@ -127,6 +127,10 @@ mask_mode:
   # Master toggle: true = JJK theme, false = professional mode
   enabled: true
 
+  # Strict professional mode: enforce complete neutralization for regulated environments
+  # When true + mask disabled: forcibly removes ALL themed elements (emojis, metaphors, narrative)
+  strict_professional: false
+
   # Granular settings (fine-tune mask behavior)
   settings:
     use_domain_banners: true     # Show "DOMAIN ACTIVATED" banners
@@ -134,6 +138,7 @@ mask_mode:
     use_jjk_terminology: true     # "Domain Zero", "The Weight", "Trigger 19", etc.
     use_emoji_identifiers: true   # 🛠️, 🛡️, 🌀, 🎯 symbols
     use_narrative_framing: true   # "I'm Yuuji..." vs "Implementation Specialist will..."
+    strict_disable_emojis: false  # If true + mask off: forcibly strip ALL emojis (not just banners)
 
   # Alternative naming when mask is OFF
   unmasked_names:
@@ -149,6 +154,17 @@ mask_mode:
     the_weight: "Protocol Compliance"
     trigger_19: "Intelligence Report"
     zero_defects: "Quality Standards"
+
+  # Phrase overrides (compound phrases that may embed themed nouns)
+  phrase_overrides:
+    automatic_security_handoff: "Automated Security Review"
+    dual_workflow: "Implementation + Security Pipeline"
+    domain_zero_active: "Protocol Environment Active"
+
+  # Enforcement rules for mask-off mode
+  enforcement:
+    block_mixed_output: true      # Prevent hybrid themed/professional text
+    warn_on_partial_mapping: true # Warn if inconsistent toggles detected
 
 # ============================================================================
 # ENFORCEMENT & PROTECTION
@@ -189,6 +205,37 @@ enforcement:
     enforce_transparency_standards: true
     gojo_monitors_compliance: true
 
+  # Dual Workflow Enforcement (v7.1.0+)
+  # Ensures automatic Yuuji→Megumi security handoff for Tier 2/3 features
+  dual_workflow:
+    # Enable automatic security handoff after Yuuji completes Tier 2/3 implementation
+    auto_invoke_megumi: true
+
+    # User can skip security review with explicit choice
+    # Skipping requires statement: "Skip security review for [feature]"
+    allow_user_skip: true
+
+    # Gojo sends periodic reminders for skipped reviews
+    remind_skipped_reviews: true
+    reminder_interval_hours: 24              # Tier 2 (Standard) reminder frequency
+    critical_reminder_interval_hours: 8      # Tier 3 (Critical) reminder frequency (more urgent)
+
+    # Track skipped reviews in project-state.json
+    track_skipped_reviews: true
+
+    # Megumi refuses Tier 1 (Rapid) review requests
+    refuse_tier1_reviews: true
+
+    # Megumi routes direct Tier 2/3 review requests through dual workflow
+    route_tier23_direct_reviews: true
+
+    # Allow standalone audits of EXISTING code (architecture, legacy, compliance)
+    allow_standalone_audits: true
+
+    # User can override routing with explicit command
+    # Example: "Override dual workflow and review [feature]"
+    allow_user_override: true
+
 # ============================================================================
 # AGENT SELF-IDENTIFICATION
 # ============================================================================
@@ -214,18 +261,22 @@ self_identification:
       emoji: "🛠️"
       domain_name: "IMPLEMENTATION DOMAIN"
       subtitle: "Test-Driven Delivery, Rapid Iteration"
+      professional_banner: "Implementation Specialist - Active"
     megumi:
       emoji: "🛡️"
       domain_name: "SECURITY DOMAIN"
       subtitle: "Threat Modeling First, OWASP-Aligned Controls"
+      professional_banner: "Security Analyst - Active"
     gojo:
       emoji: "🌀"
       domain_name: "MISSION CONTROL DOMAIN"
       subtitle: "Orchestration, Review, and Passive Observation"
+      professional_banner: "Mission Control - Active"
     nobara:
       emoji: "🎯"
       domain_name: "CREATIVE STRATEGY DOMAIN"
       subtitle: "User Insight, Narrative, and Delight"
+      professional_banner: "Creative Strategist - Active"
   privacy:
     passive_observer_announcements: opt_in_only  # Respect privacy settings
 

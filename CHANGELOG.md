@@ -83,7 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Implementation Approach
 - **Presentation vs Functionality**: Mask Mode affects HOW agents communicate, not WHAT they enforce
-- **No breaking changes**: Default behavior (MASK ON) preserves current JJK-themed experience
+- **No breaking changes to core functionality from Mask Mode**: Default behavior (MASK ON) preserves the JJK-themed experience. Note: Dual Workflow Enforcement is a breaking workflow change for Tier 2/3 (see Breaking Changes above).
 - **User choice**: Toggle between engaging personality-driven responses and professional direct responses
 - **Hybrid modes**: Granular settings allow custom combinations (e.g., keep emoji but use standard terminology)
 - **Transparency**: REALITY_CHECK.md honestly explains what users are actually using
@@ -441,4 +441,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 **Maintainer**: Protocol Guardians
-**Last Updated**: 2025-11-06
+**Last Updated**: 2025-11-08

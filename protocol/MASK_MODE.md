@@ -409,11 +409,16 @@ Security review tag: Remediation required for SEC-003.
 
 ```yaml
 # ============================================================================
-# MASK MODE CONFIGURATION
+# MASK MODE CONFIGURATION (v7.1.0+)
 # ============================================================================
 mask_mode:
   # Master toggle: true = JJK theme, false = professional mode
   enabled: true
+
+  # Strict professional mode (v7.1.0+): enforce complete neutralization
+  # When true + mask disabled: forcibly removes ALL themed elements
+  # Use for regulated environments (finance, healthcare, legal)
+  strict_professional: false
 
   # Granular settings (fine-tune mask behavior)
   settings:
@@ -422,6 +427,7 @@ mask_mode:
     use_jjk_terminology: true     # "Domain Zero", "The Weight", "Trigger 19", etc.
     use_emoji_identifiers: true   # 🛠️, 🛡️, 🌀, 🎯 symbols
     use_narrative_framing: true   # "I'm Yuuji..." vs "Implementation Specialist will..."
+    strict_disable_emojis: false  # If true + mask off: forcibly strip ALL emojis
 
   # Alternative naming when mask is OFF
   unmasked_names:
@@ -437,6 +443,34 @@ mask_mode:
     the_weight: "Protocol Compliance"
     trigger_19: "Intelligence Report"
     zero_defects: "Quality Standards"
+
+  # Phrase overrides (v7.1.0+): compound phrases with themed nouns
+  phrase_overrides:
+    automatic_security_handoff: "Automated Security Review"
+    dual_workflow: "Implementation + Security Pipeline"
+    domain_zero_active: "Protocol Environment Active"
+
+  # Enforcement rules (v7.1.0+)
+  enforcement:
+    block_mixed_output: true      # Prevent hybrid themed/professional text
+    warn_on_partial_mapping: true # Warn if inconsistent toggles detected
+```
+
+### Professional Banner Templates (v7.1.0+)
+
+When `mask_mode.enabled=false`, agents use professional banners from `self_identification.agents.*`:
+
+```yaml
+self_identification:
+  agents:
+    yuuji:
+      professional_banner: "Implementation Specialist - Active"
+    megumi:
+      professional_banner: "Security Analyst - Active"
+    gojo:
+      professional_banner: "Mission Control - Active"
+    nobara:
+      professional_banner: "Creative Strategist - Active"
 ```
 
 ### Validation Rules
@@ -484,6 +518,112 @@ Restart agent session and verify professional output style.
 **Step 4:** Choose your preferred mode
 
 Set `mask_mode.enabled` based on your preference.
+
+---
+
+## 🧠 MEMORY RESEED GUIDANCE (v7.1.0+)
+
+### Why Reseed Memory?
+
+When switching from MASK ON to MASK OFF (or vice versa), your AI assistant's memory may contain cached thematic phrasing. This can cause mixed-mode output (hybrid themed/professional language).
+
+**Recommendation**: Clear and reseed AI memory after changing mask mode.
+
+### How to Reseed Memory
+
+**Step 1: Clear Existing Memory**
+
+In your AI assistant (Claude, ChatGPT, etc.):
+- Find "Memory" or "Custom Instructions" settings
+- Remove or archive existing Domain Zero Protocol entries
+- Clear conversation history if starting fresh
+
+**Step 2: Reseed with Mode-Appropriate Summary**
+
+Choose the template below based on your mask setting:
+
+### Memory Template: MASK ON (JJK Theme)
+
+```
+I use the Domain Zero Protocol for AI-assisted development. This is a four-agent system:
+- YUUJI (Implementation Specialist): Test-first development, feature implementation
+- MEGUMI (Security Analyst): OWASP Top 10 security reviews
+- NOBARA (Creative Strategy & UX): User experience design, product vision
+- GOJO (Mission Control): Project lifecycle, protocol guardian
+
+The protocol uses a three-tier workflow system:
+- Tier 1 (Rapid): Fast prototyping, no tests
+- Tier 2 (Standard): Production features with TDD + automated security review [DEFAULT]
+- Tier 3 (Critical): Enhanced testing + multi-model security review for auth/payments/sensitive data
+
+When I say 'Read protocol/[AGENT].md', read the file first to follow the protocol.
+The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
+
+Mask Mode: ENABLED (JJK theme active)
+```
+
+### Memory Template: MASK OFF (Professional Mode)
+
+```
+I use the Domain Zero Protocol (professional mode) for AI-assisted development. This is a four-agent system:
+- Implementation Specialist: Test-driven development, feature implementation
+- Security Analyst: OWASP Top 10 security reviews
+- Creative Strategist: User experience design, product vision
+- Mission Control: Project lifecycle, workflow orchestration
+
+The protocol uses a three-tier workflow system:
+- Tier 1 (Rapid): Fast prototyping, no tests
+- Tier 2 (Standard): Production features with TDD + automated security review [DEFAULT]
+- Tier 3 (Critical): Enhanced testing + multi-model security review for auth/payments/sensitive data
+
+Terminology:
+- "Protocol Environment" (not "Domain Zero")
+- "Automated Security Review" (not "automatic handoff")
+- "Intelligence Report" (not "Trigger 19")
+
+No emojis, no narrative metaphors. Focus: Quality Standards via structured workflow.
+The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
+
+Mask Mode: DISABLED (professional mode active)
+```
+
+### Memory Template: STRICT PROFESSIONAL MODE
+
+```
+I use the Domain Zero Protocol (strict professional mode) for AI-assisted development in a regulated environment.
+
+System: Four-specialist workflow
+- Implementation Specialist: Test-driven development
+- Security Analyst: OWASP Top 10 reviews
+- Creative Strategist: User experience design
+- Mission Control: Workflow orchestration
+
+Workflow Tiers:
+- Tier 1 (Rapid): Prototyping (10-15 min)
+- Tier 2 (Standard): Production features with TDD + security review (30-45 min) [DEFAULT]
+- Tier 3 (Critical): Enhanced review for auth/payments/compliance (60-90 min)
+
+Professional terminology only. No emojis. No themed metaphors. Compliance-optimized output.
+Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
+
+Mask Mode: DISABLED + STRICT PROFESSIONAL
+```
+
+### Verification
+
+After reseeding, test with a simple invocation:
+
+**MASK ON Test:**
+```
+"Read protocol/YUUJI.md and explain what you do"
+```
+Expected: JJK-themed banner and personality
+
+**MASK OFF Test:**
+```
+"Read protocol/YUUJI.md and explain what you do"
+```
+Expected: Professional banner and neutral tone
 
 ---
 

@@ -525,6 +525,8 @@ A four-agent AI development system that provides specialized expertise through d
 ### Mode 1: Dual Workflow (Primary Development Mode)
 Complete implementation and security review cycle with remediation.
 
+**IMPORTANT** (v7.1.0+): For Tier 2 (Standard) and Tier 3 (Critical) features, security review is **automatically enforced**. Yuuji and Megumi **cannot be invoked separately** for production code.
+
 **Process Flow**:
 ```
 1. Yuuji implements feature (test-first)
@@ -533,8 +535,10 @@ Complete implementation and security review cycle with remediation.
 2. User reviews and approves
    └─> Gives go-ahead
 
-3. Yuuji tags @security-review
-   └─> Megumi receives notification
+3. **AUTOMATIC SECURITY HANDOFF** (v7.1.0+)
+   ├─> Gojo facilitates handoff to Megumi
+   ├─> Handoff includes context (files, scope, tier)
+   └─> User CAN skip with explicit choice (tracked + reminded)
 
 4. Megumi conducts security audit
    ├─> Finds issues → Tags @remediation-required
@@ -551,7 +555,11 @@ Complete implementation and security review cycle with remediation.
 6. Feature complete ✓
 ```
 
-**When to Use**: All production code, new features, bug fixes requiring implementation
+**Tier 1 Exception**: Tier 1 (Rapid) features deliberately skip security review (prototypes/experiments only).
+
+**User Skip Option**: User can explicitly skip security review: "Skip security review for [feature]". Gojo tracks and sends periodic reminders (24h for Tier 2, 8h for Tier 3).
+
+**When to Use**: All Tier 2/3 production code, new features, bug fixes requiring implementation
 
 ---
 
@@ -563,12 +571,15 @@ Individual agent consultation without code changes or workflow.
 - No file modifications, no implementation
 - Example: "Yuuji: How do I handle JWT refresh tokens securely?"
 
-**Megumi Standalone**:
-- Security audits, performance analysis, threat modeling
-- Comprehensive reviews, strategic recommendations
-- Example: "Megumi: Audit the payment processing module"
+**Megumi Standalone** (v7.1.0+ Restrictions):
+- ✅ **EXISTING code audits**: "Megumi: Audit the payment processing module"
+- ✅ **Architecture reviews**: "Megumi: Review authentication design"
+- ✅ **Compliance assessments**: "Megumi: Assess PCI DSS compliance"
+- ✅ **Threat modeling**: "Megumi: Model threats for user data flow"
+- ❌ **NEW Tier 2/3 feature reviews**: ROUTED through dual workflow
+- ❌ **Tier 1 feature reviews**: REFUSED (no review needed for prototypes)
 
-**When to Use**: Learning, research, planning, architecture evaluation
+**When to Use**: Learning, research, planning, architecture evaluation, auditing existing code
 
 ---
 
