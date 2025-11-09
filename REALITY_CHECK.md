@@ -673,6 +673,6 @@ Customize it. Question it. Measure your results. Discard what doesn't work for y
 
 ---
 
-**Domain Zero Protocol v7.0.0** - A Structured Approach to AI-Assisted Development
+**Domain Zero Protocol v7.1.0** - A Structured Approach to AI-Assisted Development
 
 *Now you know what you're actually getting into.*

@@ -3,7 +3,7 @@
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v7.1.0**: [Mask Mode](#mask-mode) - Toggle between JJK-themed personality responses and professional mode.
+> **New in v7.1.0**: [Mask Mode](#-mask-mode) - Toggle between JJK-themed personality responses and professional mode.
 
 ---
 
@@ -113,7 +113,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
-- `CLAUDE.md` - Main protocol specification (v7.0.0)
+- `CLAUDE.md` - Main protocol specification (v7.1.0)
 - `YUUJI.md` - Implementation agent protocol
 - `MEGUMI.md` - Security review agent protocol
 - `GOJO.md` - Mission control agent protocol
@@ -408,7 +408,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a four-agent
 - GOJO (Mission Control): Project lifecycle, protocol guardian
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v7.0.0)
+- protocol/CLAUDE.md (main protocol, v7.1.0)
 - protocol/YUUJI.md (implementation agent)
 - protocol/MEGUMI.md (security agent)
 - protocol/NOBARA.md (creative strategy agent)
@@ -427,7 +427,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v7.0.0) for development projects. This is a four-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v7.1.0) for development projects. This is a four-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design

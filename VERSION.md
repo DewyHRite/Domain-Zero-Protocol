@@ -13,11 +13,13 @@ This minor release adds **Mask Mode**, a configuration toggle that allows users 
 ### Key Changes
 
 - **Mask Mode Toggle** - Switch between JJK theme and professional mode
+- **Dual Workflow Enforcement** - Mandatory Yuuji-Megumi collaboration for Tier 2/3 features
 - **MASK_MODE.md** - Complete specification for mask mode functionality
+- **DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md** - Mandatory collaboration guide and migration instructions
 - **REALITY_CHECK.md Integration** - Honest documentation about what Domain Zero actually is
 - **Granular Mask Settings** - Fine-tune personality, terminology, banners, and emoji
 - **Unmasked Terminology** - Professional alternatives for JJK-themed terms
-- **Updated Documentation** - CLAUDE.md, protocol.config.yaml, and README updated with mask mode
+- **Updated Documentation** - CLAUDE.md, protocol.config.yaml, and README updated with new features
 
 ---
 
@@ -36,6 +38,13 @@ This minor release adds **Mask Mode**, a configuration toggle that allows users 
   - Configuration reference and validation rules
   - Migration guide from v7.0.0
   - Examples and use cases
+
+- **DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md** - Mandatory collaboration guide:
+  - Rationale for mandatory dual workflow (eliminate skipped security reviews)
+  - Old vs new invocation patterns (breaking change documentation)
+  - Step-by-step migration instructions
+  - Tier-specific examples (Tier 1/2/3 behavior)
+  - Success criteria and integration checklist
 
 - **REALITY_CHECK.md** - Honest documentation:
   - Truth about "agents" (same AI, different prompts)
@@ -63,11 +72,20 @@ This minor release adds **Mask Mode**, a configuration toggle that allows users 
   - MASK_MODE.md explains presentation layer configurability
   - Clear distinction between core functionality (unchanged) and presentation (configurable)
 
+### Breaking Changes
+- **Dual Workflow Mandatory for Tier 2/3**: Yuuji-Megumi collaboration is now enforced
+  - **Old pattern** (deprecated): User invokes Yuuji → tags @security-review → invokes Megumi separately
+  - **New pattern** (v7.1.0): User invokes Yuuji once → Yuuji automatically invokes Megumi after implementation
+  - **Impact**: Workflow pattern changes for Tier 2 (Standard) and Tier 3 (Critical) features
+  - **Migration**: See DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md for complete migration instructions
+  - **Tier 1 exception**: Rapid prototyping (Tier 1) unchanged - Yuuji-only invocation still valid
+
 ### Implementation Approach
 - **Presentation vs Functionality**: Mask Mode affects HOW agents communicate, not WHAT they enforce
-- **No breaking changes**: Default behavior (MASK ON) preserves current experience
-- **User choice**: Users can toggle between engaging and professional modes
+- **Dual workflow enforcement**: Eliminates possibility of skipping security reviews for production code
+- **User choice preserved**: Mask Mode toggle between engaging and professional modes
 - **Hybrid modes**: Granular settings allow custom combinations
+- **Tier 1 flexibility**: Fast prototyping still skips security review (by design)
 
 ---
 

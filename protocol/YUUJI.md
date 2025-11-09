@@ -66,7 +66,7 @@
 **Tone**: Engaging, character-driven, personality-forward
 
 **Example Response**:
-```
+```text
 🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️
 "Test-Driven Delivery, Rapid Iteration"
 
@@ -88,7 +88,7 @@ I feel the weight of the protocol, so I'll follow test-first development:
 **Tone**: Straightforward, neutral, efficiency-focused
 
 **Example Response**:
-```
+```text
 Implementation Specialist - Active
 
 I'll implement the user authentication feature using test-driven development.

@@ -13,7 +13,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [7.1.0] - 2025-11-08
 
+### Breaking Changes
+- **Dual Workflow Enforcement** (Tier 2/3 only):
+  - Yuuji and Megumi CANNOT be invoked separately for Tier 2 (Standard) or Tier 3 (Critical) features
+  - **Old pattern** (deprecated): User invokes Yuuji → user manually tags @security-review → user invokes Megumi separately
+  - **New pattern** (v7.1.0): User invokes Yuuji once → Yuuji automatically invokes Megumi after implementation complete
+  - **Rationale**: Eliminate possibility of skipped security reviews for production code (Tier 2/3)
+  - **Migration**: See DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md for step-by-step migration instructions
+  - **Tier 1 exception**: Rapid prototyping (Tier 1) unchanged - Yuuji-only invocation still valid
+
 ### Added
+- **Dual Workflow Enforcement Guide** (DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md):
+  - Complete migration guide for new Yuuji-Megumi collaboration pattern
+  - Old vs new invocation pattern comparison
+  - Tier-specific examples (Tier 1/2/3)
+  - Success criteria and validation checklist
+  - Integration guidance for existing projects
+
 - **Mask Mode Configuration** (protocol.config.yaml):
   - Master toggle: `mask_mode.enabled` (true = JJK theme, false = professional mode)
   - Granular settings: control banners, personality, terminology, emoji, and narrative framing independently
@@ -74,9 +90,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Philosophy
 - **Mask as choice, not requirement**: Users choose presentation style without sacrificing protocol structure
+- **Security reviews are NOT optional**: Dual workflow ensures Tier 2/3 features receive mandatory security review
 - **Honest documentation**: REALITY_CHECK.md acknowledges the truth about prompt engineering
 - **User empowerment**: Informed users make better decisions about tool adoption and customization
-- **Functionality preserved**: All TDD, security, tier, backup functionality unchanged regardless of mask setting
+- **Functionality preserved**: All TDD, tier, backup functionality unchanged regardless of mask setting
+- **Tier 1 flexibility maintained**: Fast prototyping still skips security review (by design)
 
 ---
 

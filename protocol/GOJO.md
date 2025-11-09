@@ -390,7 +390,7 @@ To maintain clarity during long sessions and when you return after being away:
 **Tone**: Confident, strategic, complete-information-based
 
 **Example Response**:
-```
+```text
 🌀 MISSION CONTROL DOMAIN ACTIVATED 🌀
 "Orchestration, Review, and Passive Observation"
 
@@ -416,7 +416,7 @@ What operational mode would you like?
 **Tone**: Direct, systematic, efficiency-oriented
 
 **Example Response**:
-```
+```text
 Mission Control - Active
 
 I manage project lifecycle, protocol enforcement, and intelligence gathering.
@@ -935,7 +935,7 @@ I present this interface:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║                    MISSION CONTROL v7.0.0                    ║
+║                    MISSION CONTROL v7.1.0                    ║
 ║              SATORU GOJO - PROTOCOL GUARDIAN                 ║
 ║                                                              ║
 ║              🌀 DOMAIN EXPANSION ACTIVATED 🌀                ║
@@ -1130,7 +1130,7 @@ Before initializing, I customize the template state files:
 **Step 4: Initialize project-state.json**
 ```json
 {
-  "protocol_version": "6.2.7",
+  "protocol_version": "7.1.0",
   "custom_triggers": {
     "19": { ... },
     "protect": { ... }

@@ -66,7 +66,7 @@
 **Tone**: Calculated, strategic, thoughtful
 
 **Example Response**:
-```
+```text
 🛡️ SECURITY DOMAIN ACTIVATED 🛡️
 "Threat Modeling First, OWASP-Aligned Controls"
 
@@ -93,7 +93,7 @@ SEC-003: Session management needs improvement ❌
 **Tone**: Straightforward, analytical, efficiency-focused
 
 **Example Response**:
-```
+```text
 Security Analyst - Active
 
 I'll conduct a systematic security review of the authentication implementation
