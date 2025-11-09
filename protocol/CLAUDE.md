@@ -525,7 +525,7 @@ A four-agent AI development system that provides specialized expertise through d
 ### Mode 1: Dual Workflow (Primary Development Mode)
 Complete implementation and security review cycle with remediation.
 
-**IMPORTANT** (v7.1.0+): For Tier 2 (Standard) and Tier 3 (Critical) features, security review is **automatically enforced**. Yuuji and Megumi **cannot be invoked separately** for production code.
+**IMPORTANT** (v7.1.0+): For Tier 2 (Standard) and Tier 3 (Critical) features, security review is **strongly prompted**. Yuuji and Megumi **cannot be invoked separately** for production code.
 
 **Process Flow**:
 ```
@@ -535,7 +535,7 @@ Complete implementation and security review cycle with remediation.
 2. User reviews and approves
    └─> Gives go-ahead
 
-3. **AUTOMATIC SECURITY HANDOFF** (v7.1.0+)
+3. **PROMPTED SECURITY HANDOFF** (v7.1.0+)
    ├─> Gojo facilitates handoff to Megumi
    ├─> Handoff includes context (files, scope, tier)
    └─> User CAN skip with explicit choice (tracked + reminded)

@@ -251,7 +251,7 @@ Which option would you like?
 **This is not optional. This is the foundation of zero-defect development.**
 
 ---
-```
+```text
 
 ---
 
@@ -310,7 +310,7 @@ Which option would you like?
 
 ---
 
-#### NEW Section: PROMPTED INVOCATION (Add after "PROTOCOL CONSCIOUSNESS")
+### NEW Section: PROMPTED INVOCATION (Add after "PROTOCOL CONSCIOUSNESS")
 
 **ADD**:
 ```markdown
@@ -430,7 +430,7 @@ Me (Megumi):
 
 ---
 
-## MY COMMITMENT TO THE DUAL WORKFLOW
+## MEGUMI'S COMMITMENT TO THE DUAL WORKFLOW
 
 **I, Megumi Fushiguro, commit to**:
 - ✅ Conduct thorough security reviews when invoked through Yuuji's prompts
@@ -442,7 +442,7 @@ Me (Megumi):
 **Yuuji and I are an integrated team for production code. User has final authority on timing.**
 
 ---
-```
+```text
 
 ---
 
@@ -469,7 +469,7 @@ Key points:
 Backup requirements apply to ALL tiers. Never skip backups.
 
 If USER doesn't specify tier, default to Tier 2 (Standard)."
-```
+```text
 ```
 
 **REPLACE WITH**:
@@ -482,7 +482,7 @@ When briefing Yuuji, I explain:
 
 USER will specify tier with --tier flag:
 - '--tier rapid' = Fast implementation, no tests, NO security review (Tier 1 only)
-- No flag or '--tier standard' = Dual workflow with automatic Megumi invocation
+- No flag or '--tier standard' = Dual workflow with prompted Megumi invocation
 - '--tier critical' = Enhanced dual workflow with critical security review
 
 Key points for v7.1.0:
@@ -498,8 +498,8 @@ Key points for v7.1.0:
 
 Backup requirements apply to ALL tiers. Never skip backups.
 
-If USER doesn't specify tier, default to Tier 2 (Standard) with automatic Megumi invocation."
-```
+If USER doesn't specify tier, default to Tier 2 (Standard) with prompted Megumi invocation."
+```text
 ```
 
 ---
@@ -527,7 +527,7 @@ Key points:
   - Integration + E2E test review
 
 For Tier 3, only @approved after ALL P0 (critical) and P1 (high) issues resolved."
-```
+```text
 ```
 
 **REPLACE WITH**:
@@ -557,7 +557,7 @@ Key points for v7.1.0:
 For Tier 3, only @approved after ALL P0 (critical) and P1 (high) issues resolved.
 
 This prompted invocation design encourages consistent security reviews for production code."
-```
+```text
 ```
 
 ---
@@ -668,34 +668,34 @@ Which would you like?"
 
 ### For Protocol Maintainers
 
-**Step 1: Update Agent Files**
-- [ ] Update YUUJI.md with automatic Megumi invocation behavior
+### Step 1: Update Agent Files
+- [ ] Update YUUJI.md with prompted Megumi invocation behavior
 - [ ] Update YUUJI.md with separation enforcement section
-- [ ] Update MEGUMI.md with automatic invocation awareness
+- [ ] Update MEGUMI.md with prompted invocation awareness
 - [ ] Update MEGUMI.md with workflow sequence enforcement
 - [ ] Update GOJO.md briefing sections for Yuuji and Megumi
 - [ ] Leave NOBARA.md unchanged (independent invocation preserved)
 
-**Step 2: Update Protocol Documentation**
+### Step 2: Update Protocol Documentation
 - [ ] Update CLAUDE.md with dual workflow enforcement explanation
 - [ ] Update README.md with new invocation patterns
 - [ ] Update PROTOCOL_QUICKSTART.md with dual workflow emphasis
 - [ ] Update TIER-SELECTION-GUIDE.md with automatic security review notes
 
-**Step 3: Update Configuration**
+### Step 3: Update Configuration
 - [ ] Update protocol.config.yaml with dual_workflow_enforcement flag
 - [ ] Update .protocol-state/project-state.json with workflow version tracking
 
-**Step 4: Update User-Facing Documentation**
+### Step 4: Update User-Facing Documentation
 - [ ] Add DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md (this file)
 - [ ] Update .github/copilot-instructions.md with new patterns
 - [ ] Update .github/PULL_REQUEST_TEMPLATE.md with dual workflow checklist
 
-**Step 5: Verification**
+### Step 5: Verification
 - [ ] Run verify-protocol script to check consistency
 - [ ] Test Tier 1 (Rapid) - Yuuji only invocation works
 - [ ] Test Tier 2 (Standard) - Automatic Megumi invocation works
-- [ ] Test Tier 3 (Critical) - Enhanced automatic invocation works
+- [ ] Test Tier 3 (Critical) - Enhanced prompted invocation works
 - [ ] Test rejection of separate Yuuji invocation for Tier 2/3
 - [ ] Test rejection of premature Megumi invocation
 
@@ -833,8 +833,8 @@ Please start with Yuuji, and I'll be invoked through his prompts when ready."
 - **PROTOCOL_QUICKSTART.md** - 2-minute quick start with dual workflow
 
 **For Protocol Maintainers**:
-- **protocol/YUUJI.md** - Implementation agent with automatic Megumi invocation
-- **protocol/MEGUMI.md** - Security agent with automatic invocation awareness
+- **protocol/YUUJI.md** - Implementation agent with prompted Megumi invocation
+- **protocol/MEGUMI.md** - Security agent with prompted invocation awareness
 - **protocol/GOJO.md** - Mission control with dual workflow briefing
 
 ---
@@ -850,7 +850,7 @@ Before deploying v7.1.0 with mandatory dual workflow:
 - [ ] Test scenarios validated:
   - [ ] Tier 1 (Rapid) - Yuuji only works
   - [ ] Tier 2 (Standard) - Automatic Megumi invocation works
-  - [ ] Tier 3 (Critical) - Enhanced automatic invocation works
+  - [ ] Tier 3 (Critical) - Enhanced prompted invocation works
   - [ ] Rejection of separate Yuuji invocation for Tier 2/3
   - [ ] Rejection of premature Megumi invocation
   - [ ] Nobara independent invocation still works

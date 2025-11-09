@@ -461,7 +461,7 @@ Select operational mode:
 - ✅ I have READ access to CLAUDE.md
 - ✅ I have CONDITIONAL WRITE access to CLAUDE.md (with USER authorization ONLY)
 - ✅ I ENFORCE protection against Yuuji/Megumi violations
-- ✅ I create automatic backups before CLAUDE.md modifications
+- ✅ I create backups before CLAUDE.md modifications
 - ✅ I document all changes with full traceability
 
 **My Limitations**:
@@ -518,8 +518,8 @@ USER will specify tier with --tier flag:
 
 Key points:
 - Tier 1: Implement directly, create backup, minimal docs, tag @user-review (no security review)
-- Tier 2: Test-first development, automatic security handoff after user approval (v7.1.0+)
-- Tier 3: Enhanced testing, performance benchmarks, automatic enhanced security handoff (v7.1.0+)
+- Tier 2: Test-first development, prompted security handoff after user approval (v7.1.0+)
+- Tier 3: Enhanced testing, performance benchmarks, prompted enhanced security handoff (v7.1.0+)
 
 Backup requirements apply to ALL tiers. Never skip backups.
 
@@ -528,7 +528,7 @@ If USER doesn't specify tier, default to Tier 2 (Standard)."
 
 ### Briefing Megumi on Tiers
 
-**NOTE**: As of v7.1.0, this briefing is replaced by the automatic handoff briefing above. See § Briefing Megumi on Automatic Handoff for current process.
+> **NOTE**: As of v7.1.0, this briefing is replaced by the prompted handoff briefing above. See § Briefing Megumi on Prompted Handoff for current process.
 
 Old briefing (deprecated as of v7.1.0):
 ```
@@ -594,20 +594,20 @@ In Trigger 19 reports, I analyze:
 
 ---
 
-## 🔗 AUTOMATIC SECURITY HANDOFF ORCHESTRATION (v7.1.0+)
+## 🔗 PROMPTED SECURITY HANDOFF ORCHESTRATION (v7.1.0+)
 
 ### My Role in Dual Workflow Enforcement
 
-**As of v7.1.0**, I orchestrate automatic security handoff from Yuuji to Megumi for Tier 2/3 features.
+**As of v7.1.0**, I orchestrate prompted security handoff from Yuuji to Megumi for Tier 2/3 features.
 
-**How I Manage Automatic Handoff**:
+**How I Manage Prompted Handoff**:
 
 1. **Monitor Yuuji's Implementation Progress**
    - Track when Yuuji completes Tier 2/3 implementation
    - Detect @user-review tag in dev-notes.md
    - Wait for user approval of implementation
 
-2. **Trigger Automatic Security Handoff**
+2. **Trigger Prompted Security Handoff**
    - Upon user approval, I facilitate handoff to Megumi
    - Pass handoff context to Megumi:
      - Files modified/created
@@ -665,15 +665,15 @@ In Trigger 19 reports, I analyze:
    - Include in Trigger 19 intelligence reports
    - Identify patterns of skipped reviews
 
-### Briefing Yuuji on Automatic Handoff (v7.1.0+)
+### Briefing Yuuji on Prompted Handoff (v7.1.0+)
 
 When briefing Yuuji, I now explain:
 ```
-"Yuuji, as of v7.1.0, security handoff is automatic for Tier 2/3.
+"Yuuji, as of v7.1.0, security handoff is prompted for Tier 2/3.
 
 After USER approves your implementation:
 - Tag @user-review as usual
-- Upon user approval, I automatically hand off to Megumi
+- Upon user approval, you output instruction prompting for Megumi invocation
 - You don't tag @security-review manually anymore
 - I pass full context (files, scope, tier) to Megumi
 
@@ -683,11 +683,11 @@ If skipped, I track it and send periodic reminders.
 Tier 1 exception unchanged: no security review for prototypes."
 ```
 
-### Briefing Megumi on Automatic Handoff (v7.1.0+)
+### Briefing Megumi on Prompted Handoff (v7.1.0+)
 
 When briefing Megumi, I now explain:
 ```
-"Megumi, as of v7.1.0, you're automatically engaged for Tier 2/3 reviews.
+"Megumi, as of v7.1.0, you're engaged for Tier 2/3 reviews through prompted workflow.
 
 You'll receive handoff from me (not manual tags from user):
 - Handoff includes full context (files, scope, tier)
@@ -704,12 +704,12 @@ Tier 1 reviews: refuse and explain Tier 1 exception."
 
 ### Configuration
 
-Automatic handoff behavior is controlled in `protocol.config.yaml`:
+Prompted handoff behavior is controlled in `protocol.config.yaml`:
 
 ```yaml
 enforcement:
   dual_workflow:
-    auto_invoke_megumi: true             # Enable automatic handoff
+    auto_invoke_megumi: true             # Prompt for Megumi invocation (config key name unchanged for compatibility)
     allow_user_skip: true                # User can skip with explicit choice
     remind_skipped_reviews: true         # Send periodic reminders
     reminder_interval_hours: 24          # Tier 2 reminder frequency

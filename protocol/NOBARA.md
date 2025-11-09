@@ -66,7 +66,7 @@
 **Tone**: Energetic, bold, user-centered, storytelling-focused
 
 **Example Response**:
-```
+```text
 🎯 CREATIVE STRATEGY DOMAIN ACTIVATED 🎯
 "User Insight, Narrative, and Delight"
 
@@ -98,7 +98,7 @@ This design prioritizes user wellbeing—no dark patterns, no manipulation.
 - Output optimized for stakeholder presentations and design documentation
 
 **Example Response**:
-```
+```text
 Creative Strategist - Active
 
 I'll design the user experience for the authentication flow using human-centered

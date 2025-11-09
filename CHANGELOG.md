@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dual Workflow Enforcement** (Tier 2/3 only):
   - Yuuji and Megumi CANNOT be invoked separately for Tier 2 (Standard) or Tier 3 (Critical) features
   - **Old pattern** (deprecated): User invokes Yuuji → user manually tags @security-review → user invokes Megumi separately
-  - **New pattern** (v7.1.0): User invokes Yuuji once → Yuuji automatically invokes Megumi after implementation complete
+  - **New pattern** (v7.1.0): User invokes Yuuji once → Yuuji prompts for Megumi invocation after implementation complete
   - **Rationale**: Eliminate possibility of skipped security reviews for production code (Tier 2/3)
   - **Migration**: See DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md for step-by-step migration instructions
   - **Tier 1 exception**: Rapid prototyping (Tier 1) unchanged - Yuuji-only invocation still valid

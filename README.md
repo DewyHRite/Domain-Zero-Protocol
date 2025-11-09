@@ -220,6 +220,8 @@ Domain Zero creates a **controlled collaboration space** where four specialized 
 
 ---
 
+<a id="mask-mode"></a>
+
 ## 🎭 Mask Mode
 
 **New in v7.1.0**: Domain Zero now supports **Mask Mode**, allowing you to toggle between JJK-themed personality responses and professional mode.
@@ -480,7 +482,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 **Benefits of Memory Integration**:
 - 🚀 **Faster startup**: No need to re-read protocol files every session
 - 🔄 **Session continuity**: AI remembers your workflow preferences
-- 🎯 **Automatic compliance**: AI follows protocol without explicit reminders
+- 🎯 **Workflow prompts**: AI follows protocol with structured prompts
 - 💡 **Proactive suggestions**: AI can suggest tier selection and workflow improvements
 - ⚡ **Reduced token usage**: Less context needed in each conversation
 
@@ -605,7 +607,7 @@ Domain Zero v6.1 features **three workflow tiers** to match process rigor to fea
 **What You Get**: Fast implementation, no tests, no security review, backup maintained
 
 **Invocation**:
-```
+```bash
 "Read protocol/YUUJI.md --tier rapid and create file renaming script"
 ```
 
@@ -680,9 +682,9 @@ You: Review the implementation in .protocol-state/dev-notes.md
 You: "Looks good, proceed"
 ```
 
-### 3. Security Review (Megumi) - **AUTOMATIC HANDOFF (v7.1.0+)**
+### 3. Security Review (Megumi) - **PROMPTED HANDOFF (v7.1.0+)**
 
-```
+```text
 **NEW**: Gojo automatically facilitates handoff to Megumi for Tier 2/3 features
 Megumi:
 - Receives handoff context (files, scope, tier)
@@ -920,7 +922,7 @@ Within Domain Zero, the goal is always **ZERO**:
 → See protocol/TIER-SELECTION-GUIDE.md for decision tree and examples
 
 **"How do I get a security review?"**
-→ **NEW (v7.1.0)**: Automatic handoff! After you approve Yuuji's implementation, Megumi is automatically engaged for Tier 2/3 features. No manual tagging needed.
+→ **NEW (v7.1.0)**: Prompted handoff! After you approve Yuuji's implementation, Megumi is prompted for engagement for Tier 2/3 features. No manual tagging needed.
 
 **"Can I modify the protocol?"**
 → Yes! Edit protocol/CLAUDE.md manually. Agents will re-read for updates.

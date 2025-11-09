@@ -1,24 +1,42 @@
 #!/usr/bin/env bash
 # Mask-Off Mode Verification Script
-# Version: 1.0
+# Version: 1.1
 # Purpose: Scan for prohibited themed vocabulary when mask_mode.enabled=false
 
 set -euo pipefail
 
-CONFIG_PATH="${1:-protocol.config.yaml}"
+# Default values
+CONFIG_PATH="protocol.config.yaml"
 STRICT_MODE=false
 VERBOSE=false
+
+# Usage function
+usage() {
+    echo "Usage: $0 [OPTIONS] [CONFIG_PATH]"
+    echo ""
+    echo "Options:"
+    echo "  --strict    Enable strict mode (override config strict_professional)"
+    echo "  --verbose   Show detailed scan results"
+    echo "  --help      Show this help message"
+    echo ""
+    echo "Arguments:"
+    echo "  CONFIG_PATH Path to protocol.config.yaml (default: protocol.config.yaml)"
+    exit 0
+}
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
         --strict) STRICT_MODE=true; shift ;;
         --verbose) VERBOSE=true; shift ;;
-        *) shift ;;
+        --help|-h) usage ;;
+        --) shift; break ;;
+        -*) echo "[ERROR] Unknown option: $1"; usage; exit 2 ;;
+        *) CONFIG_PATH="$1"; shift ;;
     esac
 done
 
-echo "🎭 Domain Zero Protocol - Mask-Off Verification Script v1.0"
+echo "Mask-Off Mode Verification Script v1.1 - Protocol Environment"
 echo "======================================================================"
 echo ""
 
@@ -31,6 +49,11 @@ fi
 # Read config to check mask mode setting
 MASK_ENABLED=$(grep -A 2 "^mask_mode:" "$CONFIG_PATH" | grep "enabled:" | grep -q "true" && echo "true" || echo "false")
 STRICT_PROF=$(grep "strict_professional:" "$CONFIG_PATH" | grep -q "true" && echo "true" || echo "false")
+
+# CLI --strict flag overrides config
+if [[ "$STRICT_MODE" == "true" ]]; then
+    STRICT_PROF="true"
+fi
 
 echo "[INFO] Mask Mode Status:"
 echo "  - mask_mode.enabled: $MASK_ENABLED"

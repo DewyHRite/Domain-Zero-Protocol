@@ -188,8 +188,8 @@ Read protocol/YUUJI.md
 Read protocol/MEGUMI.md - review the authentication changes in auth.py
 ```
 
-**Agent Handoff:** Agents will automatically hand off to each other:
-- Yuuji completes implementation → tags @security-review → Megumi appears
+**Agent Handoff:** Agents prompt for handoff to each other:
+- Yuuji completes implementation → prompts for Megumi invocation → Megumi appears
 - Megumi finds issues → Yuuji fixes them
 - Gojo monitors entire process
 
@@ -398,9 +398,9 @@ Read protocol/GOJO.md - Trigger 19
 2. **MEGUMI.md not found:** Verify file exists in `protocol/` directory
 3. **Manual invocation needed:** Say `"Read protocol/MEGUMI.md - review changes"`
 
-**Automatic Handoff Only Works:**
+**Prompted Handoff Only Works:**
 - In Tier 2 and Tier 3
-- When Yuuji includes @security-review tag
+- When Yuuji outputs prompt for Megumi invocation
 - When MEGUMI.md is present
 
 ---

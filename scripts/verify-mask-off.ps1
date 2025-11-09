@@ -1,5 +1,5 @@
 # Mask-Off Mode Verification Script
-# Version: 1.0
+# Version: 1.1
 # Purpose: Scan for prohibited themed vocabulary when mask_mode.enabled=false
 
 param(
@@ -8,7 +8,7 @@ param(
     [switch]$Verbose
 )
 
-Write-Host "🎭 Domain Zero Protocol - Mask-Off Verification Script v1.0" -ForegroundColor Cyan
+Write-Host "Mask-Off Mode Verification Script v1.1 - Protocol Environment" -ForegroundColor Cyan
 Write-Host "=" * 70
 Write-Host ""
 
@@ -20,8 +20,18 @@ if (!(Test-Path $ConfigPath)) {
 
 # Read config to check mask mode setting
 $configContent = Get-Content $ConfigPath -Raw
-$maskEnabled = $configContent -match 'mask_mode:\s*[\r\n]+\s*enabled:\s*true'
-$strictMode = $configContent -match 'strict_professional:\s*true'
+
+# Filter out commented lines before matching to avoid false positives
+$activeLines = ($configContent -split "`n") | Where-Object { $_ -notmatch '^\s*#' }
+$activeConfig = $activeLines -join "`n"
+
+$maskEnabled = $activeConfig -match 'mask_mode:\s*[\r\n]+\s*enabled:\s*true'
+$strictMode = $activeConfig -match 'strict_professional:\s*true'
+
+# CLI -Strict flag overrides config
+if ($Strict) {
+    $strictMode = $true
+}
 
 Write-Host "[INFO] Mask Mode Status:" -ForegroundColor Yellow
 Write-Host "  - mask_mode.enabled: $(if ($maskEnabled) {'true'} else {'false'})"

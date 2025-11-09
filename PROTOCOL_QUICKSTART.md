@@ -140,7 +140,7 @@ Read protocol/YUUJI.md --tier critical and implement OAuth2 authentication
 2. **Read protocol/TIER-SELECTION-GUIDE.md** - When to use which tier
 3. **Try a Tier 2 feature** - Experience the full workflow
 
-### Typical Workflow (v7.1.0 - Automatic Security Handoff)
+### Typical Workflow (v7.1.0 - Prompted Security Handoff)
 
 ```
 1. You: "Read protocol/YUUJI.md and implement [feature]"
@@ -149,7 +149,7 @@ Read protocol/YUUJI.md --tier critical and implement OAuth2 authentication
 2. You: Review in .protocol-state/dev-notes.md
    └─> Approve: "Looks good, proceed"
 
-3. **AUTOMATIC**: Gojo facilitates handoff to Megumi (Tier 2/3)
+3. **PROMPTED**: Gojo facilitates handoff to Megumi (Tier 2/3)
    └─> Megumi receives context and conducts OWASP Top 10 audit
    └─> **Option**: Skip with "Skip security review for [feature]" (tracked + reminded)
 
@@ -188,7 +188,7 @@ Read protocol/YUUJI.md --tier critical and implement OAuth2 authentication
 "Read protocol/YUUJI.md --tier rapid and [task]"
 "Read protocol/YUUJI.md --tier critical and [task]"
 
-# Security review (Megumi) - AUTOMATIC for Tier 2/3, or standalone for existing code
+# Security review (Megumi) - PROMPTED for Tier 2/3, or standalone for existing code
 "Read protocol/MEGUMI.md and audit [existing module]"  # Standalone audit of existing code
 
 # Creative strategy & UX (Nobara)
@@ -252,7 +252,7 @@ ai:
 
 **What is it?**
 Gojo's background monitoring system that provides:
-- ✅ Automatic enforcement of protocol rules
+- ✅ Protocol enforcement through prompts
 - ✅ Proactive safety nudges and backup reminders
 - ✅ Risk detection and auto-escalation
 - ✅ Rich intelligence reports (Trigger 19)

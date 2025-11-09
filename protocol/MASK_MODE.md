@@ -84,7 +84,7 @@ mask_mode:
 - Narrative framing: "I'm Yuuji, and I'm ready to implement..."
 
 **Example Output (MASK ON):**
-```
+```text
 🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️
 "Test-Driven Delivery, Rapid Iteration"
 
@@ -108,7 +108,7 @@ Let me break this down with the protocol in mind...
 - Direct framing: "I'll implement the feature using TDD..."
 
 **Example Output (MASK OFF):**
-```
+```text
 Implementation Specialist - Active
 
 I'll implement the user authentication feature using test-driven development.
@@ -155,7 +155,7 @@ Let me start with the tests...
 Each agent file (YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md) will check the `mask_mode.enabled` setting and adjust behavior accordingly.
 
 **Pseudo-logic:**
-```
+```python
 IF mask_mode.enabled == true:
     USE personality_prompts
     USE jjk_terminology
@@ -327,7 +327,7 @@ When implementing or changing mask mode:
 ### Example 1: Implementation Request
 
 **MASK ON:**
-```
+```text
 User: "Read YUUJI.md and implement user login"
 
 🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️
@@ -346,7 +346,7 @@ Let's start with the tests...
 ```
 
 **MASK OFF:**
-```
+```text
 User: "Read YUUJI.md and implement user login"
 
 Implementation Specialist - Active
@@ -365,7 +365,7 @@ Starting with tests...
 ### Example 2: Security Review
 
 **MASK ON:**
-```
+```text
 User: "Read MEGUMI.md and review the login implementation"
 
 🛡️ SECURITY DOMAIN ACTIVATED 🛡️
@@ -385,7 +385,7 @@ SEC-003: Session management needs improvement ❌
 ```
 
 **MASK OFF:**
-```
+```text
 User: "Read MEGUMI.md and review the login implementation"
 
 Security Analyst - Active
@@ -446,7 +446,7 @@ mask_mode:
 
   # Phrase overrides (v7.1.0+): compound phrases with themed nouns
   phrase_overrides:
-    automatic_security_handoff: "Automated Security Review"
+    automatic_security_handoff: "Security Review Initiated"
     dual_workflow: "Implementation + Security Pipeline"
     domain_zero_active: "Protocol Environment Active"
 
@@ -531,20 +531,20 @@ When switching from MASK ON to MASK OFF (or vice versa), your AI assistant's mem
 
 ### How to Reseed Memory
 
-**Step 1: Clear Existing Memory**
+### Step 1: Clear Existing Memory
 
 In your AI assistant (Claude, ChatGPT, etc.):
 - Find "Memory" or "Custom Instructions" settings
 - Remove or archive existing Domain Zero Protocol entries
 - Clear conversation history if starting fresh
 
-**Step 2: Reseed with Mode-Appropriate Summary**
+### Step 2: Reseed with Mode-Appropriate Summary
 
 Choose the template below based on your mask setting:
 
 ### Memory Template: MASK ON (JJK Theme)
 
-```
+```text
 I use the Domain Zero Protocol for AI-assisted development. This is a four-agent system:
 - YUUJI (Implementation Specialist): Test-first development, feature implementation
 - MEGUMI (Security Analyst): OWASP Top 10 security reviews
@@ -564,7 +564,7 @@ Mask Mode: ENABLED (JJK theme active)
 
 ### Memory Template: MASK OFF (Professional Mode)
 
-```
+```text
 I use the Domain Zero Protocol (professional mode) for AI-assisted development. This is a four-agent system:
 - Implementation Specialist: Test-driven development, feature implementation
 - Security Analyst: OWASP Top 10 security reviews
@@ -589,7 +589,7 @@ Mask Mode: DISABLED (professional mode active)
 
 ### Memory Template: STRICT PROFESSIONAL MODE
 
-```
+```text
 I use the Domain Zero Protocol (strict professional mode) for AI-assisted development in a regulated environment.
 
 System: Four-specialist workflow
@@ -614,13 +614,13 @@ Mask Mode: DISABLED + STRICT PROFESSIONAL
 After reseeding, test with a simple invocation:
 
 **MASK ON Test:**
-```
+```bash
 "Read protocol/YUUJI.md and explain what you do"
 ```
 Expected: JJK-themed banner and personality
 
 **MASK OFF Test:**
-```
+```bash
 "Read protocol/YUUJI.md and explain what you do"
 ```
 Expected: Professional banner and neutral tone
@@ -691,7 +691,7 @@ Mask Mode implementation is successful when:
 
 ---
 
-**END OF MASK_MODE.md**
+### END OF MASK_MODE.md
 
 ---
 

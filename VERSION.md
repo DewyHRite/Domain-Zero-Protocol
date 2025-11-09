@@ -75,7 +75,7 @@ This minor release adds **Mask Mode**, a configuration toggle that allows users 
 ### Breaking Changes
 - **Dual Workflow Mandatory for Tier 2/3**: Yuuji-Megumi collaboration is now enforced
   - **Old pattern** (deprecated): User invokes Yuuji → tags @security-review → invokes Megumi separately
-  - **New pattern** (v7.1.0): User invokes Yuuji once → Yuuji automatically invokes Megumi after implementation
+  - **New pattern** (v7.1.0): User invokes Yuuji once → Yuuji prompts for Megumi invocation after implementation
   - **Impact**: Workflow pattern changes for Tier 2 (Standard) and Tier 3 (Critical) features
   - **Migration**: See DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md for complete migration instructions
   - **Tier 1 exception**: Rapid prototyping (Tier 1) unchanged - Yuuji-only invocation still valid
