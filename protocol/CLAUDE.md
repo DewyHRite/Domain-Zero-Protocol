@@ -1,17 +1,17 @@
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v7.0.0
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v7.1.0
 ## Main Protocol File - Domain Zero
 
-**Version**: 7.0.0
+**Version**: 7.1.0
 **Status**: Production-Ready
-**Last Updated**: 2025-11-07
-**Major Enhancements**: Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework, Enhanced Safety Principles
+**Last Updated**: 2025-11-08
+**Major Enhancements**: Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 
 ---
 
 ## 📍 CANONICAL SOURCE
 
-> **Canonical Source**: https://github.com/DewyHRite/Domain-Zero-Protocol
-> **Current Local Protocol Version**: v6.2.7
+> **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
+> **Current Local Protocol Version**: v7.1.0
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -429,6 +429,60 @@ Perfection is the horizon we walk toward, not the destination we reach.
 
 ---
 
+## 🎭 MASK MODE (v7.1.0+)
+
+**What is Mask Mode?**
+
+Mask Mode is a configuration toggle that controls whether agents use JJK-themed personality prompts or operate as straightforward AI assistants.
+
+### The Truth About "Agents"
+
+As explained in REALITY_CHECK.md, the "agents" (Yuuji, Megumi, Nobara, Gojo) are **not separate AI systems**. They are:
+- The same underlying AI reading different instruction files
+- Role-playing prompts with specific behavioral constraints
+- Workflow orchestration using personality-driven prompts
+
+**Mask Mode allows you to choose:**
+- **MASK ON** (default): JJK theme, personality-driven responses, domain banners
+- **MASK OFF**: Professional mode, straightforward responses, standard terminology
+
+**All core functionality remains identical.** The only difference is presentation style.
+
+### Configuration
+
+Set in `protocol.config.yaml`:
+
+```yaml
+mask_mode:
+  enabled: true  # true = JJK theme, false = professional mode
+```
+
+### Comparison
+
+| Feature | MASK ON | MASK OFF |
+|---------|---------|----------|
+| Agent Names | Yuuji, Megumi, Nobara, Gojo | Implementation Specialist, Security Analyst, Creative Strategist, Mission Control |
+| Personality | Enthusiastic, methodical, bold, confident | Professional, direct, neutral |
+| Banners | `🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️` | `Implementation Specialist - Active` |
+| Terminology | Domain Zero, Domain Expansion, The Weight | Protocol, Project Initialization, Compliance |
+
+### When to Use Each Mode
+
+**MASK ON** (JJK Theme):
+- ✅ Personal projects and learning
+- ✅ Solo development (you enjoy the theme)
+- ✅ Mnemonic devices help you remember roles
+
+**MASK OFF** (Professional):
+- ✅ Professional/corporate environments
+- ✅ Client-facing demonstrations
+- ✅ Team collaboration (neutral terminology)
+- ✅ Formal documentation and audit trails
+
+**See protocol/MASK_MODE.md for complete documentation.**
+
+---
+
 ## SYSTEM OVERVIEW
 
 ### What This Is
@@ -471,6 +525,8 @@ A four-agent AI development system that provides specialized expertise through d
 ### Mode 1: Dual Workflow (Primary Development Mode)
 Complete implementation and security review cycle with remediation.
 
+**IMPORTANT** (v7.1.0+): For Tier 2 (Standard) and Tier 3 (Critical) features, security review is **strongly prompted**. Yuuji and Megumi **cannot be invoked separately** for production code.
+
 **Process Flow**:
 ```
 1. Yuuji implements feature (test-first)
@@ -479,8 +535,11 @@ Complete implementation and security review cycle with remediation.
 2. User reviews and approves
    └─> Gives go-ahead
 
-3. Yuuji tags @security-review
-   └─> Megumi receives notification
+3. **PROMPTED SECURITY HANDOFF** (v7.1.0+)
+   ├─> Yuuji outputs instruction to invoke Megumi
+   ├─> User receives instruction but must manually execute
+   ├─> Context passed (files, scope, tier)
+   └─> User CAN skip with explicit choice (tracked + reminded)
 
 4. Megumi conducts security audit
    ├─> Finds issues → Tags @remediation-required
@@ -497,7 +556,11 @@ Complete implementation and security review cycle with remediation.
 6. Feature complete ✓
 ```
 
-**When to Use**: All production code, new features, bug fixes requiring implementation
+**Tier 1 Exception**: Tier 1 (Rapid) features deliberately skip security review (prototypes/experiments only).
+
+**User Skip Option**: User can explicitly skip security review: "Skip security review for [feature]". Gojo tracks and sends periodic reminders (24h for Tier 2, 8h for Tier 3).
+
+**When to Use**: All Tier 2/3 production code, new features, bug fixes requiring implementation
 
 ---
 
@@ -509,12 +572,15 @@ Individual agent consultation without code changes or workflow.
 - No file modifications, no implementation
 - Example: "Yuuji: How do I handle JWT refresh tokens securely?"
 
-**Megumi Standalone**:
-- Security audits, performance analysis, threat modeling
-- Comprehensive reviews, strategic recommendations
-- Example: "Megumi: Audit the payment processing module"
+**Megumi Standalone** (v7.1.0+ Restrictions):
+- ✅ **EXISTING code audits**: "Megumi: Audit the payment processing module"
+- ✅ **Architecture reviews**: "Megumi: Review authentication design"
+- ✅ **Compliance assessments**: "Megumi: Assess PCI DSS compliance"
+- ✅ **Threat modeling**: "Megumi: Model threats for user data flow"
+- ❌ **NEW Tier 2/3 feature reviews**: ROUTED through dual workflow
+- ❌ **Tier 1 feature reviews**: REFUSED (no review needed for prototypes)
 
-**When to Use**: Learning, research, planning, architecture evaluation
+**When to Use**: Learning, research, planning, architecture evaluation, auditing existing code
 
 ---
 
@@ -1339,12 +1405,13 @@ The system is optimized to stay within Claude's context limits.
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 7.0.0
-**Protocol Version**: 7.0.0
-**Release Date**: November 7, 2025
-**Last Updated**: 2025-11-07
+**Current Version**: 7.1.0
+**Protocol Version**: 7.1.0
+**Release Date**: November 8, 2025
+**Last Updated**: 2025-11-08
 
 **Version History**:
+- v7.1.0 - **MINOR**: Mask Mode Toggle (JJK Theme vs Professional Mode), Dual Workflow Enforcement, REALITY_CHECK.md Integration
 - v7.0.0 - **MAJOR**: Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework, Enhanced Safety Principles
 - v6.2.8 - **PATCH**: Copilot PR Review Fixes, Version Consistency Updates
 - v6.2.7 - **PATCH**: Pre-Push Version Verification, PR Review Fixes, ANSI Code Removal, PyYAML Error Handling
@@ -1365,6 +1432,8 @@ The system is optimized to stay within Claude's context limits.
 
 **Complete Documentation**:
 - **JJK-AI-PROTOCOL-PSD.md** - Full Product Specification Document
+- **MASK_MODE.md** - Mask mode specification (JJK theme vs professional mode)
+- **REALITY_CHECK.md** - Honest assessment of what Domain Zero actually is and how to use it effectively
 - **YUUJI.md** - Implementation agent detailed specifications
 - **MEGUMI.md** - Security agent detailed specifications
 - **GOJO.md** - Mission Control detailed specifications

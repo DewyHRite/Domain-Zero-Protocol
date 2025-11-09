@@ -1,7 +1,84 @@
-# Domain Zero Protocol v7.0.0
+# Domain Zero Protocol v7.1.0
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
+
+> **New in v7.1.0**: [Mask Mode](#mask-mode) - Toggle between JJK-themed personality responses and professional mode.
+
+---
+
+## 🎯 Start Here: Honest Assessment
+
+**Before you dive in**, read [REALITY_CHECK.md](REALITY_CHECK.md) for an **honest, no-marketing-fluff assessment** of what Domain Zero actually is:
+
+### What You're Actually Getting
+- ✅ **Structured prompt engineering** for AI-assisted development (not magic AI)
+- ✅ **The "agents" are the same AI** reading different instruction files (not separate systems)
+- ✅ **Test-driven development enforcement** through prompts
+- ✅ **OWASP Top 10 security checklists** for systematic reviews
+- ✅ **Workflow structure** (Tier system: Rapid/Standard/Critical)
+- ✅ **Audit trails** through markdown documentation files
+
+### Real Benefits (Measured, Not Claimed)
+- ✅ **Better test coverage** if you currently skip testing
+- ✅ **Systematic security reviews** if you don't have a dedicated security engineer
+- ✅ **Documented decisions** through dev-notes.md and security-review.md
+- ✅ **Repeatable process** across multiple projects
+- ✅ **Learning framework** for TDD and security practices
+
+### Honest Limitations
+- ❌ **Not zero defects** - "Zero" is aspirational, not guaranteed
+- ❌ **Not true multi-agent AI** - It's one AI with different prompts
+- ❌ **Not for mission-critical systems** - AI reviews can't replace human security experts
+- ❌ **Productivity gains vary** - Depends heavily on your existing process
+
+**Read the full honest assessment**: [REALITY_CHECK.md](REALITY_CHECK.md)
+
+---
+
+## 🚀 Why Use Domain Zero?
+
+Domain Zero is a **structured prompt engineering framework** that enforces discipline through AI collaboration. Here's when it actually helps:
+
+### ✅ Best For:
+- **Solo developers** who need more structure and discipline
+- **Small teams** without formal CI/CD or security review processes
+- **Learning projects** where you want to build good habits (TDD, security thinking)
+- **Side projects** that might scale to production
+- **Prototyping** with a clear path to production-ready code
+
+### ✅ Real Value Delivered:
+1. **Forces test-first development** - You get test coverage as a byproduct
+2. **Systematic security reviews** - OWASP Top 10 checklist applied to every feature
+3. **Three-tier workflow** - Scale rigor based on risk (Rapid/Standard/Critical)
+4. **Documented decisions** - Implementation rationale captured in dev-notes.md
+5. **Backup requirements** - Destructive changes require verified backups first
+6. **Consistent process** - Same workflow across all your projects
+
+### ⚠️ Not Recommended For:
+- Mission-critical systems (banking, healthcare, safety) - need human security experts
+- Teams with mature DevOps practices - likely redundant with existing processes
+- Performance-critical systems - AI can't replace profiling and optimization
+- Projects requiring regulatory compliance - markdown files don't satisfy audits
+
+---
+
+## 📖 Quick Decision Guide
+
+**Should YOU use Domain Zero?**
+
+| Your Situation | Recommendation |
+|----------------|----------------|
+| Solo developer, skip tests often | ✅ **YES** - Adds needed discipline |
+| Team with mature CI/CD already | ❌ **NO** - Likely redundant overhead |
+| Learning/side project | ✅ **YES** - Great for building habits |
+| Mission-critical production system | ❌ **NO** - Need human experts |
+| Want structure for AI-assisted dev | ✅ **YES** - That's what this is |
+| Building sensitive features (auth/payments) | ⚠️ **MAYBE** - Use Tier 3, but still get human review |
+
+**Read the complete decision framework**: [REALITY_CHECK.md](REALITY_CHECK.md)
+
+---
 
 Domain Zero is a four-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with test-first development, comprehensive security review, creative strategy, and adaptive workflow complexity.
 
@@ -10,6 +87,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 ## 📋 Table of Contents
 
 - [What is Domain Zero?](#-what-is-domain-zero)
+- [Mask Mode](#mask-mode) ⭐ NEW in v7.1.0
 - [Prerequisites & Optional Integrations](#-prerequisites--optional-integrations)
 - [Quick Setup](#-quick-setup)
 - [AI Assistant Integration & Canonical Source](#-ai-assistant-integration--canonical-source)
@@ -24,7 +102,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 - [Success Criteria](#-success-criteria)
 - [Documentation](#-documentation)
 - [Getting Help](#-getting-help)
-- [Troubleshooting](#-troubleshooting) ⭐ NEW
+- [Troubleshooting](#-troubleshooting)
 - [Important Notes](#-important-notes)
 - [License](#-license)
 
@@ -35,7 +113,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
-- `CLAUDE.md` - Main protocol specification (v7.0.0)
+- `CLAUDE.md` - Main protocol specification (v7.1.0)
 - `YUUJI.md` - Implementation agent protocol
 - `MEGUMI.md` - Security review agent protocol
 - `GOJO.md` - Mission control agent protocol
@@ -142,6 +220,94 @@ Domain Zero creates a **controlled collaboration space** where four specialized 
 
 ---
 
+<a id="mask-mode"></a>
+
+## 🎭 Mask Mode
+
+**New in v7.1.0**: Domain Zero now supports **Mask Mode**, allowing you to toggle between JJK-themed personality responses and professional mode.
+
+### What is Mask Mode?
+
+As explained in [REALITY_CHECK.md](REALITY_CHECK.md), the "agents" (Yuuji, Megumi, Nobara, Gojo) are **the same AI reading different instruction files** - they're prompt engineering, not true multi-agent systems. Mask Mode gives you control over the presentation style.
+
+### The Two Modes
+
+**🎭 MASK ON (Default)** - JJK Theme:
+- Personality-driven responses (enthusiastic, methodical, bold, confident)
+- Agent names: Yuuji, Megumi, Nobara, Gojo
+- Domain banners: `🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️`
+- JJK terminology: "Domain Zero", "The Weight", "Trigger 19"
+
+**👔 MASK OFF** - Professional Mode:
+- Straightforward, professional responses
+- Role names: Implementation Specialist, Security Analyst, Creative Strategist, Mission Control
+- Minimal banners: `Implementation Specialist - Active`
+- Standard terminology: "Protocol", "Workflow", "Review"
+
+### Core Functionality is Identical
+
+**Regardless of mask setting, you always get:**
+- ✅ Test-driven development (TDD)
+- ✅ OWASP Top 10 security reviews
+- ✅ Tier system (Rapid/Standard/Critical)
+- ✅ Backup and rollback requirements
+- ✅ Documentation and audit trails
+- ✅ Protocol enforcement
+
+**The mask changes HOW agents communicate, not WHAT they enforce.**
+
+### How to Toggle Mask Mode
+
+Edit `protocol.config.yaml`:
+
+```yaml
+mask_mode:
+  enabled: true  # true = JJK theme, false = professional mode
+```
+
+Restart your AI session for changes to take effect.
+
+### When to Use Each Mode
+
+**Use MASK ON** (JJK Theme) when:
+- ✅ Working on personal projects
+- ✅ You enjoy the engaging personality-driven responses
+- ✅ The JJK theme helps you remember role boundaries
+
+**Use MASK OFF** (Professional) when:
+- ✅ Corporate/enterprise environments
+- ✅ Client-facing demonstrations
+- ✅ Team collaboration (neutral terminology)
+- ✅ Formal documentation and audit trails
+
+### Detailed Comparison
+
+| Feature | MASK ON (JJK Theme) | MASK OFF (Professional) |
+|---------|---------------------|-------------------------|
+| **Agent Names** | Yuuji, Megumi, Nobara, Gojo | Implementation Specialist, Security Analyst, Creative Strategist, Mission Control |
+| **Implementation Banner** | `🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️` | `Implementation Specialist - Active` |
+| **Security Banner** | `🛡️ SECURITY DOMAIN ACTIVATED 🛡️` | `Security Analyst - Active` |
+| **Mission Control Banner** | `🌀 MISSION CONTROL DOMAIN ACTIVATED 🌀` | `Mission Control - Active` |
+| **Creative Banner** | `🎯 CREATIVE STRATEGY DOMAIN ACTIVATED 🎯` | `Creative Strategist - Active` |
+| **Security Handoff** | "Domain Zero auto-handoff engaged" | "Automated security review initiated" |
+| **Intelligence Report** | "Trigger 19" | "Intelligence Report" |
+| **Goal Phrasing** | "Zero Flaws", "Domain Expansion" | "Quality Standards", "Project Initialization" |
+| **Protocol Environment** | "Domain Zero" | "Protocol Environment" |
+| **Compliance Concept** | "The Weight" | "Protocol Compliance" |
+| **Personality** | Enthusiastic, methodical, bold, confident | Professional, direct, neutral |
+| **Tone** | Engaging, character-driven | Straightforward, efficiency-focused |
+| **Emojis** | ✅ Used throughout | ❌ Minimal (or none in strict mode) |
+| **Audit Suitability** | Personal/Team Use | ✅ Compliance-ready |
+
+**Strict Professional Mode**: Add `strict_professional: true` to completely remove ALL emojis and themed metaphors for regulated environments (finance, healthcare, legal).
+
+### Learn More
+
+- **[MASK_MODE.md](protocol/MASK_MODE.md)** - Complete specification with examples and configuration options
+- **[REALITY_CHECK.md](REALITY_CHECK.md)** - Honest assessment of what Domain Zero actually is (no marketing fluff)
+
+---
+
 ## 🚀 Quick Setup
 
 > **⚡ Want to get started in 2 minutes?** See [`PROTOCOL_QUICKSTART.md`](PROTOCOL_QUICKSTART.md) for the express setup guide.
@@ -151,28 +317,28 @@ Domain Zero creates a **controlled collaboration space** where four specialized 
 **macOS/Linux (bash/zsh)**:
 ```bash
 # Copy the entire protocol structure to your project root
-cp -r "Domain Zero Protocol v7.0.0/protocol" your-project/
-cp -r "Domain Zero Protocol v7.0.0/.protocol-state" your-project/
-cp "Domain Zero Protocol v7.0.0/protocol.config.yaml" your-project/
-cp "Domain Zero Protocol v7.0.0/.gitignore" your-project/
+cp -r "Domain Zero Protocol v7.1.0/protocol" your-project/
+cp -r "Domain Zero Protocol v7.1.0/.protocol-state" your-project/
+cp "Domain Zero Protocol v7.1.0/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v7.1.0/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
 # Copy the entire protocol structure to your project root
-Copy-Item -Recurse -Force "Domain Zero Protocol v7.0.0\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol v7.0.0\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v7.0.0\protocol.config.yaml" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v7.0.0\.gitignore" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v7.1.0\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v7.1.0\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v7.1.0\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v7.1.0\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
 ```cmd
 REM Copy the entire protocol structure to your project root
-xcopy /E /I /Y "Domain Zero Protocol v7.0.0\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol v7.0.0\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol v7.0.0\protocol.config.yaml" "your-project\"
-copy /Y "Domain Zero Protocol v7.0.0\.gitignore" "your-project\"
+xcopy /E /I /Y "Domain Zero Protocol v7.1.0\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v7.1.0\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v7.1.0\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v7.1.0\.gitignore" "your-project\"
 ```
 
 ### Step 2: Configure Your Project
@@ -265,7 +431,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a four-agent
 - GOJO (Mission Control): Project lifecycle, protocol guardian
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v7.0.0)
+- protocol/CLAUDE.md (main protocol, v7.1.0)
 - protocol/YUUJI.md (implementation agent)
 - protocol/MEGUMI.md (security agent)
 - protocol/NOBARA.md (creative strategy agent)
@@ -284,7 +450,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v7.0.0) for development projects. This is a four-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v7.1.0) for development projects. This is a four-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
@@ -306,7 +472,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 - Add Domain Zero Protocol pointer as shown in integration section
 
 **What to Include in Memory**:
-- ✅ Protocol name and version (Domain Zero Protocol v7.0.0)
+- ✅ Protocol name and version (Domain Zero Protocol v7.1.0)
 - ✅ The four agent roles and their specializations
 - ✅ Protocol file locations (protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md)
 - ✅ Tier system overview (Rapid/Standard/Critical)
@@ -316,7 +482,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 **Benefits of Memory Integration**:
 - 🚀 **Faster startup**: No need to re-read protocol files every session
 - 🔄 **Session continuity**: AI remembers your workflow preferences
-- 🎯 **Automatic compliance**: AI follows protocol without explicit reminders
+- 🎯 **Workflow prompts**: AI follows protocol with structured prompts
 - 💡 **Proactive suggestions**: AI can suggest tier selection and workflow improvements
 - ⚡ **Reduced token usage**: Less context needed in each conversation
 
@@ -441,7 +607,7 @@ Domain Zero v6.1 features **three workflow tiers** to match process rigor to fea
 **What You Get**: Fast implementation, no tests, no security review, backup maintained
 
 **Invocation**:
-```
+```bash
 "Read protocol/YUUJI.md --tier rapid and create file renaming script"
 ```
 
@@ -513,18 +679,22 @@ Yuuji:
 
 ```
 You: Review the implementation in .protocol-state/dev-notes.md
-You: "Looks good, proceed with security review"
+You: "Looks good, proceed"
 ```
 
-### 3. Security Review (Megumi)
+### 3. Security Review (Megumi) - **PROMPTED HANDOFF (v7.1.0+)**
 
-```
-Yuuji: Tags @security-review
+```text
+**NEW**: Gojo automatically facilitates handoff to Megumi for Tier 2/3 features
 Megumi:
-- Reads implementation
+- Receives handoff context (files, scope, tier)
+- Reads implementation from dev-notes.md
 - Conducts OWASP Top 10 review
 - Documents findings in security-review.md
 - Tags @approved or @remediation-required
+
+**User Option**: You can skip security review with "Skip security review for [feature]"
+              (Gojo will track and send periodic reminders)
 ```
 
 ### 4. Remediation (if needed)
@@ -752,7 +922,7 @@ Within Domain Zero, the goal is always **ZERO**:
 → See protocol/TIER-SELECTION-GUIDE.md for decision tree and examples
 
 **"How do I get a security review?"**
-→ Yuuji will automatically tag @security-review after you approve implementation
+→ **NEW (v7.1.0)**: Prompted handoff! After you approve Yuuji's implementation, Megumi is prompted for engagement for Tier 2/3 features. No manual tagging needed.
 
 **"Can I modify the protocol?"**
 → Yes! Edit protocol/CLAUDE.md manually. Agents will re-read for updates.
@@ -1151,9 +1321,9 @@ Domain Zero is now set up in your project.
 
 ## 📝 Version Information
 
-**Version**: 6.2.1
-**Release Date**: November 6, 2025
-**Major Enhancements**: Canonical Source Adoption, Agent Self-Identification Standard, Session Continuity
+**Version**: 7.1.0
+**Release Date**: November 8, 2025
+**Major Enhancements**: Mask Mode (presentation toggle), Dual Workflow Enforcement (Tier 2/3), REALITY_CHECK.md
 
 **Version History**:
 - v6.1 - MINOR: Canonical Source Adoption, Agent Self-Identification, AI Memory Integration, Session Continuity (long sessions & user absence re-identification)
@@ -1177,5 +1347,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-**Domain Zero Protocol v6.2.8** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v7.1.0** - Perfect Code Through Infinite Collaboration
 **The weight is real. The protocol is absolute. Domain Zero is active.**

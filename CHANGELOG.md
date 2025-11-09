@@ -11,6 +11,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [7.1.0] - 2025-11-08
+
+### Breaking Changes
+- **Dual Workflow Enforcement** (Tier 2/3 only):
+  - Yuuji and Megumi CANNOT be invoked separately for Tier 2 (Standard) or Tier 3 (Critical) features
+  - **Old pattern** (deprecated): User invokes Yuuji → user manually tags @security-review → user invokes Megumi separately
+  - **New pattern** (v7.1.0): User invokes Yuuji once → Yuuji prompts for Megumi invocation after implementation complete
+  - **Rationale**: Eliminate possibility of skipped security reviews for production code (Tier 2/3)
+  - **Migration**: See DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md for step-by-step migration instructions
+  - **Tier 1 exception**: Rapid prototyping (Tier 1) unchanged - Yuuji-only invocation still valid
+
+### Added
+- **Dual Workflow Enforcement Guide** (DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md):
+  - Complete migration guide for new Yuuji-Megumi collaboration pattern
+  - Old vs new invocation pattern comparison
+  - Tier-specific examples (Tier 1/2/3)
+  - Success criteria and validation checklist
+  - Integration guidance for existing projects
+
+- **Mask Mode Configuration** (protocol.config.yaml):
+  - Master toggle: `mask_mode.enabled` (true = JJK theme, false = professional mode)
+  - Granular settings: control banners, personality, terminology, emoji, and narrative framing independently
+  - Unmasked names: professional agent titles when mask is OFF (Implementation Specialist, Security Analyst, etc.)
+  - Unmasked terminology: standard translations for JJK terms (Domain Zero → Protocol Environment, etc.)
+
+- **MASK_MODE.md** - Complete specification document:
+  - What Mask Mode is and why it exists (presentation choice without functionality loss)
+  - Truth about "agents" (same AI, different prompts - per REALITY_CHECK.md)
+  - Behavior comparison tables (MASK ON vs MASK OFF)
+  - Configuration reference with validation rules
+  - Migration guide from v7.0.0
+  - Use case guidance (personal vs professional contexts)
+  - Examples demonstrating both modes
+
+- **REALITY_CHECK.md** - Honest documentation:
+  - What "agents" really are (prompt engineering, not true multi-agent)
+  - What Domain Zero actually does (structured prompts for TDD, security, documentation)
+  - When to use/not use Domain Zero (realistic assessment)
+  - Customization advice (how to make it yours)
+  - Success metrics to track (measure your own results)
+  - Cost-benefit analysis and honest value proposition
+  - Comparison with alternatives (Cursor rules, custom instructions, etc.)
+
+### Changed
+- **CLAUDE.md**:
+  - Added Mask Mode section (v7.1.0+) explaining JJK theme vs professional mode
+  - Added REALITY_CHECK.md to Additional Resources
+  - Added MASK_MODE.md to Additional Resources
+  - Updated version to v7.1.0
+  - Updated major enhancements to highlight Mask Mode Toggle
+  - Updated version history with v7.1.0 entry
+
+- **protocol.config.yaml**:
+  - Added complete `mask_mode` configuration section (40+ lines)
+  - Updated protocol_version to 7.1.0
+  - Updated config_version to 1.2
+  - Updated last_updated to 2025-11-08
+
+- **VERSION.md**:
+  - Updated to v7.1.0 with complete release summary
+  - Added "What's New in v7.1.0" section
+  - Updated upgrade notes for mask mode
+  - Added mask mode to cumulative improvements
+
+- **Documentation Philosophy**:
+  - REALITY_CHECK.md provides honest, no-marketing-fluff assessment
+  - MASK_MODE.md separates presentation layer from core functionality
+  - Clear acknowledgment that agents are prompt engineering, not magic
+  - User empowerment through informed choice (mask ON/OFF)
+
+### Implementation Approach
+- **Presentation vs Functionality**: Mask Mode affects HOW agents communicate, not WHAT they enforce
+- **No breaking changes to core functionality from Mask Mode**: Default behavior (MASK ON) preserves the JJK-themed experience. Note: Dual Workflow Enforcement is a breaking workflow change for Tier 2/3 (see Breaking Changes above).
+- **User choice**: Toggle between engaging personality-driven responses and professional direct responses
+- **Hybrid modes**: Granular settings allow custom combinations (e.g., keep emoji but use standard terminology)
+- **Transparency**: REALITY_CHECK.md honestly explains what users are actually using
+
+### Philosophy
+- **Mask as choice, not requirement**: Users choose presentation style without sacrificing protocol structure
+- **Security reviews are NOT optional**: Dual workflow ensures Tier 2/3 features receive mandatory security review
+- **Honest documentation**: REALITY_CHECK.md acknowledges the truth about prompt engineering
+- **User empowerment**: Informed users make better decisions about tool adoption and customization
+- **Functionality preserved**: All TDD, tier, backup functionality unchanged regardless of mask setting
+- **Tier 1 flexibility maintained**: Fast prototyping still skips security review (by design)
+
+---
+
 ## [7.0.0] - 2025-11-07
 
 ### Added
@@ -354,4 +441,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 **Maintainer**: Protocol Guardians
-**Last Updated**: 2025-11-06
+**Last Updated**: 2025-11-08
