@@ -707,6 +707,6 @@ Whether you use YUUJI or "Implementation Specialist," the workflow remains:
 5. Get approval
 6. Ship confidently
 
-**Domain Zero Protocol v7.1.0** - Now with Mask Mode
+**Domain Zero Protocol v7.1.1** - Now with Mask Mode
 
 *Choose your presentation. Keep the structure.*

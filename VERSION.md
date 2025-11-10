@@ -1,25 +1,64 @@
 # Domain Zero Protocol - Version Information
 
 **Version:** v7.1.1
-**Release Date:** November 8, 2025
-**Release Type:** Minor Update
+**Release Date:** November 9, 2025
+**Release Type:** Patch Release
 
 ---
 
 ## Release Summary
 
-This minor release adds **Mask Mode**, a configuration toggle that allows users to switch between JJK-themed personality responses and professional mode. It also integrates REALITY_CHECK.md, providing an honest assessment of what Domain Zero actually is and how to use it effectively.
+This patch release adds a comprehensive agent documentation system while synchronizing all version references to v7.1.1. No behavioral changes to protocol enforcement or agent functionality.
 
 ### Key Changes
 
-- **Mask Mode Toggle** - Switch between JJK theme and professional mode
-- **Dual Workflow Enforcement** - Mandatory Yuuji-Megumi collaboration for Tier 2/3 features
-- **MASK_MODE.md** - Complete specification for mask mode functionality
-- **DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md** - Mandatory collaboration guide and migration instructions
-- **REALITY_CHECK.md Integration** - Honest documentation about what Domain Zero actually is
-- **Granular Mask Settings** - Fine-tune personality, terminology, banners, and emoji
-- **Unmasked Terminology** - Professional alternatives for JJK-themed terms
-- **Updated Documentation** - CLAUDE.md, protocol.config.yaml, and README updated with new features
+- **Agent Documentation System** - 16 new comprehensive agent documentation files
+- **Character Agent Docs** - Full JJK Edition with 8 character agents (PANDA, MAKI, INUMAKI, plus existing YUUJI, MEGUMI, NOBARA, GOJO, + TODO)
+- **Agent Creation Guides** - Templates, invocation guides, tool references, and model recommendations
+- **Version Synchronization** - All protocol files updated from v7.1.0 to v7.1.1
+- **No Runtime Changes** - All behavioral changes introduced in v7.1.0; this is documentation-only
+
+---
+
+## What's New in v7.1.1
+
+### Added
+- **Domain Zero Agents/** - Professional agent documentation:
+  - `README.md` - Complete guide to creating custom agents
+  - `AGENT_TEMPLATE.md` - Template for new agent creation
+  - `examples/KIRA_DOCUMENTATION_SPECIALIST.md` - Example agent implementation
+
+- **Domain Zero Agents - Full JJK Edition/** - Character-themed documentation:
+  - `README.md` - JJK Edition guide with character lore integration
+  - `JJK_AGENT_TEMPLATE.md` - JJK-themed agent template
+  - `AGENT_INVOCATION_GUIDE.md` - How to invoke agents correctly
+  - `AGENT_TOOLS_REFERENCE.md` - Complete tools documentation
+  - `AGENT_MODEL_RECOMMENDATIONS.md` - Model selection guidance
+  - `PANDA.md` - CI/CD Pipeline Agent
+  - `MAKI.md` - Code Refactoring & Optimization Agent
+  - `INUMAKI.md` - Shell Commands & Automation Agent
+  - `TODO.md` - Future agent expansion ideas
+  - `GOJO.md`, `YUUJI.md`, `MEGUMI.md`, `NOBARA.md` - Copies from protocol/ for JJK Edition
+
+### Changed
+- **Version Updates**: All protocol files synchronized to v7.1.1:
+  - `protocol/CLAUDE.md`, `protocol/GOJO.md`, `protocol/YUUJI.md`, `protocol/MEGUMI.md`, `protocol/NOBARA.md`, `protocol/MASK_MODE.md`
+  - `protocol.config.yaml`, `README.md`, `VERSION.md`, `SECURITY.md`, `FAQ.md`, `CHANGELOG.md`
+  - `PROTOCOL_QUICKSTART.md`, `DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md`
+  - `.protocol-state/project-state.json`
+
+- **Documentation Enhancements**:
+  - Updated quickstart references to include GOJO alongside YUUJI, MEGUMI, NOBARA
+  - Improved navigation structure with agent documentation sections
+  - Added cross-references between professional and JJK editions
+
+### Fixed
+- Date consistency in `protocol/CLAUDE.md` (aligned to November 9, 2025)
+- Version references in `SECURITY.md` (updated to v7.1.1)
+- Footer version in `protocol/MASK_MODE.md` (updated to v7.1.1)
+- Version tracking in `protocol/NOBARA.md` (updated to v7.1.1)
+- Mission Control banner in `protocol/GOJO.md` (updated to v7.1.1)
+- Canonical repository version in `protocol.config.yaml` (aligned to v7.1.1)
 
 ---
 
@@ -151,24 +190,21 @@ See previous VERSION.md for complete v7.0.0 details.
 
 ## Upgrade Notes
 
-**Protocol structure changes**: Backward-compatible (Tier 1 unchanged)
-**Workflow changes**: Tier 2/3 requires new prompted handoff pattern (breaking change)
+**v7.1.0 → v7.1.1:**
+- **No breaking changes** - This is a documentation-only patch release
+- **No action required** - All behavioral changes were in v7.1.0
+- **New resources available**: Comprehensive agent documentation system
+  - Explore `Domain Zero Agents/` for custom agent creation guides
+  - Explore `Domain Zero Agents - Full JJK Edition/` for character-themed documentation
+  - Use templates and examples to create your own specialized agents
 
-**What changed for you:**
-- **Mask Mode** added to protocol.config.yaml (presentation only, non-breaking)
+**v7.0.0 → v7.1.0 (if upgrading from v7.0.0):**
 - **Dual Workflow Enforcement** for Tier 2/3 (breaking workflow change)
   - Old: Invoke Yuuji → manually tag @security-review → invoke Megumi separately
   - New: Invoke Yuuji → Yuuji prompts for Megumi invocation (you manually execute)
-- Default behavior (MASK ON) preserves current JJK-themed experience
-- REALITY_CHECK.md provides honest assessment of what you're using
-- MASK_MODE.md documents how to switch between modes
-
-**Action Required:**
-- **Tier 2/3 users**: Adopt new prompted workflow (see DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md)
-- **Tier 1 users**: No changes required (rapid prototyping unchanged)
-- Review REALITY_CHECK.md for honest guidance on using Domain Zero effectively
-- See MASK_MODE.md if you want to try professional mode
-- Edit protocol.config.yaml and set `mask_mode.enabled: false` to disable JJK theme
+- **Mask Mode** added to protocol.config.yaml (presentation only, non-breaking)
+- Default behavior (MASK ON) preserves JJK-themed experience
+- See DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md for migration instructions
 
 ---
 
@@ -186,6 +222,7 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history and detailed chang
 
 ## Cumulative Improvements
 
+**v7.1.0 → v7.1.1:** Agent Documentation System (16 files, custom agent creation guides)
 **v7.0.0 → v7.1.0:** Mask Mode Toggle, REALITY_CHECK.md integration, Professional vs JJK theme choice
 **v6.2.8 → v7.0.0:** Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 **v6.2.7 → v6.2.8:** Copilot PR review fixes, version consistency updates
@@ -197,4 +234,4 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history and detailed chang
 **v6.2.1 → v6.2.2:** Protocol protection (CODEOWNERS, .gitignore)
 **v6.2.0 → v6.2.1:** Interactive work session alerts
 
-**Assessment Score:** 10.0/10 - **USER EMPOWERMENT**: Users can now choose presentation style without sacrificing functionality
+**Assessment Score:** 10.0/10 - **COMPREHENSIVE DOCUMENTATION**: Full agent system documentation with templates, guides, and character-themed variants

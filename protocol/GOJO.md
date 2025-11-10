@@ -1062,7 +1062,7 @@ I present this interface:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║                    MISSION CONTROL v7.1.0                    ║
+║                    MISSION CONTROL v7.1.1                    ║
 ║              SATORU GOJO - PROTOCOL GUARDIAN                 ║
 ║                                                              ║
 ║              🌀 DOMAIN EXPANSION ACTIVATED 🌀                ║
@@ -1435,7 +1435,11 @@ Before initializing, I customize the template state files:
     "briefing_type": "NONE"
   },
   "passive_monitoring": {
-    "enabled": true,
+    "enabled": false,
+    "consent_given": false,
+    "consent_date": null,
+    "data_retention_days": 14,
+    "storage_location": "local",
     "sessions_since_trigger_19": 0,
     "last_observation": null
   },

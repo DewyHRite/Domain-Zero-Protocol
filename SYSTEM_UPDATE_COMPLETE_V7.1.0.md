@@ -160,9 +160,9 @@ mask_mode:
 
 ## Files Created/Modified
 
-### New Files (13)
+### New Files (21)
 
-**Agent Documentation:**
+**Agent Documentation (16 files):**
 1. Domain Zero Agents/README.md
 2. Domain Zero Agents/AGENT_TEMPLATE.md
 3. Domain Zero Agents/examples/KIRA_DOCUMENTATION_SPECIALIST.md
@@ -171,15 +171,21 @@ mask_mode:
 6. Domain Zero Agents - Full JJK Edition/AGENT_INVOCATION_GUIDE.md (fixed line 119 formatting)
 7. Domain Zero Agents - Full JJK Edition/AGENT_TOOLS_REFERENCE.md
 8. Domain Zero Agents - Full JJK Edition/AGENT_MODEL_RECOMMENDATIONS.md
-9-12. Domain Zero Agents - Full JJK Edition/[PANDA.md, MAKI.md, INUMAKI.md, TODO.md]
-13. Domain Zero Agents - Full JJK Edition/[GOJO.md, YUUJI.md, MEGUMI.md, NOBARA.md] (copied from protocol/)
+9. Domain Zero Agents - Full JJK Edition/PANDA.md
+10. Domain Zero Agents - Full JJK Edition/MAKI.md
+11. Domain Zero Agents - Full JJK Edition/INUMAKI.md
+12. Domain Zero Agents - Full JJK Edition/TODO.md
+13. Domain Zero Agents - Full JJK Edition/GOJO.md (copied from protocol/)
+14. Domain Zero Agents - Full JJK Edition/YUUJI.md (copied from protocol/)
+15. Domain Zero Agents - Full JJK Edition/MEGUMI.md (copied from protocol/)
+16. Domain Zero Agents - Full JJK Edition/NOBARA.md (copied from protocol/)
 
-**Protocol Documentation:**
-14. REALITY_CHECK.md
-15. DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md
-16. protocol/MASK_MODE.md
-17. scripts/verify-mask-off.sh
-18. scripts/verify-mask-off.ps1
+**Protocol Documentation (5 files):**
+17. REALITY_CHECK.md
+18. DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md
+19. protocol/MASK_MODE.md
+20. scripts/verify-mask-off.sh
+21. scripts/verify-mask-off.ps1
 
 ### Modified Files (11)
 
