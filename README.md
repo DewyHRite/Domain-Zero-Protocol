@@ -101,6 +101,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 - [Common Commands](#-common-commands)
 - [Success Criteria](#-success-criteria)
 - [Documentation](#-documentation)
+  - [Agent Documentation](#agent-documentation-) 🆕 NEW in v7.1.0
 - [Getting Help](#-getting-help)
 - [Troubleshooting](#-troubleshooting)
 - [Important Notes](#-important-notes)
@@ -149,6 +150,14 @@ This distribution includes everything you need to deploy Domain Zero:
 - `copilot-instructions.md` - **NEW** GitHub Copilot integration instructions
 - `PULL_REQUEST_TEMPLATE.md` - **NEW** PR template with Passive-Off checklist
 - `workflows/security-scan-example.yml` - GitHub Actions security scanning template
+
+**Agent Documentation** 🆕 (`Domain Zero Agents/` and `Domain Zero Agents - Full JJK Edition/`):
+- **Generic Agent Building System**: Complete guide for creating custom agents with templates
+- **Full JJK Character Agents**: 8 complete character agents (Gojo, Yuuji, Megumi, Nobara, Panda, Maki, Inumaki, Todo)
+- **System Prompt Documentation**: How to invoke each agent with full system prompts
+- **Tool Permissions Reference**: Which tools each agent can use (Read, Write, Edit, Bash, etc.)
+- **Model Recommendations**: Opus/Sonnet/Haiku selection guide for cost optimization
+- **Advanced Capabilities**: Parallel execution, background processes, Jupyter notebook integration
 
 ---
 
@@ -908,6 +917,32 @@ Within Domain Zero, the goal is always **ZERO**:
 - **protocol/GOJO-UPDATES-PATCH.md** - Protocol change history and audit trail
 - **protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md** - Self-identification banner specification
 - **protocol/CANONICAL_SOURCE_ADOPTION.md** - Canonical source adoption strategy
+
+### Agent Documentation 🆕
+
+**Domain Zero Agents/** - Guide for creating custom agents with generic JJK-style theming:
+- [README.md](Domain%20Zero%20Agents/README.md) - Complete agent creation guide
+- [AGENT_TEMPLATE.md](Domain%20Zero%20Agents/AGENT_TEMPLATE.md) - Copy-ready template
+- [examples/KIRA_DOCUMENTATION_SPECIALIST.md](Domain%20Zero%20Agents/examples/KIRA_DOCUMENTATION_SPECIALIST.md) - Working example
+
+**Domain Zero Agents - Full JJK Edition/** - Character-based agents with full JJK lore:
+- [README.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/README.md) - Overview and agent details
+- [AGENT_INVOCATION_GUIDE.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/AGENT_INVOCATION_GUIDE.md) - **System prompts for all 8 agents**
+- [AGENT_TOOLS_REFERENCE.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/AGENT_TOOLS_REFERENCE.md) - **Tool permissions and advanced capabilities**
+- [AGENT_MODEL_RECOMMENDATIONS.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/AGENT_MODEL_RECOMMENDATIONS.md) - **Opus/Sonnet/Haiku selection guide**
+- [JJK_AGENT_TEMPLATE.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/JJK_AGENT_TEMPLATE.md) - Character agent template
+
+**Available Character Agents** (8 complete):
+- **Core Four**: [GOJO.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/GOJO.md), [YUUJI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/YUUJI.md), [MEGUMI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/MEGUMI.md), [NOBARA.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/NOBARA.md)
+- **Extended**: [PANDA.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/PANDA.md) (CI/CD), [MAKI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/MAKI.md) (Performance), [INUMAKI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/INUMAKI.md) (API), [TODO.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/TODO.md) (Database)
+
+**Quick Start with Agents**:
+```bash
+# Invoke an agent by reading its file
+"Read PANDA.md and configure CI/CD pipeline for React project"
+"Read MAKI.md and optimize bundle size"
+"Read INUMAKI.md and design REST API for user management"
+```
 
 ---
 
