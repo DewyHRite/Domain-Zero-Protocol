@@ -53,7 +53,7 @@ cp "Domain Zero Protocol/protocol.config.yaml" your-project/
 ```
 Add to memory: Domain Zero Protocol
 
-I use Domain Zero Protocol v6.2.8 for AI development. Four-agent system:
+I use Domain Zero Protocol v7.1.1 for AI development. Four-agent system:
 - YUUJI: Implementation (TDD)
 - MEGUMI: Security review (OWASP)
 - NOBARA: Creative strategy & UX
@@ -68,7 +68,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 **ChatGPT (Custom Instructions)**:
 Add to Settings → Personalization → Custom Instructions:
 ```
-I use Domain Zero Protocol v6.2.8 (four-agent AI dev framework).
+I use Domain Zero Protocol v7.1.1 (four-agent AI dev framework).
 Protocol files: protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md.
 Always read protocol files first.
 ```
@@ -432,6 +432,6 @@ You'll know Domain Zero is working when:
 
 ---
 
-**Domain Zero Protocol v6.2.8** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v7.1.1** - Perfect Code Through Infinite Collaboration
 
 *The weight is real. The protocol is absolute. Domain Zero is active.*
