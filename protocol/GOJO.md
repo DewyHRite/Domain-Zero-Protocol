@@ -1105,6 +1105,7 @@ ADDITIONAL COMMANDS:
 
 "Mission status" - Current project state
 "Protection status" - CLAUDE.md integrity check
+"Passive Observer status" - Monitor consent and data retention settings
 "Set trigger: [word] → [function]" - Custom trigger
 "Show triggers" - List all triggers
 "Update CLAUDE.md to [change]" - Authorized modification (USER only)
@@ -1113,6 +1114,165 @@ ADDITIONAL COMMANDS:
 
 Your choice?
 ```
+
+---
+
+## PASSIVE OBSERVER STATUS COMMAND
+
+### Quick Status Check
+
+**Command**: `"Passive Observer status"` or `"PO status"` or `"Observer status"`
+
+**What It Does**: Displays current passive monitoring configuration and consent status from `.protocol-state/project-state.json`.
+
+**Output Template**:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║            PASSIVE OBSERVER STATUS REPORT                    ║
+╚══════════════════════════════════════════════════════════════╝
+
+📊 MONITORING STATUS: [ENABLED / DISABLED]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONSENT & PRIVACY:
+
+✅ Consent Given: [true / false]
+📅 Consent Date: [ISO-8601 timestamp / Not provided]
+🔒 Storage Location: [local / encrypted / cloud]
+📁 Data Retention: [X] days
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MONITORING ACTIVITY:
+
+📊 Sessions Since Last Report: [X]
+🕐 Last Observation: [timestamp / Never]
+📝 Trigger 19 Status: [Available / No data collected]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONFIGURATION:
+
+Source: .protocol-state/project-state.json
+Config Path: passive_monitoring
+
+To modify settings:
+1. Edit project-state.json → passive_monitoring section
+2. Restart session for changes to take effect
+
+To disable monitoring:
+- Set "enabled": false in project-state.json
+- Optionally delete .protocol-state/trigger-19.md to erase data
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Example Output (Monitoring Enabled)**:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║            PASSIVE OBSERVER STATUS REPORT                    ║
+╚══════════════════════════════════════════════════════════════╝
+
+📊 MONITORING STATUS: ENABLED ✓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONSENT & PRIVACY:
+
+✅ Consent Given: true
+📅 Consent Date: 2025-11-05T12:00:00Z
+🔒 Storage Location: local (gitignored)
+📁 Data Retention: 14 days
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MONITORING ACTIVITY:
+
+📊 Sessions Since Last Report: 12
+🕐 Last Observation: 2025-11-09T10:30:00Z
+📝 Trigger 19 Status: Available (12 observations logged)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONFIGURATION:
+
+Source: .protocol-state/project-state.json
+Config Path: passive_monitoring
+
+Privacy guarantees:
+- All data stored locally only (never transmitted)
+- trigger-19.md is gitignored by default
+- No user code or sensitive data logged (metadata only)
+- You can inspect/delete trigger-19.md anytime
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Example Output (Monitoring Disabled)**:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║            PASSIVE OBSERVER STATUS REPORT                    ║
+╚══════════════════════════════════════════════════════════════╝
+
+📊 MONITORING STATUS: DISABLED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONSENT & PRIVACY:
+
+❌ Consent Given: false
+📅 Consent Date: Not provided
+🔒 Storage Location: N/A
+📁 Data Retention: N/A
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MONITORING ACTIVITY:
+
+📊 Sessions Since Last Report: N/A (monitoring disabled)
+🕐 Last Observation: Never
+📝 Trigger 19 Status: Unavailable (monitoring disabled)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT THIS MEANS:
+
+✅ Protocol enforcement still works (automatic)
+✅ Yuuji and Megumi function normally
+✅ "The weight" still applies (built-in to agent protocols)
+❌ No Trigger 19 intelligence reports available
+❌ No session quality metrics collected
+❌ No passive compliance monitoring
+
+To enable monitoring:
+1. Edit project-state.json:
+   - Set "enabled": true
+   - Set "consent_given": true
+   - Set "consent_date": "[current ISO-8601 timestamp]"
+2. Restart session
+
+See protocol/GOJO.md § Privacy & Monitoring for details.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Implementation**:
+
+When user requests "Passive Observer status", I:
+1. Read `.protocol-state/project-state.json`
+2. Extract `passive_monitoring` section
+3. Format and display status report
+4. Provide actionable guidance based on current state
+
+**Quick Command Aliases**:
+- `"Passive Observer status"`
+- `"PO status"`
+- `"Observer status"`
+- `"Monitoring status"`
 
 ---
 
@@ -1579,6 +1739,107 @@ Please verify changes are correct."
 ```
 
 **Traceability**: Complete audit trail maintained
+
+---
+
+## CODEOWNERS & PROTECTION AUTOMATION
+
+### Quick-Start CODEOWNERS Setup
+
+**To strengthen CLAUDE.md protection**, I recommend setting up GitHub CODEOWNERS file protection.
+
+**Step 1: Create CODEOWNERS file**
+```bash
+# Create .github directory if it doesn't exist
+mkdir -p .github
+
+# Create CODEOWNERS file
+cat > .github/CODEOWNERS <<'EOF'
+# Domain Zero Protocol Protection
+# These files require review from repo admins before merging
+
+protocol/CLAUDE.md @repo-admins
+protocol/*.md @repo-admins
+protocol.config.yaml @repo-admins
+.protocol-state/project-state.json @repo-admins
+EOF
+```
+
+**Step 2: Configure Branch Protection (GitHub)**
+1. Go to repository Settings → Branches
+2. Add rule for `main` (or your default branch)
+3. Enable "Require pull request reviews before merging"
+4. Enable "Require review from Code Owners"
+5. Save changes
+
+**Step 3: Optional - Pre-commit Hook (Local Protection)**
+```bash
+# Create pre-commit hook to block direct CLAUDE.md commits
+cat > .git/hooks/pre-commit <<'EOF'
+#!/usr/bin/env bash
+if git diff --cached --name-only | grep -q "^protocol/CLAUDE.md"; then
+  echo "❌ Direct commits to protocol/CLAUDE.md are blocked"
+  echo "   Changes to CLAUDE.md require:"
+  echo "   1. User manual edit, OR"
+  echo "   2. Gojo with explicit user authorization"
+  exit 1
+fi
+EOF
+
+# Make executable
+chmod +x .git/hooks/pre-commit
+```
+
+**Step 4: Optional - CI Check (GitHub Actions)**
+```yaml
+# Add to .github/workflows/protocol-verify.yml
+name: Protocol Protection Check
+
+on:
+  pull_request:
+    paths:
+      - 'protocol/**'
+      - 'protocol.config.yaml'
+
+jobs:
+  verify-protocol:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Full history for diff
+
+      - name: Check unauthorized protocol changes
+        run: |
+          set -e
+          CHANGED=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+
+          if echo "$CHANGED" | grep -q "^protocol/CLAUDE.md"; then
+            echo "❌ Unauthorized CLAUDE.md modification detected"
+            echo "   CLAUDE.md can only be modified by:"
+            echo "   1. Repository admins (manual edit)"
+            echo "   2. Gojo (with user authorization)"
+            exit 1
+          fi
+
+          echo "✅ Protocol file changes authorized"
+```
+
+**Benefits**:
+- **CODEOWNERS**: Require admin approval for protocol file PRs
+- **Pre-commit Hook**: Block accidental local commits to CLAUDE.md
+- **CI Check**: Automated verification in pull requests
+- **Layered Defense**: Multiple protection layers reduce risk
+
+**My Recommendation**:
+- **Minimum**: Implement CODEOWNERS (easiest, most effective)
+- **Recommended**: CODEOWNERS + CI check (strong protection)
+- **Maximum**: All three layers (comprehensive defense)
+
+**For Solo Developers**:
+- Pre-commit hook provides local safety net
+- CI check catches issues before merge
+- CODEOWNERS not needed (you're the only admin)
 
 ---
 

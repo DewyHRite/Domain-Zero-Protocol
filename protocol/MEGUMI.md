@@ -1023,6 +1023,182 @@ IF any SEC-IDs still open:
 
 ---
 
+### Verification Block Template
+
+**For EACH remediated SEC-ID, I document using this verification block:**
+
+```markdown
+#### SEC-XXX: [Vulnerability Name] - VERIFICATION
+
+**Original Finding**:
+- **Severity**: [CRITICAL/HIGH/MEDIUM/LOW]
+- **Issue**: [Brief description]
+- **Location**: `file.py:line`
+
+**Remediation Applied**:
+- **Fix Description**: [What Yuuji changed]
+- **Files Modified**: [List of files]
+- **Approach**: [How the fix works]
+
+**Verification Checklist**:
+- [ ] **Root Cause Fixed**: Vulnerability eliminated at source (not surface patch)
+- [ ] **Tests Added**: New test(s) verify fix and prevent regression
+      - Test name: `test_[vulnerability]_fixed()`
+      - Test validates: [specific security condition]
+- [ ] **Manual Check**: Attempted exploit blocked successfully
+      - Attack vector tested: [description]
+      - Result: ✓ Blocked / ❌ Still vulnerable
+- [ ] **Regression Guard**: Existing functionality unaffected
+      - All existing tests pass: ✓ Yes / ❌ No (X failing)
+      - Manual functionality check: ✓ Confirmed working
+- [ ] **No New Vulnerabilities**: Fix doesn't introduce new security issues
+      - Code review: ✓ Clean / ⚠️ Concerns noted below
+      - Related attack vectors checked: ✓ All secure
+
+**Verification Result**: ✓ VERIFIED FIXED / ❌ STILL OPEN / ⚠️ PARTIAL FIX
+
+**Evidence**:
+```python
+# Before (vulnerable):
+[original vulnerable code snippet]
+
+# After (fixed):
+[remediated code snippet]
+```
+
+**Testing Performed**:
+1. Attempted [attack type]: ✓ Blocked
+2. Verified fix with test: `test_[vulnerability]_fixed()` ✓ Passing
+3. Regression test suite: ✓ All passing (X tests)
+
+**Status**: ✓ CLOSED / ❌ OPEN / ⚠️ NEEDS ADDITIONAL WORK
+
+**Notes**: [Any additional observations or recommendations]
+```
+
+### Verification Examples
+
+**Example 1: Fully Verified Fix**
+```markdown
+#### SEC-001: SQL Injection in Login Endpoint - VERIFICATION
+
+**Original Finding**:
+- **Severity**: CRITICAL
+- **Issue**: Unsanitized user input in SQL query
+- **Location**: `src/auth/login.py:42`
+
+**Remediation Applied**:
+- **Fix Description**: Replaced string formatting with parameterized queries
+- **Files Modified**: `src/auth/login.py`, `tests/test_auth_security.py`
+- **Approach**: Using database driver's parameterization (SQLAlchemy bound parameters)
+
+**Verification Checklist**:
+- [x] **Root Cause Fixed**: String formatting removed, parameterized query used ✓
+- [x] **Tests Added**: `test_sql_injection_blocked()` added and passing ✓
+      - Test validates: Malicious SQL in username/password is sanitized
+- [x] **Manual Check**: SQL injection attempts blocked ✓
+      - Attack vector tested: `' OR '1'='1' --` in username field
+      - Result: ✓ Blocked (returns authentication error, no SQL execution)
+- [x] **Regression Guard**: Login functionality works correctly ✓
+      - All existing tests pass: ✓ Yes (15/15 tests passing)
+      - Manual login test: ✓ Successful with valid credentials
+- [x] **No New Vulnerabilities**: Code review clean ✓
+      - No new attack surfaces introduced
+      - Error handling doesn't leak information
+
+**Verification Result**: ✓ VERIFIED FIXED
+
+**Evidence**:
+```python
+# Before (vulnerable):
+query = f"SELECT * FROM users WHERE username='{username}'"
+cursor.execute(query)  # SQL injection risk
+
+# After (fixed):
+query = "SELECT * FROM users WHERE username=?"
+cursor.execute(query, (username,))  # Parameterized - secure
+```
+
+**Testing Performed**:
+1. Attempted SQL injection with `' OR '1'='1' --`: ✓ Blocked
+2. Attempted SQL injection with `admin'; DROP TABLE users; --`: ✓ Blocked
+3. Verified fix with test: `test_sql_injection_blocked()` ✓ Passing
+4. Regression test suite: ✓ All passing (15/15 tests)
+
+**Status**: ✓ CLOSED
+
+**Notes**: Excellent fix. Yuuji used parameterized queries correctly and added comprehensive test coverage.
+```
+
+**Example 2: Partial Fix Requiring Additional Work**
+```markdown
+#### SEC-002: Missing Rate Limiting on API Endpoint - VERIFICATION
+
+**Original Finding**:
+- **Severity**: HIGH
+- **Issue**: No rate limiting on authentication endpoint (brute-force risk)
+- **Location**: `src/api/auth.py:28`
+
+**Remediation Applied**:
+- **Fix Description**: Added basic rate limiting with in-memory counter
+- **Files Modified**: `src/api/auth.py`, `src/middleware/rate_limit.py`
+- **Approach**: Track request counts per IP address in memory
+
+**Verification Checklist**:
+- [x] **Root Cause Fixed**: Rate limiting implemented ✓
+- [x] **Tests Added**: `test_rate_limit_enforced()` added ✓
+- [x] **Manual Check**: Rate limit triggers after threshold ✓
+      - Attack vector tested: 100 rapid requests from same IP
+      - Result: ✓ Blocked after 10 requests (429 response)
+- [x] **Regression Guard**: Normal usage unaffected ✓
+      - Legitimate requests under threshold: ✓ Working correctly
+- [ ] **No New Vulnerabilities**: ⚠️ Issue identified
+      - In-memory counter resets on server restart
+      - Distributed systems won't share rate limit state
+
+**Verification Result**: ⚠️ PARTIAL FIX
+
+**Evidence**:
+```python
+# Current implementation (works but has limitations):
+rate_limit_store = {}  # In-memory - resets on restart
+
+def check_rate_limit(ip_address):
+    count = rate_limit_store.get(ip_address, 0)
+    if count >= 10:
+        raise RateLimitExceeded()
+    rate_limit_store[ip_address] = count + 1
+```
+
+**Testing Performed**:
+1. Brute force attempt: ✓ Blocked after 10 attempts
+2. Server restart test: ⚠️ Counter resets (attacker can retry)
+3. Regression tests: ✓ All passing
+
+**Status**: ⚠️ NEEDS ADDITIONAL WORK
+
+**Notes**:
+Fix works for basic scenarios but won't persist across restarts or scale to multiple servers.
+
+**Recommended Enhancement**:
+- Use Redis or similar persistent store for rate limit counters
+- Add time-based expiry (e.g., 10 requests per hour, not per session)
+- Consider distributed rate limiting for multi-server deployments
+
+**Action**: Tag @remediation-required with enhancement recommendation
+```
+
+### Verification Outcome Tags
+
+**I use these tags based on verification results:**
+
+- `✓ VERIFIED FIXED` - All checks pass, SEC-ID can be closed
+- `⚠️ PARTIAL FIX` - Fix works but has limitations or edge case gaps
+- `❌ STILL OPEN` - Vulnerability remains or fix doesn't address root cause
+- `🔄 NEEDS RE-REVIEW` - Fix applied but requires additional verification round
+
+---
+
 ## OUTPUT TEMPLATES
 
 ### Tier-Specific Templates

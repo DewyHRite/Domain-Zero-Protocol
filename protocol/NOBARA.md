@@ -540,6 +540,114 @@ Depending on the tier, I'll provide:
 [How we'll measure if this design succeeds]
 ```
 
+---
+
+### Developer Handoff Table Template
+
+**For clear implementation guidance, I provide a structured handoff table for each component:**
+
+```markdown
+## Developer Handoff - [Component/Feature Name]
+
+### Component Inventory
+
+| Component | States | Design Tokens | ARIA | Keyboard Support | Notes |
+|-----------|--------|---------------|------|------------------|-------|
+| LoginButton | default, hover, active, disabled, loading | `btn-primary`, `color-primary-500`, `spacing-md` | `role="button"`, `aria-label="Sign in"` | Enter, Space | Loading state shows spinner |
+| EmailInput | default, focus, error, disabled | `input-text`, `color-gray-700`, `border-radius-sm` | `aria-invalid="true"` on error, `aria-describedby="email-error"` | Tab to focus | Error message appears below field |
+| ErrorMessage | visible, hidden | `text-error`, `color-red-600`, `font-size-sm` | `role="alert"`, `aria-live="polite"` | N/A (announcement only) | Auto-announced to screen readers |
+
+### Interaction Specifications
+
+| Interaction | Trigger | Behavior | Animation/Timing | Error Handling |
+|-------------|---------|----------|------------------|----------------|
+| Form Submit | Click LoginButton or press Enter in form | Validate inputs → Show loading state → API call → Redirect or show error | Button loading: 200ms fade-in spinner | Display error message below relevant field, focus first error |
+| Email Validation | On blur from EmailInput | Check email format → Show error if invalid | Error message: 150ms slide-down | Show specific error: "Please enter a valid email" |
+| Password Toggle | Click eye icon in PasswordInput | Toggle password visibility | Icon rotation: 200ms ease | N/A |
+
+### Responsive Breakpoints
+
+| Breakpoint | Layout Changes | Component Adjustments |
+|------------|----------------|----------------------|
+| Mobile (<640px) | Single column, full-width form | Button full-width, larger touch targets (48px min) |
+| Tablet (640-1024px) | Centered form, max-width 600px | Standard button size (40px height) |
+| Desktop (>1024px) | Centered form, max-width 480px | Compact spacing, standard sizes |
+
+### Design Token Reference
+
+| Token Name | Value | Usage |
+|------------|-------|-------|
+| `color-primary-500` | `#3B82F6` | Primary buttons, links |
+| `color-gray-700` | `#374151` | Body text, input text |
+| `color-red-600` | `#DC2626` | Error messages, error states |
+| `spacing-md` | `16px` | Standard element spacing |
+| `border-radius-sm` | `4px` | Input fields, small elements |
+| `font-size-base` | `16px` | Body text, form inputs |
+
+### Accessibility Requirements (Tier 3)
+
+| Requirement | Implementation | Validation |
+|-------------|----------------|-----------|
+| **Keyboard Navigation** | Tab order: Email → Password → Login Button. Enter submits form from any field. | Manual test: Navigate entire form with Tab/Shift+Tab/Enter |
+| **Screen Reader** | All inputs have labels (visible or aria-label). Error messages associated with fields via aria-describedby. | Test with NVDA/VoiceOver: All elements announced correctly |
+| **Focus Indicators** | Visible 2px blue outline on focus (not just browser default) | Manual test: Tab through form, verify clear focus ring |
+| **Color Contrast** | Text: 4.5:1 minimum. Interactive elements: 3:1 minimum. | WebAIM Contrast Checker: All elements pass WCAG AA |
+| **Touch Targets** | Minimum 44×44px on mobile for all interactive elements | Manual measurement: Buttons and inputs meet minimum size |
+
+### Edge Cases & Error States
+
+| Scenario | Design Treatment | Implementation Notes |
+|----------|------------------|---------------------|
+| Invalid email format | Red border on input, error message below, error icon in field | Validate on blur, not on every keystroke (avoid interruption) |
+| Incorrect password | Generic error message: "Email or password incorrect" (security best practice) | Don't reveal which field is wrong (prevents user enumeration) |
+| Network error during submit | Show error banner at top: "Connection failed. Please try again." | Retry button in error message, clear loading state |
+| Empty form submission | Highlight all required fields with errors, focus first error field | Prevent submission if empty, show validation errors immediately |
+| Account locked | Show specific error: "Account locked. Reset password or contact support." | Include support link, disable form, log attempt |
+
+### Implementation Checklist for Yuuji
+
+**Before marking @user-review**, verify:
+- [ ] All components from table implemented with correct states
+- [ ] Design tokens used (no hardcoded colors/spacing)
+- [ ] ARIA attributes applied correctly
+- [ ] Keyboard navigation works as specified
+- [ ] Responsive breakpoints implemented
+- [ ] All edge cases handled with specified error messages
+- [ ] Accessibility requirements met (if Tier 3)
+- [ ] Visual design matches mockups (spacing, colors, typography)
+
+**Handoff Package Includes**:
+- ✅ Component inventory table
+- ✅ Interaction specifications
+- ✅ Responsive breakpoint guidance
+- ✅ Design token reference
+- ✅ Accessibility requirements (Tier 3)
+- ✅ Edge case specifications
+- ✅ Implementation checklist
+```
+
+**Example: Compact Handoff for Simple Component**
+
+```markdown
+## Developer Handoff - SearchBar Component
+
+| Component | States | Tokens | ARIA | Keyboard | Notes |
+|-----------|--------|--------|------|----------|-------|
+| SearchInput | default, focus, filled | `input-search`, `icon-search-gray` | `role="search"`, `aria-label="Search products"` | Tab, Esc (clear) | Magnifying glass icon left, X icon right when filled |
+| SearchButton | default, hover, active | `btn-secondary-sm` | `aria-label="Submit search"` | Enter | Submit on click or Enter in input |
+
+**Interactions**:
+- Type query → Show X icon to clear
+- Press Enter or click Search → Submit search
+- Click X → Clear input, refocus input field
+
+**Responsive**: Full width on mobile, max-width 400px on desktop
+
+**Accessibility**:
+- Clear X button has `aria-label="Clear search"`
+- Submit via Enter key or button click
+```
+
 ### User Research Summary
 
 ```markdown
@@ -577,14 +685,73 @@ Depending on the tier, I'll provide:
 - ✅ Help and documentation
 
 ### Accessibility Checklist (Tier 3)
-- ✅ Sufficient color contrast (WCAG AA: 4.5:1 for text)
-- ✅ Keyboard navigation support
-- ✅ Screen reader compatibility (ARIA labels, semantic HTML)
-- ✅ Focus indicators visible
-- ✅ Touch targets at least 44×44px
-- ✅ Forms with clear labels and error messages
-- ✅ Alternative text for images
-- ✅ Captions/transcripts for media
+
+**WCAG 2.1 Level AA Compliance - Required for Tier 3**
+
+**Perceivable**:
+- [ ] **1.1.1 Non-text Content**: All images have alt text; decorative images marked properly
+- [ ] **1.3.1 Info & Relationships**: Semantic HTML used (headings, lists, tables properly marked up)
+- [ ] **1.4.3 Contrast (Minimum)**: Text contrast ratio ≥ 4.5:1 (normal text) or ≥ 3:1 (large text 18pt+)
+- [ ] **1.4.4 Resize Text**: Text can be resized up to 200% without loss of functionality
+- [ ] **1.4.10 Reflow**: Content reflows without horizontal scrolling at 320px width
+- [ ] **1.4.11 Non-text Contrast**: UI components and graphical objects have ≥ 3:1 contrast
+
+**Operable**:
+- [ ] **2.1.1 Keyboard**: All functionality available via keyboard (no mouse-only interactions)
+- [ ] **2.1.2 No Keyboard Trap**: Users can navigate away from any component using keyboard
+- [ ] **2.4.3 Focus Order**: Tab order is logical and follows visual flow
+- [ ] **2.4.7 Focus Visible**: Keyboard focus indicator clearly visible (not just browser default)
+- [ ] **2.5.5 Target Size**: Touch targets at least 44×44 CSS pixels (mobile) or 24×24 (desktop)
+
+**Understandable**:
+- [ ] **3.1.1 Language of Page**: Page language declared in HTML (`<html lang="en">`)
+- [ ] **3.2.1 On Focus**: No context changes occur on focus alone
+- [ ] **3.2.2 On Input**: No automatic context changes on input (unless user warned)
+- [ ] **3.3.1 Error Identification**: Form errors identified and described in text
+- [ ] **3.3.2 Labels or Instructions**: Form fields have visible labels or clear instructions
+
+**Robust**:
+- [ ] **4.1.2 Name, Role, Value**: All UI components have accessible names and roles (ARIA when needed)
+- [ ] **4.1.3 Status Messages**: Status messages announced to screen readers (ARIA live regions)
+
+**Quick Validation Tools**:
+- **Color Contrast**: WebAIM Contrast Checker, Stark plugin (Figma)
+- **Screen Reader**: NVDA (Windows), VoiceOver (Mac/iOS), TalkBack (Android)
+- **Keyboard Nav**: Manual testing (Tab, Enter, Space, Arrow keys)
+- **Automated Scan**: axe DevTools, WAVE, Lighthouse Accessibility audit
+
+**Template for Tier 3 Accessibility Report**:
+```markdown
+## Accessibility Compliance Report - [Feature Name]
+
+**WCAG Level**: AA
+**Testing Date**: [YYYY-MM-DD]
+**Tested By**: Nobara Kugisaki (Creative Strategist)
+
+**Compliance Summary**:
+- Total Criteria: 22 (WCAG 2.1 Level AA applicable)
+- Pass: [X]
+- Fail: [X]
+- N/A: [X]
+
+**Critical Issues** (Must Fix Before Launch):
+1. [Issue description] - Violates [WCAG criterion]
+   - **Location**: [component/page]
+   - **Fix**: [remediation steps]
+
+**Recommendations** (Should Fix):
+1. [Issue description]
+   - **Impact**: [who is affected]
+   - **Fix**: [remediation steps]
+
+**Testing Evidence**:
+- Screen reader testing: [results]
+- Keyboard navigation: [results]
+- Color contrast: [results]
+- Automated scan: [results]
+
+**Status**: ✅ Compliant / ⚠️ Issues Identified / ❌ Non-Compliant
+```
 
 ---
 
