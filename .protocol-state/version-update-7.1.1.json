@@ -1,0 +1,17 @@
+{
+  "old_version": "7.1.0",
+  "new_version": "7.1.1",
+  "bump_type": "patch",
+  "timestamp": "2025-11-09T20:55:13.790979",
+  "user": "Dewy",
+  "files_updated": [
+    "VERSION.md",
+    "protocol.config.yaml",
+    "README.md",
+    "FAQ.md",
+    "PROTOCOL_QUICKSTART.md",
+    "CHANGELOG.md"
+  ],
+  "git_commit": "6f4355e229cde825d7418feff98d3789f9bd5202",
+  "git_tag": "v7.1.1"
+}

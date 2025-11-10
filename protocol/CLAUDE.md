@@ -1,7 +1,7 @@
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v7.1.0
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v7.1.1
 ## Main Protocol File - Domain Zero
 
-**Version**: 7.1.0
+**Version**: 7.1.1
 **Status**: Production-Ready
 **Last Updated**: 2025-11-08
 **Major Enhancements**: Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
@@ -11,7 +11,7 @@
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v7.1.0
+> **Current Local Protocol Version**: v7.1.1
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -1405,12 +1405,13 @@ The system is optimized to stay within Claude's context limits.
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 7.1.0
-**Protocol Version**: 7.1.0
-**Release Date**: November 8, 2025
-**Last Updated**: 2025-11-08
+**Current Version**: 7.1.1
+**Protocol Version**: 7.1.1
+**Release Date**: November 9, 2025
+**Last Updated**: 2025-11-09
 
 **Version History**:
+- v7.1.1 - **PATCH**: Comprehensive Agent Documentation System (16 files, 8 character agents, invocation guides, tool reference)
 - v7.1.0 - **MINOR**: Mask Mode Toggle (JJK Theme vs Professional Mode), Dual Workflow Enforcement, REALITY_CHECK.md Integration
 - v7.0.0 - **MAJOR**: Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework, Enhanced Safety Principles
 - v6.2.8 - **PATCH**: Copilot PR Review Fixes, Version Consistency Updates

@@ -5,7 +5,7 @@
 **Domain**: [DOMAIN NAME]
 **Cursed Technique**: [Canon technique name]
 **Grade**: [Special Grade / Grade 1 / Grade 2 / etc.]
-**Protocol Version**: v7.1.0
+**Protocol Version**: v7.1.1
 **Last Updated**: [YYYY-MM-DD]
 **Status**: [Production-Ready/Beta/Experimental]
 

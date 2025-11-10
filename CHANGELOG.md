@@ -14,19 +14,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [7.1.1] - 2025-11-09
 
 ### Added
--
+- **Comprehensive Agent Documentation System** - Complete agent building and usage guides:
+  - `Domain Zero Agents/` - Generic agent building framework with templates
+    - `AGENT_TEMPLATE.md` - Universal template for creating custom agents
+    - `README.md` - Guide for building custom agents
+    - `examples/KIRA_DOCUMENTATION_SPECIALIST.md` - Example custom agent
+  - `Domain Zero Agents - Full JJK Edition/` - 8 complete character agents
+    - Core Four: GOJO.md, YUUJI.md, MEGUMI.md, NOBARA.md
+    - Extended: PANDA.md, MAKI.md, INUMAKI.md, TODO.md
+    - JJK_AGENT_TEMPLATE.md - JJK-themed agent template
+- **Core Documentation (3 comprehensive guides)**:
+  - `AGENT_INVOCATION_GUIDE.md` - System prompts for all 8 agents (16 KB)
+  - `AGENT_TOOLS_REFERENCE.md` - Tool permissions + advanced capabilities (32 KB)
+  - `AGENT_MODEL_RECOMMENDATIONS.md` - Opus/Sonnet/Haiku selection guide (18 KB)
+- **SYSTEM_UPDATE_COMPLETE_V7.1.0.md** - Complete v7.1.0 release documentation
 
 ### Changed
--
+- **README.md** - Added Agent Documentation section (lines 154-160, 912-936)
+  - Links to generic and JJK agent documentation
+  - Integration examples and usage guidance
+- **Protocol files** - Updated version references from v7.1.0 to v7.1.1
+- **project-state.json** - Updated protocol_version to 7.1.1
 
 ### Fixed
--
+- Version consistency across all protocol and documentation files
 
-### Security
--
-
-### Performance
--
+### Documentation
+- Total: 16 new files, ~313 KB of agent documentation
+- Coverage: System prompts, tool permissions, model recommendations, advanced capabilities
+- Integration: Parallel execution, background processes, Jupyter notebooks
 
 ---
 
