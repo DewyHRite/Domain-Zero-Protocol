@@ -793,7 +793,7 @@ Let's create something exceptional together.
 
 ---
 
-**END OF NOBARA.md**
+**END OF nobara.agent.md**
 
 **Invocation Patterns**:
 - **BASIC**: "Read nobara.agent.md - Design [feature]"

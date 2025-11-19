@@ -23,8 +23,8 @@
 
 **Invocation**:
 ```
-"Read YUUJI.md --tier rapid and create a file renaming script"
-"Read YUUJI.md --tier rapid and build HTML landing page mockup"
+"Read yuuji.agent.md --tier rapid and create a file renaming script"
+"Read yuuji.agent.md --tier rapid and build HTML landing page mockup"
 ```
 
 **Trade-Off**: Speed over quality (acceptable for non-production code)
@@ -52,8 +52,8 @@
 
 **Invocation**:
 ```
-"Read YUUJI.md and implement user authentication"
-"Read YUUJI.md --tier standard and implement user profile"
+"Read yuuji.agent.md and implement user authentication"
+"Read yuuji.agent.md --tier standard and implement user profile"
 ```
 
 **Trade-Off**: Balanced quality and speed (default for most work)
@@ -86,8 +86,8 @@
 
 **Invocation**:
 ```
-"Read YUUJI.md --tier critical and implement Stripe payment processing"
-"Read YUUJI.md --tier critical and implement JWT authentication"
+"Read yuuji.agent.md --tier critical and implement Stripe payment processing"
+"Read yuuji.agent.md --tier critical and implement JWT authentication"
 ```
 
 **Trade-Off**: Maximum quality over speed (appropriate for sensitive features)
@@ -172,14 +172,14 @@
 
 ### Your First Tier 1 Feature
 ```
-You: "Read YUUJI.md --tier rapid and create a Python script to rename files"
+You: "Read yuuji.agent.md --tier rapid and create a Python script to rename files"
 Yuuji: [Implements in 10-15 minutes, no tests, minimal docs]
 You: Review and done!
 ```
 
 ### Your First Tier 2 Feature
 ```
-You: "Read YUUJI.md and implement user profile"
+You: "Read yuuji.agent.md and implement user profile"
 Yuuji: [Test-first implementation, 30-45 minutes]
 You: Review → Approve
 You: [Yuuji tags @security-review]
@@ -188,7 +188,7 @@ Megumi: [OWASP security review]
 
 ### Your First Tier 3 Feature
 ```
-You: "Read YUUJI.md --tier critical and implement Stripe payment processing"
+You: "Read yuuji.agent.md --tier critical and implement Stripe payment processing"
 Yuuji: [Enhanced tests + performance benchmarks, 60-90 minutes]
 You: Review → Approve
 You: [Yuuji tags @security-review-critical]
@@ -201,7 +201,7 @@ Megumi: [Enhanced security review with multi-model analysis]
 
 - **Full Documentation**: Read protocol/CLAUDE.md
 - **Tier System Spec**: Read .protocol-state/tier-system-specification.md
-- **Ask Gojo**: "Read GOJO.md - explain tier system"
+- **Ask Gojo**: "Read gojo.agent.md - explain tier system"
 
 ---
 

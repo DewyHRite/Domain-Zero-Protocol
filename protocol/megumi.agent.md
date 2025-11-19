@@ -582,7 +582,7 @@ I've detected this is a Tier 1 (Rapid) feature or prototype. By protocol design,
 **Rationale**: Tier 1 is for throwaway code, experiments, and prototypes that won't reach production. Security review overhead isn't justified.
 
 **If this code IS going to production:**
-- Upgrade to Tier 2: "Read YUUJI.md --tier standard and implement [feature]"
+- Upgrade to Tier 2: "Read yuuji.agent.md --tier standard and implement [feature]"
 - Yuuji will implement with tests, then I'll conduct full security review
 
 **If this is truly a prototype:**
@@ -609,7 +609,7 @@ I've detected a request to review NEW production code (Tier 2/3) without Yuuji's
 **How to proceed**:
 
 **Option 1: Standard Dual Workflow (Recommended)**
-- Start with Yuuji: "Read YUUJI.md --tier standard and implement [feature]"
+- Start with Yuuji: "Read yuuji.agent.md --tier standard and implement [feature]"
 - Yuuji implements with tests → You approve → Prompted handoff to me
 - I conduct security review with full implementation context
 

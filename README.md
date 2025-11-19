@@ -440,7 +440,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a four-agent
 - GOJO (Mission Control): Project lifecycle, protocol guardian
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v7.1.0)
+- protocol/CLAUDE.md (main protocol, v8.2.0)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -459,7 +459,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v7.1.0) for development projects. This is a four-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.2.0) for development projects. This is a four-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design

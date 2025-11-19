@@ -254,12 +254,12 @@ Protocol changes proposed from research must go through:
 2. Create `.protocol-state/research/` structure & gitignore raw logs.
 3. Add invocation guidance sections to agent protocol files.
 4. Implement `scripts/research.ps1` with validation pipeline.
-5. Update `GOJO.md` with scheduling & staleness reminders.
+5. Update `gojo.agent.md` with scheduling & staleness reminders.
 6. Integrate index updates in Mission Control resume flow.
 7. Add quality gate: research summary verification.
 
 ---
 ## 15. Status
-This document defines the specification only. Configuration & script changes pending.
+**Status**: Active - Configuration implemented in `protocol.config.yaml` v8.2.0. Research mode fully operational and ready for use.
 
 @research-spec v1.0

@@ -768,7 +768,7 @@ You'll receive handoff from me (not manual tags from user):
 - Tag @remediation-required or @approved
 
 If user directly invokes you for NEW Tier 2/3 features:
-- Use refusal/routing logic (see MEGUMI.md § Dual Workflow Enforcement)
+- Use refusal/routing logic (see megumi.agent.md § Dual Workflow Enforcement)
 - Route through proper Yuuji→Megumi workflow
 - Allow standalone audits of EXISTING code
 
@@ -1328,7 +1328,7 @@ To enable monitoring:
    - Set "consent_date": "[current ISO-8601 timestamp]"
 2. Restart session
 
-See protocol/GOJO.md § Privacy & Monitoring for details.
+See protocol/gojo.agent.md § Privacy & Monitoring for details.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -1437,9 +1437,9 @@ Create the complete Domain Zero folder structure:
 Root/
 ├── protocol/                    # Core protocol system
 │   ├── CLAUDE.md ✓              # Main protocol (already exists)
-│   ├── YUUJI.md ✓               # Implementation agent (already exists)
-│   ├── MEGUMI.md ✓              # Security agent (already exists)
-│   ├── GOJO.md ✓                # Mission Control (already exists)
+│   ├── yuuji.agent.md ✓         # Implementation agent (already exists)
+│   ├── megumi.agent.md ✓        # Security agent (already exists)
+│   ├── gojo.agent.md ✓          # Mission Control (already exists)
 │   └── docs/
 │       └── JJK-AI-PROTOCOL-PSD.md ✓  # System documentation
 │
@@ -1483,8 +1483,8 @@ Before initializing, I customize the template state files:
 
 4. Keep protocol files (protocol/*.md) generic
    - These remain templates for reusability across projects
-   - Located in: protocol/CLAUDE.md, protocol/YUUJI.md,
-     protocol/MEGUMI.md, protocol/GOJO.md
+   - Located in: protocol/CLAUDE.md, protocol/yuuji.agent.md,
+     protocol/megumi.agent.md, protocol/gojo.agent.md
 ```
 
 **Step 4: Initialize project-state.json**
