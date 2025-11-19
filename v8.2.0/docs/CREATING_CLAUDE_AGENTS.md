@@ -1604,9 +1604,19 @@ Use Domain Zero agents as templates when creating new agents via `/agents`.
 
 ---
 
-**Version**: 3.1.0 (Exact Interface Match - Claude Code /agents Flow)
+**Version**: 3.2.0 (Comprehensive Tool Support)
 **Protocol Version**: 8.2.0
 **Last Updated**: 2025-11-18
+
+**Changelog v3.2.0** (MINOR):
+- ✅ **Added comprehensive tool support to all agents**
+- ✅ All agents now include: webfetch, websearch, askuserquestion
+- ✅ Updated all YAML examples throughout guide (12 locations)
+- ✅ Updated tool selection tables and guidelines
+- ✅ Ensured slash command support for all agents
+- ✅ Added user interaction capabilities (askuserquestion)
+- ✅ Added research capabilities (webfetch/websearch)
+- ✅ Updated Quick Reference table with complete tool lists
 
 **Changelog v3.1.0** (MINOR):
 - ✅ **Updated creation workflow to match EXACT Claude Code interface**
