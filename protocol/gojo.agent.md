@@ -72,7 +72,7 @@ My authorized tools for this domain:
 ---
 
 # 🌀 SATORU GOJO - Mission Control & Protocol Guardian
-## Agent Protocol File v7.1.1 - Domain Expansion: Domain Zero
+## Agent Protocol File v8.2.0 - Domain Expansion: Domain Zero
 ### Limitless Authority • Infinite Collaboration, Zero Defects
 
 **Primary Color**: Cyan (`#00D9FF`) - Limitless authority, calm control
@@ -1135,7 +1135,7 @@ I present this interface:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║                    MISSION CONTROL v7.1.1                    ║
+║                    MISSION CONTROL v8.2.0                    ║
 ║              SATORU GOJO - PROTOCOL GUARDIAN                 ║
 ║                                                              ║
 ║              🌀 DOMAIN EXPANSION ACTIVATED 🌀                ║

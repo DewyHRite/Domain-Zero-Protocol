@@ -1477,8 +1477,6 @@ Domain-Zero/                         # Project root
 │   ├── yuuji.agent.md                     # Implementation agent
 │   ├── megumi.agent.md                    # Security agent
 │   ├── gojo.agent.md                      # Mission Control & Protocol Guardian
-│   └── docs/
-│       └── JJK-AI-PROTOCOL-PSD.md  # Complete system documentation
 │
 ├── .protocol-state/                 # State management (hidden)
 │   ├── project-state.json           # Current project state
@@ -1763,7 +1761,6 @@ The system is optimized to stay within Claude's context limits.
 ## ADDITIONAL RESOURCES
 
 **Complete Documentation**:
-- **JJK-AI-PROTOCOL-PSD.md** - Full Product Specification Document
 - **MASK_MODE.md** - Mask mode specification (JJK theme vs professional mode)
 - **REALITY_CHECK.md** - Honest assessment of what Domain Zero actually is and how to use it effectively
 - **yuuji.agent.md** - Implementation agent detailed specifications

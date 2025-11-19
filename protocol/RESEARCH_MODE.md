@@ -18,8 +18,8 @@
 - Non-public or paywalled content without license clearance.
 
 ---
-## 2. Configuration Additions (protocol.config.yaml)
-Add a top‑level `research:` section (planned; doc does not modify config yet):
+## 2. Configuration (protocol.config.yaml)
+The `research:` section is now implemented in protocol.config.yaml (v8.2.0+):
 ```yaml
 research:
   enabled: true                 # Master toggle (Gojo enforces if false)
