@@ -403,7 +403,7 @@ Created a new JJK agent? Share it!
 
 ## 🔄 Protocol Version Compatibility
 
-**Current Protocol Version**: v8.1.0
+**Current Protocol Version**: v8.2.0
 
 ### v8.0.0+ Updates (.agent.md Format)
 
