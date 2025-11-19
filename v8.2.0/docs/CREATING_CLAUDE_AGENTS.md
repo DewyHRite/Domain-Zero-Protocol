@@ -308,16 +308,19 @@ Test-first development specialist for Tier 1/2/3 features. Creates backups, writ
 ☑ glob
 ☑ todowrite
 ☑ task
+☑ webfetch
+☑ websearch
+☑ askuserquestion
 ```
 
 **Tool Guidelines by Agent Type**:
 
 | Agent | Tools | Reasoning |
 |-------|-------|-----------|
-| **Yuuji** (Implementation) | All tools | Needs full access to implement features |
-| **Megumi** (Security) | read, grep, glob, bash, write | Read-only + write for reports |
-| **Nobara** (Creative/UX) | read, write, grep, glob | Design docs + research |
-| **Gojo** (Mission Control) | All tools + task | Orchestration + delegation |
+| **Yuuji** (Implementation) | read, write, edit, bash, grep, glob, todowrite, task, webfetch, websearch, askuserquestion | Full toolset for implementation + research + user interaction |
+| **Megumi** (Security) | read, write, grep, glob, todowrite, task, webfetch, websearch, askuserquestion | Audit tools + research + clarification questions |
+| **Nobara** (Creative/UX) | read, write, edit, grep, glob, todowrite, task, webfetch, websearch, askuserquestion | Design, research, documentation + user feedback |
+| **Gojo** (Mission Control) | All tools (read, write, edit, bash, grep, glob, todowrite, task, webfetch, websearch, askuserquestion) | Complete orchestration + research + user interaction |
 
 **Tip**: Select only the tools this agent actually needs (principle of least privilege).
 
@@ -533,12 +536,16 @@ OWASP Top 10 security reviews, threat modeling, performance analysis. Reviews im
 ### Step 5: Select Tools
 ```
 ☑ read
+☑ write
 ☑ grep
 ☑ glob
-☑ bash
-☑ write
+☑ todowrite
+☑ task
+☑ webfetch
+☑ websearch
+☑ askuserquestion
 ```
-**Note**: Read-only tools + write for security reports only.
+**Note**: Audit and analysis tools + research capabilities + user clarification (bash intentionally omitted for security isolation).
 
 ### Step 6: Select Model
 ```
@@ -628,10 +635,16 @@ User experience design, product vision, creative strategy, accessibility. Design
 ```
 ☑ read
 ☑ write
+☑ edit
 ☑ grep
 ☑ glob
+☑ todowrite
+☑ task
+☑ webfetch
+☑ websearch
+☑ askuserquestion
 ```
-**Note**: Design documentation and research tools.
+**Note**: Design, documentation, and research tools + user feedback (bash omitted - focus on creative work).
 
 ### Step 6: Select Model
 ```
@@ -729,8 +742,11 @@ Project lifecycle management, passive observation, protocol enforcement. Mission
 ☑ glob
 ☑ todowrite
 ☑ task
+☑ webfetch
+☑ websearch
+☑ askuserquestion
 ```
-**Note**: Full tool access + Task for sub-agent orchestration.
+**Note**: Full tool access + Task for sub-agent orchestration + research + user interaction.
 
 ### Step 6: Select Model
 ```
@@ -748,10 +764,10 @@ Automatic  (or use default)
 
 | Agent | Identifier | Color | Tools | Primary Role |
 |-------|-----------|-------|-------|--------------|
-| **Yuuji** | `yuuji` | Orange/Blue | All tools | Test-first implementation |
-| **Megumi** | `megumi` | Purple/Cyan | read,grep,glob,bash,write | OWASP security reviews |
-| **Nobara** | `nobara` | Pink/Red | read,write,grep,glob | UX design & accessibility |
-| **Gojo** | `gojo` | Automatic | All tools + task | Mission Control & protocol guardian |
+| **Yuuji** | `yuuji` | Orange/Blue | read,write,edit,bash,grep,glob,todowrite,task,webfetch,websearch,askuserquestion | Test-first implementation |
+| **Megumi** | `megumi` | Purple/Cyan | read,write,grep,glob,todowrite,task,webfetch,websearch,askuserquestion | OWASP security reviews |
+| **Nobara** | `nobara` | Pink/Red | read,write,edit,grep,glob,todowrite,task,webfetch,websearch,askuserquestion | UX design & accessibility |
+| **Gojo** | `gojo` | Automatic | read,write,edit,bash,grep,glob,todowrite,task,webfetch,websearch,askuserquestion | Mission Control & protocol guardian |
 
 ---
 
@@ -767,7 +783,7 @@ Study how Domain Zero's core agents were created to understand best practices.
 ---
 name: yuuji
 description: "Test-first development specialist for Tier 1/2/3 features. Creates backups, writes tests, implements code, documents in dev-notes.md"
-tools: read,write,edit,bash,grep,glob,todowrite,task
+tools: read,write,edit,bash,grep,glob,todowrite,task,webfetch,websearch,askuserquestion
 model: sonnet
 permissionMode: default
 ---
@@ -810,7 +826,7 @@ I never skip tests. I never skip backups. I never modify CLAUDE.md.
 ---
 name: megumi
 description: "OWASP Top 10 security reviews, threat modeling, performance analysis. Reviews implementations and documents findings in security-review.md"
-tools: read,grep,glob,bash,write
+tools: read,write,grep,glob,todowrite,task,webfetch,websearch,askuserquestion
 model: sonnet
 permissionMode: default
 ---
@@ -850,7 +866,7 @@ I never approve without thorough review. I never skip OWASP checks.
 ---
 name: nobara
 description: "User experience design, product vision, creative strategy, accessibility. Designs user-centered experiences with WCAG 2.2 compliance"
-tools: read,write,grep,glob
+tools: read,write,edit,grep,glob,todowrite,task,webfetch,websearch,askuserquestion
 model: sonnet
 permissionMode: default
 ---
@@ -891,7 +907,7 @@ I never compromise on accessibility. I never skip user research.
 ---
 name: gojo
 description: "Project lifecycle management, passive observation, protocol enforcement. Mission Control and protocol guardian for Domain Zero"
-tools: read,write,edit,bash,grep,glob,todowrite,task
+tools: read,write,edit,bash,grep,glob,todowrite,task,webfetch,websearch,askuserquestion
 model: sonnet
 permissionMode: default
 ---
@@ -1473,7 +1489,7 @@ Agents created as **project-level** are stored in `.claude/agents/` and can be c
 ---
 name: yuuji
 description: "Test-first development specialist for Tier 1/2/3 features. Creates backups, writes tests, implements code, documents in dev-notes.md"
-tools: read,write,edit,bash,grep,glob,todowrite,task
+tools: read,write,edit,bash,grep,glob,todowrite,task,webfetch,websearch,askuserquestion
 model: sonnet
 permissionMode: default
 ---
@@ -1487,7 +1503,7 @@ permissionMode: default
 ---
 name: megumi
 description: "OWASP Top 10 security reviews, threat modeling, performance analysis. Reviews implementations and documents findings in security-review.md"
-tools: read,grep,glob,bash,write
+tools: read,write,grep,glob,todowrite,task,webfetch,websearch,askuserquestion
 model: sonnet
 permissionMode: default
 ---
@@ -1501,7 +1517,7 @@ permissionMode: default
 ---
 name: nobara
 description: "User experience design, product vision, creative strategy, accessibility. Designs user-centered experiences with WCAG 2.2 compliance"
-tools: read,write,grep,glob
+tools: read,write,edit,grep,glob,todowrite,task,webfetch,websearch,askuserquestion
 model: sonnet
 permissionMode: default
 ---
@@ -1515,7 +1531,7 @@ permissionMode: default
 ---
 name: gojo
 description: "Project lifecycle management, passive observation, protocol enforcement. Mission Control and protocol guardian for Domain Zero"
-tools: read,write,edit,bash,grep,glob,todowrite,task
+tools: read,write,edit,bash,grep,glob,todowrite,task,webfetch,websearch,askuserquestion
 model: sonnet
 permissionMode: default
 ---
