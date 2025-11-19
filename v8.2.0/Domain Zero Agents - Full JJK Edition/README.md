@@ -407,7 +407,15 @@ Created a new JJK agent? Share it!
 
 ### v8.0.0+ Updates (.agent.md Format)
 
-The core Domain Zero Protocol (v8.0.0+) uses the new `.agent.md` format with YAML frontmatter. The JJK Edition agents in this folder reference the **main protocol agents**:
+The core Domain Zero Protocol (v8.0.0+) uses the new `.agent.md` format with YAML frontmatter. The JJK Edition agents in this folder are **themed versions** that reference the **main protocol agents**:
+
+**Core Agent Mapping**:
+- **YUUJI.md** (JJK Edition) → **[protocol/yuuji.agent.md](../protocol/yuuji.agent.md)** (Canonical)
+- **MEGUMI.md** (JJK Edition) → **[protocol/megumi.agent.md](../protocol/megumi.agent.md)** (Canonical)
+- **NOBARA.md** (JJK Edition) → **[protocol/nobara.agent.md](../protocol/nobara.agent.md)** (Canonical)
+- **GOJO.md** (JJK Edition) → **[protocol/gojo.agent.md](../protocol/gojo.agent.md)** (Canonical)
+
+**Usage**: The JJK Edition files provide enhanced theming and character personality, while the `.agent.md` files contain the formal protocol specifications with YAML frontmatter, tool access matrices, and MCP integration.
 
 **Main Protocol Agents** (referenced by JJK agents):
 - `protocol/yuuji.agent.md` - Implementation Specialist
