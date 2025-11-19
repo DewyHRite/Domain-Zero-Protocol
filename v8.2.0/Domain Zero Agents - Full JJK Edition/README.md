@@ -7,15 +7,68 @@
 
 ---
 
+## 🚀 Quick Setup (Start Here!)
+
+**New to Domain Zero?** Follow these 5 steps to get started:
+
+### 1. Choose Your AI Platform
+
+- **Claude.ai** (Web) - Best for quick prototyping
+- **Claude Code** (VS Code) - Best for full development workflow
+- **GitHub Copilot** - Best for GitHub-integrated projects
+- **Other AI** (ChatGPT, Gemini, etc.) - Universal setup
+
+### 2. Read the Implementation Guide
+
+**📖 [IMPLEMENTATION_GUIDE.md](../IMPLEMENTATION_GUIDE.md)** - Complete step-by-step setup for any AI platform
+
+**Quick Links**:
+- [Claude.ai Setup](../IMPLEMENTATION_GUIDE.md#claudeai-web-interface)
+- [Claude Code Setup](../IMPLEMENTATION_GUIDE.md#claude-code-vs-code-extension)
+- [GitHub Copilot Setup](../IMPLEMENTATION_GUIDE.md#github-copilot)
+- [Generic AI Setup](../IMPLEMENTATION_GUIDE.md#generic-ai-setup)
+
+### 3. Copy Protocol Files
+
+```bash
+# Copy to your project
+cp -r v8.2.0/protocol /your-project/
+cp v8.2.0/protocol.config.yaml /your-project/
+```
+
+### 4. Configure Your AI
+
+Upload/configure protocol files in your AI assistant (see Implementation Guide for platform-specific instructions)
+
+### 5. Invoke Your First Agent
+
+```
+Read protocol/yuuji.agent.md and say hello
+```
+
+**Expected Response**:
+```
+🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️
+"Test-Driven Delivery, Rapid Iteration"
+
+Hey! I'm Yuuji Itadori, your Implementation Specialist...
+```
+
+---
+
 ## 📋 Table of Contents
 
+- [Quick Setup](#-quick-setup-start-here) ⬆️
 - [Overview](#overview)
+- [Available Agents](#-available-agents)
+- [How to Use Agents](#how-to-use-agents)
 - [JJK Lore Integration](#jjk-lore-integration)
 - [Available Character Archetypes](#available-character-archetypes)
 - [Creating JJK-Themed Agents](#creating-jjk-themed-agents)
 - [Character-Ability Mapping](#character-ability-mapping)
-- [Examples](#examples)
-- [JJK Terminology Reference](#jjk-terminology-reference)
+- [Best Practices](#best-practices-for-jjk-agents)
+- [Protocol Version Compatibility](#-protocol-version-compatibility)
+- [Additional Resources](#additional-resources)
 
 ---
 
@@ -52,14 +105,60 @@ This folder includes **8 complete JJK character agents** ready for use:
 - **[INUMAKI.md](INUMAKI.md)** - API & Communication Specialist (REST, GraphQL, WebSockets)
 - **[TODO.md](TODO.md)** - Database & Backend Specialist (Schema design, migrations)
 
-**How to Use:**
+---
+
+## How to Use Agents
+
+### Basic Invocation
+
+Use the canonical `.agent.md` files for formal protocol invocation:
+
 ```bash
-# Invoke any agent by reading their file
+# Core agents (use canonical .agent.md files)
+"Read protocol/yuuji.agent.md and implement user authentication"
+"Read protocol/megumi.agent.md and review security"
+"Read protocol/nobara.agent.md and design onboarding UX"
+"Read protocol/gojo.agent.md"  # Mission Control
+```
+
+### JJK Edition (Themed Reference)
+
+The JJK Edition files in this folder provide enhanced theming and character personality:
+
+```bash
+# Extended agents (JJK Edition only)
 "Read PANDA.md and configure CI/CD pipeline for React project"
 "Read MAKI.md and optimize bundle size"
 "Read INUMAKI.md and design REST API for user management"
 "Read TODO.md and design database schema for blog"
 ```
+
+### Workflow Tiers
+
+Specify tier for different workflows:
+
+```bash
+# Tier 1 (Rapid): Prototypes, no tests
+"Read protocol/yuuji.agent.md --tier rapid and create Hello World script"
+
+# Tier 2 (Standard): TDD + Security Review [DEFAULT]
+"Read protocol/yuuji.agent.md and implement user registration"
+
+# Tier 3 (Critical): Enhanced tests + Dual security review
+"Read protocol/yuuji.agent.md --tier critical and implement payment processing"
+```
+
+### Agent Handoffs
+
+Chain agents for complete workflows:
+
+```bash
+# Implementation → Security Review
+"Read protocol/yuuji.agent.md and implement JWT authentication.
+After implementation, read protocol/megumi.agent.md and review the code."
+```
+
+**📖 For detailed instructions, see [IMPLEMENTATION_GUIDE.md](../IMPLEMENTATION_GUIDE.md)**
 
 ---
 
