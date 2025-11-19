@@ -1,0 +1,611 @@
+# Domain Zero Protocol Configuration
+# Version: 8.2.0
+# This file serves as the canonical source of truth for all protocol parameters
+# Modify this file to customize Domain Zero for your project
+
+# ============================================================================
+# CANONICAL REPOSITORY (Source of Truth)
+# ============================================================================
+canonical_repository:
+  url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
+  version: "v8.2.0"
+  commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
+                           # Leave as placeholder if tracking version tag instead
+  auto_update:
+    enabled: false          # Set true if downstream wants automatic pulls
+    strategy: "tag"         # tag | commit | latest
+    check_on_verify: true   # Verification script warns on mismatch
+
+# ============================================================================
+# SAFETY & WELLBEING (ABSOLUTE PRIORITY)
+# ============================================================================
+# User safety and wellbeing override ALL other protocol objectives.
+# No agent, not even Gojo, may compromise user safety under any circumstances.
+
+safety:
+  # User safety principles - these override all other protocol rules
+  enabled: true  # MUST remain true - safety cannot be disabled
+
+  # Priority hierarchy (1 = highest priority)
+  priorities:
+    user_physical_safety: 1      # Physical safety of user and end-users
+    user_wellbeing: 2            # Mental health, rest, sustainable work
+    project_safety: 3            # Data integrity, backups, security
+    code_quality: 4              # Zero-defect goals (subordinate to safety)
+
+  # Safety enforcement settings
+  enforcement:
+    require_backup_for_destructive: true   # Mandatory backup before destructive ops
+    warn_on_late_night_work: true          # Flag work after configured hours
+    warn_on_extended_sessions: true        # Flag sessions exceeding duration
+    require_confirmation_for_risks: true   # User must explicitly confirm risky operations
+
+    # v6.2.3: Interactive work session enforcement
+    interactive_session_alerts: true       # Present user with save/continue options
+    block_until_response: false            # If true, block workflow until user responds
+    escalate_on_continue: true             # Increase monitoring if user continues working
+    block_high_risk_when_fatigued: true    # Block production/critical ops during extended sessions
+
+  # Wellbeing boundaries (agents respect these)
+  boundaries:
+    late_night_threshold: "22:00"   # Time after which agents recommend rest
+    extended_session_hours: 4       # Hours after which agents suggest breaks
+    max_continuous_hours: 8         # Maximum recommended continuous work
+
+    # v6.2.3: Enhanced session monitoring intervals
+    alert_interval_minutes: 240            # Initial alert interval (4 hours)
+    escalated_alert_interval_minutes: 45   # Alert interval after "continue" choice
+    critical_session_hours: 6              # Hours after which session is critical
+
+  # Ethical design constraints (for Nobara)
+  ethical_design:
+    forbid_dark_patterns: true      # No manipulative UX patterns
+    forbid_addictive_mechanics: true  # No addiction-based engagement
+    require_accessibility: true     # Designs must be accessible
+    prioritize_user_wellbeing: true  # User wellbeing > metrics
+
+  # Safety escalation
+  escalation:
+    stop_on_physical_risk: true     # Immediately stop if physical harm detected
+    defer_to_user: true             # User has final say on all risk decisions
+    respect_user_override: true     # User can override safety warnings
+
+# ============================================================================
+# USER & PROJECT INFORMATION
+# ============================================================================
+user:
+  name: "Dewy"
+  contact: "dewy@domain-zero-protocol.dev"
+  organization: "Domain Zero Protocol"
+
+project:
+  name: "Domain Zero Protocol"
+  description: "AI-assisted development protocol with specialized agents for implementation, security, creative strategy, and mission control"
+  repo: "https://github.com/DewyHRite/Domain-Zero-Protocol"
+  main_branch: "main"
+  created: "2025-11-05T00:00:00Z"
+
+  # Tech stack (optional, used for context)
+  tech_stack:
+    languages: ["Python", "TypeScript", "Go"]
+    frameworks: ["FastAPI", "React", "Next.js"]
+    databases: ["PostgreSQL", "Redis"]
+    cloud: ["AWS", "Docker", "Kubernetes"]
+
+# ============================================================================
+# PROTOCOL ROLES & BEHAVIOR
+# ============================================================================
+roles:
+  # Which agents are enabled in your workflow
+  enabled: ["yuuji", "megumi", "gojo", "nobara"]
+
+  # Personality/output style for each role
+  output_style:
+    yuuji: "enthusiastic"    # Options: enthusiastic, neutral, verbose
+    megumi: "methodical"     # Options: methodical, concise, verbose
+    gojo: "observer"         # Options: observer, active, minimal
+    nobara: "creative"       # Options: creative, bold, narrative
+
+  # Optional: Role name aliases (for customization)
+  # aliases:
+  #   yuuji: "Builder"
+  #   megumi: "Reviewer"
+  #   gojo: "Observer"
+
+# ============================================================================
+# MASK MODE CONFIGURATION (v7.1.0+)
+# ============================================================================
+# Controls whether agents use JJK-themed personality prompts or professional mode
+# See protocol/MASK_MODE.md for detailed documentation
+#
+# MASK ON (enabled: true):  JJK theme, personality-driven responses, domain banners
+# MASK OFF (enabled: false): Professional mode, straightforward responses, standard terminology
+#
+# All core functionality (TDD, security, tiers, backups) remains identical regardless of mask setting.
+
+mask_mode:
+  # Master toggle: true = JJK theme, false = professional mode
+  enabled: true
+
+  # Strict professional mode: enforce complete neutralization for regulated environments
+  # When true + mask disabled: forcibly removes ALL themed elements (emojis, metaphors, narrative)
+  strict_professional: false
+
+  # Granular settings (fine-tune mask behavior)
+  settings:
+    use_domain_banners: true     # Show "DOMAIN ACTIVATED" banners
+    use_personality_traits: true  # Agent personalities (enthusiastic, methodical, bold, confident)
+    use_jjk_terminology: true     # "Domain Zero", "The Weight", "Trigger 19", etc.
+    use_emoji_identifiers: true   # 🛠️, 🛡️, 🌀, 🎯 symbols
+    use_narrative_framing: true   # "I'm Yuuji..." vs "Implementation Specialist will..."
+    strict_disable_emojis: false  # If true + mask off: forcibly strip ALL emojis (not just banners)
+
+  # Alternative naming when mask is OFF
+  unmasked_names:
+    yuuji: "Implementation Specialist"
+    megumi: "Security Analyst"
+    nobara: "Creative Strategist"
+    gojo: "Mission Control"
+
+  # Terminology overrides (MASK OFF mode)
+  unmasked_terminology:
+    domain_zero: "Protocol Environment"
+    domain_expansion: "Project Initialization"
+    the_weight: "Protocol Compliance"
+    trigger_19: "Intelligence Report"
+    zero_defects: "Quality Standards"
+
+  # Phrase overrides (compound phrases that may embed themed nouns)
+  phrase_overrides:
+    automatic_security_handoff: "Automated Security Review"
+    dual_workflow: "Implementation + Security Pipeline"
+    domain_zero_active: "Protocol Environment Active"
+
+  # Enforcement rules for mask-off mode
+  enforcement:
+    block_mixed_output: true      # Prevent hybrid themed/professional text
+    warn_on_partial_mapping: true # Warn if inconsistent toggles detected
+
+# ============================================================================
+# ENFORCEMENT & PROTECTION
+# ============================================================================
+enforcement:
+  # Isolation: How strictly to enforce role separation
+  # Options: strict, moderate, advisory
+  isolation: "strict"
+
+  # Backups: Which roles must create backups
+  # Options: all, yuuji-only, none (not recommended)
+  backups:
+    required_for: ["yuuji"]
+    location: ".protocol-state/backups"
+    retention_days: 30
+
+  # CLAUDE.md protection
+  claude_md_protected: true
+  authorized_editors: ["USER", "GOJO"]  # GOJO requires explicit user authorization
+
+  # Output template conformance
+  require_output_templates: true
+  require_section_headers: true
+
+  # Quality gates
+  quality_gates:
+    block_on_failure: false  # If true, pre-commit/CI blocks; if false, warns only
+    verify_isolation_vocabulary: true
+    verify_backup_creation: true
+    verify_config_completeness: true
+
+  # Absolute Zero Protocol enforcement (v7.0.0+)
+  absolute_zero_protocol:
+    enabled: true
+    require_agent_oath_acknowledgment: true
+    require_decision_reasoning: true  # Use DECISION_REASONING_TEMPLATE.md for non-trivial decisions
+    decision_reasoning_template: "DECISION_REASONING_TEMPLATE.md"
+    enforce_transparency_standards: true
+    gojo_monitors_compliance: true
+
+  # Dual Workflow Enforcement (v7.1.0+)
+  # Ensures automatic Yuuji→Megumi security handoff for Tier 2/3 features
+  dual_workflow:
+    # Enable automatic security handoff after Yuuji completes Tier 2/3 implementation
+    auto_invoke_megumi: true
+
+    # User can skip security review with explicit choice
+    # Skipping requires statement: "Skip security review for [feature]"
+    allow_user_skip: true
+
+    # Gojo sends periodic reminders for skipped reviews
+    remind_skipped_reviews: true
+    reminder_interval_hours: 24              # Tier 2 (Standard) reminder frequency
+    critical_reminder_interval_hours: 8      # Tier 3 (Critical) reminder frequency (more urgent)
+
+    # Track skipped reviews in project-state.json
+    track_skipped_reviews: true
+
+    # Megumi refuses Tier 1 (Rapid) review requests
+    refuse_tier1_reviews: true
+
+    # Megumi routes direct Tier 2/3 review requests through dual workflow
+    route_tier23_direct_reviews: true
+
+    # Allow standalone audits of EXISTING code (architecture, legacy, compliance)
+    allow_standalone_audits: true
+
+    # User can override routing with explicit command
+    # Example: "Override dual workflow and review [feature]"
+    allow_user_override: true
+
+# ============================================================================
+# AGENT SELF-IDENTIFICATION
+# ============================================================================
+self_identification:
+  enabled: true
+  announce_on: both         # invocation | domain_expansion | both
+  debounce_seconds: 900     # 15 minutes (prevent spam on repeated calls)
+  include_emoji: true
+  include_subtitle: true
+  include_metadata: false   # Set to true to show tier, protocol version, etc.
+  metadata_fields:          # Used if include_metadata = true
+    - tier
+    - protocol_version
+    - brief_id
+    - pr_ref
+  session_continuity:       # Session continuity settings (v6.1)
+    long_session_minutes: 30
+    absence_threshold_minutes: 30
+    reidentify_on_return: true
+    reidentify_on_long_session: true
+  agents:
+    yuuji:
+      emoji: "🛠️"
+      domain_name: "IMPLEMENTATION DOMAIN"
+      subtitle: "Test-Driven Delivery, Rapid Iteration"
+      professional_banner: "Implementation Specialist - Active"
+    megumi:
+      emoji: "🛡️"
+      domain_name: "SECURITY DOMAIN"
+      subtitle: "Threat Modeling First, OWASP-Aligned Controls"
+      professional_banner: "Security Analyst - Active"
+    gojo:
+      emoji: "🌀"
+      domain_name: "MISSION CONTROL DOMAIN"
+      subtitle: "Orchestration, Review, and Passive Observation"
+      professional_banner: "Mission Control - Active"
+    nobara:
+      emoji: "🎯"
+      domain_name: "CREATIVE STRATEGY DOMAIN"
+      subtitle: "User Insight, Narrative, and Delight"
+      professional_banner: "Creative Strategist - Active"
+  privacy:
+    passive_observer_announcements: opt_in_only  # Respect privacy settings
+
+# ============================================================================
+# AI MODEL CONFIGURATION
+# ============================================================================
+ai:
+  # Default models for protocol agents
+  # NOTE: Model versions should be verified periodically against provider availability
+  default_models:
+    - provider: "Anthropic"
+      model: "claude-haiku-4-5-20251001"
+      scope: "rapid-tier"       # Fast, cost-effective for Tier 1 Rapid
+      priority: 2
+
+    - provider: "Anthropic"
+      model: "claude-sonnet-4-5-20250929"
+      scope: "all-clients"      # all-clients, yuuji-only, megumi-only, gojo-only
+      priority: 3
+
+    - provider: "Anthropic"
+      model: "claude-opus-4-1-20250805"      # High-rigor model for security reviews (Tier 3)
+      scope: "megumi-only"
+      priority: 1                          # Highest priority for security work
+
+    # - provider: "OpenAI"
+    #   model: "gpt-4o-mini"
+    #   scope: "fallback"
+    #   priority: 3
+
+  # Multi-model security review (Tier 3 Critical)
+  multi_model_review:
+    enabled: true
+    models: ["claude-sonnet-4-5-20250929", "claude-opus-4-1-20250805"]
+
+  # Model behavior overrides
+  behavior:
+    temperature: 0.7
+    max_tokens: 4096
+    enable_tool_use: true
+
+# ============================================================================
+# TIER SYSTEM CONFIGURATION
+# ============================================================================
+tiers:
+  # Default tier when none specified
+  default: "standard"
+
+  # Tier-specific overrides
+  tier_1_rapid:
+    require_tests: false
+    require_security_review: false
+    require_backup: true
+    target_time_minutes: 15
+
+  tier_2_standard:
+    require_tests: true
+    require_security_review: true
+    require_backup: true
+    security_coverage_target: 0.80
+    target_time_minutes: 45
+
+  tier_3_critical:
+    require_tests: true
+    require_integration_tests: true
+    require_e2e_tests: true
+    require_security_review: true
+    require_multi_model_review: true
+    require_backup: true
+    security_coverage_target: 0.95
+    require_compliance_check: true
+    compliance_frameworks: ["PCI", "HIPAA", "SOC2", "GDPR"]
+    target_time_minutes: 90
+
+# ============================================================================
+# FILE PATHS & LOCATIONS
+# ============================================================================
+paths:
+  # Protocol core files
+  protocol_dir: "protocol"
+  state_dir: ".protocol-state"
+  scripts_dir: "scripts"
+
+  # State files
+  project_state: ".protocol-state/project-state.json"
+  dev_notes: ".protocol-state/dev-notes.md"
+  security_review: ".protocol-state/security-review.md"
+  trigger_19: ".protocol-state/trigger-19.md"
+  tier_spec: ".protocol-state/tier-system-specification.md"
+  work_session_alert_template: ".protocol-state/work-session-alert.template.md"
+
+  # Protocol files
+  claude_md: "protocol/CLAUDE.md"
+  yuuji_md: "protocol/yuuji.agent.md"
+  megumi_md: "protocol/megumi.agent.md"
+  nobara_md: "protocol/nobara.agent.md"
+  gojo_md: "protocol/gojo.agent.md"
+  tier_guide: "protocol/TIER-SELECTION-GUIDE.md"
+
+  # Source code locations (adjust for your project)
+  source_code: "src"
+  tests: "tests"
+  docs: "docs"
+
+# ============================================================================
+# TOOLING INTEGRATION
+# ============================================================================
+tooling:
+  # Security scanning tools (optional)
+  sast:
+    enabled: false
+    tools: ["snyk-code", "semgrep", "codeql"]
+    run_on: ["tier_2_standard", "tier_3_critical"]
+
+  sca:
+    enabled: false
+    tools: ["snyk-open-source", "dependabot"]
+    run_on: ["tier_2_standard", "tier_3_critical"]
+
+  dast:
+    enabled: false
+    tools: ["owasp-zap", "burp-suite"]
+    run_on: ["tier_3_critical"]
+
+  iac_scanning:
+    enabled: false
+    tools: ["snyk-iac", "checkov", "tfsec"]
+    run_on: ["tier_3_critical"]
+
+  # Testing frameworks (auto-detected if not specified)
+  testing:
+    framework: "auto-detect"  # or pytest, jest, junit, go-test, rspec, etc.
+    coverage_target: 0.80
+    coverage_tool: "auto-detect"  # or coverage.py, jest, jacoco, etc.
+
+  # CI/CD integration
+  ci_cd:
+    provider: "github-actions"  # github-actions, gitlab-ci, jenkins, circleci
+    verify_on_pr: true
+    verify_on_commit: false
+    required_checks: ["protocol-verify", "tests", "security-scan"]
+
+# ============================================================================
+# PRIVACY & MONITORING
+# ============================================================================
+privacy:
+  # ============================================================
+  # PASSIVE OBSERVER MODE (Gojo's Background Monitoring)
+  # ============================================================
+  #
+  # ⚠️ IMPORTANT: Passive Observer is OFF by default for privacy.
+  #
+  # When OFF (default):
+  #   ❌ No background monitoring or automatic enforcement
+  #   ❌ No proactive nudges, backups, or risk escalation
+  #   ❌ Gojo only available via explicit invocation
+  #   ❌ Trigger 19 reports will be minimal/empty
+  #   ✅ Privacy-focused: no session data collection
+  #   ✅ Manual checkpoints via PR templates required
+  #
+  # When ON (opt-in):
+  #   ✅ Proactive safety and automatic enforcement
+  #   ✅ Background monitoring and pattern detection
+  #   ✅ Rich intelligence reports (Trigger 19)
+  #   ✅ Session continuity tracking
+  #   ⚠️ Session data collected (local storage, gitignored)
+  #   ⚠️ Requires explicit consent
+  #
+  # See PASSIVE_OBSERVER.md for:
+  #   - Detailed comparison (OFF vs ON)
+  #   - Privacy and consent considerations
+  #   - When to enable/disable
+  #   - Passive-Off checklist for PR templates
+  #
+  # ============================================================
+
+  passive_monitoring:
+    enabled: false              # OFF by default (set to true to enable)
+    consent_given: false        # REQUIRED: Must be true to enable
+    consent_date: null          # ISO 8601 date when consent was given
+    data_retention_days: 14     # How long to keep session observations
+    storage_location: "local"   # local = never uploaded | encrypted | cloud
+
+  # trigger-19.md gitignore status
+  gitignore_trigger_19: true    # Always gitignore by default (never commit)
+
+  # GDPR compliance mode
+  gdpr_mode: false              # If true, additional privacy safeguards enabled
+
+# ============================================================================
+# RESEARCH MODE (v7.2.0+)
+# ============================================================================
+# Enables agents to perform structured, auditable research on evolving best practices
+# See protocol/RESEARCH_MODE.md for complete specification
+#
+# Purpose:
+# - Keep agents current on implementation patterns, security standards, UX guidelines
+# - Produce structured, citable outputs with provenance and confidence indicators
+# - Avoid protocol drift by confining research to dedicated state artifacts
+# - Privacy-respecting: raw notes gitignored, only curated summaries tracked
+
+research:
+  # Master toggle (Gojo enforces if false)
+  enabled: true
+
+  # Which agents are allowed to perform research
+  allowed_agents: ["yuuji", "megumi", "nobara", "gojo"]
+
+  # Research cadence per agent
+  cadence:
+    yuuji: "weekly"            # Implementation patterns, TDD tooling updates
+    megumi: "weekly"           # OWASP revisions, emerging vulnerabilities, cryptography
+    nobara: "biweekly"         # WCAG updates, UX guidelines, accessibility tooling
+    gojo: "monthly"            # Meta trends, coordination tooling, risk landscape
+
+  # Session constraints
+  max_session_minutes: 25      # Hard cap per session to prevent fatigue
+
+  # Source policy
+  source_policy:
+    max_sources: 12
+    min_primary_sources: 3     # Authoritative standards (RFC, OWASP, W3C, ISO, NIST)
+    allow_blogs: true
+    allow_forums: false        # Avoid low-moderation sources by default
+    require_publication_year: true
+    freshness_years: 3         # Prefer sources <= 3 years old unless canonical
+
+  # Citation format
+  citation:
+    style: "domain-zero-v1"    # Custom inline format (see RESEARCH_MODE.md)
+    include_access_timestamp: true
+    include_confidence: true
+
+  # Output configuration
+  output:
+    aggregate_index: ".protocol-state/research/research-index.json"
+    per_agent_dir: ".protocol-state/research/{agent}"  # Dynamic pathing
+    summary_filename: "summary.md"      # Curated digest (version controlled optional)
+    raw_notes_filename: "raw.log"       # Gitignored scratchpad
+
+  # Privacy settings
+  privacy:
+    gitignore_raw: true         # Raw notes never committed
+    redact_pii: true            # Automatic PII redaction
+    store_urls_only: true       # Fetch summary passages; avoid full dumps
+
+  # Verification gates
+  verification:
+    run_plagiarism_check: false      # Placeholder for future tool integration
+    require_dual_source_corrob: true # All high confidence items need 2+ sources
+    require_security_vuln_crossref: true  # Megumi only: map to OWASP/CVE/NIST
+
+  # Staleness detection
+  escalation:
+    stale_days_warning: 14           # Notify if no update beyond X days
+    critical_domain_stale_days: 7    # OWASP / auth / encryption topics
+
+  # Role-specific focus areas (see RESEARCH_MODE.md § 7)
+  role_focus:
+    yuuji:
+      primary: ["implementation patterns", "TDD tooling", "test isolation"]
+      secondary: ["build performance", "async patterns"]
+      exclusions: ["direct protocol edits"]
+    megumi:
+      primary: ["OWASP updates", "emerging vulnerabilities", "cryptography papers"]
+      secondary: ["performance-security ties", "compliance standards"]
+      exclusions: ["implementation patches"]
+    nobara:
+      primary: ["WCAG guidelines", "usability heuristics", "onboarding flows"]
+      secondary: ["accessibility tooling", "inclusive design"]
+      exclusions: ["low-quality marketing blogs"]
+    gojo:
+      primary: ["meta trends", "coordination tooling", "risk landscape"]
+      secondary: ["process optimization metrics", "protocol governance"]
+      exclusions: ["direct feature design"]
+
+# ============================================================================
+# PROTOCOL PACKS (OPTIONAL)
+# ============================================================================
+protocol_packs:
+  # Active pack (blank = generic, or custom pack name)
+  active_pack: "blank"
+
+  # Available packs directory
+  packs_dir: "protocol-packs"
+
+  # Pack-specific content (e.g., appendices, examples, checklists)
+  # packs:
+  #   jamwathq:
+  #     appendix: "protocol-packs/jamwathq/APPENDIX.md"
+  #     tech_stack: ["FastAPI", "PostgreSQL", "React"]
+  #   blank:
+  #     appendix: "protocol-packs/blank/APPENDIX.md"
+  #     tech_stack: []
+
+# ============================================================================
+# VERSIONING
+# ============================================================================
+versioning:
+  protocol_version: "8.2.0"
+  config_version: "2.2"
+  last_updated: "2025-11-18"
+  changelog: "protocol/GOJO-UPDATES-PATCH.md"
+
+# ============================================================================
+# CUSTOM TRIGGERS
+# ============================================================================
+custom_triggers:
+  max_triggers: 10
+  case_sensitive: false
+  auto_suggest: true
+
+  # Default triggers
+  triggers:
+    - id: "19"
+      function: "Trigger 19"
+      description: "Full Intelligence Report"
+      is_default: true
+
+    - id: "protect"
+      function: "CLAUDE.md Protection Status"
+      description: "Check protocol file integrity"
+      is_default: true
+
+# ============================================================================
+# NOTES
+# ============================================================================
+# - All paths are relative to project root
+# - User can be "USER" (you), "GOJO" (with authorization), "YUUJI", or "MEGUMI"
+# - This config should be read by all agents at initialization
+# - Modify values here instead of editing protocol files directly
+# - See PROTOCOL_QUICKSTART.md for setup guidance
