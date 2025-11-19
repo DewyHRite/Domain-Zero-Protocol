@@ -26,7 +26,7 @@ Agent roles:
 
 ## Setup (Windows PowerShell)
 ```pwsh
-cd "c:\Users\Dewy\OneDrive\Documents\Personal IT Projects\Domain Zero\tests\e2e"
+cd tests/e2e
 npm install
 npm run install:browsers
 ```

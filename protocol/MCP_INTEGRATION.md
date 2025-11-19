@@ -400,7 +400,8 @@ Gojo:
   "mcpServers": {
     "database": {
       "env": {
-        "DATABASE_PASSWORD": "plaintextpassword123"  // ❌ NEVER
+        // ❌ BAD EXAMPLE - DO NOT USE - FOR DOCUMENTATION ONLY
+        "DATABASE_PASSWORD": "plaintextpassword123"  // ❌ NEVER store plaintext passwords
       }
     }
   }

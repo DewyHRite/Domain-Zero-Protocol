@@ -1,7 +1,7 @@
 # RESEARCH MODE SPECIFICATION
 ## Domain Zero Protocol v8.2.0
 
-**Purpose**: Establish a standardized, auditable, privacy‑respecting workflow that allows each agent (Yuuji, Megumi, Nobara, Gojo) to perform recurring, specialization‑aligned web / literature / standards research, producing structured, citable updates that feed back into project decision making without contaminating core protocol files.
+**Purpose**: Establish a standardized, auditable, privacy‑respecting workflow that allows each agent (Yuuji, Megumi, Nobara, Gojo) to perform recurring, specialization‑aligned web / literature / standards research, producing structured, citable updates that feed back into project decision-making without contaminating core protocol files.
 
 ---
 ## 1. Scope & Goals
@@ -37,6 +37,13 @@ research:
     allow_forums: false          # Avoid low‑moderation sources by default
     require_publication_year: true
     freshness_years: 3           # Prefer sources <= 3 years old unless canonical
+    canonical_sources_exempt_from_freshness: true  # RFC, OWASP, NIST, W3C, ISO automatically exempt
+    canonical_source_patterns:   # Auto-detect canonical sources by domain/pattern
+      - "*.rfc-editor.org"
+      - "owasp.org"
+      - "*.nist.gov"
+      - "*.w3.org"
+      - "*.iso.org"
   citation:
     style: "domain-zero-v1"     # Custom inline format defined below
     include_access_timestamp: true
@@ -254,12 +261,12 @@ Protocol changes proposed from research must go through:
 2. Create `.protocol-state/research/` structure & gitignore raw logs.
 3. Add invocation guidance sections to agent protocol files.
 4. Implement `scripts/research.ps1` with validation pipeline.
-5. Update `GOJO.md` with scheduling & staleness reminders.
+5. Update `gojo.agent.md` with scheduling & staleness reminders.
 6. Integrate index updates in Mission Control resume flow.
 7. Add quality gate: research summary verification.
 
 ---
 ## 15. Status
-This document defines the specification only. Configuration & script changes pending.
+**Status**: Active - Configuration implemented in `protocol.config.yaml` v8.2.0. Research mode fully operational and ready for use.
 
 @research-spec v1.0

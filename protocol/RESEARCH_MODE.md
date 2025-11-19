@@ -37,6 +37,13 @@ research:
     allow_forums: false          # Avoid low‑moderation sources by default
     require_publication_year: true
     freshness_years: 3           # Prefer sources <= 3 years old unless canonical
+    canonical_sources_exempt_from_freshness: true  # RFC, OWASP, NIST, W3C, ISO automatically exempt
+    canonical_source_patterns:   # Auto-detect canonical sources by domain/pattern
+      - "*.rfc-editor.org"
+      - "owasp.org"
+      - "*.nist.gov"
+      - "*.w3.org"
+      - "*.iso.org"
   citation:
     style: "domain-zero-v1"     # Custom inline format defined below
     include_access_timestamp: true
