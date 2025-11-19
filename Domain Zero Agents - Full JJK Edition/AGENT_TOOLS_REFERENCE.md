@@ -1,8 +1,22 @@
 # Agent Tools Reference - Domain Zero Protocol
 
-**Version**: 1.0.0
+**Version**: 1.1.0
 **Created**: November 9, 2025
+**Updated**: November 18, 2025 (v8.1.0 compatibility)
 **Purpose**: Define which tools each agent can use and operational boundaries
+
+---
+
+## 🔔 IMPORTANT: Protocol v8.0.0+ Updates
+
+**Agent File Format**: As of v8.0.0, agents use `.agent.md` format with formalized **Tool Access Matrix** in YAML frontmatter.
+
+**Playwright E2E Testing** (v8.1.0+): Yuuji, Megumi, and Gojo have extended capabilities for end-to-end testing:
+- **Yuuji**: Creates E2E tests using Playwright framework
+- **Megumi**: Reviews E2E test coverage and examines traces
+- **Gojo**: Configures E2E tests in CI/CD pipelines
+
+See [AGENT_INVOCATION_GUIDE.md](AGENT_INVOCATION_GUIDE.md) § Playwright E2E Testing for complete details.
 
 ---
 
@@ -71,6 +85,48 @@ These are specialized tools for advanced workflows:
 - Clickable file references ([filename:line](path))
 - Code block language specifiers
 - Mermaid diagram support
+
+### Playwright E2E Testing Tools (v8.1.0+)
+
+**New testing capabilities** integrated into Domain Zero Protocol:
+
+| Tool/Capability | Purpose | Agents | Tier Requirements |
+|-----------------|---------|--------|-------------------|
+| **E2E Test Creation** | Create Playwright test specs | Yuuji | Tier 2 (recommended), Tier 3 (required) |
+| **Test Configuration** | Multi-browser setup (Chromium, Firefox, WebKit) | Yuuji | All tiers |
+| **Trace Analysis** | Review test execution traces | Megumi | Tier 2+, Tier 3 (required) |
+| **Security Review** | OWASP coverage validation in E2E tests | Megumi | Tier 2+, Tier 3 (required) |
+| **CI Integration** | GitHub Actions Playwright configuration | Gojo | Tier 3 (recommended) |
+| **Test Monitoring** | E2E test health tracking in Trigger 19 | Gojo | All tiers |
+
+**Visual Testing Modes**:
+- **Headed Mode**: Watch tests execute in real browser (`npm run test:headed`)
+- **UI Mode**: Interactive debugging with selector inspection (`npm run test:ui`)
+- **Report Viewer**: HTML test results with screenshots (`npm run report`)
+
+**Test Artifacts**:
+- HTML reports (`playwright-report/`)
+- Execution traces (captured on first retry)
+- Screenshots (on failure)
+- Videos (retained on failure)
+
+**Example NPM Scripts** (in `tests/e2e/`):
+```json
+{
+  "test": "playwright test",
+  "test:headed": "playwright test --headed",
+  "test:ui": "playwright test --ui",
+  "test:debug": "playwright test --debug",
+  "report": "playwright show-report"
+}
+```
+
+**Agent Responsibilities**:
+- **Yuuji**: Creates specs in `tests/e2e/specs/`, configures browsers, ensures repeatability
+- **Megumi**: Reviews OWASP coverage, validates auth/payment flows in traces
+- **Gojo**: Wires CI, gates merges, tracks E2E health
+
+**See**: `docs/playwright.md` and [AGENT_INVOCATION_GUIDE.md](AGENT_INVOCATION_GUIDE.md) § Playwright E2E Testing
 
 ---
 

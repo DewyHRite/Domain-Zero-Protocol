@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 7.1.1
+# Version: 8.2.0
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,7 +8,7 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v7.1.1"
+  version: "v8.2.0"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -370,9 +370,10 @@ paths:
 
   # Protocol files
   claude_md: "protocol/CLAUDE.md"
-  yuuji_md: "protocol/YUUJI.md"
-  megumi_md: "protocol/MEGUMI.md"
-  gojo_md: "protocol/GOJO.md"
+  yuuji_md: "protocol/yuuji.agent.md"
+  megumi_md: "protocol/megumi.agent.md"
+  nobara_md: "protocol/nobara.agent.md"
+  gojo_md: "protocol/gojo.agent.md"
   tier_guide: "protocol/TIER-SELECTION-GUIDE.md"
 
   # Source code locations (adjust for your project)
@@ -466,6 +467,93 @@ privacy:
   gdpr_mode: false              # If true, additional privacy safeguards enabled
 
 # ============================================================================
+# RESEARCH MODE (v7.2.0+)
+# ============================================================================
+# Enables agents to perform structured, auditable research on evolving best practices
+# See protocol/RESEARCH_MODE.md for complete specification
+#
+# Purpose:
+# - Keep agents current on implementation patterns, security standards, UX guidelines
+# - Produce structured, citable outputs with provenance and confidence indicators
+# - Avoid protocol drift by confining research to dedicated state artifacts
+# - Privacy-respecting: raw notes gitignored, only curated summaries tracked
+
+research:
+  # Master toggle (Gojo enforces if false)
+  enabled: true
+
+  # Which agents are allowed to perform research
+  allowed_agents: ["yuuji", "megumi", "nobara", "gojo"]
+
+  # Research cadence per agent
+  cadence:
+    yuuji: "weekly"            # Implementation patterns, TDD tooling updates
+    megumi: "weekly"           # OWASP revisions, emerging vulnerabilities, cryptography
+    nobara: "biweekly"         # WCAG updates, UX guidelines, accessibility tooling
+    gojo: "monthly"            # Meta trends, coordination tooling, risk landscape
+
+  # Session constraints
+  max_session_minutes: 25      # Hard cap per session to prevent fatigue
+
+  # Source policy
+  source_policy:
+    max_sources: 12
+    min_primary_sources: 3     # Authoritative standards (RFC, OWASP, W3C, ISO, NIST)
+    allow_blogs: true
+    allow_forums: false        # Avoid low-moderation sources by default
+    require_publication_year: true
+    freshness_years: 3         # Prefer sources <= 3 years old unless canonical
+
+  # Citation format
+  citation:
+    style: "domain-zero-v1"    # Custom inline format (see RESEARCH_MODE.md)
+    include_access_timestamp: true
+    include_confidence: true
+
+  # Output configuration
+  output:
+    aggregate_index: ".protocol-state/research/research-index.json"
+    per_agent_dir: ".protocol-state/research/{agent}"  # Dynamic pathing
+    summary_filename: "summary.md"      # Curated digest (version controlled optional)
+    raw_notes_filename: "raw.log"       # Gitignored scratchpad
+
+  # Privacy settings
+  privacy:
+    gitignore_raw: true         # Raw notes never committed
+    redact_pii: true            # Automatic PII redaction
+    store_urls_only: true       # Fetch summary passages; avoid full dumps
+
+  # Verification gates
+  verification:
+    run_plagiarism_check: false      # Placeholder for future tool integration
+    require_dual_source_corrob: true # All high confidence items need 2+ sources
+    require_security_vuln_crossref: true  # Megumi only: map to OWASP/CVE/NIST
+
+  # Staleness detection
+  escalation:
+    stale_days_warning: 14           # Notify if no update beyond X days
+    critical_domain_stale_days: 7    # OWASP / auth / encryption topics
+
+  # Role-specific focus areas (see RESEARCH_MODE.md § 7)
+  role_focus:
+    yuuji:
+      primary: ["implementation patterns", "TDD tooling", "test isolation"]
+      secondary: ["build performance", "async patterns"]
+      exclusions: ["direct protocol edits"]
+    megumi:
+      primary: ["OWASP updates", "emerging vulnerabilities", "cryptography papers"]
+      secondary: ["performance-security ties", "compliance standards"]
+      exclusions: ["implementation patches"]
+    nobara:
+      primary: ["WCAG guidelines", "usability heuristics", "onboarding flows"]
+      secondary: ["accessibility tooling", "inclusive design"]
+      exclusions: ["low-quality marketing blogs"]
+    gojo:
+      primary: ["meta trends", "coordination tooling", "risk landscape"]
+      secondary: ["process optimization metrics", "protocol governance"]
+      exclusions: ["direct feature design"]
+
+# ============================================================================
 # PROTOCOL PACKS (OPTIONAL)
 # ============================================================================
 protocol_packs:
@@ -488,9 +576,9 @@ protocol_packs:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "7.1.1"
-  config_version: "1.2"
-  last_updated: "2025-11-08"
+  protocol_version: "8.2.0"
+  config_version: "2.2"
+  last_updated: "2025-11-18"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

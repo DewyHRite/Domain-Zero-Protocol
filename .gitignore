@@ -9,6 +9,18 @@
 .protocol-state/trigger-19.md
 
 # ============================================================================
+# RESEARCH MODE RAW NOTES (v7.2.0+) - NEVER COMMIT
+# ============================================================================
+
+# Raw research logs (privacy-protected, gitignored per RESEARCH_MODE.md)
+.protocol-state/research/**/*.raw.log
+.protocol-state/research/**/raw.log
+
+# Research scratch notes and temporary files
+.protocol-state/research/**/*.tmp
+.protocol-state/research/**/*.temp
+
+# ============================================================================
 # BACKUPS (KEEP LOCAL ONLY)
 # ============================================================================
 

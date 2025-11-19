@@ -1,237 +1,264 @@
 # Domain Zero Protocol - Version Information
 
-**Version:** v7.1.1
-**Release Date:** November 9, 2025
-**Release Type:** Patch Release
+**Version:** v8.2.0
+**Release Date:** November 18, 2025
+**Release Type:** Minor Release
 
 ---
 
 ## Release Summary
 
-This patch release adds a comprehensive agent documentation system while synchronizing all version references to v7.1.1. No behavioral changes to protocol enforcement or agent functionality.
+This minor release **enhances Research Mode** to make it actively usable by all agents. Research Mode (specification added in v7.2.0) now includes complete invocation guidance, structured output templates, and staleness monitoring integrated with Mission Control. All four agents (Yuuji, Megumi, Nobara, Gojo) can now conduct domain-specific research to stay current with evolving standards and best practices.
 
 ### Key Changes
 
-- **Agent Documentation System** - 16 new comprehensive agent documentation files
-- **Character Agent Docs** - Full JJK Edition with 8 character agents (PANDA, MAKI, INUMAKI, plus existing YUUJI, MEGUMI, NOBARA, GOJO, + TODO)
-- **Agent Creation Guides** - Templates, invocation guides, tool references, and model recommendations
-- **Version Synchronization** - All protocol files updated from v7.1.0 to v7.1.1
-- **No Runtime Changes** - All behavioral changes introduced in v7.1.0; this is documentation-only
+- **✅ Research Mode Invocation** - All agents can now be invoked with `--research` flag
+- **✅ Agent-Specific Research Sections** - Complete research guidance added to all 4 agent files
+- **✅ Structured Output Templates** - Standardized summary format with citations and confidence indicators
+- **✅ Staleness Monitoring** - Gojo enforces research currency with configurable thresholds
+- **✅ Directory Structure** - `.protocol-state/research/` created for all agents
 
 ---
 
-## What's New in v7.1.1
+## What's New in v8.2.0
 
 ### Added
-- **Domain Zero Agents/** - Professional agent documentation:
-  - `README.md` - Complete guide to creating custom agents
-  - `AGENT_TEMPLATE.md` - Template for new agent creation
-  - `examples/KIRA_DOCUMENTATION_SPECIALIST.md` - Example agent implementation
 
-- **Domain Zero Agents - Full JJK Edition/** - Character-themed documentation:
-  - `README.md` - JJK Edition guide with character lore integration
-  - `JJK_AGENT_TEMPLATE.md` - JJK-themed agent template
-  - `AGENT_INVOCATION_GUIDE.md` - How to invoke agents correctly
-  - `AGENT_TOOLS_REFERENCE.md` - Complete tools documentation
-  - `AGENT_MODEL_RECOMMENDATIONS.md` - Model selection guidance
-  - `PANDA.md` - CI/CD Pipeline Agent
-  - `MAKI.md` - Code Refactoring & Optimization Agent
-  - `INUMAKI.md` - Shell Commands & Automation Agent
-  - `TODO.md` - Future agent expansion ideas
-  - `GOJO.md`, `YUUJI.md`, `MEGUMI.md`, `NOBARA.md` - Copies from protocol/ for JJK Edition
+#### 1. **Research Mode Enhancement** - Active agent research implementation
+
+**Agent Research Focus Areas:**
+- **Yuuji**: Implementation patterns, TDD tooling, test isolation, async patterns (Weekly)
+- **Megumi**: OWASP updates, emerging vulnerabilities, cryptographic standards (Weekly)
+- **Nobara**: WCAG guidelines, usability heuristics, onboarding flows (Biweekly)
+- **Gojo**: Meta trends, coordination tooling, risk landscape, protocol governance (Monthly)
+
+**Invocation Pattern:**
+```bash
+"Read [agent].agent.md --research and investigate [topic]"
+```
+
+**Example Invocations:**
+```bash
+"Read yuuji.agent.md --research and investigate pytest fixture best practices"
+"Read megumi.agent.md --research and investigate OWASP Top 10 2025 changes"
+"Read nobara.agent.md --research and investigate WCAG 2.2 success criteria"
+"Read gojo.agent.md --research and investigate multi-agent orchestration patterns"
+```
+
+#### 2. **Research Output Structure** - Standardized summaries with citations
+
+**Directory Structure:**
+```
+.protocol-state/research/
+├── research-index.json       # Global index with last session timestamps
+├── yuuji/
+│   ├── 2025-11-18T14-30-00Z.summary.md
+│   └── 2025-11-18T14-30-00Z.raw.log    (gitignored)
+├── megumi/
+│   ├── 2025-11-18T15-00-00Z.summary.md
+│   └── 2025-11-18T15-00-00Z.raw.log    (gitignored)
+├── nobara/
+│   └── (research outputs)
+└── gojo/
+    └── (research outputs)
+```
+
+**Summary Template Features:**
+- Focus questions (3-5 specific research questions)
+- Key findings table with sources and confidence indicators
+- Actionable recommendations (experiments, not mandates)
+- Source citations with OWASP/WCAG/RFC mappings
+- Privacy protection (raw notes gitignored)
+
+#### 3. **Quality Gates** - Research validation requirements
+
+**Source Requirements:**
+- Minimum 3 primary sources (OWASP, NIST, W3C, RFC, peer-reviewed)
+- High confidence findings require 2+ source corroboration
+- Security items mapped to OWASP/CVE/NIST (Megumi only)
+- WCAG criterion mapping (Nobara only)
+
+**Confidence Levels:**
+- **High**: Primary sources + corroborated by 2+ independent sources
+- **Medium**: Reputable documentation/framework guides + some corroboration
+- **Low**: Single source or unverified (flagged for further research)
+
+#### 4. **Staleness Monitoring** - Gojo enforces research currency
+
+**Thresholds:**
+- Standard warning: 14+ days without research
+- Critical escalation: 7+ days for security/auth/crypto topics (Megumi)
+- Reminders issued in Mission Control interface
+
+**Research Cadence:**
+- Yuuji: Weekly (implementation knowledge evolves rapidly)
+- Megumi: Weekly (security threats require constant monitoring)
+- Nobara: Biweekly (UX/accessibility standards update less frequently)
+- Gojo: Monthly (strategic trends are slower-moving)
+
+#### 5. **Integration with Workflows** - Research informs implementation
+
+**Research → Implementation Flow:**
+1. Research findings documented in structured summary
+2. User reviews recommendations and approves approach
+3. Standard tier workflows apply (Tier 1/2/3)
+4. Implementation uses current best practices from research
+
+**Example:**
+```
+Research: "JWT rotation best practices have changed"
+→ Summary recommends 30-minute refresh token rotation
+→ User approves recommendation
+→ "Read yuuji.agent.md --tier critical and implement JWT refresh rotation"
+→ Standard Tier 3 workflow applies
+```
 
 ### Changed
-- **Version Updates**: All protocol files synchronized to v7.1.1:
-  - `protocol/CLAUDE.md`, `protocol/GOJO.md`, `protocol/YUUJI.md`, `protocol/MEGUMI.md`, `protocol/NOBARA.md`, `protocol/MASK_MODE.md`
-  - `protocol.config.yaml`, `README.md`, `VERSION.md`, `SECURITY.md`, `FAQ.md`, `CHANGELOG.md`
-  - `PROTOCOL_QUICKSTART.md`, `DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md`
-  - `.protocol-state/project-state.json`
 
-- **Documentation Enhancements**:
-  - Updated quickstart references to include GOJO alongside YUUJI, MEGUMI, NOBARA
-  - Improved navigation structure with agent documentation sections
-  - Added cross-references between professional and JJK editions
+#### 1. **protocol/CLAUDE.md** - Added Mode 4: Research Mode
 
-### Fixed
-- Date consistency in `protocol/CLAUDE.md` (aligned to November 9, 2025)
-- Version references in `SECURITY.md` (updated to v7.1.1)
-- Footer version in `protocol/MASK_MODE.md` (updated to v7.1.1)
-- Version tracking in `protocol/NOBARA.md` (updated to v7.1.1)
-- Mission Control banner in `protocol/GOJO.md` (updated to v7.1.1)
-- Canonical repository version in `protocol.config.yaml` (aligned to v7.1.1)
+**Operational Modes Section:**
+- Added comprehensive Research Mode overview
+- Documented research focus by agent
+- Included quality gates and staleness monitoring
+- Added invocation examples for all agents
+
+**Agent Invocation Patterns:**
+- Added research mode examples for Yuuji, Megumi, Nobara, Gojo
+- Included research flag usage patterns
+
+#### 2. **All Agent Files** - Research mode sections added
+
+**yuuji.agent.md** (protocol/yuuji.agent.md:1318-1462):
+- Research focus (implementation patterns, TDD tooling)
+- Invocation guidance and examples
+- Output template and integration with implementation work
+
+**megumi.agent.md** (protocol/megumi.agent.md:2043-2229):
+- Research focus (OWASP, vulnerabilities, cryptography)
+- Security-specific source prioritization
+- CVE/NIST cross-reference requirements
+
+**nobara.agent.md** (protocol/nobara.agent.md:561-739):
+- Research focus (WCAG, usability heuristics)
+- User-centered research prioritization
+- WCAG criterion mapping
+
+**gojo.agent.md** (protocol/gojo.agent.md:1952-2148):
+- Research focus (meta trends, coordination, governance)
+- Strategic intelligence synthesis
+- Agent research monitoring responsibilities
+
+### Updated
+
+- **protocol.config.yaml**: Version 8.2.0, config_version 2.2
+- **protocol/CLAUDE.md**: Version 8.2.0, research mode operational mode added
+- **.protocol-state/project-state.json**: protocol_version 8.2.0
+- **All 4 agent files**: Research mode sections (145-195 lines each)
 
 ---
 
-## What's New in v7.1.0
+## Files Modified
 
-### Added
-- **Mask Mode Configuration** (protocol.config.yaml):
-  - `mask_mode.enabled`: Master toggle (true = JJK theme, false = professional)
-  - `mask_mode.settings`: Granular controls (banners, personality, terminology, emoji, narrative)
-  - `mask_mode.unmasked_names`: Professional agent names when mask is OFF
-  - `mask_mode.unmasked_terminology`: Standard terminology translations
+**Core Protocol:**
+- `protocol.config.yaml` - Version updated to 8.2.0, config_version to 2.2
+- `protocol/CLAUDE.md` - Version 8.2.0, Mode 4: Research Mode added
+- `.protocol-state/project-state.json` - protocol_version updated to 8.2.0
 
-- **MASK_MODE.md** - Complete specification document:
-  - What Mask Mode is and why it exists
-  - Behavior comparison (MASK ON vs MASK OFF)
-  - Configuration reference and validation rules
-  - Migration guide from v7.0.0
-  - Examples and use cases
+**Agent Files:**
+- `protocol/yuuji.agent.md` - Research mode section added (lines 1318-1462)
+- `protocol/megumi.agent.md` - Research mode section added (lines 2043-2229)
+- `protocol/nobara.agent.md` - Research mode section added (lines 561-739)
+- `protocol/gojo.agent.md` - Research mode section added (lines 1952-2148)
 
-- **DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md** - Mandatory collaboration guide:
-  - Rationale for mandatory dual workflow (eliminate skipped security reviews)
-  - Old vs new invocation patterns (breaking change documentation)
-  - Step-by-step migration instructions
-  - Tier-specific examples (Tier 1/2/3 behavior)
-  - Success criteria and integration checklist
-
-- **REALITY_CHECK.md** - Honest documentation:
-  - Truth about "agents" (same AI, different prompts)
-  - What Domain Zero actually does (structured prompt engineering)
-  - When to use/not use Domain Zero
-  - Customization advice and success metrics
-  - Cost-benefit analysis and alternatives
-
-### Changed
-- **CLAUDE.md**:
-  - Added Mask Mode section explaining JJK theme vs professional mode
-  - Added REALITY_CHECK.md to Additional Resources
-  - Added MASK_MODE.md to Additional Resources
-  - Updated version to v7.1.0
-  - Updated version history with v7.1.0 entry
-
-- **protocol.config.yaml**:
-  - Added complete mask_mode configuration section
-  - Updated protocol_version to 7.1.0
-  - Updated config_version to 1.2
-  - Updated last_updated to 2025-11-08
-
-- **Documentation Structure**:
-  - REALITY_CHECK.md provides honest assessment of framework
-  - MASK_MODE.md explains presentation layer configurability
-  - Clear distinction between core functionality (unchanged) and presentation (configurable)
-
-### Breaking Changes
-- **Dual Workflow Mandatory for Tier 2/3**: Yuuji-Megumi collaboration is now enforced
-  - **Old pattern** (deprecated): User invokes Yuuji → tags @security-review → invokes Megumi separately
-  - **New pattern** (v7.1.0): User invokes Yuuji once → Yuuji prompts for Megumi invocation after implementation
-  - **Impact**: Workflow pattern changes for Tier 2 (Standard) and Tier 3 (Critical) features
-  - **Migration**: See DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md for complete migration instructions
-  - **Tier 1 exception**: Rapid prototyping (Tier 1) unchanged - Yuuji-only invocation still valid
-
-### Implementation Approach
-- **Presentation vs Functionality**: Mask Mode affects HOW agents communicate, not WHAT they enforce
-- **Dual workflow enforcement**: Eliminates possibility of skipping security reviews for production code
-- **User choice preserved**: Mask Mode toggle between engaging and professional modes
-- **Hybrid modes**: Granular settings allow custom combinations
-- **Tier 1 flexibility**: Fast prototyping still skips security review (by design)
+**State Management:**
+- `.protocol-state/research/` - Directory structure created
+- `.protocol-state/research/research-index.json` - Initial index created
+- `.gitignore` - Already configured for research raw.log exclusions (v7.2.0)
 
 ---
 
-## Previous Versions
+## Configuration
 
-### What's New in v7.0.0
+Research mode is controlled via `protocol.config.yaml`:
 
-- **Absolute Zero Protocol Integration** - Formal agent commitment framework
-- **Agent Binding Oath** - 10 binding principles for all agents
-- **Decision Reasoning Template** - Structured transparency framework
-- **Enhanced Safety Principles** - 5 core AZP principles integrated into CLAUDE.md
-
-See previous VERSION.md for complete v7.0.0 details.
-
-### What's New in v6.2.8
-
-### Added
-- **Pre-push version verification requirements** - Mandatory comprehensive codebase review checklist:
-  - Added CRITICAL PRE-PUSH REQUIREMENT section to system-update.py
-  - Added Pre-Push Version Verification (MANDATORY) to protocol/CLAUDE.md
-  - Extended VERSION_MANAGEMENT_GUIDE.md with complete verification checklist
-  - Automated + manual verification workflow before any GitHub push
-
-- **Enhanced verification script error handling**:
-  - PyYAML error handling with graceful degradation
-  - Yamllint fallback when PyYAML module missing
-  - PowerShell Core (pwsh) detection for cross-platform support
-  - Improved error messages with actionable guidance
-
-### Changed
-- **GitHub Actions workflows**:
-  - Fixed CodeQL workflow manual build step (removed exit 1)
-  - Added workflow_dispatch trigger to security-scan-example.yml
-  - Corrected IaC scan condition to exclude workflow files
-
-- **CODEOWNERS governance**:
-  - Removed duplicate root CODEOWNERS file
-  - Cleaned up gitignored file references
-  - Added VERSION.md, SECURITY.md, FAQ.md to tracked files
-  - Ensured CODEOWNERS not in .gitignore
-
-- **Documentation cleanup**:
-  - Removed all ANSI escape codes from protocol files
-  - Filled protocol.config.yaml placeholder values
-  - Updated version references across 14+ documentation files
-
-### Fixed
-- **Version consistency issues** - Synchronized all version references to v6.2.7:
-  - FAQ.md, SECURITY.md, CHANGELOG.md version metadata
-  - Protocol files (CLAUDE.md, GOJO.md, YUUJI.md, MEGUMI.md, NOBARA.md)
-  - CANONICAL_SOURCE_ADOPTION.md, tier-system-specification.md
-  - GOJO.md project-state.json initialization template
-
-- **PowerShell script control flow** - Added return statements after successful checks
-- **Workflow failures** - Fixed GitHub Actions workflow configurations
-
-### Security
-- **Enhanced OWASP Top 10 alignment** - MEGUMI security review process improvements
-- **Credential management** - Updated .gitignore to protect sensitive state files
-- **Script execution safety** - Improved error handling prevents silent failures
+```yaml
+research:
+  enabled: true
+  allowed_agents: ["yuuji", "megumi", "nobara", "gojo"]
+  cadence:
+    yuuji: "weekly"
+    megumi: "weekly"
+    nobara: "biweekly"
+    gojo: "monthly"
+  max_session_minutes: 25
+  source_policy:
+    max_sources: 12
+    min_primary_sources: 3
+  escalation:
+    stale_days_warning: 14
+    critical_domain_stale_days: 7
+```
 
 ---
 
 ## Upgrade Notes
 
-**v7.1.0 → v7.1.1:**
-- **No breaking changes** - This is a documentation-only patch release
-- **No action required** - All behavioral changes were in v7.1.0
-- **New resources available**: Comprehensive agent documentation system
-  - Explore `Domain Zero Agents/` for custom agent creation guides
-  - Explore `Domain Zero Agents - Full JJK Edition/` for character-themed documentation
-  - Use templates and examples to create your own specialized agents
+### For Existing Users
 
-**v7.0.0 → v7.1.0 (if upgrading from v7.0.0):**
-- **Dual Workflow Enforcement** for Tier 2/3 (breaking workflow change)
-  - Old: Invoke Yuuji → manually tag @security-review → invoke Megumi separately
-  - New: Invoke Yuuji → Yuuji prompts for Megumi invocation (you manually execute)
-- **Mask Mode** added to protocol.config.yaml (presentation only, non-breaking)
-- Default behavior (MASK ON) preserves JJK-themed experience
-- See DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md for migration instructions
+**No Action Required:**
+- Research mode is optional (agents function normally without it)
+- All changes are backward compatible
+- Existing workflows unaffected
 
----
+**Optional Enhancements:**
+```bash
+# Use research mode before critical implementations
+"Read megumi.agent.md --research and investigate OWASP Top 10 2025 changes"
+# Then implement with current knowledge
+"Read yuuji.agent.md --tier critical and implement JWT authentication"
+```
 
-## Full Details
+### For New Users
 
-See [CHANGELOG.md](CHANGELOG.md) for complete version history and detailed change information.
-
----
-
-**Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol
-**Previous Version:** v7.1.0
-**Current Version:** v7.1.1
+Research mode provides a structured way to keep agent knowledge current:
+1. Enable research in `protocol.config.yaml` (enabled by default)
+2. Invoke agents with `--research` flag when needed
+3. Review research summaries in `.protocol-state/research/[agent]/`
+4. Approve recommendations before implementation
 
 ---
 
-## Cumulative Improvements
+## Breaking Changes
 
-**v7.1.0 → v7.1.1:** Agent Documentation System (16 files, custom agent creation guides)
-**v7.0.0 → v7.1.0:** Mask Mode Toggle, REALITY_CHECK.md integration, Professional vs JJK theme choice
-**v6.2.8 → v7.0.0:** Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
-**v6.2.7 → v6.2.8:** Copilot PR review fixes, version consistency updates
-**v6.2.6 → v6.2.7:** Pre-push verification requirements, PyYAML error handling, PowerShell Core support
-**v6.2.5 → v6.2.6:** Verification script v2.0 (60% faster, better UX)
-**v6.2.4 → v6.2.5:** Comprehensive documentation enhancements (4 new docs)
-**v6.2.3 → v6.2.4:** Security policy + enhanced config validation
-**v6.2.2 → v6.2.3:** Documentation structure improvements
-**v6.2.1 → v6.2.2:** Protocol protection (CODEOWNERS, .gitignore)
-**v6.2.0 → v6.2.1:** Interactive work session alerts
+**None.** This is a backward-compatible minor release.
 
-**Assessment Score:** 10.0/10 - **COMPREHENSIVE DOCUMENTATION**: Full agent system documentation with templates, guides, and character-themed variants
+---
+
+## Documentation
+
+**Research Mode Specification:**
+- `protocol/RESEARCH_MODE.md` - Complete specification (v7.2.0)
+- `protocol/CLAUDE.md` - Mode 4: Research Mode overview
+- All agent files - Research mode sections with invocation guidance
+
+**Configuration:**
+- `protocol.config.yaml` - Research settings under `research:` section
+
+---
+
+## Known Issues
+
+**None identified.**
+
+---
+
+## Contributors
+
+- Domain Zero Protocol Team
+- 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+---
+
+**Previous Version:** v8.1.0 (Playwright E2E Testing Infrastructure)
+**Next Planned:** TBD (See roadmap in README.md)

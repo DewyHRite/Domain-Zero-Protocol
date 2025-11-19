@@ -1,8 +1,35 @@
 # Agent Invocation Guide - Domain Zero Protocol
 
-**Version**: 1.0.0
+**Version**: 1.1.0
 **Created**: November 9, 2025
-**Purpose**: Comprehensive guide for invoking JJK character agents as system prompts
+**Updated**: November 18, 2025 (v8.1.0 compatibility)
+**Purpose**: Comprehensive guide for invoking Domain Zero agents
+
+---
+
+## 🔔 IMPORTANT: Protocol v8.0.0+ Format Changes
+
+**As of Domain Zero Protocol v8.0.0**, agent files use the `.agent.md` format with YAML frontmatter:
+
+**✅ Correct Invocation (v8.0.0+)**:
+```bash
+"Read protocol/yuuji.agent.md and implement user authentication"
+"Read protocol/megumi.agent.md and review security"
+"Read protocol/nobara.agent.md and design dashboard"
+"Read protocol/gojo.agent.md" → Mission Control
+```
+
+**❌ Old Format (deprecated)**:
+```bash
+"Read YUUJI.md and implement feature"  # No longer used in main protocol
+```
+
+**JJK Edition Files** (this folder):
+- Files like `YUUJI.md`, `GOJO.md` in this folder are **reference documentation** for JJK character lore and theming
+- **For actual agent invocation**, use the main protocol `.agent.md` files in `protocol/` directory
+- See [README.md](README.md) § Protocol Version Compatibility for details
+
+**v8.1.0 Addition**: Playwright E2E testing integration (see examples below)
 
 ---
 
@@ -386,6 +413,130 @@ Gojo will:
 # Complete Database Architecture (Todo)
 "Read TODO.md --domain-expansion and design complete database architecture"
 ```
+
+---
+
+## 🎭 Playwright E2E Testing (v8.1.0+)
+
+**As of Domain Zero Protocol v8.1.0**, Playwright end-to-end testing is integrated into the tier system.
+
+### Yuuji - Creating E2E Tests
+
+**Basic E2E Test Creation**:
+```bash
+"Read protocol/yuuji.agent.md and add Playwright E2E tests for user authentication"
+```
+
+**With Tier Specification**:
+```bash
+"Read protocol/yuuji.agent.md --tier standard and create E2E smoke tests for checkout flow"
+"Read protocol/yuuji.agent.md --tier critical and create comprehensive E2E tests with traces for payment processing"
+```
+
+**What Yuuji Will Do**:
+- Create test specs in `tests/e2e/specs/`
+- Configure multi-browser testing (Chromium, Firefox, WebKit)
+- Set up traces, screenshots, and videos on failure
+- Document tests in `.protocol-state/dev-notes.md`
+- Ensure test repeatability and reliability
+
+### Megumi - Reviewing E2E Coverage
+
+**E2E Security Review**:
+```bash
+"Read protocol/megumi.agent.md and review Playwright test coverage for authentication flow"
+```
+
+**Trace Analysis**:
+```bash
+"Read protocol/megumi.agent.md and examine Playwright traces for payment processing security"
+```
+
+**What Megumi Will Review**:
+- Test coverage for OWASP Top 10 risks
+- Authentication/authorization flows in traces
+- XSS navigation patterns
+- CSRF flow coverage
+- Sensitive data exposure in screenshots/videos
+
+### Gojo - E2E CI Integration
+
+**CI Pipeline Setup**:
+```bash
+"Read protocol/gojo.agent.md and configure Playwright E2E tests in GitHub Actions"
+```
+
+**What Gojo Will Do**:
+- Wire CI to run Playwright on pull requests
+- Configure test result gates for merges
+- Track skipped E2E reviews for Tier 2/3 features
+- Monitor E2E test health in Trigger 19 reports
+
+### Tier-Specific E2E Requirements
+
+**Tier 1 (Rapid)**:
+- Optional - E2E tests for local demos only
+- No security review required
+- Example: `"Read protocol/yuuji.agent.md --tier rapid and add quick E2E demo"`
+
+**Tier 2 (Standard)**:
+- Recommended - E2E smoke tests for critical flows
+- Megumi reviews test results and artifacts
+- Example: `"Read protocol/yuuji.agent.md --tier standard and add E2E smoke tests for login/logout"`
+
+**Tier 3 (Critical)**:
+- Required - Comprehensive E2E coverage with traces
+- Megumi examines all traces for security flows
+- Run in CI with automated checks
+- Example: `"Read protocol/yuuji.agent.md --tier critical and create full E2E suite for payment flow with trace capture"`
+
+### Visual Testing Commands
+
+**Run Tests in Browser**:
+```bash
+cd tests/e2e
+npm run test:headed   # Watch tests execute in real browser
+npm run test:ui       # Interactive UI mode for debugging
+npm run report        # View HTML test results
+```
+
+**VS Code Integration**:
+- Terminal → Run Task → `E2E: Run (headed)`
+- Terminal → Run Task → `E2E: UI Mode`
+- Terminal → Run Task → `E2E: Show Report`
+
+### Example Workflow
+
+**1. Yuuji Creates Tests**:
+```bash
+User: "Read protocol/yuuji.agent.md --tier standard and add Playwright E2E tests for user registration"
+
+Yuuji:
+- Creates tests/e2e/specs/user-registration.spec.ts
+- Tests email validation, password requirements, success flow
+- Configures traces on failure
+- Documents in dev-notes.md
+```
+
+**2. User Reviews Implementation**:
+```bash
+User runs: npm run test:headed  # Watches tests in browser
+User approves implementation
+```
+
+**3. Megumi Reviews Coverage**:
+```bash
+User: "Read protocol/megumi.agent.md and review Playwright coverage for user registration"
+
+Megumi:
+- Reviews test spec for OWASP coverage
+- Checks XSS prevention in form inputs
+- Validates CSRF token handling
+- Examines password strength requirements
+- Documents findings in security-review.md
+```
+
+**See**: `docs/playwright.md` for complete Playwright integration guide
 
 ---
 

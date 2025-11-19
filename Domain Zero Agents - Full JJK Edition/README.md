@@ -401,6 +401,62 @@ Created a new JJK agent? Share it!
 
 ---
 
+## 🔄 Protocol Version Compatibility
+
+**Current Protocol Version**: v8.1.0
+
+### v8.0.0+ Updates (.agent.md Format)
+
+The core Domain Zero Protocol (v8.0.0+) uses the new `.agent.md` format with YAML frontmatter. The JJK Edition agents in this folder reference the **main protocol agents**:
+
+**Main Protocol Agents** (referenced by JJK agents):
+- `protocol/yuuji.agent.md` - Implementation Specialist
+- `protocol/megumi.agent.md` - Security Analyst
+- `protocol/nobara.agent.md` - Creative Strategy & UX
+- `protocol/gojo.agent.md` - Mission Control
+
+**JJK Edition Files** (this folder):
+- `YUUJI.md`, `MEGUMI.md`, `NOBARA.md`, `GOJO.md` - Full character documentation (theme-focused)
+- `PANDA.md`, `MAKI.md`, `INUMAKI.md`, `TODO.md` - Extended character agents
+
+**Note**: When invoking agents, use the main protocol `.agent.md` files:
+```bash
+# Correct invocation (uses main protocol)
+"Read protocol/yuuji.agent.md and implement feature"
+
+# JJK Edition files are for reference/theming only
+# They describe the character personality and JJK lore
+```
+
+### v8.1.0 Updates (Playwright E2E Testing)
+
+**New Capability**: Playwright E2E Testing Infrastructure
+
+**Tier Integration**:
+- **Tier 1 (Rapid)**: Optional - Use E2E tests locally for demos
+- **Tier 2 (Standard)**: Recommended - Add E2E smoke tests, Megumi reviews results
+- **Tier 3 (Critical)**: Required - Comprehensive E2E with traces/videos, run in CI
+
+**Agent Roles**:
+- **Yuuji**: Creates E2E tests in `tests/e2e/specs/`, ensures repeatability
+- **Megumi**: Reviews test coverage for OWASP risks, validates traces for auth/payment flows
+- **Gojo**: Wires CI to run Playwright on PRs, gates merges, tracks skipped reviews
+
+**Example Prompts**:
+```bash
+# Yuuji creates E2E tests
+"Read protocol/yuuji.agent.md and add Playwright E2E for user authentication"
+
+# Megumi reviews E2E test coverage
+"Read protocol/megumi.agent.md and review Playwright traces for payment flow"
+```
+
+**Visual Testing**: Headed mode, UI mode, and HTML reports for interactive debugging
+
+**See**: `docs/playwright.md` for complete Playwright integration guide
+
+---
+
 ## Additional Resources
 
 - **Agent Invocation Guide**: [AGENT_INVOCATION_GUIDE.md](AGENT_INVOCATION_GUIDE.md) - **START HERE for system prompts and invocation examples**

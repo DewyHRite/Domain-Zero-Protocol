@@ -115,10 +115,10 @@ This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
 - `CLAUDE.md` - Main protocol specification (v7.1.0)
-- `YUUJI.md` - Implementation agent protocol
-- `MEGUMI.md` - Security review agent protocol
-- `GOJO.md` - Mission control agent protocol
-- `NOBARA.md` - Creative strategy & UX agent protocol
+- `yuuji.agent.md` - Implementation agent protocol
+- `megumi.agent.md` - Security review agent protocol
+- `gojo.agent.md` - Mission control agent protocol
+- `nobara.agent.md` - Creative strategy & UX agent protocol
 - `TIER-SELECTION-GUIDE.md` - Quick reference for tier selection
 - `GOJO-UPDATES-PATCH.md` - Protocol change audit trail
 
@@ -382,7 +382,7 @@ project:
 
 In your AI assistant (Claude):
 ```
-"Read protocol/GOJO.md"
+"Read protocol/gojo.agent.md"
 ```
 
 Gojo will present Mission Control with 3 options:
@@ -393,7 +393,7 @@ Gojo will present Mission Control with 3 options:
 ### Step 4: Start Implementing
 
 ```
-"Read protocol/YUUJI.md and implement [your feature]"
+"Read protocol/yuuji.agent.md and implement [your feature]"
 ```
 
 ---
@@ -441,10 +441,10 @@ I use the Domain Zero Protocol for AI-assisted development. This is a four-agent
 
 The protocol files are located in my project at:
 - protocol/CLAUDE.md (main protocol, v7.1.0)
-- protocol/YUUJI.md (implementation agent)
-- protocol/MEGUMI.md (security agent)
-- protocol/NOBARA.md (creative strategy agent)
-- protocol/GOJO.md (mission control)
+- protocol/yuuji.agent.md (implementation agent)
+- protocol/megumi.agent.md (security agent)
+- protocol/nobara.agent.md (creative strategy agent)
+- protocol/gojo.agent.md (mission control)
 
 The protocol uses a three-tier workflow system:
 - Tier 1 (Rapid): Fast prototyping, no tests
@@ -465,7 +465,7 @@ I use the Domain Zero Protocol (v7.1.0) for development projects. This is a four
 - NOBARA: Creative strategy and user experience design
 - GOJO: Mission control and protocol enforcement
 
-When working on my projects, refer to protocol files at protocol/CLAUDE.md, protocol/YUUJI.md, protocol/MEGUMI.md, protocol/NOBARA.md, and protocol/GOJO.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
+When working on my projects, refer to protocol files at protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, and protocol/gojo.agent.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
 
 Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 ```
@@ -483,7 +483,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 **What to Include in Memory**:
 - ✅ Protocol name and version (Domain Zero Protocol v7.1.1)
 - ✅ The four agent roles and their specializations
-- ✅ Protocol file locations (protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md)
+- ✅ Protocol file locations (protocol/CLAUDE.md, yuuji.agent.md, megumi.agent.md, nobara.agent.md, gojo.agent.md)
 - ✅ Tier system overview (Rapid/Standard/Critical)
 - ✅ Canonical source URL (https://github.com/DewyHRite/Domain-Zero-Protocol)
 - ✅ Key principles: test-first development, OWASP security review, zero-defect philosophy
@@ -533,10 +533,10 @@ This project follows the Domain Zero Protocol for AI-assisted development.
 **Primary entrypoint**: [`protocol/CLAUDE.md`](protocol/CLAUDE.md)
 
 **Workflow guidance**:
-- Mission Control: `protocol/GOJO.md`
-- Implementation: `protocol/YUUJI.md`
-- Security Review: `protocol/MEGUMI.md`
-- Creative Strategy & UX: `protocol/NOBARA.md`
+- Mission Control: `protocol/gojo.agent.md`
+- Implementation: `protocol/yuuji.agent.md`
+- Security Review: `protocol/megumi.agent.md`
+- Creative Strategy & UX: `protocol/nobara.agent.md`
 ```
 
 **Automated Integration** (Safe & Opt-In):
@@ -617,7 +617,7 @@ Domain Zero v6.1 features **three workflow tiers** to match process rigor to fea
 
 **Invocation**:
 ```bash
-"Read protocol/YUUJI.md --tier rapid and create file renaming script"
+"Read protocol/yuuji.agent.md --tier rapid and create file renaming script"
 ```
 
 ---
@@ -630,7 +630,7 @@ Domain Zero v6.1 features **three workflow tiers** to match process rigor to fea
 
 **Invocation**:
 ```
-"Read protocol/YUUJI.md and implement user authentication"
+"Read protocol/yuuji.agent.md and implement user authentication"
 ```
 
 ---
@@ -643,7 +643,7 @@ Domain Zero v6.1 features **three workflow tiers** to match process rigor to fea
 
 **Invocation**:
 ```
-"Read protocol/YUUJI.md --tier critical and implement Stripe payment processing"
+"Read protocol/yuuji.agent.md --tier critical and implement Stripe payment processing"
 ```
 
 ---
@@ -673,7 +673,7 @@ Domain Zero v6.1 features **three workflow tiers** to match process rigor to fea
 ### 1. Implementation Phase (Yuuji)
 
 ```
-You: "Read protocol/YUUJI.md and implement user registration"
+You: "Read protocol/yuuji.agent.md and implement user registration"
 
 Yuuji:
 - Creates backup
@@ -727,10 +727,10 @@ After setup, your project will have:
 your-project/
 ├── protocol/                        # Core protocol system
 │   ├── CLAUDE.md                    # Main protocol (READ THIS FIRST)
-│   ├── YUUJI.md                     # Implementation agent
-│   ├── MEGUMI.md                    # Security agent
-│   ├── NOBARA.md                    # Creative strategy & UX agent
-│   ├── GOJO.md                      # Mission control
+│   ├── yuuji.agent.md                     # Implementation agent
+│   ├── megumi.agent.md                    # Security agent
+│   ├── nobara.agent.md                    # Creative strategy & UX agent
+│   ├── gojo.agent.md                      # Mission control
 │   ├── TIER-SELECTION-GUIDE.md     # Quick tier reference
 │   └── GOJO-UPDATES-PATCH.md       # Protocol change log
 │
@@ -762,17 +762,17 @@ your-project/
 
 **Tier 1 Practice**:
 ```
-"Read protocol/YUUJI.md --tier rapid and create a hello world script"
+"Read protocol/yuuji.agent.md --tier rapid and create a hello world script"
 ```
 
 **Tier 2 Practice**:
 ```
-"Read protocol/YUUJI.md and implement a simple todo list API"
+"Read protocol/yuuji.agent.md and implement a simple todo list API"
 ```
 
 **Tier 3 Practice** (when ready):
 ```
-"Read protocol/YUUJI.md --tier critical and implement user authentication"
+"Read protocol/yuuji.agent.md --tier critical and implement user authentication"
 ```
 
 ---
@@ -818,30 +818,30 @@ _Note: Productivity metrics are estimates from internal use. Actual gains vary s
 
 ```bash
 # Gojo (Mission Control)
-"Read protocol/GOJO.md"
-"Read protocol/GOJO.md - Trigger 19"  # Intelligence report
+"Read protocol/gojo.agent.md"
+"Read protocol/gojo.agent.md - Trigger 19"  # Intelligence report
 
 # Yuuji (Implementation)
-"Read protocol/YUUJI.md and implement [feature]"
-"Read protocol/YUUJI.md --tier rapid and [task]"
-"Read protocol/YUUJI.md --tier critical and [task]"
+"Read protocol/yuuji.agent.md and implement [feature]"
+"Read protocol/yuuji.agent.md --tier rapid and [task]"
+"Read protocol/yuuji.agent.md --tier critical and [task]"
 
 # Megumi (Security Review)
-"Read protocol/MEGUMI.md and review [module]"
-"Read protocol/MEGUMI.md --tier critical and review [module]"
+"Read protocol/megumi.agent.md and review [module]"
+"Read protocol/megumi.agent.md --tier critical and review [module]"
 
 # Nobara (Creative Strategy & UX)
-"Read protocol/NOBARA.md and design [feature/experience]"
-"Read protocol/NOBARA.md and develop product vision for [feature]"
+"Read protocol/nobara.agent.md and design [feature/experience]"
+"Read protocol/nobara.agent.md and develop product vision for [feature]"
 ```
 
 ### Standalone Consultation
 
 ```bash
 # Ask questions without implementation
-"Read protocol/YUUJI.md - How do I handle JWT tokens?"
-"Read protocol/MEGUMI.md - What are common XSS vulnerabilities?"
-"Read protocol/NOBARA.md - What are best practices for user onboarding?"
+"Read protocol/yuuji.agent.md - How do I handle JWT tokens?"
+"Read protocol/megumi.agent.md - What are common XSS vulnerabilities?"
+"Read protocol/nobara.agent.md - What are best practices for user onboarding?"
 ```
 
 ### Protocol Verification
@@ -898,10 +898,10 @@ Within Domain Zero, the goal is always **ZERO**:
 1. **protocol/CLAUDE.md** - Main protocol file (comprehensive system overview)
 2. **protocol/TIER-SELECTION-GUIDE.md** - Quick tier selection reference
 3. **PASSIVE_OBSERVER.md** - Gojo's Passive Observer mode explained
-4. **protocol/YUUJI.md** - Implementation agent specifications
-5. **protocol/MEGUMI.md** - Security agent specifications
-6. **protocol/NOBARA.md** - Creative strategy & UX agent specifications
-7. **protocol/GOJO.md** - Mission control specifications
+4. **protocol/yuuji.agent.md** - Implementation agent specifications
+5. **protocol/megumi.agent.md** - Security agent specifications
+6. **protocol/nobara.agent.md** - Creative strategy & UX agent specifications
+7. **protocol/gojo.agent.md** - Mission control specifications
 8. **protocol/MODE_INDICATORS.md** - Agent identification and display systems guide
 
 ### Integration & Tooling
@@ -933,7 +933,7 @@ Within Domain Zero, the goal is always **ZERO**:
 - [JJK_AGENT_TEMPLATE.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/JJK_AGENT_TEMPLATE.md) - Character agent template
 
 **Available Character Agents** (8 complete):
-- **Core Four**: [GOJO.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/GOJO.md), [YUUJI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/YUUJI.md), [MEGUMI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/MEGUMI.md), [NOBARA.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/NOBARA.md)
+- **Core Four**: [gojo.agent.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/gojo.agent.md), [yuuji.agent.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/yuuji.agent.md), [megumi.agent.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/megumi.agent.md), [nobara.agent.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/nobara.agent.md)
 - **Extended**: [PANDA.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/PANDA.md) (CI/CD), [MAKI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/MAKI.md) (Performance), [INUMAKI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/INUMAKI.md) (API), [TODO.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/TODO.md) (Database)
 
 **Quick Start with Agents**:
@@ -951,7 +951,7 @@ Within Domain Zero, the goal is always **ZERO**:
 ### Common Questions
 
 **"How do I start?"**
-→ Read protocol/CLAUDE.md, then "Read protocol/GOJO.md" to initialize
+→ Read protocol/CLAUDE.md, then "Read protocol/gojo.agent.md" to initialize
 
 **"Which tier should I use?"**
 → See protocol/TIER-SELECTION-GUIDE.md for decision tree and examples
@@ -963,7 +963,7 @@ Within Domain Zero, the goal is always **ZERO**:
 → Yes! Edit protocol/CLAUDE.md manually. Agents will re-read for updates.
 
 **"What's Trigger 19?"**
-→ Intelligence report from Gojo's passive observations: "Read protocol/GOJO.md - Trigger 19"
+→ Intelligence report from Gojo's passive observations: "Read protocol/gojo.agent.md - Trigger 19"
 
 ---
 
@@ -1036,8 +1036,8 @@ Within Domain Zero, the goal is always **ZERO**:
 
 **Solution:**
 - Check tier setting in conversation (Tier 1 skips security review)
-- Verify MEGUMI.md exists in `protocol/` directory
-- Manually invoke: `"Read protocol/MEGUMI.md - review the changes"`
+- Verify megumi.agent.md exists in `protocol/` directory
+- Manually invoke: `"Read protocol/megumi.agent.md - review the changes"`
 - For Tier 2+: Ensure Yuuji's output includes `@security-review` tag
 
 ---
@@ -1049,7 +1049,7 @@ Within Domain Zero, the goal is always **ZERO**:
 - No `project-state.json` generated
 
 **Solution:**
-1. Explicitly request: `"Read protocol/GOJO.md"`
+1. Explicitly request: `"Read protocol/gojo.agent.md"`
 2. Choose option 2: "New Project Initialization"
 3. Answer all prompts about project configuration
 4. Verify `.protocol-state/` directory was created
@@ -1271,7 +1271,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 **Solution:**
 1. Ask Yuuji: "Please add @security-review tag to your output"
-2. Then invoke Megumi manually: `"Read protocol/MEGUMI.md - review changes"`
+2. Then invoke Megumi manually: `"Read protocol/megumi.agent.md - review changes"`
 
 ---
 
@@ -1346,7 +1346,7 @@ Domain Zero is now set up in your project.
 **Next Steps**:
 
 1. Read protocol/CLAUDE.md for full system understanding
-2. Run "Read protocol/GOJO.md" to initialize
+2. Run "Read protocol/gojo.agent.md" to initialize
 3. Start your first feature with Yuuji
 4. Experience the power of zero-defect development
 
@@ -1356,11 +1356,16 @@ Domain Zero is now set up in your project.
 
 ## 📝 Version Information
 
-**Version**: 7.1.0
-**Release Date**: November 8, 2025
-**Major Enhancements**: Mask Mode (presentation toggle), Dual Workflow Enforcement (Tier 2/3), REALITY_CHECK.md
+**Version**: 8.2.0
+**Release Date**: November 18, 2025
+**Major Enhancements**: Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Tool Access Matrix, Declarative Handoffs
 
 **Version History**:
+- v8.2.0 - MINOR: Research Mode Enhancement (Active agent research, invocation, structured summaries, staleness monitoring)
+- v8.1.0 - MINOR: Playwright E2E Testing Infrastructure (Multi-browser testing, tier integration, agent role extensions)
+- v8.0.0 - MAJOR: .agent.md Format Migration (Structured metadata, MCP integration, environment targeting) [BREAKING CHANGES]
+- v7.2.0 - MINOR: Research Mode (Structured agent knowledge updates)
+- v7.1.0 - MINOR: Mask Mode (presentation toggle), Dual Workflow Enforcement (Tier 2/3), REALITY_CHECK.md
 - v6.1 - MINOR: Canonical Source Adoption, Agent Self-Identification, AI Memory Integration, Session Continuity (long sessions & user absence re-identification)
 - v6.0 - MAJOR: Adaptive Workflow Complexity (Tier System)
 - v5.1 - CLAUDE.md Protection System, Backup & Rollback Requirements

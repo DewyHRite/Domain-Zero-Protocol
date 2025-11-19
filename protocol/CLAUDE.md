@@ -1,17 +1,17 @@
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v7.1.1
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.2.0
 ## Main Protocol File - Domain Zero
 
-**Version**: 7.1.1
+**Version**: 8.2.0
 **Status**: Production-Ready
-**Last Updated**: 2025-11-09
-**Major Enhancements**: Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
+**Last Updated**: 2025-11-18
+**Major Enhancements**: Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Research Mode Specification (v7.2.0), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 
 ---
 
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v7.1.1
+> **Current Local Protocol Version**: v8.2.0
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -150,7 +150,7 @@ The Absolute Zero Protocol (AZP) formalizes and operationalizes the safety princ
 - Periodic self-assessment through Trigger 19
 
 **Implementation:**
-- Oath acknowledgment section in YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md
+- Oath acknowledgment section in yuuji.agent.md, megumi.agent.md, nobara.agent.md, gojo.agent.md
 - Self-identification mentions AZP commitment
 - Deviation detection monitors oath compliance
 - Violations treated as protocol improvement opportunities, not punishment
@@ -178,7 +178,7 @@ When unhealthy patterns are detected, Gojo issues a **Work Session Alert** recom
 
 **Template**: Work session alert template available at `.protocol-state/work-session-alert.template.md`.
 
-**See**: GOJO.md § Work Session Monitoring & Alerts for detailed implementation.
+**See**: gojo.agent.md § Work Session Monitoring & Alerts for detailed implementation.
 
 ---
 
@@ -194,7 +194,7 @@ Every significant protocol update MUST include a version number increment to mai
 - ✅ Update version number in `protocol.config.yaml` (versioning section)
 - ✅ Update version number in `CLAUDE.md` header (line 1 and line 4)
 - ✅ Update `last_updated` date in both files
-- ✅ Update version references in all affected agent files (YUUJI.md, MEGUMI.md, GOJO.md, NOBARA.md)
+- ✅ Update version references in all affected agent files (yuuji.agent.md, megumi.agent.md, gojo.agent.md, nobara.agent.md)
 - ✅ Document changes in version control commit message
 
 ### Version Numbering System
@@ -257,7 +257,7 @@ All version numbers must remain synchronized:
 1. `protocol.config.yaml` → `versioning.protocol_version`
 2. `CLAUDE.md` → Header (line 1 and line 4)
 3. `.protocol-state/project-state.json` → `protocol_version`
-4. Agent files (YUUJI.md, MEGUMI.md, GOJO.md, NOBARA.md) → Headers
+4. Agent files (yuuji.agent.md, megumi.agent.md, gojo.agent.md, nobara.agent.md) → Headers
 5. `VERSION.md` → All version metadata
 6. `SECURITY.md` → Supported versions table
 7. `CHANGELOG.md` → Version references
@@ -278,7 +278,7 @@ The person preparing the release (typically Gojo or the protocol maintainer) MUS
 - ✅ Manually verify all version references in documentation files
 - ✅ Check CHANGELOG.md has entry for new version
 - ✅ Verify README.md version badges and references are updated
-- ✅ Confirm all protocol agent files (YUUJI.md, MEGUMI.md, GOJO.md, NOBARA.md) match version
+- ✅ Confirm all protocol agent files (yuuji.agent.md, megumi.agent.md, gojo.agent.md, nobara.agent.md) match version
 - ✅ Validate protocol.config.yaml version matches all other files
 - ✅ Review VERSION.md for accuracy
 - ✅ Check SECURITY.md supported versions table is current
@@ -492,31 +492,263 @@ A four-agent AI development system that provides specialized expertise through d
 
 **YUUJI ITADORI** (Implementation Specialist)
 - **Role**: Test-first development, feature implementation
-- **File**: YUUJI.md
+- **File**: yuuji.agent.md
 - **Personality**: Enthusiastic, determined, feels protocol weight
 - **Access**: Read-only to CLAUDE.md
-- **Invoke**: "Read YUUJI.md and [implement task]"
+- **Invoke**: "Read yuuji.agent.md and [implement task]"
 
 **MEGUMI FUSHIGURO** (Security & Performance Analyst)
 - **Role**: OWASP Top 10 security review, performance analysis
-- **File**: MEGUMI.md
+- **File**: megumi.agent.md
 - **Personality**: Strategic, analytical, calculates compliance
 - **Access**: Read-only to CLAUDE.md
-- **Invoke**: "Read MEGUMI.md and [review/audit task]"
+- **Invoke**: "Read megumi.agent.md and [review/audit task]"
 
 **SATORU GOJO** (Mission Control & Protocol Guardian)
 - **Role**: Project lifecycle management, passive observation, protocol enforcement, CLAUDE.md protection
-- **File**: GOJO.md
+- **File**: gojo.agent.md
 - **Personality**: Confident, strategic, absolute authority
 - **Access**: Read-write to CLAUDE.md (with USER authorization only)
-- **Invoke**: "Read GOJO.md"
+- **Invoke**: "Read gojo.agent.md"
 
 **NOBARA KUGISAKI** (Creative Strategy & UX)
 - **Role**: User experience design, creative strategy, product vision, narrative development
-- **File**: NOBARA.md
+- **File**: nobara.agent.md
 - **Personality**: Bold, creative, user-centered, narrative-focused
 - **Access**: Read-only to CLAUDE.md
-- **Invoke**: "Read NOBARA.md and [design/strategy task]"
+- **Invoke**: "Read nobara.agent.md and [design/strategy task]"
+
+---
+
+## .AGENT.MD FORMAT (v8.0.0+)
+
+### Overview
+
+**As of v8.0.0**, Domain Zero agent files use the `.agent.md` format - a structured markdown format with YAML frontmatter optimized for Claude Code, VS Code, and MCP integration.
+
+**Key Benefits**:
+- ✅ **Structured Metadata**: YAML frontmatter defines agent configuration
+- ✅ **Environment Targeting**: Specify VS Code vs GitHub Copilot compatibility
+- ✅ **Tool Access Matrix**: Formalized tool permissions
+- ✅ **Handoff Mechanism**: Declarative agent-to-agent transitions
+- ✅ **MCP Integration**: Model Context Protocol server support
+
+### File Structure
+
+Every .agent.md file follows this structure:
+
+```markdown
+---
+target: vscode | github
+name: "Agent Name"
+description: "Agent description"
+argument-hint: "Usage instruction"
+model: "claude-model-id"
+
+tools:
+  - read
+  - write
+  - edit
+  # ... tool list
+
+handoffs:
+  - agent: target_agent
+    trigger: "@trigger-keyword"
+    context:
+      - context_field_1
+      - context_field_2
+---
+
+## TOOL ACCESS MATRIX
+
+| Tool | Access Level | Usage |
+|------|--------------|-------|
+| **Read** | ✅ Full Access | Description |
+...
+
+# [Rest of agent documentation]
+```
+
+### YAML Frontmatter Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `target` | string | ✅ | Environment: `vscode` or `github` |
+| `name` | string | ✅ | Agent full name with role |
+| `description` | string | ✅ | Brief agent description |
+| `argument-hint` | string | ✅ | Usage example/hint |
+| `model` | string | ✅ | AI model ID (e.g., `claude-3-5-sonnet-20241022`) |
+| `tools` | array | ✅ | List of available tools |
+| `handoffs` | array | ✅ | Agent transition definitions |
+
+### Tool Access Matrix
+
+**Required section** after YAML frontmatter showing formalized tool permissions:
+
+```markdown
+## 🛠️ TOOL ACCESS MATRIX
+
+| Tool | Access Level | Usage |
+|------|--------------|-------|
+| **Read** | ✅ Full Access | Read all project files |
+| **Write** | ⚠️ Conditional Access | Create files (with backup requirement) |
+| **Bash** | ✅ Full Access | Execute commands, run tests |
+...
+```
+
+**Access Levels**:
+- ✅ **Full Access**: Unrestricted use
+- ⚠️ **Conditional Access**: Restricted or requires authorization
+- ❌ **Prohibited**: Tool not available to this agent
+
+### Handoff Mechanism
+
+**Declarative agent-to-agent transitions** with context passing:
+
+```yaml
+handoffs:
+  - agent: megumi
+    trigger: "@security-review"
+    context:
+      - files_modified
+      - tier_level
+      - implementation_scope
+      - test_coverage
+```
+
+**How it works**:
+1. Agent tags `@trigger-keyword` in documentation
+2. Mission Control (Gojo) detects trigger
+3. Context payload prepared automatically
+4. Target agent receives full context
+5. Workflow continues seamlessly
+
+**See**: `protocol/HANDOFF_SPECIFICATION.md` for complete handoff documentation
+
+### Environment Targeting
+
+**`target` field** specifies agent environment:
+
+**VS Code (`target: vscode`)**:
+- ✅ Full MCP integration
+- ✅ All tools available
+- ✅ Automated handoffs
+- ✅ Persistent state management
+
+**GitHub Copilot (`target: github`)**:
+- ❌ No MCP integration
+- ⚠️ Limited tool set
+- ⚠️ Manual handoffs
+- ❌ No persistent state
+
+**See**: `protocol/ENVIRONMENT_TARGETING.md` for complete environment guide
+
+### MCP Integration
+
+**Model Context Protocol** enables agents to connect to external services:
+
+**Examples**:
+- Yuuji → Database MCP server → Query project schema
+- Megumi → CVE database MCP → Check vulnerability databases
+- Gojo → Jira MCP server → Sync project status
+
+**Configuration**: MCP servers configured in `~/.config/claude-code/mcp.json` (not in .agent.md files)
+
+**See**: `protocol/MCP_INTEGRATION.md` for complete MCP guide
+
+### Migration from Old Format
+
+**v7.x.x → v8.0.0 Changes**:
+
+| Old Format (.md) | New Format (.agent.md) |
+|------------------|------------------------|
+| No YAML frontmatter | ✅ YAML frontmatter required |
+| Informal tool listing | ✅ Formal Tool Access Matrix |
+| Manual handoffs | ✅ Declarative handoff mechanism |
+| Environment-agnostic | ✅ Environment targeting (`target` field) |
+| No MCP support | ✅ MCP integration enabled |
+
+**Invocation Pattern Changes**:
+```bash
+# Old (v7.x.x):
+"Read YUUJI.md and implement feature"
+
+# New (v8.0.0):
+"Read yuuji.agent.md and implement feature"
+```
+
+**File References**:
+```markdown
+# Old: protocol/YUUJI.md, protocol/MEGUMI.md, etc.
+# New: protocol/yuuji.agent.md, protocol/megumi.agent.md, etc.
+```
+
+### Example: Complete .agent.md File
+
+**yuuji.agent.md** (abbreviated):
+```yaml
+---
+target: vscode
+name: "Yuuji Itadori - Implementation Specialist"
+description: "Test-first development specialist for Tier 1/2/3 features"
+argument-hint: "Use: 'implement [feature]' or '--tier rapid|standard|critical [task]'"
+model: "claude-3-5-sonnet-20241022"
+
+tools:
+  - read
+  - write
+  - edit
+  - bash
+  - grep
+  - glob
+  - todowrite
+  - task
+
+handoffs:
+  - agent: megumi
+    trigger: "@security-review"
+    context:
+      - files_modified
+      - tier_level
+      - implementation_scope
+      - test_coverage
+---
+
+## 🛠️ TOOL ACCESS MATRIX
+
+| Tool | Access Level | Usage |
+|------|--------------|-------|
+| **Read** | ✅ Full Access | Read all project files |
+| **Write** | ✅ Full Access | Create implementation files |
+...
+
+# [Rest of Yuuji's documentation]
+```
+
+### Validation
+
+**Validate agent files** using the validation script:
+
+```bash
+# PowerShell
+./scripts/validate-agents.ps1
+
+# Checks:
+# ✅ All 4 agent files exist (.agent.md format)
+# ✅ YAML frontmatter present and valid
+# ✅ Required fields present
+# ✅ Tool Access Matrix present
+# ✅ Content integrity
+# ✅ No old .md file references
+```
+
+### Additional Resources
+
+**Comprehensive Documentation**:
+- **protocol/HANDOFF_SPECIFICATION.md**: Complete handoff mechanism guide
+- **protocol/MCP_INTEGRATION.md**: MCP server integration guide
+- **protocol/ENVIRONMENT_TARGETING.md**: VS Code vs GitHub Copilot targeting
+- **scripts/validate-agents.ps1**: Agent validation script
 
 ---
 
@@ -611,6 +843,77 @@ Project lifecycle management with three operational options.
 
 ---
 
+### Mode 4: Research Mode (v8.2.0+)
+Structured, auditable research sessions for keeping agents current with evolving standards and best practices.
+
+**Purpose**: Enable all agents to conduct domain-specific research on emerging patterns, security threats, UX guidelines, and strategic trends.
+
+**Research Focus by Agent**:
+- **Yuuji**: Implementation patterns, TDD tooling, test isolation, async patterns
+- **Megumi**: OWASP updates, emerging vulnerabilities, cryptographic standards, CVE trends
+- **Nobara**: WCAG guidelines, usability heuristics, onboarding flows, accessibility tooling
+- **Gojo**: Meta trends, coordination tooling, risk landscape, protocol governance
+
+**How to Invoke**:
+```
+"Read [agent].agent.md --research and investigate [topic]"
+```
+
+**Example Invocations**:
+```
+"Read yuuji.agent.md --research and investigate pytest fixture best practices"
+"Read megumi.agent.md --research and investigate OWASP Top 10 2025 changes"
+"Read nobara.agent.md --research and investigate WCAG 2.2 success criteria"
+"Read gojo.agent.md --research and investigate multi-agent orchestration patterns"
+```
+
+**Research Output**:
+- Structured summary in `.protocol-state/research/[agent]/[timestamp].summary.md`
+- Citations with confidence indicators (High/Medium/Low)
+- Actionable recommendations (not mandates - experiments/proposals)
+- OWASP/WCAG/RFC mappings where applicable
+- Raw notes gitignored (privacy protection)
+
+**Research Cadence**:
+- **Yuuji**: Weekly (implementation knowledge)
+- **Megumi**: Weekly (security threats evolve rapidly)
+- **Nobara**: Biweekly (UX/accessibility standards)
+- **Gojo**: Monthly (strategic trends)
+
+**Staleness Monitoring** (Gojo enforces):
+- Standard warning: 14+ days without research
+- Critical escalation: 7+ days for security/auth/crypto topics (Megumi)
+- Reminders in Mission Control interface
+
+**Quality Gates**:
+- Minimum 3 primary sources required (OWASP, NIST, W3C, RFC, peer-reviewed)
+- High confidence findings require 2+ source corroboration
+- Security items mapped to OWASP/CVE/NIST (Megumi only)
+- WCAG criterion mapping (Nobara only)
+
+**What Research Mode Is NOT**:
+- ❌ Not auto-implementation (findings → user approval → standard implementation workflow)
+- ❌ Not protocol modification without authorization (CLAUDE.md protection applies)
+- ❌ Not replacement for user research or testing
+
+**What Research Mode IS**:
+- ✅ Keeping agent knowledge current with industry standards
+- ✅ Providing evidence-based recommendations
+- ✅ Tracking emerging threats, patterns, and best practices
+- ✅ Informing better implementation/security/design decisions
+
+**When to Use**:
+- Before critical implementations (research current best practices first)
+- Periodic knowledge updates (per cadence schedule)
+- When facing unfamiliar patterns or emerging technologies
+- After major standard updates (OWASP, WCAG, RFC revisions)
+
+**Configuration**: All research settings in `protocol.config.yaml` under `research:` section
+
+**See**: `protocol/RESEARCH_MODE.md` for complete specification
+
+---
+
 ## ADAPTIVE WORKFLOW COMPLEXITY
 
 ### The Tier System (v6.0 Enhancement)
@@ -646,7 +949,7 @@ Project lifecycle management with three operational options.
 
 **Invocation**:
 ```
-"Read YUUJI.md --tier rapid and create a Python script to rename files"
+"Read yuuji.agent.md --tier rapid and create a Python script to rename files"
 ```
 
 ---
@@ -679,8 +982,8 @@ Project lifecycle management with three operational options.
 
 **Invocation**:
 ```
-"Read YUUJI.md and implement user authentication"
-"Read YUUJI.md --tier standard and implement user profile"  (explicit)
+"Read yuuji.agent.md and implement user authentication"
+"Read yuuji.agent.md --tier standard and implement user profile"  (explicit)
 ```
 
 **Note**: If no `--tier` flag is specified, Tier 2 (Standard) is assumed.
@@ -721,7 +1024,7 @@ Project lifecycle management with three operational options.
 
 **Invocation**:
 ```
-"Read YUUJI.md --tier critical and implement Stripe payment processing"
+"Read yuuji.agent.md --tier critical and implement Stripe payment processing"
 ```
 
 ---
@@ -764,25 +1067,25 @@ Project lifecycle management with three operational options.
 
 **Step 1**: Verify all protocol files exist
 - ✓ CLAUDE.md (this file)
-- ✓ YUUJI.md
-- ✓ MEGUMI.md
-- ✓ GOJO.md
+- ✓ yuuji.agent.md
+- ✓ megumi.agent.md
+- ✓ gojo.agent.md
 
 **Step 2**: Initialize your project with Gojo
 ```
-You: "Read GOJO.md"
+You: "Read gojo.agent.md"
 Gojo: [Presents Mission Control with 3 options]
 You: "2" (New Project Initialization)
 ```
 
 **Step 3**: Start implementing with Yuuji
 ```
-You: "Read YUUJI.md and implement [feature name]"
+You: "Read yuuji.agent.md and implement [feature name]"
 ```
 
 **Step 4**: Security review with Megumi
 ```
-You: "Read MEGUMI.md and review [feature name]"
+You: "Read megumi.agent.md and review [feature name]"
 ```
 
 ---
@@ -791,24 +1094,24 @@ You: "Read MEGUMI.md and review [feature name]"
 
 **Morning**: Resume project
 ```
-You: "Read GOJO.md"
+You: "Read gojo.agent.md"
 Gojo: [Mission Control]
 You: "1" (Resume)
 ```
 
 **Development**: Implement features
 ```
-You: "Read YUUJI.md and implement [task]"
+You: "Read yuuji.agent.md and implement [task]"
 ```
 
 **Review**: Security audit
 ```
-You: "Read MEGUMI.md and review [module]"
+You: "Read megumi.agent.md and review [module]"
 ```
 
 **End of Day**: Get intelligence
 ```
-You: "Read GOJO.md - Trigger 19"
+You: "Read gojo.agent.md - Trigger 19"
 ```
 
 ---
@@ -948,7 +1251,7 @@ The protection system is enforced through Git-native tools and team processes. C
    # Block direct commits to protocol files
    if git diff --cached --name-only | grep -q "^protocol/CLAUDE.md"; then
      echo "❌ ERROR: Direct commits to protocol/CLAUDE.md are not allowed"
-     echo "✓ Use: Read protocol/GOJO.md - Update CLAUDE.md [changes]"
+     echo "✓ Use: Read protocol/gojo.agent.md - Update CLAUDE.md [changes]"
      exit 1
    fi
    ```
@@ -1171,9 +1474,9 @@ When to execute rollback:
 Domain-Zero/                         # Project root
 ├── protocol/                        # Core protocol system
 │   ├── CLAUDE.md 🔒                 # Main protocol (PROTECTED - This file)
-│   ├── YUUJI.md                     # Implementation agent
-│   ├── MEGUMI.md                    # Security agent
-│   ├── GOJO.md                      # Mission Control & Protocol Guardian
+│   ├── yuuji.agent.md                     # Implementation agent
+│   ├── megumi.agent.md                    # Security agent
+│   ├── gojo.agent.md                      # Mission Control & Protocol Guardian
 │   └── docs/
 │       └── JJK-AI-PROTOCOL-PSD.md  # Complete system documentation
 │
@@ -1202,60 +1505,84 @@ Domain-Zero/                         # Project root
 ### Yuuji
 ```bash
 # Tier 1 (Rapid) - Prototypes
-"Read YUUJI.md --tier rapid and create file renaming script"
-"Read YUUJI.md --tier rapid and build HTML landing page mockup"
+"Read yuuji.agent.md --tier rapid and create file renaming script"
+"Read yuuji.agent.md --tier rapid and build HTML landing page mockup"
 
 # Tier 2 (Standard) - Production [DEFAULT]
-"Read YUUJI.md and implement user authentication"
-"Read YUUJI.md --tier standard and implement user profile"  # explicit
+"Read yuuji.agent.md and implement user authentication"
+"Read yuuji.agent.md --tier standard and implement user profile"  # explicit
 
 # Tier 3 (Critical) - Sensitive Features
-"Read YUUJI.md --tier critical and implement Stripe payment processing"
-"Read YUUJI.md --tier critical and implement JWT authentication"
+"Read yuuji.agent.md --tier critical and implement Stripe payment processing"
+"Read yuuji.agent.md --tier critical and implement JWT authentication"
 
 # Standalone
-"Read YUUJI.md - How do I handle JWT tokens?"
+"Read yuuji.agent.md - How do I handle JWT tokens?"
 
 # Remediation
-"Read YUUJI.md and fix SEC-001, SEC-003"
+"Read yuuji.agent.md and fix SEC-001, SEC-003"
+
+# Research Mode (v8.2.0+)
+"Read yuuji.agent.md --research and investigate pytest fixture best practices"
+"Read yuuji.agent.md --research and investigate async test isolation patterns"
 
 # ❌ INVALID - Will trigger violation
-"Read YUUJI.md and update CLAUDE.md"  # BLOCKED
+"Read yuuji.agent.md and update CLAUDE.md"  # BLOCKED
 ```
 
 ### Megumi
 ```bash
 # Tier 2 (Standard) Security Review
-"Read MEGUMI.md and review authentication module"
-"Read MEGUMI.md and review user profile implementation"
+"Read megumi.agent.md and review authentication module"
+"Read megumi.agent.md and review user profile implementation"
 
 # Tier 3 (Critical) Enhanced Security Review
-"Read MEGUMI.md --tier critical and review payment processing"
-"Read MEGUMI.md --tier critical and review JWT authentication"
+"Read megumi.agent.md --tier critical and review payment processing"
+"Read megumi.agent.md --tier critical and review JWT authentication"
 
 # Standalone Audit
-"Read MEGUMI.md and audit payment processing"
+"Read megumi.agent.md and audit payment processing"
 
 # Verification
-"Read MEGUMI.md and verify fixes for SEC-001"
+"Read megumi.agent.md and verify fixes for SEC-001"
+
+# Research Mode (v8.2.0+)
+"Read megumi.agent.md --research and investigate OWASP Top 10 2025 changes"
+"Read megumi.agent.md --research and investigate JWT signature bypass vulnerabilities"
 
 # ❌ INVALID - Will trigger violation
-"Read MEGUMI.md and modify CLAUDE.md"  # BLOCKED
+"Read megumi.agent.md and modify CLAUDE.md"  # BLOCKED
+```
+
+### Nobara
+```bash
+# Design (Tier 1/2/3)
+"Read nobara.agent.md and design user onboarding flow"
+"Read nobara.agent.md --tier 2 and design checkout UX"
+"Read nobara.agent.md --tier 3 and design payment form accessibility"
+
+# Research Mode (v8.2.0+)
+"Read nobara.agent.md --research and investigate WCAG 2.2 success criteria"
+"Read nobara.agent.md --research and investigate accessible form validation"
 ```
 
 ### Gojo
 ```bash
 # Mission Control
-"Read GOJO.md"
+"Read gojo.agent.md"
 
 # Direct Intelligence
-"Read GOJO.md - Trigger 19"
+"Read gojo.agent.md - Trigger 19"
 
 # Protection Status
-"Read GOJO.md - Protection status"
+"Read gojo.agent.md - Protection status"
 
 # Authorized CLAUDE.md Update
-"Read GOJO.md - Update CLAUDE.md to add [specific change]"
+"Read gojo.agent.md - Update CLAUDE.md to add [specific change]"
+
+# Research Mode (v8.2.0+)
+"Read gojo.agent.md --research and investigate multi-agent orchestration patterns"
+"Read gojo.agent.md --research and investigate protocol governance frameworks"
 ```
 
 ---
@@ -1271,8 +1598,8 @@ Create personalized workflow shortcuts for common operations.
 
 **Set Custom Triggers**:
 ```
-"Read GOJO.md - Set trigger: start → Resume Project"
-"Read GOJO.md - Set trigger: status → Mission Status Check"
+"Read gojo.agent.md - Set trigger: start → Resume Project"
+"Read gojo.agent.md - Set trigger: status → Mission Status Check"
 ```
 
 ---
@@ -1283,9 +1610,9 @@ The system is optimized to stay within Claude's context limits.
 | Component | Tokens | % of 25K Limit |
 |-----------|--------|----------------|
 | CLAUDE.md | 3,000 | 12% |
-| YUUJI.md | 3,200 | 12.8% |
-| MEGUMI.md | 4,300 | 17.2% |
-| GOJO.md | 5,500 | 22% |
+| yuuji.agent.md | 3,200 | 12.8% |
+| megumi.agent.md | 4,300 | 17.2% |
+| gojo.agent.md | 5,500 | 22% |
 | **Total System** | **16,000** | **64%** |
 | **Available for Work** | **9,000** | **36%** |
 
@@ -1394,23 +1721,27 @@ The system is optimized to stay within Claude's context limits.
 **CLAUDE.md modification blocked?**
 - Verify you're using authorized process
 - Only USER or Gojo (with auth) can modify
-- Check protection status: "Read GOJO.md - Protection status"
+- Check protection status: "Read gojo.agent.md - Protection status"
 
 **Need to update protocol?**
 - Option 1: Edit CLAUDE.md manually (USER authority)
-- Option 2: Authorize Gojo: "Read GOJO.md - Update CLAUDE.md to [change]"
+- Option 2: Authorize Gojo: "Read gojo.agent.md - Update CLAUDE.md to [change]"
 
 ---
 
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 7.1.1
-**Protocol Version**: 7.1.1
-**Release Date**: November 9, 2025
-**Last Updated**: 2025-11-09
+**Current Version**: 8.2.0
+**Protocol Version**: 8.2.0
+**Release Date**: November 18, 2025
+**Last Updated**: 2025-11-18
 
 **Version History**:
+- v8.2.0 - **MINOR**: Research Mode Enhancement (Active agent research with invocation, structured summaries, staleness monitoring)
+- v8.1.0 - **MINOR**: Playwright E2E Testing Infrastructure (Multi-browser testing, tier integration, agent role extensions)
+- v8.0.0 - **MAJOR**: .agent.md Format Migration (Structured metadata, MCP integration, environment targeting) [BREAKING CHANGES]
+- v7.2.0 - **MINOR**: Research Mode (Structured agent knowledge updates on best practices)
 - v7.1.1 - **PATCH**: Comprehensive Agent Documentation System (16 files, 8 character agents, invocation guides, tool reference)
 - v7.1.0 - **MINOR**: Mask Mode Toggle (JJK Theme vs Professional Mode), Dual Workflow Enforcement, REALITY_CHECK.md Integration
 - v7.0.0 - **MAJOR**: Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework, Enhanced Safety Principles
@@ -1435,16 +1766,16 @@ The system is optimized to stay within Claude's context limits.
 - **JJK-AI-PROTOCOL-PSD.md** - Full Product Specification Document
 - **MASK_MODE.md** - Mask mode specification (JJK theme vs professional mode)
 - **REALITY_CHECK.md** - Honest assessment of what Domain Zero actually is and how to use it effectively
-- **YUUJI.md** - Implementation agent detailed specifications
-- **MEGUMI.md** - Security agent detailed specifications
-- **GOJO.md** - Mission Control detailed specifications
+- **yuuji.agent.md** - Implementation agent detailed specifications
+- **megumi.agent.md** - Security agent detailed specifications
+- **gojo.agent.md** - Mission Control detailed specifications
 - **MODE_INDICATORS.md** - Agent mode display and identification systems
 - **AGENT_SELF_IDENTIFICATION_STANDARD.md** - Self-identification banner specification
 - **CANONICAL_SOURCE_ADOPTION.md** - Canonical source strategy and adoption guide
 
 **Support**:
 - Review PSD for comprehensive system details
-- Use "Read GOJO.md - Trigger 19" for strategic intelligence
+- Use "Read gojo.agent.md - Trigger 19" for strategic intelligence
 - Check project-state.json for current system status
 
 ---
@@ -1454,19 +1785,19 @@ The system is optimized to stay within Claude's context limits.
 **Common Questions**:
 
 *"How do I start a new feature?"*
-→ "Read YUUJI.md and implement [feature name]"
+→ "Read yuuji.agent.md and implement [feature name]"
 
 *"How do I get a security review?"*
-→ "Read MEGUMI.md and review [module/feature]"
+→ "Read megumi.agent.md and review [module/feature]"
 
 *"How do I restore my project context?"*
-→ "Read GOJO.md" then select "1" (Resume)
+→ "Read gojo.agent.md" then select "1" (Resume)
 
 *"How do I get strategic intelligence?"*
-→ "Read GOJO.md - Trigger 19"
+→ "Read gojo.agent.md - Trigger 19"
 
 *"How do I check CLAUDE.md protection status?"*
-→ "Read GOJO.md - Protection status"
+→ "Read gojo.agent.md - Protection status"
 
 *"Can I modify CLAUDE.md?"*
 → Yes, as USER you can edit manually OR authorize Gojo to update
