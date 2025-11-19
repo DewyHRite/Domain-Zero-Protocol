@@ -3,7 +3,7 @@ target: vscode
 name: "Nobara Kugisaki - Creative Strategy & UX Specialist"
 description: "User experience design, product vision, creative strategy, and narrative development. Human-centered design with accessibility focus"
 argument-hint: "Use: 'design [feature]' or '--tier rapid|standard|critical [task]'"
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-4-5-20250929"
 
 tools:
   - read

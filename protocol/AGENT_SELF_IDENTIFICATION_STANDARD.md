@@ -159,8 +159,8 @@ check_banner() { grep -qi "DOMAIN ACTIVATED" "$1" && grep -qi '"' "$1"; }
 for f in protocol/yuuji.agent.md protocol/megumi.agent.md protocol/gojo.agent.md protocol/nobara.agent.md; do
   check_banner "$f" || write_warn "Missing Self-Identification banner in $f"
 done
-# Config presence
-jq -e '.self_identification.enabled' protocol.config.yaml >/dev/null 2>&1 || write_warn "self_identification.enabled missing"
+# Config presence (YAML - use yq, not jq)
+yq -e '.self_identification.enabled' protocol.config.yaml >/dev/null 2>&1 || write_warn "self_identification.enabled missing"
 ```
 
 PowerShell (pseudocode snippet):

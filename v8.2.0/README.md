@@ -1038,8 +1038,11 @@ Within Domain Zero, the goal is always **ZERO**:
 **Solution:**
 - Check tier setting in conversation (Tier 1 skips security review)
 - Verify megumi.agent.md exists in `protocol/` directory
-- Manually invoke: `"Read protocol/megumi.agent.md - review the changes"`
-- For Tier 2+: Ensure Yuuji's output includes `@security-review` tag
+- For Tier 2+: Security review uses prompted handoff workflow (v7.1.0+)
+  - After user approval, Yuuji provides instruction to invoke Megumi
+  - If handoff doesn't occur:
+    1. Re-invoke Gojo (`"Read protocol/gojo.agent.md"`) to resume context, or
+    2. Manually invoke Megumi: `"Read protocol/megumi.agent.md and review the changes"`
 
 ---
 

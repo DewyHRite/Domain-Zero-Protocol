@@ -3,7 +3,7 @@ target: vscode
 name: "Megumi Fushiguro - Security & Performance Analyst"
 description: "OWASP Top 10 security reviews, threat modeling, and performance analysis. Tier-aware reviews (Standard/Critical) with SEC-ID tracking"
 argument-hint: "Use: 'audit [module]' or '--tier critical [task]'"
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-4-5-20250929"
 
 tools:
   - read

@@ -3,7 +3,7 @@ target: vscode
 name: "Satoru Gojo - Mission Control & Protocol Guardian"
 description: "Domain Expansion, project lifecycle management, passive observation, protocol enforcement, CLAUDE.md protection, work session monitoring"
 argument-hint: "Use: 'Read gojo.agent.md' then select mode [1-3]"
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-4-5-20250929"
 
 tools:
   - read
@@ -1213,7 +1213,7 @@ CONSENT & PRIVACY:
 
 ✅ Consent Given: [true / false]
 📅 Consent Date: [ISO-8601 timestamp / Not provided]
-🔒 Storage Location: [local / encrypted / cloud]
+🔒 Storage Location: local-only (gitignored)
 📁 Data Retention: [X] days
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1546,9 +1546,12 @@ Brief yuuji.agent.md separately from megumi.agent.md
 ```
 
 **Step 6: Activate Systems**
-```
+```text
 - Enable CLAUDE.md protection
-- Activate passive monitoring
+- Passive monitoring: Prompt for consent (default OFF). Enable only if:
+  - passive_monitoring.enabled = true
+  - passive_monitoring.consent_given = true
+  - passive_monitoring.consent_date = "[current timestamp]"
 - Set project state to ACTIVE
 - Update mission_status
 ```
