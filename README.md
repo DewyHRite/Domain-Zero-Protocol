@@ -918,6 +918,7 @@ Within Domain Zero, the goal is always **ZERO**:
 - **protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md** - Self-identification banner specification
 - **protocol/CANONICAL_SOURCE_ADOPTION.md** - Canonical source adoption strategy
 
+<a id="agent-documentation"></a>
 ### Agent Documentation 🆕
 
 **Domain Zero Agents/** - Guide for creating custom agents with generic JJK-style theming:

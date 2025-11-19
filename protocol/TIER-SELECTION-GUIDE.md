@@ -22,7 +22,7 @@
 - Minimal documentation
 
 **Invocation**:
-```
+```bash
 "Read yuuji.agent.md --tier rapid and create a file renaming script"
 "Read yuuji.agent.md --tier rapid and build HTML landing page mockup"
 ```
@@ -51,7 +51,7 @@
 - 80% vulnerability detection
 
 **Invocation**:
-```
+```bash
 "Read yuuji.agent.md and implement user authentication"
 "Read yuuji.agent.md --tier standard and implement user profile"
 ```
@@ -85,7 +85,7 @@
 - 95% vulnerability detection
 
 **Invocation**:
-```
+```bash
 "Read yuuji.agent.md --tier critical and implement Stripe payment processing"
 "Read yuuji.agent.md --tier critical and implement JWT authentication"
 ```
@@ -96,7 +96,7 @@
 
 ## DECISION TREE
 
-```
+```text
 ┌─────────────────────────────────────┐
 │ Is this code going to production?   │
 └─────────────┬───────────────────────┘
@@ -171,14 +171,14 @@
 ## GETTING STARTED
 
 ### Your First Tier 1 Feature
-```
+```text
 You: "Read yuuji.agent.md --tier rapid and create a Python script to rename files"
 Yuuji: [Implements in 10-15 minutes, no tests, minimal docs]
 You: Review and done!
 ```
 
 ### Your First Tier 2 Feature
-```
+```text
 You: "Read yuuji.agent.md and implement user profile"
 Yuuji: [Test-first implementation, 30-45 minutes]
 You: Review → Approve
@@ -186,7 +186,7 @@ Megumi: [Prompted handoff engages; OWASP security review]
 ```
 
 ### Your First Tier 3 Feature
-```
+```text
 You: "Read yuuji.agent.md --tier critical and implement Stripe payment processing"
 Yuuji: [Enhanced tests + performance benchmarks, 60-90 minutes]
 You: Review → Approve

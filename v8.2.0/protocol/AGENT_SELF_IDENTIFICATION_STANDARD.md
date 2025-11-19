@@ -16,7 +16,7 @@ Outcomes: predictable agent start cues, consistent UX, reduced context confusion
 
 ## 2) Scope and placement
 - Core rule (global): Add a new Core Principle in `protocol/CLAUDE.md` under “CORE PRINCIPLES → Self‑Identification”.
-- Agent behavior (per-role): Add a mandatory “Self‑Identification” subsection in each agent spec: `YUUJI.md`, `MEGUMI.md`, `GOJO.md`, `NOBARA.md`.
+- Agent behavior (per-role): Add a mandatory "Self‑Identification" subsection in each agent spec: `yuuji.agent.md`, `megumi.agent.md`, `gojo.agent.md`, `nobara.agent.md`.
 - Configuration: Add `self_identification` block to `protocol.config.yaml` (see §5).
 - Verification: Update `scripts/verify-protocol.(ps1|sh)` to assert presence and config (see §6).
 - Governance: Add PR checklist items (see §7).
@@ -95,7 +95,7 @@ Use language-tagged fenced blocks for lint/readability. Keep content readable wi
 
 Optional metadata line (enabled via config):
 ```text
-Tier: Standard • Protocol v6.2.3 • Brief: NBR-YUUJI-2025-11-06-001 • PR: #123
+Tier: Standard • Protocol v8.2.0 • Brief: NBR-YUUJI-2025-11-06-001 • PR: #123
 ```
 
 ---
@@ -156,7 +156,7 @@ Bash (pseudocode snippet):
 ```bash
 # verify-protocol.sh (excerpt)
 check_banner() { grep -qi "DOMAIN ACTIVATED" "$1" && grep -qi '"' "$1"; }
-for f in protocol/YUUJI.md protocol/MEGUMI.md protocol/GOJO.md protocol/NOBARA.md; do
+for f in protocol/yuuji.agent.md protocol/megumi.agent.md protocol/gojo.agent.md protocol/nobara.agent.md; do
   check_banner "$f" || write_warn "Missing Self-Identification banner in $f"
 done
 # Config presence
@@ -166,9 +166,9 @@ jq -e '.self_identification.enabled' protocol.config.yaml >/dev/null 2>&1 || wri
 PowerShell (pseudocode snippet):
 ```powershell
 # verify-protocol.ps1 (excerpt)
-$agents = @('YUUJI','MEGUMI','GOJO','NOBARA')
+$agents = @('yuuji','megumi','gojo','nobara')
 foreach ($a in $agents) {
-  $p = "protocol/$a.md"
+  $p = "protocol/$a.agent.md"
   if (-not (Select-String -Path $p -Quiet -Pattern 'DOMAIN ACTIVATED') -or -not (Select-String -Path $p -Quiet -Pattern '"')) {
     Write-Warn "Missing Self-Identification banner in $p"
   }
@@ -229,7 +229,7 @@ Don’t:
 - [ ] Add `self_identification` block to `protocol.config.yaml`
 - [ ] Update verification scripts for checks
 - [ ] Add PR template checklist
-- [ ] Announce in changelog (v6.1.x)
+- [ ] Announce in changelog (v8.2.x)
 
 ---
 

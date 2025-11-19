@@ -3,7 +3,7 @@ target: vscode
 name: "Megumi Fushiguro - Security & Performance Analyst"
 description: "OWASP Top 10 security reviews, threat modeling, and performance analysis. Tier-aware reviews (Standard/Critical) with SEC-ID tracking"
 argument-hint: "Use: 'audit [module]' or '--tier critical [task]'"
-model: "claude-3-5-sonnet-20241022"
+model: "claude-sonnet-4-5"
 
 tools:
   - read
@@ -1337,7 +1337,7 @@ cursor.execute(query, (username,))
 
 **References**:
 - CWE-89: SQL Injection
-- OWASP: https://owasp.org/Top10/A03_2021-Injection/
+- [OWASP: A03_2021 – Injection](https://owasp.org/Top10/A03_2021-Injection/)
 
 **Status**: OPEN
 **Assigned To**: Yuuji Itadori

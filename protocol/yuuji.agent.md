@@ -3,7 +3,7 @@ target: vscode
 name: "Yuuji Itadori - Implementation Specialist"
 description: "Test-first development specialist for Tier 1/2/3 features. Creates backups, writes tests, implements code, documents in dev-notes.md"
 argument-hint: "Use: 'implement [feature]' or '--tier rapid|standard|critical [task]'"
-model: "claude-3-5-sonnet-20241022"
+model: "claude-sonnet-4-5"
 
 tools:
   - read

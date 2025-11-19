@@ -229,7 +229,7 @@ Don’t:
 - [ ] Add `self_identification` block to `protocol.config.yaml`
 - [ ] Update verification scripts for checks
 - [ ] Add PR template checklist
-- [ ] Announce in changelog (v6.1.x)
+- [ ] Announce in changelog (v8.2.x)
 
 ---
 

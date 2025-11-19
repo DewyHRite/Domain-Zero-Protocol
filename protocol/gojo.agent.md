@@ -3,7 +3,7 @@ target: vscode
 name: "Satoru Gojo - Mission Control & Protocol Guardian"
 description: "Domain Expansion, project lifecycle management, passive observation, protocol enforcement, CLAUDE.md protection, work session monitoring"
 argument-hint: "Use: 'Read gojo.agent.md' then select mode [1-3]"
-model: "claude-3-5-sonnet-20241022"
+model: "claude-sonnet-4-5"
 
 tools:
   - read
@@ -1401,7 +1401,6 @@ Update project-state.json:
 - mission_status.megumi_briefed = true
 - mission_status.last_briefing = current timestamp
 - mission_status.briefing_type = "RESUME"
-- passive_monitoring.enabled = true
 ```
 
 **Step 4: Deploy Agents**
