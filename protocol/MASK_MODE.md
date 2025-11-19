@@ -1,5 +1,5 @@
 # Domain Zero Protocol - Mask Mode Specification
-## Version 7.1.0
+## Version 8.2.0
 
 ---
 
@@ -152,7 +152,7 @@ Let me start with the tests...
 
 ### Agent Behavior Changes
 
-Each agent file (YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md) will check the `mask_mode.enabled` setting and adjust behavior accordingly.
+Each agent file (yuuji.agent.md, megumi.agent.md, nobara.agent.md, gojo.agent.md) will check the `mask_mode.enabled` setting and adjust behavior accordingly.
 
 **Pseudo-logic:**
 ```python
@@ -226,8 +226,8 @@ mask_mode:
 
 ```bash
 # Via Gojo command (to be implemented)
-"Read GOJO.md - Toggle mask mode"
-"Read GOJO.md - Mask mode status"
+"Read gojo.agent.md - Toggle mask mode"
+"Read gojo.agent.md - Mask mode status"
 ```
 
 ### Method 3: Environment Variable (Future Enhancement)
@@ -328,7 +328,7 @@ When implementing or changing mask mode:
 
 **MASK ON:**
 ```text
-User: "Read YUUJI.md and implement user login"
+User: "Read yuuji.agent.md and implement user login"
 
 🛠️ IMPLEMENTATION DOMAIN ACTIVATED 🛠️
 "Test-Driven Delivery, Rapid Iteration"
@@ -347,7 +347,7 @@ Let's start with the tests...
 
 **MASK OFF:**
 ```text
-User: "Read YUUJI.md and implement user login"
+User: "Read yuuji.agent.md and implement user login"
 
 Implementation Specialist - Active
 
@@ -366,7 +366,7 @@ Starting with tests...
 
 **MASK ON:**
 ```text
-User: "Read MEGUMI.md and review the login implementation"
+User: "Read megumi.agent.md and review the login implementation"
 
 🛡️ SECURITY DOMAIN ACTIVATED 🛡️
 "Threat Modeling First, OWASP-Aligned Controls"
@@ -386,7 +386,7 @@ SEC-003: Session management needs improvement ❌
 
 **MASK OFF:**
 ```text
-User: "Read MEGUMI.md and review the login implementation"
+User: "Read megumi.agent.md and review the login implementation"
 
 Security Analyst - Active
 
@@ -615,13 +615,13 @@ After reseeding, test with a simple invocation:
 
 **MASK ON Test:**
 ```bash
-"Read protocol/YUUJI.md and explain what you do"
+"Read protocol/yuuji.agent.md and explain what you do"
 ```
 Expected: JJK-themed banner and personality
 
 **MASK OFF Test:**
 ```bash
-"Read protocol/YUUJI.md and explain what you do"
+"Read protocol/yuuji.agent.md and explain what you do"
 ```
 Expected: Professional banner and neutral tone
 
@@ -707,6 +707,6 @@ Whether you use YUUJI or "Implementation Specialist," the workflow remains:
 5. Get approval
 6. Ship confidently
 
-**Domain Zero Protocol v7.1.0** - Now with Mask Mode
+**Domain Zero Protocol v8.2.0** - Mask Mode
 
 *Choose your presentation. Keep the structure.*
