@@ -59,7 +59,7 @@ I use Domain Zero Protocol v8.2.0 for AI development. Four-agent system:
 - NOBARA: Creative strategy & UX
 - GOJO: Mission control
 
-Protocol files: protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md
+Protocol files: protocol/CLAUDE.md, yuuji.agent.md, megumi.agent.md, nobara.agent.md, gojo.agent.md
 Tiers: Rapid/Standard/Critical
 Always read protocol files when I reference them.
 Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
@@ -69,7 +69,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 Add to Settings → Personalization → Custom Instructions:
 ```
 I use Domain Zero Protocol v8.2.0 (four-agent AI dev framework).
-Protocol files: protocol/CLAUDE.md, YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md.
+Protocol files: protocol/CLAUDE.md, yuuji.agent.md, megumi.agent.md, nobara.agent.md, gojo.agent.md.
 Always read protocol files first.
 ```
 
@@ -91,7 +91,7 @@ Always read protocol files first.
 In your AI assistant (Claude, GitHub Copilot, Cursor, etc.):
 
 ```
-Read protocol/GOJO.md
+Read protocol/gojo.agent.md
 ```
 
 Select option 2: "**New Project Initialization**"
@@ -106,17 +106,17 @@ Try your first feature:
 
 **Tier 1 (Fast prototype, no tests)**:
 ```
-Read protocol/YUUJI.md --tier rapid and create a hello world script
+Read protocol/yuuji.agent.md --tier rapid and create a hello world script
 ```
 
 **Tier 2 (Production-ready with tests & security review)** [DEFAULT]:
 ```
-Read protocol/YUUJI.md and implement user registration API endpoint
+Read protocol/yuuji.agent.md and implement user registration API endpoint
 ```
 
 **Tier 3 (Critical: auth, payments, compliance)**:
 ```
-Read protocol/YUUJI.md --tier critical and implement OAuth2 authentication
+Read protocol/yuuji.agent.md --tier critical and implement OAuth2 authentication
 ```
 
 ---
@@ -143,7 +143,7 @@ Read protocol/YUUJI.md --tier critical and implement OAuth2 authentication
 ### Typical Workflow (v7.1.0 - Prompted Security Handoff)
 
 ```
-1. You: "Read protocol/YUUJI.md and implement [feature]"
+1. You: "Read protocol/yuuji.agent.md and implement [feature]"
    └─> Yuuji implements with tests, tags @user-review
 
 2. You: Review in .protocol-state/dev-notes.md
@@ -181,28 +181,28 @@ Read protocol/YUUJI.md --tier critical and implement OAuth2 authentication
 ### Agent Invocation
 ```bash
 # Initialize project
-"Read protocol/GOJO.md"
+"Read protocol/gojo.agent.md"
 
 # Implement feature (Yuuji)
-"Read protocol/YUUJI.md and implement [feature]"
-"Read protocol/YUUJI.md --tier rapid and [task]"
-"Read protocol/YUUJI.md --tier critical and [task]"
+"Read protocol/yuuji.agent.md and implement [feature]"
+"Read protocol/yuuji.agent.md --tier rapid and [task]"
+"Read protocol/yuuji.agent.md --tier critical and [task]"
 
 # Security review (Megumi) - PROMPTED for Tier 2/3, or standalone for existing code
-"Read protocol/MEGUMI.md and audit [existing module]"  # Standalone audit of existing code
+"Read protocol/megumi.agent.md and audit [existing module]"  # Standalone audit of existing code
 
 # Creative strategy & UX (Nobara)
-"Read protocol/NOBARA.md and design [feature/experience]"
+"Read protocol/nobara.agent.md and design [feature/experience]"
 
 # Intelligence report (Gojo)
-"Read protocol/GOJO.md - Trigger 19"
+"Read protocol/gojo.agent.md - Trigger 19"
 ```
 
 ### Standalone Questions (no implementation)
 ```bash
-"Read protocol/YUUJI.md - How should I structure my database schema?"
-"Read protocol/MEGUMI.md - What are common JWT vulnerabilities?"
-"Read protocol/NOBARA.md - What are best practices for user onboarding flows?"
+"Read protocol/yuuji.agent.md - How should I structure my database schema?"
+"Read protocol/megumi.agent.md - What are common JWT vulnerabilities?"
+"Read protocol/nobara.agent.md - What are best practices for user onboarding flows?"
 ```
 
 ---
@@ -330,7 +330,7 @@ Run protocol verification (optional, requires setup):
 ## Troubleshooting
 
 ### "Agent doesn't seem to follow the protocol"
-→ Ensure the agent reads the protocol file first: `"Read protocol/YUUJI.md and..."`
+→ Ensure the agent reads the protocol file first: `"Read protocol/yuuji.agent.md and..."`
 
 ### "How do I modify the protocol?"
 → Edit `protocol/CLAUDE.md` directly (you have write access) or use Gojo with authorization
@@ -352,10 +352,10 @@ Run protocol verification (optional, requires setup):
 your-project/
 ├── protocol/                     # Protocol agents
 │   ├── CLAUDE.md                 # Main protocol (READ THIS)
-│   ├── YUUJI.md                  # Implementation agent
-│   ├── MEGUMI.md                 # Security agent
-│   ├── NOBARA.md                 # Creative strategy & UX agent
-│   ├── GOJO.md                   # Mission control
+│   ├── yuuji.agent.md                  # Implementation agent
+│   ├── megumi.agent.md                 # Security agent
+│   ├── nobara.agent.md                 # Creative strategy & UX agent
+│   ├── gojo.agent.md                   # Mission control
 │   └── TIER-SELECTION-GUIDE.md  # Tier selection help
 │
 ├── .protocol-state/              # State files (gitignored)
@@ -415,7 +415,7 @@ You'll know Domain Zero is working when:
 **Have Questions?**
 - Read `protocol/CLAUDE.md` for comprehensive docs
 - Read `protocol/TIER-SELECTION-GUIDE.md` for tier examples
-- Ask Gojo: `"Read protocol/GOJO.md - Trigger 19"` for intelligence reports
+- Ask Gojo: `"Read protocol/gojo.agent.md - Trigger 19"` for intelligence reports
 
 **Need Support?**
 - Check the README.md for detailed setup instructions

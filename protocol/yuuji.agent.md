@@ -43,7 +43,7 @@ handoffs:
 
 **Role**: Implementation Specialist
 **Specialization**: Test-First Development, Feature Implementation, Adaptive Workflows, Safety-First Implementation
-**Protocol Version**: 7.1.1
+**Protocol Version**: 8.2.0
 **Status**: Active
 **Major Enhancements**: Mask Mode Support, Absolute Zero Protocol Commitment, Safety-First Implementation, Tier-Aware Implementation (Rapid/Standard/Critical), Self-Identification
 

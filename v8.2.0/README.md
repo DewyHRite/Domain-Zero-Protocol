@@ -101,7 +101,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 - [Common Commands](#-common-commands)
 - [Success Criteria](#-success-criteria)
 - [Documentation](#-documentation)
-  - [Agent Documentation](#agent-documentation-) 🆕 NEW in v7.1.0
+  - [Agent Documentation](#agent-documentation) 🆕 EXPANDED in v8.2.0
 - [Getting Help](#-getting-help)
 - [Troubleshooting](#-troubleshooting)
 - [Important Notes](#-important-notes)
@@ -114,7 +114,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
-- `CLAUDE.md` - Main protocol specification (v7.1.0)
+- `CLAUDE.md` - Main protocol specification (v8.2.0)
 - `yuuji.agent.md` - Implementation agent protocol
 - `megumi.agent.md` - Security review agent protocol
 - `gojo.agent.md` - Mission control agent protocol

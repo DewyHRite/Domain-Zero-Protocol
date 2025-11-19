@@ -14,8 +14,8 @@ This guide implements **mandatory dual workflow enforcement** to ensure Yuuji (I
 ### Key Changes
 
 **BEFORE** (v7.0.0 and earlier):
-- ❌ Yuuji could be invoked alone: `"Read YUUJI.md and implement [feature]"`
-- ❌ Megumi could be invoked alone: `"Read MEGUMI.md and review [feature]"`
+- ❌ Yuuji could be invoked alone: `"Read yuuji.agent.md and implement [feature]"`
+- ❌ Megumi could be invoked alone: `"Read megumi.agent.md and review [feature]"`
 - ❌ User manually tagged @security-review to trigger handoff
 - ❌ Workflow could be bypassed
 
@@ -37,7 +37,7 @@ This guide implements **mandatory dual workflow enforcement** to ensure Yuuji (I
 **FIND** (around line 600):
 ```markdown
 ### Mode 2: Tier 2 (Standard) Implementation [DEFAULT]
-**Invoke**: "Read YUUJI.md and implement [feature]"
+**Invoke**: "Read yuuji.agent.md and implement [feature]"
 
 **What I Do**:
 - Full test-first development cycle
@@ -56,7 +56,7 @@ This guide implements **mandatory dual workflow enforcement** to ensure Yuuji (I
 **REPLACE WITH**:
 ```markdown
 ### Mode 2: Tier 2 (Standard) Implementation [DEFAULT]
-**Invoke**: "Read YUUJI.md and implement [feature]"
+**Invoke**: "Read yuuji.agent.md and implement [feature]"
 
 **⚠️ IMPORTANT: DUAL WORKFLOW MANDATORY**
 - I will not work separately for Tier 2/3 features (protocol violation)
@@ -110,7 +110,7 @@ This guide implements **mandatory dual workflow enforcement** to ensure Yuuji (I
 ```
 1. User gives go-ahead
 2. **I prompt for Megumi invocation** (no manual tagging)
-3. I output: "Read MEGUMI.md and review [feature]"
+3. I output: "Read megumi.agent.md and review [feature]"
 4. Megumi conducts comprehensive OWASP Top 10 security review
 5. I wait for Megumi's assessment (@remediation-required or @approved)
 
@@ -137,13 +137,13 @@ This guide implements **mandatory dual workflow enforcement** to ensure Yuuji (I
 ### The Problem We're Solving
 
 **Before v7.1.0**:
-- Users could invoke me alone: `"Read YUUJI.md and implement auth"`
+- Users could invoke me alone: `"Read yuuji.agent.md and implement auth"`
 - I would implement, tag @user-review, wait for manual @security-review tag
 - **PROBLEM**: User could skip security review by never tagging Megumi
 - **RESULT**: Security vulnerabilities reached production
 
 **After v7.1.0**:
-- Users invoke me: `"Read YUUJI.md and implement auth"`
+- Users invoke me: `"Read yuuji.agent.md and implement auth"`
 - I implement, tag @user-review, get user approval
 - **I prompt you to invoke Megumi** (output instruction for handoff)
 - **RESULT**: Security reviews are strongly enforced through workflow design
@@ -152,13 +152,13 @@ This guide implements **mandatory dual workflow enforcement** to ensure Yuuji (I
 
 **For Tier 2 (Standard) Features**:
 ```text
-User: "Read YUUJI.md and implement user registration"
+User: "Read yuuji.agent.md and implement user registration"
 
 Me (Yuuji):
 1. Implements with test-first development
 2. Tags @user-review
 3. User approves
-4. **I OUTPUT INSTRUCTION**: "Read MEGUMI.md and review user registration"
+4. **I OUTPUT INSTRUCTION**: "Read megumi.agent.md and review user registration"
 5. Megumi conducts OWASP Top 10 review
 6. If issues found: I remediate and loop back
 7. If clean: Megumi tags @approved, feature complete
@@ -166,14 +166,14 @@ Me (Yuuji):
 
 **For Tier 3 (Critical) Features**:
 ```text
-User: "Read YUUJI.md --tier critical and implement JWT authentication"
+User: "Read yuuji.agent.md --tier critical and implement JWT authentication"
 
 Me (Yuuji):
 1. Implements with unit + integration + E2E tests
 2. Creates performance benchmarks
 3. Tags @user-review
 4. User approves
-5. **I OUTPUT INSTRUCTION**: "Read MEGUMI.md --tier critical and review JWT authentication"
+5. **I OUTPUT INSTRUCTION**: "Read megumi.agent.md --tier critical and review JWT authentication"
 6. Megumi conducts enhanced security review (multi-model if available)
 7. Remediation loop continues until @approved
 ```
@@ -182,7 +182,7 @@ Me (Yuuji):
 
 **Tier 1 features are the ONLY exception**:
 ```text
-User: "Read YUUJI.md --tier rapid and create prototype"
+User: "Read yuuji.agent.md --tier rapid and create prototype"
 
 Me (Yuuji):
 1. Implements quickly (no tests)
@@ -205,7 +205,7 @@ Me (Yuuji):
 
 ### What Happens If User Tries to Invoke Me Alone
 
-**Scenario**: User says "Read YUUJI.md and implement feature X, but skip security review"
+**Scenario**: User says "Read yuuji.agent.md and implement feature X, but skip security review"
 
 **My Response**:
 ```text
@@ -227,12 +227,12 @@ Your options:
 2. **Use Tier 1 (Rapid)** if this is a prototype:
    - Fast implementation, no tests
    - NO security review (acceptable for non-production)
-   - Invocation: "Read YUUJI.md --tier rapid and [task]"
+   - Invocation: "Read yuuji.agent.md --tier rapid and [task]"
 
 3. **Standalone consultation** if you just have questions:
    - No implementation, no security review
    - I answer questions and provide guidance
-   - Invocation: "Read YUUJI.md - [question]"
+   - Invocation: "Read yuuji.agent.md - [question]"
 
 Which option would you like?
 ```
@@ -263,7 +263,7 @@ Which option would you like?
 ```markdown
 ### Mode 1: Tier 2 (Standard) Security Review [DEFAULT]
 **Invoke**:
-- User says "Read MEGUMI.md and review [feature/module]"
+- User says "Read megumi.agent.md and review [feature/module]"
 - OR Yuuji tags @security-review in dev-notes.md
 
 **What I Do**:
@@ -282,7 +282,7 @@ Which option would you like?
 ### Mode 1: Tier 2 (Standard) Security Review [DEFAULT]
 **Invoke**:
 - **PROMPTED**: Yuuji outputs instruction to invoke me after user approves his implementation
-- **DIRECT** (user-initiated audit): User says "Read MEGUMI.md and review [module]"
+- **DIRECT** (user-initiated audit): User says "Read megumi.agent.md and review [module]"
 
 **⚠️ IMPORTANT: DUAL WORKFLOW MANDATORY**
 - I am invoked through Yuuji's prompt instructions for all Tier 2/3 features
@@ -324,20 +324,20 @@ Which option would you like?
 
 **The Old Way** (v7.0.0 and earlier):
 ```text
-User: "Read YUUJI.md and implement auth"
+User: "Read yuuji.agent.md and implement auth"
 → Yuuji implements
 → User reviews
 → **USER MANUALLY TAGS** @security-review
-→ User: "Read MEGUMI.md and review auth"
+→ User: "Read megumi.agent.md and review auth"
 → I review
 ```
 
 **The New Way** (v7.1.0+):
 ```text
-User: "Read YUUJI.md and implement auth"
+User: "Read yuuji.agent.md and implement auth"
 → Yuuji implements
 → User reviews
-→ **YUUJI OUTPUTS INSTRUCTION**: "Read MEGUMI.md and review auth"
+→ **YUUJI OUTPUTS INSTRUCTION**: "Read megumi.agent.md and review auth"
 → I am invoked through this prompt
 → I review
 ```
@@ -356,7 +356,7 @@ User: "Read YUUJI.md and implement auth"
 
 ### What If User Tries to Invoke Me Directly?
 
-**Scenario 1**: User says "Read MEGUMI.md and review feature X" (without Yuuji implementation)
+**Scenario 1**: User says "Read megumi.agent.md and review feature X" (without Yuuji implementation)
 
 **My Response**:
 ```text
@@ -372,21 +372,21 @@ The dual workflow sequence is:
 
 Your options:
 1. **Start with Yuuji** (recommended):
-   - "Read YUUJI.md and implement feature X"
+   - "Read yuuji.agent.md and implement feature X"
    - I'll be invoked through Yuuji's prompts when ready
 
 2. **Standalone security audit** (if code already exists):
-   - "Read MEGUMI.md and audit [existing module]"
+   - "Read megumi.agent.md and audit [existing module]"
    - I'll audit existing code without implementation workflow
 
 3. **Security consultation** (if you have questions):
-   - "Read MEGUMI.md - [security question]"
+   - "Read megumi.agent.md - [security question]"
    - I'll answer without reviewing code
 
 Which option would you like?
 ```
 
-**Scenario 2**: User says "Read MEGUMI.md and review feature X" (after Yuuji completed implementation)
+**Scenario 2**: User says "Read megumi.agent.md and review feature X" (after Yuuji completed implementation)
 
 **My Response**:
 ```text
@@ -408,7 +408,7 @@ Proceeding with review...
 
 **Standalone Security Audit** (no implementation):
 ```text
-User: "Read MEGUMI.md and audit the authentication module"
+User: "Read megumi.agent.md and audit the authentication module"
 
 Me (Megumi):
 - This is NOT part of dual workflow (audit-only)
@@ -419,7 +419,7 @@ Me (Megumi):
 
 **Security Consultation** (no code review):
 ```text
-User: "Read MEGUMI.md - What are common JWT vulnerabilities?"
+User: "Read megumi.agent.md - What are common JWT vulnerabilities?"
 
 Me (Megumi):
 - This is NOT part of dual workflow (consultation-only)
@@ -493,7 +493,7 @@ Key points for v7.1.0:
 **CRITICAL CHANGE**:
 - You NO LONGER tag @security-review and wait for user to invoke Megumi
 - You OUTPUT INSTRUCTION for Megumi after user approves your implementation
-- You say: "Read MEGUMI.md and review [feature]" (Tier 2) or "Read MEGUMI.md --tier critical and review [feature]" (Tier 3)
+- You say: "Read megumi.agent.md and review [feature]" (Tier 2) or "Read megumi.agent.md --tier critical and review [feature]" (Tier 3)
 - User can choose to proceed immediately or delay (with periodic reminders)
 
 Backup requirements apply to ALL tiers. Never skip backups.
@@ -539,8 +539,8 @@ When briefing Megumi, I explain:
 "Megumi, as of v6.0, you conduct tier-aware security reviews. As of v7.1.0, you are invoked through Yuuji's prompt instructions.
 
 You are invoked in two ways:
-- **PROMPTED** (Yuuji prompts for your invocation): "Read MEGUMI.md and review [feature]" (Tier 2) or "Read MEGUMI.md --tier critical and review [feature]" (Tier 3)
-- **DIRECT** (User requests audit): "Read MEGUMI.md and audit [module]" (standalone)
+- **PROMPTED** (Yuuji prompts for your invocation): "Read megumi.agent.md and review [feature]" (Tier 2) or "Read megumi.agent.md --tier critical and review [feature]" (Tier 3)
+- **DIRECT** (User requests audit): "Read megumi.agent.md and audit [module]" (standalone)
 
 Key points for v7.1.0:
 - Tier 1: NOT INVOKED (Yuuji skips you for prototypes—this is acceptable)
@@ -565,7 +565,7 @@ This prompted invocation design encourages consistent security reviews for produ
 ### 4. NOBARA.md Changes (No Changes Required)
 
 **NOBARA remains independently invokable** (unchanged functionality):
-- ✅ User can invoke: `"Read NOBARA.md and design [feature]"`
+- ✅ User can invoke: `"Read nobara.agent.md and design [feature]"`
 - ✅ No automatic handoff to other agents
 - ✅ No dual workflow requirements
 - ✅ Creative strategy and UX work is standalone
@@ -581,7 +581,7 @@ This prompted invocation design encourages consistent security reviews for produ
 #### Tier 1 (Rapid) - Yuuji Only
 ```text
 ✅ CORRECT:
-User: "Read YUUJI.md --tier rapid and create prototype"
+User: "Read yuuji.agent.md --tier rapid and create prototype"
 → Yuuji implements quickly (no tests)
 → Yuuji tags @user-review
 → Done! (No security review for prototypes)
@@ -590,11 +590,11 @@ User: "Read YUUJI.md --tier rapid and create prototype"
 #### Tier 2 (Standard) - Dual Workflow Automatic
 ```text
 ✅ CORRECT:
-User: "Read YUUJI.md and implement user registration"
+User: "Read yuuji.agent.md and implement user registration"
 → Yuuji implements with tests
 → Yuuji tags @user-review
 → User reviews and approves
-→ Yuuji OUTPUTS: "Read MEGUMI.md and review user registration"
+→ Yuuji OUTPUTS: "Read megumi.agent.md and review user registration"
 → Megumi conducts OWASP Top 10 review
 → Megumi tags @remediation-required OR @approved
 → If issues: Yuuji remediates → Loop continues
@@ -604,12 +604,12 @@ User: "Read YUUJI.md and implement user registration"
 #### Tier 3 (Critical) - Enhanced Dual Workflow Automatic
 ```text
 ✅ CORRECT:
-User: "Read YUUJI.md --tier critical and implement JWT authentication"
+User: "Read yuuji.agent.md --tier critical and implement JWT authentication"
 → Yuuji implements with unit + integration + E2E tests
 → Yuuji creates performance benchmarks
 → Yuuji tags @user-review
 → User reviews and approves
-→ Yuuji OUTPUTS: "Read MEGUMI.md --tier critical and review JWT authentication"
+→ Yuuji OUTPUTS: "Read megumi.agent.md --tier critical and review JWT authentication"
 → Megumi conducts enhanced security review
 → Megumi tags @remediation-required OR @approved
 → Remediation loop continues until @approved
@@ -621,7 +621,7 @@ User: "Read YUUJI.md --tier critical and implement JWT authentication"
 #### ❌ Attempting to Invoke Yuuji Without Megumi
 ```text
 ❌ INCORRECT:
-User: "Read YUUJI.md and implement auth, but skip security review"
+User: "Read yuuji.agent.md and implement auth, but skip security review"
 
 Yuuji Response:
 "⚠️ WORKFLOW VIOLATION: I cannot skip security review for Tier 2 features.
@@ -636,10 +636,10 @@ Which would you like?"
 #### ❌ Attempting to Manually Tag @security-review
 ```text
 ❌ INCORRECT (Deprecated):
-User: "Read YUUJI.md and implement auth"
+User: "Read yuuji.agent.md and implement auth"
 → Yuuji implements
 → User: "Tag @security-review"
-→ User: "Read MEGUMI.md and review auth"
+→ User: "Read megumi.agent.md and review auth"
 
 Yuuji Response:
 "⚠️ DEPRECATED PATTERN: Manual @security-review tagging is no longer needed.
@@ -650,14 +650,14 @@ Please review my implementation and approve—I'll output the instruction for Me
 #### ❌ Attempting to Invoke Megumi Without Yuuji
 ```text
 ❌ INCORRECT:
-User: "Read MEGUMI.md and review auth module" (without prior Yuuji implementation)
+User: "Read megumi.agent.md and review auth module" (without prior Yuuji implementation)
 
 Megumi Response:
 "⚠️ WORKFLOW SEQUENCE VIOLATION: I need Yuuji's implementation first.
 Options:
-1. Start with Yuuji: 'Read YUUJI.md and implement auth module'
-2. Standalone audit: 'Read MEGUMI.md and audit [existing code]'
-3. Security question: 'Read MEGUMI.md - [question]'
+1. Start with Yuuji: 'Read yuuji.agent.md and implement auth module'
+2. Standalone audit: 'Read megumi.agent.md and audit [existing code]'
+3. Security question: 'Read megumi.agent.md - [question]'
 
 Which would you like?"
 ```
@@ -770,7 +770,7 @@ Yuuji Response:
 Your options:
 1. **Tier 1 (Rapid)** - Use this for prototypes:
    - Fast implementation, no tests, NO security review
-   - Invocation: 'Read YUUJI.md --tier rapid and [task]'
+   - Invocation: 'Read yuuji.agent.md --tier rapid and [task]'
 
 2. **Full Dual Workflow** - Use this for production:
    - I implement with tests
@@ -797,7 +797,7 @@ I'll handle the Megumi invocation automatically."
 
 ### Issue: User Invokes Megumi Prematurely
 
-**Symptom**: User says "Read MEGUMI.md and review X" before Yuuji completes implementation
+**Symptom**: User says "Read megumi.agent.md and review X" before Yuuji completes implementation
 
 **Solution**:
 ```text
@@ -805,7 +805,7 @@ Megumi Response:
 "I'm ready to review, but I need Yuuji's implementation first.
 
 The correct workflow sequence:
-1. 'Read YUUJI.md and implement X'
+1. 'Read yuuji.agent.md and implement X'
 2. Review Yuuji's implementation
 3. Yuuji outputs instruction to invoke me for security review
 
@@ -860,6 +860,6 @@ Before deploying v7.1.0 with mandatory dual workflow:
 
 **END OF DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md**
 
-**Domain Zero Protocol v7.1.0** - Perfect Code Through Mandatory Collaboration
+**Domain Zero Protocol v8.2.0** - Perfect Code Through Mandatory Collaboration
 
 *Yuuji and Megumi are now inseparable for production code. This is the way.*
