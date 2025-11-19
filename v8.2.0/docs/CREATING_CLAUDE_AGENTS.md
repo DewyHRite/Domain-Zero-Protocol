@@ -133,97 +133,63 @@ When multiple agents have the same name, Claude Code uses this priority order:
 
 Let's walk through creating **Yuuji - Implementation Specialist** step by step using the actual Claude Code interface.
 
-**Note**: This example shows how to manually create an agent. In practice, you can use "Generate with Claude first" (recommended) and then customize.
-
 ### Step 1: Open the Agent Builder
 
 ```
 /agents
 ```
 
-This opens the Agent Builder interface. Select **"Create New Agent"**.
+This opens the Agent Builder interface. You'll see two options:
 
-### Step 2: Choose Scope
+**Choose Creation Method**:
+- **Generate with Claude** (Recommended) - Describe what you want, Claude generates the configuration
+- **Manual configuration** - Create step-by-step yourself
 
-**Prompt**: "Where should this agent be stored?"
+**For this guide**: Select **"Manual configuration"** to learn the complete structure.
 
-**Options**:
-- **Project-level**: Stored in `.claude/agents/` (project-specific, highest priority)
-- **User-level**: Stored in `~/.claude/agents/` (available across all projects)
+---
 
-**For Yuuji (example)**: Choose **Project-level** (Domain Zero agents are project-specific)
+### Step 2: Agent Type (Identifier)
 
-**Tip**: Project-level agents are version-controlled with your project. User-level agents are personal tools you use everywhere.
-
-### Step 3: Generate or Manual Creation
-
-**Recommended Approach** (from official docs): **"Generate with Claude first, then customize to make it yours"**
-
-**Option A: Generate with Claude** (Recommended):
-1. Describe what you want: "I need a test-first development specialist for implementing features with TDD"
-2. Claude generates the initial configuration and system prompt
-3. Review and customize
-
-**Option B: Manual Creation**:
-1. Start with a blank template
-2. Fill in all fields manually
-
-**For this example, we'll show Manual Creation** to teach the structure.
-
-### Step 4: Agent Name
-
-**Prompt**: "Agent name (lowercase, hyphens only)"
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Create new agent                                                            │
+│ Agent type (identifier)                                                     │
+│                                                                             │
+│ Enter a unique identifier for your agent:                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
 **Your input**:
 ```
 yuuji
 ```
 
-**Requirement**: Lowercase letters and hyphens only. This becomes the filename `yuuji.agent.md`.
+**Requirements**:
+- Lowercase letters and hyphens only
+- Must be unique (cannot conflict with existing agents)
+- This becomes the agent filename: `yuuji.agent.md`
 
-### Step 5: Agent Description
+**Examples**:
+- ✅ `yuuji`, `megumi`, `nobara`, `gojo`
+- ❌ `Yuuji`, `yuuji_itadori`, `yuuji.md`
 
-**Prompt**: "Describe this agent's purpose"
+---
 
-**Your input**:
+### Step 3: System Prompt
+
 ```
-Test-first development specialist for Tier 1/2/3 features. Creates backups, writes tests, implements code, documents in dev-notes.md
-```
-
-**Tip**: This description appears when you invoke `@yuuji` and helps you remember the agent's purpose.
-
-### Step 6: Select Tools
-
-**Prompt**: "Which tools should this agent access? (Leave blank to inherit all)"
-
-**Interactive tool selector** shows all available tools:
-- read, write, edit
-- bash
-- grep, glob
-- todowrite, task
-- websearch, webfetch
-- MCP server tools (if configured)
-
-**Your selection** (for Yuuji):
-```
-read,write,edit,bash,grep,glob,todowrite,task
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Create new agent                                                            │
+│ System prompt                                                               │
+│                                                                             │
+│ Enter the system prompt for your agent:                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Tip**:
-- Leave blank → Agent inherits ALL tools from main thread
-- Specify tools → Granular control (principle of least privilege)
-- Yuuji (Implementation): All tools (read, write, edit, bash, grep, glob, todowrite, task)
-- Megumi (Security): Read-only tools (read, grep, glob, bash, write for reports only)
+**What this is**: The core instructions that define your agent's behavior, personality, and workflow.
 
-### Step 7: Write System Prompt (Custom Instructions)
-
-**Prompt**: "Write the system prompt for this agent"
-
-**Note**: This is the **system prompt** (the instructions that guide the agent's behavior). You can:
-- Type directly in the interface, OR
-- Press **`e`** to open your editor for longer prompts
-
-**Your input** (System Prompt - abbreviated for example):
+**Your input** (for Yuuji - abbreviated example):
 
 ```markdown
 ## Role
@@ -286,28 +252,171 @@ I never:
 - ✅ Can fix remediation issues from Megumi
 ```
 
-**Tip**: Use markdown formatting. Include personality, workflow steps, and constraints. Press **`e`** to edit in your preferred editor if the prompt is long.
+**Tip**: Use markdown formatting. Include personality, workflow steps, constraints, and "The Weight". Press **`e`** to open your external editor for longer prompts.
+
+---
+
+### Step 4: Description (When to Use This Agent)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Create new agent                                                            │
+│ Description (tell Claude when to use this agent)                            │
+│                                                                             │
+│ When should Claude use this agent?                                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**What this is**: A brief description that helps Claude (and you) know when to invoke this agent.
+
+**Your input** (for Yuuji):
+```
+Test-first development specialist for Tier 1/2/3 features. Creates backups, writes tests, implements code, documents in dev-notes.md
+```
+
+**Tip**: Be specific about the agent's purpose and when to use it. This appears in the agent picker and helps with selection.
+
+---
+
+### Step 5: Select Tools
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Create new agent                                                            │
+│ Select tools                                                                │
+│                                                                             │
+│ ❯ ☑ read                                                                    │
+│   ☑ write                                                                   │
+│   ☑ edit                                                                    │
+│   ☑ bash                                                                    │
+│   ☑ grep                                                                    │
+│   ☑ glob                                                                    │
+│   ☑ todowrite                                                               │
+│   ☑ task                                                                    │
+│   ☐ websearch                                                               │
+│   ☐ webfetch                                                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Your selection** (for Yuuji - Implementation Specialist):
+```
+☑ read
+☑ write
+☑ edit
+☑ bash
+☑ grep
+☑ glob
+☑ todowrite
+☑ task
+```
+
+**Tool Guidelines by Agent Type**:
+
+| Agent | Tools | Reasoning |
+|-------|-------|-----------|
+| **Yuuji** (Implementation) | All tools | Needs full access to implement features |
+| **Megumi** (Security) | read, grep, glob, bash, write | Read-only + write for reports |
+| **Nobara** (Creative/UX) | read, write, grep, glob | Design docs + research |
+| **Gojo** (Mission Control) | All tools + task | Orchestration + delegation |
+
+**Tip**: Select only the tools this agent actually needs (principle of least privilege).
+
+---
+
+### Step 6: Select Model
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Create new agent                                                            │
+│ Select model                                                                │
+│ Model determines the agent's reasoning capabilities and speed.              │
+│                                                                             │
+│ ❯ 1. Sonnet                Balanced performance - best for most agents ✔    │
+│   2. Opus                  Most capable for complex reasoning tasks         │
+│   3. Haiku                 Fast and efficient for simple tasks              │
+│   4. Inherit from parent   Use the same model as the main conversation      │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Your selection** (for Yuuji):
+```
+1. Sonnet
+```
+
+**Model Selection Guide**:
+
+| Model | Use For | Example Agents |
+|-------|---------|----------------|
+| **Sonnet** | Most agents - balanced performance | Yuuji, Megumi, Nobara, Gojo |
+| **Opus** | Complex reasoning (Tier 3 critical features) | Enhanced security reviews |
+| **Haiku** | Simple, repetitive tasks | Quick file operations |
+| **Inherit** | Use same model as main conversation | Contextual agents |
+
+**Recommendation**: Start with **Sonnet** for all Domain Zero agents.
+
+---
+
+### Step 7: Choose Background Color
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Create new agent                                                            │
+│ Choose background color                                                     │
+│                                                                             │
+│ ❯ Automatic color                                                           │
+│     Red                                                                     │
+│     Blue                                                                    │
+│     Green                                                                   │
+│     Yellow                                                                  │
+│     Purple                                                                  │
+│     Orange                                                                  │
+│     Pink                                                                    │
+│     Cyan                                                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Your selection** (for Yuuji):
+```
+Automatic color
+```
+
+**Domain Zero Agent Colors** (suggested):
+- **Yuuji** (Implementation): Orange or Blue
+- **Megumi** (Security): Purple or Cyan
+- **Nobara** (Creative/UX): Pink or Red
+- **Gojo** (Mission Control): Automatic or White
+
+**Tip**: Colors help visually distinguish agents in the interface. Use "Automatic color" to let Claude Code assign one, or choose a color that matches the agent's personality.
+
+---
 
 ### Step 8: Review and Save
 
-**Prompt**: "Review your agent configuration"
+Claude Code shows a preview of your agent configuration:
 
-**Preview** shows the complete YAML frontmatter:
-```yaml
----
-name: yuuji
-description: "Test-first development specialist for Tier 1/2/3 features. Creates backups, writes tests, implements code, documents in dev-notes.md"
-tools: read,write,edit,bash,grep,glob,todowrite,task
-model: sonnet
-permissionMode: default
----
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Review agent configuration                                                  │
+│                                                                             │
+│ Identifier: yuuji                                                           │
+│ Description: Test-first development specialist for Tier 1/2/3 features...   │
+│ Model: Sonnet                                                               │
+│ Tools: read, write, edit, bash, grep, glob, todowrite, task                │
+│ Color: Automatic                                                            │
+│                                                                             │
+│ [Save Agent]  [Back]  [Cancel]                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Action**: Click **Save Agent** or confirm creation
+**Action**: Click **Save Agent** to create the agent.
 
-**File Created**: `.claude/agents/yuuji.agent.md` (project-level) or `~/.claude/agents/yuuji.agent.md` (user-level)
+**What Happens**:
+- Agent file is created: `.claude/agents/yuuji.agent.md`
+- YAML frontmatter is generated automatically
+- System prompt is embedded in the file
+- Agent is immediately available for use
 
-**Complete File Structure**:
+**Complete File Structure** (what gets created):
 ```markdown
 ---
 name: yuuji
@@ -321,10 +430,13 @@ permissionMode: default
 
 I am **Yuuji Itadori**, the Implementation Specialist within Domain Zero...
 
-[Rest of system prompt]
+[Your complete system prompt from Step 3]
 ```
 
-**Note**: Domain Zero agents are stored in `protocol/` directory (historical convention), but Claude Code defaults to `.claude/agents/`
+**Storage Location**:
+- **Default**: `.claude/agents/yuuji.agent.md` (project-level)
+- **Note**: Domain Zero historically uses `protocol/` directory, but Claude Code defaults to `.claude/agents/`
+- You can manually move agent files to `protocol/` if preferred
 
 ### Step 9: Test Your Agent
 
@@ -1178,21 +1290,28 @@ Use Domain Zero agents as templates when creating new agents via `/agents`.
 
 ---
 
-**Version**: 3.0.0 (Four Core Agents Focus - Official Docs Aligned)
+**Version**: 3.1.0 (Exact Interface Match - Claude Code /agents Flow)
 **Protocol Version**: 8.2.0
 **Last Updated**: 2025-11-18
+
+**Changelog v3.1.0** (MINOR):
+- ✅ **Updated creation workflow to match EXACT Claude Code interface**
+- ✅ Step-by-step flow now mirrors actual `/agents` command screens
+- ✅ Added visual interface mockups for each step
+- ✅ Corrected step order: Identifier → System Prompt → Description → Tools → Model → Color
+- ✅ Added Step 7: Background color selection (was missing)
+- ✅ Removed incorrect "Choose Scope" step (not in actual interface)
+- ✅ Updated all prompts to match exact wording from Claude Code
+- ✅ Added model selection guidance (Sonnet/Opus/Haiku/Inherit)
+- ✅ Added color selection recommendations for Domain Zero agents
 
 **Changelog v3.0.0** (MAJOR):
 - ✅ **BREAKING**: Removed all non-core agent examples (Panda, Maki, Inumaki, Todo)
 - ✅ **Focus**: Guide now exclusively features Yuuji, Megumi, Nobara, Gojo
-- ✅ Updated creation example to use Yuuji instead of Panda
 - ✅ Aligned all examples with official Claude Code sub-agents documentation
 - ✅ Added agent storage locations and priority system
 - ✅ Updated all YAML examples to match actual implementation
 - ✅ Added "Generate with Claude first" best practice
 - ✅ Added `e` key shortcut for editing system prompts
-- ✅ Clarified project-level vs user-level agent scopes
-- ✅ Updated version control recommendations
-- ✅ Added official documentation links
 
 🌀 **Domain Zero is active.**
