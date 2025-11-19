@@ -182,8 +182,7 @@ You: Review and done!
 You: "Read yuuji.agent.md and implement user profile"
 Yuuji: [Test-first implementation, 30-45 minutes]
 You: Review → Approve
-You: [Yuuji tags @security-review]
-Megumi: [OWASP security review]
+Megumi: [Prompted handoff engages; OWASP security review]
 ```
 
 ### Your First Tier 3 Feature
@@ -191,8 +190,7 @@ Megumi: [OWASP security review]
 You: "Read yuuji.agent.md --tier critical and implement Stripe payment processing"
 Yuuji: [Enhanced tests + performance benchmarks, 60-90 minutes]
 You: Review → Approve
-You: [Yuuji tags @security-review-critical]
-Megumi: [Enhanced security review with multi-model analysis]
+Megumi: [Prompted handoff (Tier 3) with enhanced security review + multi-model analysis]
 ```
 
 ---

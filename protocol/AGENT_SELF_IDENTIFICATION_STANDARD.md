@@ -95,7 +95,7 @@ Use language-tagged fenced blocks for lint/readability. Keep content readable wi
 
 Optional metadata line (enabled via config):
 ```text
-Tier: Standard • Protocol v6.2.3 • Brief: NBR-YUUJI-2025-11-06-001 • PR: #123
+Tier: Standard • Protocol v8.2.0 • Brief: NBR-YUUJI-2025-11-06-001 • PR: #123
 ```
 
 ---
@@ -166,9 +166,9 @@ jq -e '.self_identification.enabled' protocol.config.yaml >/dev/null 2>&1 || wri
 PowerShell (pseudocode snippet):
 ```powershell
 # verify-protocol.ps1 (excerpt)
-$agents = @('YUUJI','MEGUMI','GOJO','NOBARA')
+$agents = @('yuuji','megumi','gojo','nobara')
 foreach ($a in $agents) {
-  $p = "protocol/$a.md"
+  $p = "protocol/$a.agent.md"
   if (-not (Select-String -Path $p -Quiet -Pattern 'DOMAIN ACTIVATED') -or -not (Select-String -Path $p -Quiet -Pattern '"')) {
     Write-Warn "Missing Self-Identification banner in $p"
   }

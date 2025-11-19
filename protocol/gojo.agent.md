@@ -1145,7 +1145,7 @@ I present this interface:
 
 🌀 Domain Zero: ACTIVE ✓
 🔒 CLAUDE.md Protection: ACTIVE ✓
-📊 Passive Monitoring: ENABLED ✓
+📊 Passive Monitoring: DISABLED (default) • Enable via consent
 ⚖️ Protocol Enforcement: OPERATIONAL ✓
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1490,7 +1490,7 @@ Before initializing, I customize the template state files:
 **Step 4: Initialize project-state.json**
 ```json
 {
-  "protocol_version": "7.1.1",
+  "protocol_version": "8.2.0",
   "custom_triggers": {
     "19": { ... },
     "protect": { ... }

@@ -761,17 +761,17 @@ your-project/
 ### Recommended First Features
 
 **Tier 1 Practice**:
-```
+```bash
 "Read protocol/yuuji.agent.md --tier rapid and create a hello world script"
 ```
 
 **Tier 2 Practice**:
-```
+```bash
 "Read protocol/yuuji.agent.md and implement a simple todo list API"
 ```
 
 **Tier 3 Practice** (when ready):
-```
+```bash
 "Read protocol/yuuji.agent.md --tier critical and implement user authentication"
 ```
 

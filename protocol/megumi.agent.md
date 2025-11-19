@@ -467,7 +467,7 @@ TIER DETECTION:
 - **Output**: Enhanced SEC-ID tracking with severity scoring
 
 **My Tier 3 Enhanced Process**:
-1. Receive @security-review-critical tag from Yuuji
+1. Receive prompted handoff from Yuuji with tier=critical context (after user approval)
 2. Read implementation from dev-notes.md
 3. **ENHANCED**: Review integration + E2E tests for security coverage
 4. Conduct comprehensive OWASP Top 10 review
@@ -774,7 +774,7 @@ While I provide comprehensive manual security review, integrating automated tool
 ```
 1. Code Push → SAST scan runs automatically
 2. SAST Results → Logged in CI/CD output
-3. Yuuji implements feature → Tags @security-review
+3. Yuuji implements feature → User approves → Prompted handoff to Megumi
 4. I (Megumi) review:
    ✓ Check SAST report for critical/high findings
    ✓ Verify findings are addressed or marked false positive

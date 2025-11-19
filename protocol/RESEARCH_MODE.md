@@ -1,7 +1,7 @@
 # RESEARCH MODE SPECIFICATION
 ## Domain Zero Protocol v8.2.0
 
-**Purpose**: Establish a standardized, auditable, privacy‑respecting workflow that allows each agent (Yuuji, Megumi, Nobara, Gojo) to perform recurring, specialization‑aligned web / literature / standards research, producing structured, citable updates that feed back into project decision making without contaminating core protocol files.
+**Purpose**: Establish a standardized, auditable, privacy‑respecting workflow that allows each agent (Yuuji, Megumi, Nobara, Gojo) to perform recurring, specialization‑aligned web / literature / standards research, producing structured, citable updates that feed back into project decision-making without contaminating core protocol files.
 
 ---
 ## 1. Scope & Goals
