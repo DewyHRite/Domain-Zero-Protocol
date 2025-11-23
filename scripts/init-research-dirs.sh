@@ -64,13 +64,15 @@ find_malformed() {
     local malformed=()
 
     # Check for common malformed patterns
+    # Note: We need glob expansion but must handle paths with spaces properly
     for pattern in ".protocol-stateresearch"* ".protocolstateresearch"* ".protocol-state research"*; do
         if compgen -G "${BASE_PATH}/${pattern}" > /dev/null 2>&1; then
-            for dir in ${BASE_PATH}/${pattern}; do
+            # Use while-read loop to handle paths with spaces
+            while IFS= read -r -d '' dir; do
                 if [ -d "$dir" ]; then
                     malformed+=("$dir")
                 fi
-            done
+            done < <(find "${BASE_PATH}" -maxdepth 1 -name "$pattern" -print0 2>/dev/null)
         fi
     done
 

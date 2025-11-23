@@ -47,13 +47,14 @@ if [[ ! -f "$CONFIG_PATH" ]]; then
 fi
 
 # Read config to check mask mode setting (filter out commented lines)
-if grep -v '^\s*#' "$CONFIG_PATH" | grep -A 2 "^mask_mode:" | grep "enabled:" | grep -q "true"; then
+# Using POSIX character classes for portability (not \s which is not standard grep)
+if grep -Ev '^[[:space:]]*#' "$CONFIG_PATH" | grep -A 2 -E '^[[:space:]]*mask_mode:' | grep -E '[[:space:]]*enabled:[[:space:]]*true' -q; then
     MASK_ENABLED="true"
 else
     MASK_ENABLED="false"
 fi
 
-if grep -v '^\s*#' "$CONFIG_PATH" | grep "strict_professional:" | grep -q "true"; then
+if grep -Ev '^[[:space:]]*#' "$CONFIG_PATH" | grep -E '[[:space:]]*strict_professional:[[:space:]]*true' -q; then
     STRICT_PROF="true"
 else
     STRICT_PROF="false"

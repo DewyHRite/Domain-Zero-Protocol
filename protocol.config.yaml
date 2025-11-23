@@ -503,6 +503,15 @@ research:
     allow_forums: false        # Avoid low-moderation sources by default
     require_publication_year: true
     freshness_years: 3         # Prefer sources <= 3 years old unless canonical
+    # Canonical sources are exempt from freshness requirements (standards remain authoritative)
+    canonical_sources_exempt_from_freshness: true
+    # Auto-detect canonical sources by domain/pattern
+    canonical_source_patterns:
+      - "*.rfc-editor.org"
+      - "owasp.org"
+      - "*.nist.gov"
+      - "*.w3.org"
+      - "*.iso.org"
 
   # Citation format
   citation:
