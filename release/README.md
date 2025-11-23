@@ -737,12 +737,16 @@ After setup, your project will have:
 your-project/
 ├── protocol/                        # Core protocol system
 │   ├── CLAUDE.md                    # Main protocol (READ THIS FIRST)
-│   ├── yuuji.agent.md                     # Implementation agent
-│   ├── megumi.agent.md                    # Security agent
-│   ├── nobara.agent.md                    # Creative strategy & UX agent
-│   ├── gojo.agent.md                      # Mission control
+│   ├── yuuji.agent.md               # Implementation agent
+│   ├── megumi.agent.md              # Security agent
+│   ├── nobara.agent.md              # Creative strategy & UX agent
+│   ├── gojo.agent.md                # Mission control
 │   ├── TIER-SELECTION-GUIDE.md     # Quick tier reference
-│   └── GOJO-UPDATES-PATCH.md       # Protocol change log
+│   ├── GOJO-UPDATES-PATCH.md       # Protocol change log
+│   └── skills/                      # Skills system 🆕
+│       ├── AGENT_SKILLS_MAP.yaml   # Agent-to-skill assignments
+│       ├── SKILL_REGISTRY.md       # Skill governance & tracking
+│       └── skill-builder.md        # Create new skills
 │
 ├── .protocol-state/                 # State management (gitignored by default)
 │   ├── project-state.json           # Project configuration
@@ -819,6 +823,46 @@ _Note: Detection rates are targets based on internal evaluations. Actual coverag
 **Overall**: Observed ~50% average productivity gains across mixed workload in internal evaluations.
 
 _Note: Productivity metrics are estimates from internal use. Actual gains vary significantly by team experience, tech stack, existing processes, and feature complexity. Your mileage may vary._
+
+---
+
+## 🎯 Skills System (v8.3.0+)
+
+Skills are reusable workflow templates that save tokens and ensure consistency. Each agent has assigned skills defined in `protocol/skills/AGENT_SKILLS_MAP.yaml`.
+
+### How Skills Work
+
+```
+Agent File → References AGENT_SKILLS_MAP.yaml → Executes skill from protocol/skills/
+```
+
+### Agent Skills Summary
+
+| Agent | Example Skills | Custom Skills |
+|-------|---------------|---------------|
+| **Yuuji** | webapp-testing, mcp-server | tdd-checklist, codegen-standards |
+| **Megumi** | webapp-testing | owasp-checklist, threat-modeling, jwt-audit |
+| **Nobara** | brand-guidelines, canvas-design | a11y-review, ux-writing |
+| **Gojo** | skill-creator, mcp-server | skill-builder, protocol-verify |
+
+### Using Skills
+
+```bash
+# Invoke a skill
+skill: "skill-name"
+
+# Examples
+skill: "tdd-checklist"      # Run TDD workflow checklist (Yuuji)
+skill: "owasp-checklist"    # Run OWASP Top 10 review (Megumi)
+skill: "a11y-review"        # Run accessibility audit (Nobara)
+skill: "skill-builder"      # Create a new skill (Gojo)
+```
+
+### Skill Governance
+
+- **Owners**: Gojo and Megumi review/approve all new skills
+- **Registry**: All skills tracked in `protocol/skills/SKILL_REGISTRY.md`
+- **Code Execution**: Skills that execute code require SAST/SCA review
 
 ---
 
