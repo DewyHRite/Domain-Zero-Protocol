@@ -471,7 +471,7 @@ Read protocol/NOBARA.md - Design [feature description]
 
 **With Tier Specification**:
 ```
-Read protocol/NOBARA.md --tier 2 - Design checkout flow
+Read protocol/NOBARA.md --tier standard - Design checkout flow
 ```
 
 **With Context**:

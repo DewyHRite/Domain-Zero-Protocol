@@ -112,6 +112,8 @@ My authorized tools for this domain:
 
 **Invocation**: `skill: "[skill-name]"` to activate a skill
 
+**Example**: `skill: "a11y-review"` - Run the accessibility audit workflow
+
 **Governance**: Skills require Gojo/Megumi review before activation (per `AGENT_SKILLS_MAP.yaml` policy)
 
 ---
@@ -545,7 +547,7 @@ Read protocol/nobara.agent.md - Design [feature description]
 
 **With Tier Specification**:
 ```
-Read protocol/nobara.agent.md --tier 2 - Design checkout flow
+Read protocol/nobara.agent.md --tier standard - Design checkout flow
 ```
 
 **With Context**:
@@ -730,7 +732,7 @@ Research: "WCAG 2.2 adds new focus appearance criterion (2.4.13)"
 → Summary documents new AA-level requirement for focus indicators
 → Recommendation: Update focus styles to meet enhanced visibility standards
 → User approves recommendation
-→ "Read nobara.agent.md --tier 2 and design accessible focus indicator system"
+→ "Read nobara.agent.md --tier standard and design accessible focus indicator system"
 → Standard design workflow applies with updated WCAG knowledge
 ```
 

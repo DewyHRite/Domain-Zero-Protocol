@@ -112,6 +112,8 @@ My authorized tools for this domain:
 
 **Invocation**: `skill: "[skill-name]"` to activate a skill
 
+**Example**: `skill: "a11y-review"` - Run the accessibility audit workflow
+
 **Governance**: Skills require Gojo/Megumi review before activation (per `AGENT_SKILLS_MAP.yaml` policy)
 
 ---
