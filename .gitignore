@@ -108,9 +108,9 @@ RELEASE_NOTES_*.md
 # Apps folder (if experimental/not production)
 apps/
 
-# Test directories (if not part of protocol)
+# Test directories (unless containing protocol tests)
 Test/
-tests/ (unless containing protocol tests)
+tests/
 
 # ============================================================================
 # IDE AND EDITOR FILES

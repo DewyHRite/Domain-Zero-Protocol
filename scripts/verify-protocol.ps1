@@ -251,9 +251,10 @@ function Test-FileExistence {
 
     $RequiredFiles = @(
         "protocol/CLAUDE.md",
-        "protocol/YUUJI.md",
-        "protocol/MEGUMI.md",
-        "protocol/GOJO.md",
+        "protocol/yuuji.agent.md",
+        "protocol/megumi.agent.md",
+        "protocol/nobara.agent.md",
+        "protocol/gojo.agent.md",
         "protocol/TIER-SELECTION-GUIDE.md",
         "protocol.config.yaml",
         ".protocol-state/project-state.json",
@@ -478,12 +479,12 @@ function Test-IsolationVocabulary {
     $isolationErrors = 0
 
     # Yuuji should not mention Gojo directly
-    if (Test-Path "protocol/YUUJI.md") {
+    if (Test-Path "protocol/yuuji.agent.md") {
         $forbiddenTerms = @("GOJO", "Satoru Gojo", "Mission Control", "Trigger 19", "trigger-19")
         $yuujiFound = $false
 
         foreach ($term in $forbiddenTerms) {
-            if ((Get-Content "protocol/YUUJI.md" -Raw) -match [regex]::Escape($term)) {
+            if ((Get-Content "protocol/yuuji.agent.md" -Raw) -match [regex]::Escape($term)) {
                 Write-Warn "Yuuji protocol mentions forbidden term: $term"
                 $isolationErrors++
                 $yuujiFound = $true
@@ -494,16 +495,16 @@ function Test-IsolationVocabulary {
             Write-Pass "Yuuji isolation vocabulary check passed"
         }
     } else {
-        Write-Warn "protocol/YUUJI.md not found"
+        Write-Warn "protocol/yuuji.agent.md not found"
     }
 
     # Megumi should not mention Gojo directly
-    if (Test-Path "protocol/MEGUMI.md") {
+    if (Test-Path "protocol/megumi.agent.md") {
         $forbiddenTerms = @("GOJO", "Satoru Gojo", "Mission Control", "Trigger 19", "trigger-19")
         $megumiFound = $false
 
         foreach ($term in $forbiddenTerms) {
-            if ((Get-Content "protocol/MEGUMI.md" -Raw) -match [regex]::Escape($term)) {
+            if ((Get-Content "protocol/megumi.agent.md" -Raw) -match [regex]::Escape($term)) {
                 Write-Warn "Megumi protocol mentions forbidden term: $term"
                 $isolationErrors++
                 $megumiFound = $true
@@ -514,7 +515,7 @@ function Test-IsolationVocabulary {
             Write-Pass "Megumi isolation vocabulary check passed"
         }
     } else {
-        Write-Warn "protocol/MEGUMI.md not found"
+        Write-Warn "protocol/megumi.agent.md not found"
     }
 
     if ($isolationErrors -gt 0) {

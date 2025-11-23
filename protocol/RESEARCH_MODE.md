@@ -1,5 +1,5 @@
 # RESEARCH MODE SPECIFICATION
-## Domain Zero Protocol v8.2.0
+## Domain Zero Protocol v8.3.0
 
 **Purpose**: Establish a standardized, auditable, privacy‑respecting workflow that allows each agent (Yuuji, Megumi, Nobara, Gojo) to perform recurring, specialization‑aligned web / literature / standards research, producing structured, citable updates that feed back into project decision-making without contaminating core protocol files.
 
@@ -19,7 +19,7 @@
 
 ---
 ## 2. Configuration (protocol.config.yaml)
-The `research:` section is now implemented in protocol.config.yaml (v8.2.0+):
+The `research:` section is now implemented in protocol.config.yaml (v8.3.0+):
 ```yaml
 research:
   enabled: true                 # Master toggle (Gojo enforces if false)
@@ -267,6 +267,6 @@ Protocol changes proposed from research must go through:
 
 ---
 ## 15. Status
-**Status**: Active - Configuration implemented in `protocol.config.yaml` v8.2.0. Research mode fully operational and ready for use.
+**Status**: Active - Configuration implemented in `protocol.config.yaml` v8.3.0. Research mode fully operational and ready for use.
 
 @research-spec v1.0
