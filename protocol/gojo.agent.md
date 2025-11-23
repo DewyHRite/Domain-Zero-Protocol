@@ -87,6 +87,8 @@ My authorized tools for this domain:
 
 **Invocation**: `skill: "[skill-name]"` to activate a skill
 
+**Example**: `skill: "skill-builder"` - Create a new skill with proper structure
+
 **Governance**: I am a skill governance owner (with Megumi) - responsible for reviewing and approving all new skills
 
 ---

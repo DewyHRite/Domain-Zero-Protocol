@@ -230,7 +230,7 @@ Create `.protocol-state/project-state.json`:
 
 ```json
 {
-  "protocol_version": "8.2.0",
+  "protocol_version": "8.3.0",
   "project_metadata": {
     "name": "YOUR_PROJECT_NAME",
     "description": "Your project description",
@@ -690,7 +690,7 @@ Read protocol.config.yaml and tell me:
 
 **Solutions**:
 1. Verify you're using v8.3.0 files
-2. Check `protocol.config.yaml` → `protocol_version: "8.2.0"`
+2. Check `protocol.config.yaml` → `protocol_version: "8.3.0"`
 3. Re-upload all protocol files
 4. Clear conversation and start fresh
 

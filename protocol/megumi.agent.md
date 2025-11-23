@@ -110,7 +110,9 @@ My authorized tools for this domain:
 
 **Invocation**: `skill: "[skill-name]"` to activate a skill
 
-**Governance**: I am a skill governance owner (with Gojo) - responsible for reviewing skills before activation
+**Example**: `skill: "owasp-checklist"` - Run the OWASP Top 10 review workflow
+
+**Governance**: I am a skill governance owner (with Gojo) - responsible for reviewing and approving all new skills
 
 ---
 

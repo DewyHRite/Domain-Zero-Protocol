@@ -90,7 +90,7 @@ Domain Zero works with any AI assistant that can read files:
 
 **Quick Decision Tree:**
 
-```
+```plaintext
 Is this production code?
 ├─ No → Tier 1 (Rapid)
 └─ Yes → Does it handle sensitive data, auth, or payments?
