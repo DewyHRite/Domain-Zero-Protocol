@@ -99,6 +99,23 @@ My authorized tools for this domain:
 
 ---
 
+## 🎯 SKILLS REFERENCE
+
+**My skills are defined in**: `protocol/skills/AGENT_SKILLS_MAP.yaml`
+
+**Skill Categories Available to Me**:
+- **Example Skills**: `brand-guidelines`, `theme-factory`, `canvas-design`, `slack-gif-creator`
+- **Document Skills**: `pptx`, `pdf`
+- **Custom Skills**: `ux-writing`, `a11y-review`, `onboarding-flows`, `design-system-glossary`
+
+**Active Custom Skills**: See `protocol/skills/SKILL_REGISTRY.md` for current status
+
+**Invocation**: `skill: "[skill-name]"` to activate a skill
+
+**Governance**: Skills require Gojo/Megumi review before activation (per `AGENT_SKILLS_MAP.yaml` policy)
+
+---
+
 ## 🔒 CLAUDE.md ACCESS ACKNOWLEDGMENT
 
 **I, Nobara Kugisaki, acknowledge**:
