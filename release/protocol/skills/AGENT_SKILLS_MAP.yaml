@@ -1,0 +1,80 @@
+# Domain Zero – Agent ↔ Skills Mapping (v1)
+# Purpose: Provide a single place to record which Claude Skills (example or custom)
+# are recommended per agent. Keep organization-specific skills in a private repo.
+
+version: 1
+updated: 2025-11-22
+
+canonical_reference:
+  overview: https://claude.com/blog/skills
+  repository: https://github.com/anthropics/skills/tree/main
+
+agents:
+  yuuji:
+    example_skills:
+      - webapp-testing          # Playwright-based UI testing patterns
+      - mcp-server              # Guidance for creating MCP integrations
+      - artifacts-builder       # Structured artifact scaffolds (when helpful)
+    document_skills:
+      - docx
+      - pptx
+      - xlsx
+      - pdf
+    custom_skills:
+      - codegen-standards
+      - tdd-checklist
+      - async-patterns
+      - testing-fixtures
+
+  megumi:
+    example_skills:
+      - webapp-testing          # For e2e verification hooks during audits
+    document_skills: []
+    custom_skills:
+      - owasp-checklist
+      - threat-modeling
+      - jwt-audit
+      - secrets-review
+      - dependency-audit
+
+  nobara:
+    example_skills:
+      - brand-guidelines
+      - theme-factory
+      - canvas-design
+      - slack-gif-creator
+    document_skills:
+      - pptx
+      - pdf
+    custom_skills:
+      - ux-writing
+      - a11y-review
+      - onboarding-flows
+      - design-system-glossary
+
+  gojo:
+    example_skills:
+      - skill-creator
+      - template-skill
+      - mcp-server
+      - internal-comms
+    document_skills: []
+    custom_skills:
+      - skill-builder         # Create new skills rapidly with proper structure
+      - protocol-verify
+      - release-briefing
+      - version-audit
+      - work-session-monitoring
+
+policy:
+  execution_risk:
+    code_skills_require_review: true
+    sast_sca_required: true
+  versioning:
+    pin_versions: true
+    registry_file: SKILL_REGISTRY.md
+  governance:
+    owners:
+      - gojo
+      - megumi
+    review_interval_days: 90
