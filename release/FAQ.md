@@ -10,6 +10,7 @@
 - [Getting Started](#getting-started)
 - [Tier System](#tier-system)
 - [Agent Behavior](#agent-behavior)
+- [Skills System](#skills-system-v830) 🆕
 - [Configuration](#configuration)
 - [Security & Privacy](#security--privacy)
 - [Integration](#integration)
@@ -204,6 +205,82 @@ Read protocol/megumi.agent.md - review the authentication changes in auth.py
 4. **Escalate:** Call Gojo for second opinion: `"Read protocol/gojo.agent.md - assess this implementation"`
 
 **Protocol Requirement:** YOU must approve all code before it's considered complete.
+
+---
+
+## Skills System (v8.3.0+)
+
+### What are skills?
+
+**Skills are reusable workflow templates** that save tokens and ensure consistency. Instead of re-explaining common tasks, you invoke a skill that contains the full workflow.
+
+**Benefits:**
+- Save tokens by avoiding repetitive explanations
+- Consistent outputs across sessions
+- Governed by Gojo/Megumi for quality control
+
+---
+
+### How do I use a skill?
+
+**Invocation syntax:**
+```
+skill: "skill-name"
+```
+
+**Examples:**
+```bash
+skill: "tdd-checklist"      # Yuuji: TDD workflow checklist
+skill: "owasp-checklist"    # Megumi: OWASP Top 10 security review
+skill: "a11y-review"        # Nobara: Accessibility audit workflow
+skill: "skill-builder"      # Gojo: Create a new custom skill
+```
+
+---
+
+### What skills does each agent have?
+
+**Skills are defined in** `protocol/skills/AGENT_SKILLS_MAP.yaml`:
+
+| Agent | Example Skills | Custom Skills |
+|-------|---------------|---------------|
+| **Yuuji** | webapp-testing, mcp-server | tdd-checklist, codegen-standards |
+| **Megumi** | webapp-testing | owasp-checklist, threat-modeling |
+| **Nobara** | brand-guidelines, canvas-design | a11y-review, ux-writing |
+| **Gojo** | skill-creator, mcp-server | skill-builder, protocol-verify |
+
+Each agent file has a `🎯 SKILLS REFERENCE` section listing available skills.
+
+---
+
+### How do I create a new skill?
+
+**Use the skill-builder skill** (Gojo only):
+```
+skill: "skill-builder"
+
+Create a skill for: [your description]
+```
+
+**Steps:**
+1. Gojo asks clarifying questions via AskUserQuestion
+2. Generates skill file with proper structure
+3. Adds to `AGENT_SKILLS_MAP.yaml`
+4. Registers in `SKILL_REGISTRY.md`
+5. Governance owners (Gojo + Megumi) review before activation
+
+---
+
+### Where are skills stored?
+
+```
+protocol/skills/
+├── AGENT_SKILLS_MAP.yaml   # Agent-to-skill assignments
+├── SKILL_REGISTRY.md       # Governance tracking
+└── skill-builder.md        # Active skill for creating skills
+```
+
+**Note:** Most custom skills are "Planned" status. Only `skill-builder` is currently Active.
 
 ---
 
