@@ -451,7 +451,12 @@ The protocol uses a three-tier workflow system:
 - Tier 2 (Standard): Production features with TDD + security review [DEFAULT]
 - Tier 3 (Critical): Enhanced testing + multi-model security review for auth/payments/sensitive data
 
-When I say 'Read protocol/[AGENT].md', always read the file first to follow the protocol.
+Key features:
+- Use skills for common operations to save tokens (skill: 'skill-name')
+- Use AskUserQuestion tool frequently for clarification and nice UI
+- All agents have escape paths - they will ask for help rather than hang
+
+When I say 'Read protocol/[AGENT].agent.md', always read the file first to follow the protocol.
 The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 ```
 
@@ -466,6 +471,11 @@ I use the Domain Zero Protocol (v8.2.0) for development projects. This is a four
 - GOJO: Mission control and protocol enforcement
 
 When working on my projects, refer to protocol files at protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, and protocol/gojo.agent.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
+
+Key features:
+- Use skills for common operations (saves tokens)
+- Ask clarifying questions frequently (better than guessing)
+- All instructions should have escape paths (what to do if blocked)
 
 Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 ```

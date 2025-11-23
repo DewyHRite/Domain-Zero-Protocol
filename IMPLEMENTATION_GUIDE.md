@@ -819,6 +819,48 @@ research:
       wcag_level: "AA"  # A, AA, AAA
 ```
 
+### Research Directory Initialization
+
+**IMPORTANT**: When setting up Domain Zero Protocol, you must properly initialize the research directory structure. Incorrect initialization can create malformed directories.
+
+**Use the initialization script** (recommended):
+
+```powershell
+# Windows PowerShell
+.\scripts\init-research-dirs.ps1
+
+# With cleanup of malformed directories
+.\scripts\init-research-dirs.ps1 -Clean
+
+# Verify only (no changes)
+.\scripts\init-research-dirs.ps1 -Verify
+```
+
+```bash
+# Linux/macOS
+./scripts/init-research-dirs.sh
+
+# With cleanup of malformed directories
+./scripts/init-research-dirs.sh --clean
+
+# Verify only (no changes)
+./scripts/init-research-dirs.sh --verify
+```
+
+**Correct directory structure**:
+```
+.protocol-state/
+└── research/
+    ├── research-index.json
+    ├── README.md
+    ├── yuuji/
+    ├── megumi/
+    ├── nobara/
+    └── gojo/
+```
+
+**Common Issue**: Directories created without proper path separators (e.g., `.protocol-stateresearchgojo` instead of `.protocol-state/research/gojo/`). Use `--clean` flag to remove malformed directories.
+
 ---
 
 ## Next Steps
@@ -847,6 +889,500 @@ Once setup is complete:
 
 **Repository**:
 - Canonical Source: https://github.com/DewyHRite/Domain-Zero-Protocol
+
+---
+
+## Subagent Escape Paths (CRITICAL)
+
+### The Problem
+
+Subagents (spawned via the Task tool) can hang, fail silently, or output "Done" without results if they encounter:
+- Hard requirements they cannot meet
+- Missing information with no way to obtain it
+- Blocking conditions with no alternative path
+
+**Symptoms of Missing Escape Paths**:
+- Agent says "Done" but produces no output
+- Agent loops infinitely trying to meet impossible requirements
+- Agent hangs without any response
+- Agent provides generic/unhelpful output
+
+### The Solution: Escape Paths
+
+Every subagent instruction MUST include escape paths - alternative actions when the primary path is blocked.
+
+#### Pattern 1: Soft Requirements (PREFERRED)
+
+```markdown
+# GOOD - Soft requirement with fallback
+**Before starting**:
+- Check if package.json exists (PREFERRED)
+  - If missing: Ask user about package manager via AskUserQuestion
+  - If user unavailable: Use generic npm template
+
+# BAD - Hard requirement with no escape
+**Before starting**:
+- MUST have package.json (will hang if missing)
+```
+
+#### Pattern 2: Progressive Fallback
+
+```markdown
+**Finding configuration**:
+1. TRY: Read protocol.config.yaml
+2. IF NOT FOUND: Read .protocol-state/project-state.json
+3. IF NOT FOUND: Ask user via AskUserQuestion
+4. IF NO RESPONSE: Use sensible defaults and document assumptions
+```
+
+#### Pattern 3: Graceful Degradation
+
+```markdown
+**Security scan steps**:
+1. Run automated SAST scan
+   - IF SAST unavailable: Perform manual code review
+   - IF manual review scope too large: Focus on auth/payment code only
+   - IF no code to review: Return "No security-relevant code found in scope"
+```
+
+#### Pattern 4: Clear "I'm Blocked" Output
+
+```markdown
+## When You Cannot Proceed
+
+If you are blocked and no escape path exists, output:
+
+\`\`\`
+## BLOCKED: [Task Name]
+
+**Reason**: [Clear explanation of what's blocking you]
+
+**What I Need**:
+1. [Specific item 1]
+2. [Specific item 2]
+
+**User Can**:
+- Provide [X] by saying: "[exact phrase]"
+- Skip this step (consequence: [Y])
+- Abort task entirely
+
+**Partial Results** (if any):
+[Whatever you accomplished before being blocked]
+\`\`\`
+```
+
+### Escape Path Examples by Agent
+
+#### Yuuji (Implementation)
+
+```markdown
+**Implementing feature**:
+1. Write tests first
+   - IF test framework unknown: Ask user which framework
+   - IF no test framework installed: Create implementation without tests, note as technical debt
+
+2. Implement feature
+   - IF unclear requirements: Ask user via AskUserQuestion with specific options
+   - IF conflicting requirements: Document conflict, use safest interpretation
+
+3. Create backup
+   - IF cannot create backup: WARN user, ask for confirmation to proceed without backup
+```
+
+#### Megumi (Security)
+
+```markdown
+**Security review**:
+1. Review OWASP Top 10
+   - IF code inaccessible: Ask user for file paths
+   - IF code too large: Focus on security-critical paths (auth, payments, data handling)
+
+2. Document findings
+   - IF no findings: Explicitly state "No security issues found in [scope]"
+   - IF partial review: Document what was reviewed and what was skipped
+```
+
+#### Gojo (Mission Control)
+
+```markdown
+**Project initialization**:
+1. Read project state
+   - IF no state file: Create new from template
+   - IF corrupted state: Ask user to reset or provide working version
+
+2. Brief team
+   - IF agent file missing: Use default agent behavior, note missing file
+```
+
+### Implementing Escape Paths in Task Tool Prompts
+
+When spawning subagents via the Task tool, include escape instructions:
+
+```
+Task prompt: "Implement user authentication feature"
+
+**Requirements** (with escape paths):
+1. Read protocol/yuuji.agent.md for behavior guidelines
+   - If file not found: Use standard TDD approach
+
+2. Create comprehensive tests before implementation
+   - If test framework unclear: Ask user via AskUserQuestion
+   - If no test directory exists: Create /tests/ directory first
+
+3. Implement authentication logic
+   - If auth method unspecified: Default to JWT, note assumption
+   - If database unclear: Use in-memory for prototype
+
+4. Document in dev-notes.md
+   - If dev-notes.md not found: Create it with template
+
+**IF BLOCKED**: Output partial results with BLOCKED template above.
+**NEVER**: Hang silently or output "Done" without results.
+```
+
+---
+
+## Using Skills for Token Efficiency
+
+### Why Skills Matter
+
+Skills save tokens by:
+- Avoiding repeated instructions across conversations
+- Providing pre-structured workflows for common operations
+- Reducing context window usage
+- Ensuring consistency across sessions
+
+### Skill Types
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| **Example Skills** | Anthropic-provided common patterns | webapp-testing, mcp-server |
+| **Document Skills** | Process document types | docx, xlsx, pdf |
+| **Custom Skills** | Domain-specific workflows | owasp-checklist, tdd-checklist |
+
+### Skill Invocation
+
+```
+skill: "skill-name"
+
+[Your context/task]
+```
+
+### Recommended Skills by Agent
+
+#### Yuuji (Implementation)
+```yaml
+skills:
+  - webapp-testing      # Playwright-based UI testing
+  - mcp-server          # MCP integration guidance
+  - tdd-checklist       # Test-driven development workflow
+  - async-patterns      # Async/await best practices
+  - testing-fixtures    # Test fixture management
+```
+
+#### Megumi (Security)
+```yaml
+skills:
+  - owasp-checklist     # OWASP Top 10 review workflow
+  - threat-modeling     # Structured threat analysis
+  - jwt-audit           # JWT security review
+  - secrets-review      # Secrets/credentials detection
+  - dependency-audit    # SCA/supply chain review
+```
+
+#### Nobara (UX/Creative)
+```yaml
+skills:
+  - a11y-review         # Accessibility audit
+  - ux-writing          # UX copy guidelines
+  - onboarding-flows    # User onboarding patterns
+  - design-system-glossary # Design system reference
+```
+
+#### Gojo (Mission Control)
+```yaml
+skills:
+  - skill-builder       # Create new skills rapidly
+  - protocol-verify     # Protocol compliance check
+  - release-briefing    # Release preparation workflow
+  - version-audit       # Version consistency check
+```
+
+### Creating Custom Skills
+
+Use the skill-builder skill:
+
+```
+skill: "skill-builder"
+
+Create a skill for: [your description]
+```
+
+The skill-builder will:
+1. Ask clarifying questions via AskUserQuestion
+2. Generate properly formatted skill template
+3. Include escape paths for all requirements
+4. Register in AGENT_SKILLS_MAP.yaml
+
+See `protocol/skills/skill-builder.md` for the complete skill-builder specification.
+
+---
+
+## AskUserQuestion Integration (CRITICAL)
+
+### Why AskUserQuestion is Essential
+
+The `AskUserQuestion` tool provides:
+- **Nice UI**: Multiple-choice options instead of free-form text
+- **Reduced Ambiguity**: Users select from defined choices
+- **Better UX**: Clear decision points in the workflow
+- **Token Efficiency**: Shorter, more focused responses
+
+### When to Use AskUserQuestion
+
+**ALWAYS use AskUserQuestion for**:
+- Tier selection (rapid/standard/critical)
+- Approach decisions (multiple valid paths)
+- Missing information (what framework? what database?)
+- User preferences (strict mode? verbose output?)
+- Confirmation before destructive actions
+- Clarifying ambiguous requirements
+
+### AskUserQuestion Patterns
+
+#### Pattern 1: Tier Selection
+```json
+{
+  "questions": [
+    {
+      "question": "Which workflow tier should I use for this feature?",
+      "header": "Tier",
+      "options": [
+        {"label": "Tier 1 - Rapid", "description": "Prototype, no tests, fast iteration"},
+        {"label": "Tier 2 - Standard", "description": "Production code with TDD + security review"},
+        {"label": "Tier 3 - Critical", "description": "Auth/payments/sensitive data with enhanced review"}
+      ],
+      "multiSelect": false
+    }
+  ]
+}
+```
+
+#### Pattern 2: Approach Decision
+```json
+{
+  "questions": [
+    {
+      "question": "How should I implement authentication?",
+      "header": "Auth Method",
+      "options": [
+        {"label": "JWT", "description": "Stateless tokens, best for APIs"},
+        {"label": "Session", "description": "Server-side sessions, best for web apps"},
+        {"label": "OAuth 2.0", "description": "Third-party auth, best for social login"}
+      ],
+      "multiSelect": false
+    }
+  ]
+}
+```
+
+#### Pattern 3: Missing Information
+```json
+{
+  "questions": [
+    {
+      "question": "Which testing framework does your project use?",
+      "header": "Test Framework",
+      "options": [
+        {"label": "Jest", "description": "JavaScript/TypeScript testing"},
+        {"label": "Pytest", "description": "Python testing"},
+        {"label": "JUnit", "description": "Java testing"},
+        {"label": "None yet", "description": "Help me set one up"}
+      ],
+      "multiSelect": false
+    }
+  ]
+}
+```
+
+#### Pattern 4: Multi-Select (Features/Options)
+```json
+{
+  "questions": [
+    {
+      "question": "Which security checks should I include in the review?",
+      "header": "Checks",
+      "options": [
+        {"label": "OWASP Top 10", "description": "Core web vulnerabilities"},
+        {"label": "Dependency Audit", "description": "Third-party package vulnerabilities"},
+        {"label": "Secrets Scan", "description": "Check for hardcoded credentials"},
+        {"label": "Performance", "description": "N+1 queries, memory leaks"}
+      ],
+      "multiSelect": true
+    }
+  ]
+}
+```
+
+### Agent-Specific AskUserQuestion Guidance
+
+#### Yuuji Should Ask About:
+- Test framework preference
+- Tier selection if not specified
+- Database/ORM choice
+- API design approach (REST vs GraphQL)
+- Error handling strategy
+
+#### Megumi Should Ask About:
+- Review scope (full audit vs focused)
+- Risk tolerance (block on P2? P3?)
+- Compliance requirements (PCI, HIPAA, SOC2)
+- External scan tool availability
+
+#### Nobara Should Ask About:
+- Target user persona
+- Accessibility level (WCAG A/AA/AAA)
+- Design system constraints
+- Brand guidelines availability
+
+#### Gojo Should Ask About:
+- Project initialization details
+- Tier workflow preferences
+- Team configuration
+- Monitoring preferences
+
+### Best Practices
+
+1. **Max 4 options per question**: More than 4 is overwhelming
+2. **Clear, concise labels**: 1-5 words per option label
+3. **Helpful descriptions**: Explain consequences of each choice
+4. **Always include "Other"**: Users can always provide custom input
+5. **Multi-select sparingly**: Only when choices aren't mutually exclusive
+6. **Ask early**: Don't wait until you're stuck to ask
+
+---
+
+## Add-to-Memory Prompts (Copy-Paste Ready)
+
+### For Claude.ai / Claude API
+
+Copy and paste this prompt to save Domain Zero Protocol to Claude's memory:
+
+```
+Add to memory: Domain Zero Protocol
+
+I use the Domain Zero Protocol for AI-assisted development. This is a four-agent system:
+- YUUJI (Implementation Specialist): Test-first development, feature implementation
+- MEGUMI (Security Analyst): OWASP Top 10 security reviews
+- NOBARA (Creative Strategy & UX): User experience design, product vision
+- GOJO (Mission Control): Project lifecycle, protocol guardian
+
+The protocol files are located in my project at:
+- protocol/CLAUDE.md (main protocol, v8.2.0)
+- protocol/yuuji.agent.md (implementation agent)
+- protocol/megumi.agent.md (security agent)
+- protocol/nobara.agent.md (creative strategy agent)
+- protocol/gojo.agent.md (mission control)
+
+The protocol uses a three-tier workflow system:
+- Tier 1 (Rapid): Fast prototyping, no tests
+- Tier 2 (Standard): Production features with TDD + security review [DEFAULT]
+- Tier 3 (Critical): Enhanced testing + multi-model security review for auth/payments/sensitive data
+
+Key features:
+- Use skills for common operations to save tokens (skill: "skill-name")
+- Use AskUserQuestion tool frequently for clarification and nice UI
+- All agents have escape paths - they will ask for help rather than hang
+
+When I say 'Read protocol/[AGENT].agent.md', always read the file first to follow the protocol.
+The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
+```
+
+### For ChatGPT (Custom Instructions)
+
+Add to "What would you like ChatGPT to know about you?":
+
+```
+I use the Domain Zero Protocol (v8.2.0) for development projects. This is a four-agent AI development framework with specialized roles:
+- YUUJI: Implementation with test-first development
+- MEGUMI: Security review (OWASP Top 10)
+- NOBARA: Creative strategy and user experience design
+- GOJO: Mission control and protocol enforcement
+
+When working on my projects, refer to protocol files at protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, and protocol/gojo.agent.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
+
+Important:
+- Use skills for common operations (saves tokens)
+- Ask clarifying questions frequently (better than guessing)
+- All instructions should have escape paths (what to do if blocked)
+
+Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
+```
+
+### For Claude Code (CLAUDE.md / Custom Instructions)
+
+Add to your global or project-level custom instructions:
+
+```
+- Add to memory: Domain Zero Protocol
+
+I use the Domain Zero Protocol for AI-assisted development. This is a four-agent system:
+- YUUJI (Implementation Specialist): Test-first development, feature implementation
+- MEGUMI (Security Analyst): OWASP Top 10 security reviews
+- NOBARA (Creative Strategy & UX): User experience design, product vision
+- GOJO (Mission Control): Project lifecycle, protocol guardian
+
+The protocol files are located in my project at:
+- protocol/CLAUDE.md (main protocol, v8.2.0)
+- protocol/yuuji.agent.md (implementation agent)
+- protocol/megumi.agent.md (security agent)
+- protocol/nobara.agent.md (creative strategy agent)
+- protocol/gojo.agent.md (mission control)
+
+The protocol uses a three-tier workflow system:
+- Tier 1 (Rapid): Fast prototyping, no tests
+- Tier 2 (Standard): Production features with TDD + security review [DEFAULT]
+- Tier 3 (Critical): Enhanced testing + multi-model security review for auth/payments/sensitive data
+
+When I say 'Read protocol/[AGENT].md', always read the file first to follow the protocol.
+The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
+```
+
+---
+
+## Quick Reference Card
+
+### Agent Invocation
+
+| Agent | Command | Purpose |
+|-------|---------|---------|
+| Yuuji | `Read protocol/yuuji.agent.md and [task]` | Implementation |
+| Megumi | `Read protocol/megumi.agent.md and [task]` | Security review |
+| Nobara | `Read protocol/nobara.agent.md and [task]` | UX/Creative |
+| Gojo | `Read protocol/gojo.agent.md` | Mission Control |
+
+### Tier Flags
+
+| Tier | Flag | Use Case |
+|------|------|----------|
+| Rapid | `--tier rapid` | Prototypes, experiments |
+| Standard | (default) | Production features |
+| Critical | `--tier critical` | Auth, payments, sensitive data |
+
+### Skill Invocation
+
+```
+skill: "skill-name"
+[context]
+```
+
+### Key Principles
+
+1. **Always ask rather than guess** - Use AskUserQuestion
+2. **Always have an escape path** - Never hang or fail silently
+3. **Use skills for common operations** - Save tokens
+4. **Test-first for Tier 2/3** - TDD is non-negotiable
+5. **User safety first** - Above all other objectives
 
 ---
 

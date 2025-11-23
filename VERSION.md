@@ -1,203 +1,150 @@
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.2.0
-**Release Date:** November 18, 2025
+**Version:** v8.3.0
+**Release Date:** November 22, 2025
 **Release Type:** Minor Release
 
 ---
 
 ## Release Summary
 
-This minor release **enhances Research Mode** to make it actively usable by all agents. Research Mode (specification added in v7.2.0) now includes complete invocation guidance, structured output templates, and staleness monitoring integrated with Mission Control. All four agents (Yuuji, Megumi, Nobara, Gojo) can now conduct domain-specific research to stay current with evolving standards and best practices.
+This minor release implements **critical subagent resilience features** including escape paths, skill-builder capabilities, enhanced AskUserQuestion integration, and updated add-to-memory prompts. These improvements prevent subagents from hanging or failing silently when encountering missing information or blocked resources.
 
 ### Key Changes
 
-- **✅ Research Mode Invocation** - All agents can now be invoked with `--research` flag
-- **✅ Agent-Specific Research Sections** - Complete research guidance added to all 4 agent files
-- **✅ Structured Output Templates** - Standardized summary format with citations and confidence indicators
-- **✅ Staleness Monitoring** - Gojo enforces research currency with configurable thresholds
-- **✅ Directory Structure** - `.protocol-state/research/` created for all agents
+- **Subagent Escape Paths** - Prevents subagents from hanging on hard requirements
+- **Skill-Builder Skill** - Enables rapid creation of new skills with proper structure
+- **AskUserQuestion Integration** - Enhanced user interaction with nice UI patterns
+- **Updated Add-to-Memory Prompts** - Copy-paste ready prompts for all platforms
+- **Skills Token Efficiency Guide** - Best practices for using skills to save tokens
 
 ---
 
-## What's New in v8.2.0
+## What's New in v8.3.0
 
 ### Added
 
-#### 1. **Research Mode Enhancement** - Active agent research implementation
+#### 1. **Subagent Escape Paths** - Critical resilience system
 
-**Agent Research Focus Areas:**
-- **Yuuji**: Implementation patterns, TDD tooling, test isolation, async patterns (Weekly)
-- **Megumi**: OWASP updates, emerging vulnerabilities, cryptographic standards (Weekly)
-- **Nobara**: WCAG guidelines, usability heuristics, onboarding flows (Biweekly)
-- **Gojo**: Meta trends, coordination tooling, risk landscape, protocol governance (Monthly)
+**Problem Solved:**
+- Subagents could hang indefinitely on hard requirements
+- Silent failures produced "Done" without actual results
+- Missing information with no recovery path
 
-**Invocation Pattern:**
-```bash
-"Read [agent].agent.md --research and investigate [topic]"
+**Four Escape Path Patterns:**
+- **Pattern 1: Soft Requirements** - Replace MUST with PREFERRED + fallback
+- **Pattern 2: Progressive Fallback** - Try A → if not B → if not C → use defaults
+- **Pattern 3: Graceful Degradation** - Provide partial results when full completion impossible
+- **Pattern 4: BLOCKED Template** - Structured output showing what's needed
+
+**Location:** `IMPLEMENTATION_GUIDE.md` → "Subagent Escape Paths (CRITICAL)"
+
+#### 2. **Skill-Builder Skill** - Rapid skill creation tool
+
+**New File:** `protocol/skills/skill-builder.md`
+
+**Features:**
+- Complete skill template with all required sections
+- Mandatory escape path requirements for all skills
+- AskUserQuestion integration patterns
+- Quality checklist (8 items)
+- Self-aware escape paths
+
+**Invocation:**
+```
+skill: "skill-builder"
+
+Create a skill for: [description]
 ```
 
-**Example Invocations:**
-```bash
-"Read yuuji.agent.md --research and investigate pytest fixture best practices"
-"Read megumi.agent.md --research and investigate OWASP Top 10 2025 changes"
-"Read nobara.agent.md --research and investigate WCAG 2.2 success criteria"
-"Read gojo.agent.md --research and investigate multi-agent orchestration patterns"
-```
+#### 3. **AskUserQuestion Integration Guide** - Enhanced user interaction
 
-#### 2. **Research Output Structure** - Standardized summaries with citations
+**Why Essential:**
+- Nice UI with multiple-choice options
+- Reduced ambiguity through defined choices
+- Better UX with clear decision points
+- Token efficiency with shorter responses
 
-**Directory Structure:**
-```
-.protocol-state/research/
-├── research-index.json       # Global index with last session timestamps
-├── yuuji/
-│   ├── 2025-11-18T14-30-00Z.summary.md
-│   └── 2025-11-18T14-30-00Z.raw.log    (gitignored)
-├── megumi/
-│   ├── 2025-11-18T15-00-00Z.summary.md
-│   └── 2025-11-18T15-00-00Z.raw.log    (gitignored)
-├── nobara/
-│   └── (research outputs)
-└── gojo/
-    └── (research outputs)
-```
+**Four Question Patterns Provided:**
+- Tier Selection (3 options)
+- Approach Decision (JWT vs Session vs OAuth)
+- Missing Information (test framework)
+- Multi-Select (security checks)
 
-**Summary Template Features:**
-- Focus questions (3-5 specific research questions)
-- Key findings table with sources and confidence indicators
-- Actionable recommendations (experiments, not mandates)
-- Source citations with OWASP/WCAG/RFC mappings
-- Privacy protection (raw notes gitignored)
+**Agent-Specific Guidance:**
+- Yuuji: Test framework, tier, database/ORM, API design
+- Megumi: Review scope, risk tolerance, compliance
+- Nobara: User persona, WCAG level, design system
+- Gojo: Project initialization, tier preferences, monitoring
 
-#### 3. **Quality Gates** - Research validation requirements
+#### 4. **Skills Token Efficiency Guide** - Best practices
 
-**Source Requirements:**
-- Minimum 3 primary sources (OWASP, NIST, W3C, RFC, peer-reviewed)
-- High confidence findings require 2+ source corroboration
-- Security items mapped to OWASP/CVE/NIST (Megumi only)
-- WCAG criterion mapping (Nobara only)
+**Documentation Added:**
+- Why skills matter (token savings, consistency)
+- Skill types (Example, Document, Custom)
+- Recommended skills by agent
+- Skill invocation pattern: `skill: "skill-name"`
 
-**Confidence Levels:**
-- **High**: Primary sources + corroborated by 2+ independent sources
-- **Medium**: Reputable documentation/framework guides + some corroboration
-- **Low**: Single source or unverified (flagged for further research)
+#### 5. **Updated Add-to-Memory Prompts** - Copy-paste ready
 
-#### 4. **Staleness Monitoring** - Gojo enforces research currency
+**Enhanced Prompts For:**
+- Claude.ai/API (key features added)
+- ChatGPT Custom Instructions (key features added)
+- Claude Code (file extension fixed to .agent.md)
 
-**Thresholds:**
-- Standard warning: 14+ days without research
-- Critical escalation: 7+ days for security/auth/crypto topics (Megumi)
-- Reminders issued in Mission Control interface
-
-**Research Cadence:**
-- Yuuji: Weekly (implementation knowledge evolves rapidly)
-- Megumi: Weekly (security threats require constant monitoring)
-- Nobara: Biweekly (UX/accessibility standards update less frequently)
-- Gojo: Monthly (strategic trends are slower-moving)
-
-#### 5. **Integration with Workflows** - Research informs implementation
-
-**Research → Implementation Flow:**
-1. Research findings documented in structured summary
-2. User reviews recommendations and approves approach
-3. Standard tier workflows apply (Tier 1/2/3)
-4. Implementation uses current best practices from research
-
-**Example:**
-```
-Research: "JWT rotation best practices have changed"
-→ Summary recommends 30-minute refresh token rotation
-→ User approves recommendation
-→ "Read yuuji.agent.md --tier critical and implement JWT refresh rotation"
-→ Standard Tier 3 workflow applies
-```
+**Key Features Added:**
+- Use skills for common operations to save tokens
+- Use AskUserQuestion tool frequently for clarification
+- All agents have escape paths - they will ask for help rather than hang
 
 ### Changed
 
-#### 1. **protocol/CLAUDE.md** - Added Mode 4: Research Mode
+#### **IMPLEMENTATION_GUIDE.md** - Major expansion
 
-**Operational Modes Section:**
-- Added comprehensive Research Mode overview
-- Documented research focus by agent
-- Included quality gates and staleness monitoring
-- Added invocation examples for all agents
+**New Sections (400+ lines):**
+- Subagent Escape Paths (CRITICAL)
+- Using Skills for Token Efficiency
+- AskUserQuestion Integration (CRITICAL)
+- Add-to-Memory Prompts (Copy-Paste Ready)
+- Quick Reference Card
 
-**Agent Invocation Patterns:**
-- Added research mode examples for Yuuji, Megumi, Nobara, Gojo
-- Included research flag usage patterns
+#### **README.md** - Updated add-to-memory prompts
 
-#### 2. **All Agent Files** - Research mode sections added
+- Added key features section (skills, AskUserQuestion, escape paths)
+- Fixed file extension reference (.agent.md)
 
-**yuuji.agent.md** (protocol/yuuji.agent.md:1318-1462):
-- Research focus (implementation patterns, TDD tooling)
-- Invocation guidance and examples
-- Output template and integration with implementation work
+#### **protocol/skills/AGENT_SKILLS_MAP.yaml** - Added skill-builder
 
-**megumi.agent.md** (protocol/megumi.agent.md:2043-2229):
-- Research focus (OWASP, vulnerabilities, cryptography)
-- Security-specific source prioritization
-- CVE/NIST cross-reference requirements
-
-**nobara.agent.md** (protocol/nobara.agent.md:561-739):
-- Research focus (WCAG, usability heuristics)
-- User-centered research prioritization
-- WCAG criterion mapping
-
-**gojo.agent.md** (protocol/gojo.agent.md:1952-2148):
-- Research focus (meta trends, coordination, governance)
-- Strategic intelligence synthesis
-- Agent research monitoring responsibilities
-
-### Updated
-
-- **protocol.config.yaml**: Version 8.2.0, config_version 2.2
-- **protocol/CLAUDE.md**: Version 8.2.0, research mode operational mode added
-- **.protocol-state/project-state.json**: protocol_version 8.2.0
-- **All 4 agent files**: Research mode sections (145-195 lines each)
+- Added `skill-builder` to Gojo's custom skills
 
 ---
 
 ## Files Modified
 
-**Core Protocol:**
-- `protocol.config.yaml` - Version updated to 8.2.0, config_version to 2.2
-- `protocol/CLAUDE.md` - Version 8.2.0, Mode 4: Research Mode added
-- `.protocol-state/project-state.json` - protocol_version updated to 8.2.0
+**Core Documentation:**
+- `IMPLEMENTATION_GUIDE.md` - 4 major new sections (~400 lines)
+- `README.md` - Updated add-to-memory prompts (~15 lines)
+- `CHANGELOG.md` - v8.3.0 entry (~170 lines)
 
-**Agent Files:**
-- `protocol/yuuji.agent.md` - Research mode section added (lines 1318-1462)
-- `protocol/megumi.agent.md` - Research mode section added (lines 2043-2229)
-- `protocol/nobara.agent.md` - Research mode section added (lines 561-739)
-- `protocol/gojo.agent.md` - Research mode section added (lines 1952-2148)
+**Protocol Files:**
+- `protocol.config.yaml` - Version 8.3.0, config_version 2.3
+- `protocol/skills/AGENT_SKILLS_MAP.yaml` - Added skill-builder
 
-**State Management:**
-- `.protocol-state/research/` - Directory structure created
-- `.protocol-state/research/research-index.json` - Initial index created
-- `.gitignore` - Already configured for research raw.log exclusions (v7.2.0)
+**New Files Created:**
+- `protocol/skills/skill-builder.md` - Skill creation tool (~250 lines)
+- `SYSTEM_UPDATE_V8.3.0.md` - Consolidated update documentation
 
 ---
 
 ## Configuration
 
-Research mode is controlled via `protocol.config.yaml`:
+No new configuration required. All changes are backward compatible.
 
-```yaml
-research:
-  enabled: true
-  allowed_agents: ["yuuji", "megumi", "nobara", "gojo"]
-  cadence:
-    yuuji: "weekly"
-    megumi: "weekly"
-    nobara: "biweekly"
-    gojo: "monthly"
-  max_session_minutes: 25
-  source_policy:
-    max_sources: 12
-    min_primary_sources: 3
-  escalation:
-    stale_days_warning: 14
-    critical_domain_stale_days: 7
+**Optional:** Use skill-builder via:
+```
+skill: "skill-builder"
+
+Create a skill for: [your description]
 ```
 
 ---
@@ -207,25 +154,41 @@ research:
 ### For Existing Users
 
 **No Action Required:**
-- Research mode is optional (agents function normally without it)
 - All changes are backward compatible
-- Existing workflows unaffected
+- Existing workflows unchanged
+- Optional enhancements available
 
 **Optional Enhancements:**
 ```bash
-# Use research mode before critical implementations
-"Read megumi.agent.md --research and investigate OWASP Top 10 2025 changes"
-# Then implement with current knowledge
-"Read yuuji.agent.md --tier critical and implement JWT authentication"
+# Use escape paths in Task tool prompts
+# Add to your prompts:
+**IF BLOCKED**: Output partial results with BLOCKED template.
+**NEVER**: Hang silently or output "Done" without results.
+
+# Use skill-builder for new skills
+skill: "skill-builder"
+Create a skill for: OWASP security checklist
+
+# Use AskUserQuestion for better UX
+# See IMPLEMENTATION_GUIDE.md for patterns
 ```
 
 ### For New Users
 
-Research mode provides a structured way to keep agent knowledge current:
-1. Enable research in `protocol.config.yaml` (enabled by default)
-2. Invoke agents with `--research` flag when needed
-3. Review research summaries in `.protocol-state/research/[agent]/`
-4. Approve recommendations before implementation
+1. Review `IMPLEMENTATION_GUIDE.md` for new sections
+2. Copy updated add-to-memory prompts
+3. Use skill-builder for creating custom skills
+4. Apply escape path patterns in subagent prompts
+
+---
+
+## Key Principles Established
+
+1. **Always ask rather than guess** - Use AskUserQuestion
+2. **Always have an escape path** - Never hang or fail silently
+3. **Use skills for common operations** - Save tokens
+4. **Test-first for Tier 2/3** - TDD is non-negotiable
+5. **User safety first** - Above all other objectives
 
 ---
 
@@ -237,13 +200,15 @@ Research mode provides a structured way to keep agent knowledge current:
 
 ## Documentation
 
-**Research Mode Specification:**
-- `protocol/RESEARCH_MODE.md` - Complete specification (v7.2.0)
-- `protocol/CLAUDE.md` - Mode 4: Research Mode overview
-- All agent files - Research mode sections with invocation guidance
+**Implementation Guide:**
+- `IMPLEMENTATION_GUIDE.md` - All new sections with patterns and examples
 
-**Configuration:**
-- `protocol.config.yaml` - Research settings under `research:` section
+**System Update:**
+- `SYSTEM_UPDATE_V8.3.0.md` - Comprehensive update documentation
+
+**Skills:**
+- `protocol/skills/skill-builder.md` - Skill creation tool
+- `protocol/skills/AGENT_SKILLS_MAP.yaml` - Agent-skill mapping
 
 ---
 
@@ -256,9 +221,9 @@ Research mode provides a structured way to keep agent knowledge current:
 ## Contributors
 
 - Domain Zero Protocol Team
-- 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+- Claude Code
 
 ---
 
-**Previous Version:** v8.1.0 (Playwright E2E Testing Infrastructure)
+**Previous Version:** v8.2.0 (Research Mode Enhancement)
 **Next Planned:** TBD (See roadmap in README.md)

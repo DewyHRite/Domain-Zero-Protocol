@@ -9,6 +9,171 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.3.0] - 2025-11-22
+
+### Added
+
+#### **Subagent Escape Paths** - Critical subagent resilience system
+
+**Problem Addressed:**
+- Subagents (spawned via Task tool) could hang, fail silently, or output "Done" without results
+- Hard requirements with no fallback caused infinite loops or silent failures
+- Missing information with no recovery path led to unhelpful outputs
+
+**Escape Path Patterns:**
+- **Pattern 1: Soft Requirements** - Preferred over hard MUST requirements
+  - Example: Check if file exists (PREFERRED) with fallback if missing
+- **Pattern 2: Progressive Fallback** - Try A, if not B, if not C, if not use defaults
+- **Pattern 3: Graceful Degradation** - Provide partial results when full completion impossible
+- **Pattern 4: Clear "I'm Blocked" Output** - Structured template for when truly stuck
+
+**Agent-Specific Escape Paths:**
+- **Yuuji**: Test framework unknown → ask user; backup fails → warn and confirm
+- **Megumi**: Code inaccessible → ask for paths; no findings → explicitly state scope
+- **Gojo**: No state file → create new; corrupted state → ask user to reset
+
+**Implementation in Task Tool:**
+- All Task tool prompts should include escape instructions
+- Never hang silently or output "Done" without results
+- BLOCKED template provided for clear communication
+
+#### **Skill-Builder Skill** - Rapid skill creation tool
+
+**New File:** `protocol/skills/skill-builder.md`
+
+**Purpose:** Create properly formatted skills quickly with consistent structure
+
+**Features:**
+- Template for consistent skill format
+- Mandatory escape path requirements for all skills
+- AskUserQuestion integration patterns
+- Quality checklist (8 items) for new skills
+- Meta escape paths (handles own uncertainty)
+
+**Skill Creation Workflow:**
+1. Gather requirements via AskUserQuestion
+2. Generate skill template with proper structure
+3. Add escape paths for all requirements
+4. Register in AGENT_SKILLS_MAP.yaml
+
+#### **Skills Token Efficiency Guide** - Best practices for skill usage
+
+**Documentation Added to IMPLEMENTATION_GUIDE.md:**
+- Why skills matter (token savings, consistency, reduced context)
+- Skill types (Example, Document, Custom)
+- Recommended skills by agent (Yuuji, Megumi, Nobara, Gojo)
+- Skill invocation pattern: `skill: "skill-name"`
+
+**Skill Recommendations:**
+- **Yuuji**: webapp-testing, tdd-checklist, async-patterns, testing-fixtures
+- **Megumi**: owasp-checklist, threat-modeling, jwt-audit, secrets-review
+- **Nobara**: a11y-review, ux-writing, onboarding-flows
+- **Gojo**: skill-builder, protocol-verify, release-briefing, version-audit
+
+#### **AskUserQuestion Integration Guide** - Enhanced user interaction
+
+**Why AskUserQuestion is Essential:**
+- Nice UI: Multiple-choice options instead of free-form text
+- Reduced Ambiguity: Users select from defined choices
+- Better UX: Clear decision points in workflow
+- Token Efficiency: Shorter, more focused responses
+
+**When to Use (ALWAYS):**
+- Tier selection (rapid/standard/critical)
+- Approach decisions (multiple valid paths)
+- Missing information (what framework? what database?)
+- User preferences (strict mode? verbose output?)
+- Confirmation before destructive actions
+- Clarifying ambiguous requirements
+
+**AskUserQuestion Patterns:**
+- Pattern 1: Tier Selection (3 options with descriptions)
+- Pattern 2: Approach Decision (e.g., JWT vs Session vs OAuth)
+- Pattern 3: Missing Information (e.g., test framework)
+- Pattern 4: Multi-Select (e.g., security checks to include)
+
+**Agent-Specific Guidance:**
+- **Yuuji**: Test framework, tier, database/ORM, API design, error handling
+- **Megumi**: Review scope, risk tolerance, compliance requirements, external tools
+- **Nobara**: User persona, WCAG level, design system, brand guidelines
+- **Gojo**: Project initialization, tier preferences, team config, monitoring
+
+**Best Practices:**
+- Max 4 options per question
+- Clear, concise labels (1-5 words)
+- Helpful descriptions explaining consequences
+- Multi-select only when choices aren't mutually exclusive
+- Ask early (don't wait until stuck)
+
+#### **Updated Add-to-Memory Prompts** - Copy-paste ready
+
+**Claude.ai/API Prompt** (enhanced):
+```
+Add to memory: Domain Zero Protocol
+[...includes key features: skills, AskUserQuestion, escape paths...]
+```
+
+**ChatGPT Custom Instructions** (enhanced):
+```
+Key features:
+- Use skills for common operations (saves tokens)
+- Ask clarifying questions frequently (better than guessing)
+- All instructions should have escape paths (what to do if blocked)
+```
+
+**Claude Code Instructions** (enhanced):
+- Same structure with protocol file locations
+
+### Changed
+
+#### **IMPLEMENTATION_GUIDE.md** - Major expansion
+
+**New Sections Added (400+ lines):**
+- Subagent Escape Paths (CRITICAL) - Complete escape path system
+- Using Skills for Token Efficiency - Skill usage best practices
+- AskUserQuestion Integration (CRITICAL) - Enhanced user interaction
+- Add-to-Memory Prompts (Copy-Paste Ready) - Updated prompts
+- Quick Reference Card - Agent invocation, tier flags, key principles
+
+#### **README.md** - Updated add-to-memory prompts
+
+**Claude Prompt Updates:**
+- Added key features section (skills, AskUserQuestion, escape paths)
+- Fixed file extension reference (.agent.md)
+
+**ChatGPT Instructions Updates:**
+- Added key features section with practical tips
+
+#### **protocol/skills/AGENT_SKILLS_MAP.yaml** - Added skill-builder
+
+**Gojo Custom Skills:**
+- Added `skill-builder` - Create new skills rapidly with proper structure
+
+### Documentation
+
+**Files Modified:**
+- `IMPLEMENTATION_GUIDE.md` - 400+ new lines with 4 major sections
+- `README.md` - Updated add-to-memory prompts (2 sections)
+- `protocol/skills/AGENT_SKILLS_MAP.yaml` - Added skill-builder skill
+
+**Files Created:**
+- `protocol/skills/skill-builder.md` - Complete skill creation tool (250+ lines)
+
+### No Breaking Changes
+
+- ✅ All changes are backward compatible
+- ✅ Existing workflows unchanged
+- ✅ Optional enhancements (escape paths improve but don't require changes)
+- ✅ Skills system extends but doesn't replace existing patterns
+
+### Key Principles Documented
+
+1. **Always ask rather than guess** - Use AskUserQuestion
+2. **Always have an escape path** - Never hang or fail silently
+3. **Use skills for common operations** - Save tokens
+4. **Test-first for Tier 2/3** - TDD is non-negotiable
+5. **User safety first** - Above all other objectives
+
 ---
 
 ## [8.2.0] - 2025-11-18
