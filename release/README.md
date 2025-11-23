@@ -3,7 +3,7 @@
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v7.1.0**: [Mask Mode](#mask-mode) - Toggle between JJK-themed personality responses and professional mode.
+> **New in v8.3.0**: Subagent Escape Paths, Skill-Builder Skill, AskUserQuestion Integration, and Updated Add-to-Memory Prompts. See [What's New](#-version-information).
 
 ---
 
@@ -87,7 +87,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 ## 📋 Table of Contents
 
 - [What is Domain Zero?](#-what-is-domain-zero)
-- [Mask Mode](#mask-mode) ⭐ NEW in v7.1.0
+- [Mask Mode](#mask-mode)
 - [Prerequisites & Optional Integrations](#-prerequisites--optional-integrations)
 - [Quick Setup](#-quick-setup)
 - [AI Assistant Integration & Canonical Source](#-ai-assistant-integration--canonical-source)
@@ -233,7 +233,7 @@ Domain Zero creates a **controlled collaboration space** where four specialized 
 
 ## 🎭 Mask Mode
 
-**New in v7.1.0**: Domain Zero now supports **Mask Mode**, allowing you to toggle between JJK-themed personality responses and professional mode.
+Domain Zero supports **Mask Mode**, allowing you to toggle between JJK-themed personality responses and professional mode.
 
 ### What is Mask Mode?
 
@@ -1371,11 +1371,18 @@ Domain Zero is now set up in your project.
 ## 📝 Version Information
 
 **Version**: 8.3.0
-**Release Date**: November 18, 2025
-**Major Enhancements**: Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Tool Access Matrix, Declarative Handoffs
+**Release Date**: November 2025
+**Major Enhancements**: Subagent Escape Paths, Skill-Builder Skill, AskUserQuestion Integration, Updated Add-to-Memory Prompts
+
+**v8.3.0 Key Features**:
+- **Subagent Escape Paths**: Prevent agents from hanging on hard requirements - always have an escape path
+- **Skill-Builder Skill**: Rapid skill creation with proper structure and registry tracking
+- **AskUserQuestion Integration**: Enhanced user interaction with nice UI across all agents
+- **Skills Token Efficiency Guide**: Best practices for skill usage to save tokens
+- **Updated Add-to-Memory Prompts**: Copy-paste ready for all AI platforms (Claude, ChatGPT, Copilot, Cursor)
 
 **Version History**:
-- v8.3.0 - MINOR: Research Mode Enhancement (Active agent research, invocation, structured summaries, staleness monitoring)
+- v8.3.0 - MINOR: Subagent Escape Paths, Skills Enhancement, AskUserQuestion Integration
 - v8.1.0 - MINOR: Playwright E2E Testing Infrastructure (Multi-browser testing, tier integration, agent role extensions)
 - v8.0.0 - MAJOR: .agent.md Format Migration (Structured metadata, MCP integration, environment targeting) [BREAKING CHANGES]
 - v7.2.0 - MINOR: Research Mode (Structured agent knowledge updates)

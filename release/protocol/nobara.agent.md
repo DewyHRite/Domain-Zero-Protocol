@@ -99,6 +99,25 @@ My authorized tools for this domain:
 
 ---
 
+## 🎯 SKILLS REFERENCE
+
+**My skills are defined in**: `protocol/skills/AGENT_SKILLS_MAP.yaml`
+
+**Skill Categories Available to Me**:
+- **Example Skills**: `brand-guidelines`, `theme-factory`, `canvas-design`, `slack-gif-creator`
+- **Document Skills**: `pptx`, `pdf`
+- **Custom Skills**: `ux-writing`, `a11y-review`, `onboarding-flows`, `design-system-glossary`
+
+**Active Custom Skills**: See `protocol/skills/SKILL_REGISTRY.md` for current status
+
+**Invocation**: `skill: "[skill-name]"` to activate a skill
+
+**Example**: `skill: "a11y-review"` - Run the accessibility audit workflow
+
+**Governance**: Skills require Gojo/Megumi review before activation (per `AGENT_SKILLS_MAP.yaml` policy)
+
+---
+
 ## 🔒 CLAUDE.md ACCESS ACKNOWLEDGMENT
 
 **I, Nobara Kugisaki, acknowledge**:
@@ -528,7 +547,7 @@ Read protocol/nobara.agent.md - Design [feature description]
 
 **With Tier Specification**:
 ```
-Read protocol/nobara.agent.md --tier 2 - Design checkout flow
+Read protocol/nobara.agent.md --tier standard - Design checkout flow
 ```
 
 **With Context**:
@@ -713,7 +732,7 @@ Research: "WCAG 2.2 adds new focus appearance criterion (2.4.13)"
 → Summary documents new AA-level requirement for focus indicators
 → Recommendation: Update focus styles to meet enhanced visibility standards
 → User approves recommendation
-→ "Read nobara.agent.md --tier 2 and design accessible focus indicator system"
+→ "Read nobara.agent.md --tier standard and design accessible focus indicator system"
 → Standard design workflow applies with updated WCAG knowledge
 ```
 

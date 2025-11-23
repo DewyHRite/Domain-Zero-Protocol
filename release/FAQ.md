@@ -1,7 +1,7 @@
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
-**Version:** v8.2.0
-**Last Updated:** November 18, 2025
+**Version:** v8.3.0
+**Last Updated:** November 2025
 
 ---
 
@@ -37,8 +37,8 @@ The protocol uses a three-tier workflow system (Rapid/Standard/Critical) to bala
 **Quick Start (2 minutes):**
 1. Configure `protocol.config.yaml` with your project details
 2. Copy protocol files to your project
-3. Read `protocol/GOJO.md` and choose "New Project Initialization"
-4. Start implementing with `protocol/YUUJI.md`
+3. Read `protocol/gojo.agent.md` and choose "New Project Initialization"
+4. Start implementing with `protocol/yuuji.agent.md`
 
 **Detailed Guide:** See `PROTOCOL_QUICKSTART.md`
 
@@ -90,7 +90,7 @@ Domain Zero works with any AI assistant that can read files:
 
 **Quick Decision Tree:**
 
-```
+```plaintext
 Is this production code?
 ├─ No → Tier 1 (Rapid)
 └─ Yes → Does it handle sensitive data, auth, or payments?
@@ -150,7 +150,7 @@ Is this production code?
 ### Why doesn't the agent follow the protocol?
 
 **Common Causes:**
-1. **Protocol files not read:** Say `"Read protocol/CLAUDE.md"`
+1. **Protocol files not read:** Say `"Read protocol/CLAUDE.md"` or agent files like `"Read protocol/yuuji.agent.md"`
 2. **Wrong file path:** Verify `protocol/` directory exists
 3. **AI memory conflict:** Clear memory and re-read protocol
 4. **Outdated context:** Start a new conversation session
@@ -180,12 +180,12 @@ Is this production code?
 
 **Standard Invocation:**
 ```
-Read protocol/YUUJI.md
+Read protocol/yuuji.agent.md
 ```
 
 **With Context:**
 ```
-Read protocol/MEGUMI.md - review the authentication changes in auth.py
+Read protocol/megumi.agent.md - review the authentication changes in auth.py
 ```
 
 **Agent Handoff:** Agents prompt for handoff to each other:
@@ -201,7 +201,7 @@ Read protocol/MEGUMI.md - review the authentication changes in auth.py
 1. **Review all changes** before accepting
 2. **Request corrections:** "This doesn't handle edge case X, please fix"
 3. **Reject changes:** "This approach won't work, let's try Y instead"
-4. **Escalate:** Call Gojo for second opinion: `"Read protocol/GOJO.md - assess this implementation"`
+4. **Escalate:** Call Gojo for second opinion: `"Read protocol/gojo.agent.md - assess this implementation"`
 
 **Protocol Requirement:** YOU must approve all code before it's considered complete.
 
@@ -316,7 +316,7 @@ project:
 
 **How to Access:**
 ```
-Read protocol/GOJO.md - Trigger 19
+Read protocol/gojo.agent.md - Trigger 19
 ```
 
 ---
@@ -395,13 +395,13 @@ Read protocol/GOJO.md - Trigger 19
 
 **Causes:**
 1. **Tier 1 selected:** Security review is optional in Tier 1
-2. **MEGUMI.md not found:** Verify file exists in `protocol/` directory
-3. **Manual invocation needed:** Say `"Read protocol/MEGUMI.md - review changes"`
+2. **megumi.agent.md not found:** Verify file exists in `protocol/` directory
+3. **Manual invocation needed:** Say `"Read protocol/megumi.agent.md - review changes"`
 
 **Prompted Handoff Only Works:**
 - In Tier 2 and Tier 3
 - When Yuuji outputs prompt for Megumi invocation
-- When MEGUMI.md is present
+- When megumi.agent.md is present
 
 ---
 
@@ -472,10 +472,10 @@ Runs only critical checks (dependencies, files, config, yaml)
 ### Can I customize agent prompts?
 
 **Yes!** Edit the protocol files directly:
-- `protocol/YUUJI.md` - Customize implementation approach
-- `protocol/MEGUMI.md` - Adjust security checklist
-- `protocol/NOBARA.md` - Modify UX principles
-- `protocol/GOJO.md` - Change project management style
+- `protocol/yuuji.agent.md` - Customize implementation approach
+- `protocol/megumi.agent.md` - Adjust security checklist
+- `protocol/nobara.agent.md` - Modify UX principles
+- `protocol/gojo.agent.md` - Change project management style
 
 **Agents will re-read automatically.**
 
@@ -558,6 +558,6 @@ Runs only critical checks (dependencies, files, config, yaml)
 
 ---
 
-**Last Updated:** November 18, 2025
-**Protocol Version:** v8.2.0
+**Last Updated:** November 2025
+**Protocol Version:** v8.3.0
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol

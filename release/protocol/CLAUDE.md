@@ -1556,7 +1556,7 @@ Domain-Zero/                         # Project root
 ```bash
 # Design (Tier 1/2/3)
 "Read nobara.agent.md and design user onboarding flow"
-"Read nobara.agent.md --tier 2 and design checkout UX"
+"Read nobara.agent.md --tier standard and design checkout UX"
 "Read nobara.agent.md --tier 3 and design payment form accessibility"
 
 # Research Mode (v8.3.0+)

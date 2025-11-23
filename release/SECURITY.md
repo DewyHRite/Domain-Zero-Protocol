@@ -5,7 +5,7 @@
 The Domain Zero Protocol security policy covers:
 
 ### In Scope
-- **Protocol Specifications**: Security flaws in agent protocols (`CLAUDE.md`, `YUUJI.md`, `MEGUMI.md`, `NOBARA.md`, `GOJO.md`)
+- **Protocol Specifications**: Security flaws in agent protocols (`CLAUDE.md`, `yuuji.agent.md`, `megumi.agent.md`, `nobara.agent.md`, `gojo.agent.md`)
 - **Configuration Files**: Vulnerabilities in `protocol.config.yaml`, state templates, or AI instructions
 - **Security Agent Logic**: Flaws in MEGUMI's OWASP Top 10 review process or security standards
 - **Tier System**: Security bypasses or privilege escalation in tier enforcement
@@ -283,8 +283,8 @@ When reporting, please indicate:
 
 This security policy is versioned alongside the Domain Zero Protocol:
 
-- **Current Version**: 1.0.0 (matches Domain Zero Protocol v8.2.0)
-- **Last Updated**: November 18, 2025
+- **Current Version**: 1.0.0 (matches Domain Zero Protocol v8.3.0)
+- **Last Updated**: November 2025
 - **Next Review**: January 2026 (or upon major protocol update)
 
 Changes to this policy will be documented in `CHANGELOG.md` and announced via GitHub releases.
