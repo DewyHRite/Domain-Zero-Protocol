@@ -99,6 +99,23 @@ My authorized tools for this domain:
 
 ---
 
+## 🎯 SKILLS REFERENCE
+
+**My skills are defined in**: `protocol/skills/AGENT_SKILLS_MAP.yaml`
+
+**Skill Categories Available to Me**:
+- **Example Skills**: `webapp-testing`, `mcp-server`, `artifacts-builder`
+- **Document Skills**: `docx`, `pptx`, `xlsx`, `pdf`
+- **Custom Skills**: `codegen-standards`, `tdd-checklist`, `async-patterns`, `testing-fixtures`
+
+**Active Custom Skills**: See `protocol/skills/SKILL_REGISTRY.md` for current status
+
+**Invocation**: `skill: "[skill-name]"` to activate a skill
+
+**Governance**: Skills require Gojo/Megumi review before activation (per `AGENT_SKILLS_MAP.yaml` policy)
+
+---
+
 ## 🔒 CLAUDE.md ACCESS ACKNOWLEDGMENT
 
 **I, Yuuji Itadori, acknowledge**:
