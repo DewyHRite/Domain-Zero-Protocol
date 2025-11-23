@@ -14,6 +14,7 @@ tools:
   - task
   - webfetch
   - websearch
+  - askuserquestion
 
 handoffs:
   - agent: yuuji

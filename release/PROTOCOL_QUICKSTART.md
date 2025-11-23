@@ -59,7 +59,7 @@ I use Domain Zero Protocol v8.2.0 for AI development. Four-agent system:
 - NOBARA: Creative strategy & UX
 - GOJO: Mission control
 
-Protocol files: protocol/CLAUDE.md, yuuji.agent.md, megumi.agent.md, nobara.agent.md, gojo.agent.md
+Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md
 Tiers: Rapid/Standard/Critical
 Always read protocol files when I reference them.
 Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
@@ -69,7 +69,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 Add to Settings → Personalization → Custom Instructions:
 ```
 I use Domain Zero Protocol v8.2.0 (four-agent AI dev framework).
-Protocol files: protocol/CLAUDE.md, yuuji.agent.md, megumi.agent.md, nobara.agent.md, gojo.agent.md.
+Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md.
 Always read protocol files first.
 ```
 
