@@ -1,7 +1,7 @@
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.2.0
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.3.0
 ## Main Protocol File - Domain Zero
 
-**Version**: 8.2.0
+**Version**: 8.3.0
 **Status**: Production-Ready
 **Last Updated**: 2025-11-18
 **Major Enhancements**: Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Research Mode Specification (v7.2.0), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
@@ -11,7 +11,7 @@
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v8.2.0
+> **Current Local Protocol Version**: v8.3.0
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -843,7 +843,7 @@ Project lifecycle management with three operational options.
 
 ---
 
-### Mode 4: Research Mode (v8.2.0+)
+### Mode 4: Research Mode (v8.3.0+)
 Structured, auditable research sessions for keeping agents current with evolving standards and best practices.
 
 **Purpose**: Enable all agents to conduct domain-specific research on emerging patterns, security threats, UX guidelines, and strategic trends.
@@ -1520,7 +1520,7 @@ Domain-Zero/                         # Project root
 # Remediation
 "Read yuuji.agent.md and fix SEC-001, SEC-003"
 
-# Research Mode (v8.2.0+)
+# Research Mode (v8.3.0+)
 "Read yuuji.agent.md --research and investigate pytest fixture best practices"
 "Read yuuji.agent.md --research and investigate async test isolation patterns"
 
@@ -1544,7 +1544,7 @@ Domain-Zero/                         # Project root
 # Verification
 "Read megumi.agent.md and verify fixes for SEC-001"
 
-# Research Mode (v8.2.0+)
+# Research Mode (v8.3.0+)
 "Read megumi.agent.md --research and investigate OWASP Top 10 2025 changes"
 "Read megumi.agent.md --research and investigate JWT signature bypass vulnerabilities"
 
@@ -1559,7 +1559,7 @@ Domain-Zero/                         # Project root
 "Read nobara.agent.md --tier 2 and design checkout UX"
 "Read nobara.agent.md --tier 3 and design payment form accessibility"
 
-# Research Mode (v8.2.0+)
+# Research Mode (v8.3.0+)
 "Read nobara.agent.md --research and investigate WCAG 2.2 success criteria"
 "Read nobara.agent.md --research and investigate accessible form validation"
 ```
@@ -1578,7 +1578,7 @@ Domain-Zero/                         # Project root
 # Authorized CLAUDE.md Update
 "Read gojo.agent.md - Update CLAUDE.md to add [specific change]"
 
-# Research Mode (v8.2.0+)
+# Research Mode (v8.3.0+)
 "Read gojo.agent.md --research and investigate multi-agent orchestration patterns"
 "Read gojo.agent.md --research and investigate protocol governance frameworks"
 ```
@@ -1730,13 +1730,13 @@ The system is optimized to stay within Claude's context limits.
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 8.2.0
-**Protocol Version**: 8.2.0
+**Current Version**: 8.3.0
+**Protocol Version**: 8.3.0
 **Release Date**: November 18, 2025
 **Last Updated**: 2025-11-18
 
 **Version History**:
-- v8.2.0 - **MINOR**: Research Mode Enhancement (Active agent research with invocation, structured summaries, staleness monitoring)
+- v8.3.0 - **MINOR**: Research Mode Enhancement (Active agent research with invocation, structured summaries, staleness monitoring)
 - v8.1.0 - **MINOR**: Playwright E2E Testing Infrastructure (Multi-browser testing, tier integration, agent role extensions)
 - v8.0.0 - **MAJOR**: .agent.md Format Migration (Structured metadata, MCP integration, environment targeting) [BREAKING CHANGES]
 - v7.2.0 - **MINOR**: Research Mode (Structured agent knowledge updates on best practices)

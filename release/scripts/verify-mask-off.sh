@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
         --verbose) VERBOSE=true; shift ;;
         --help|-h) usage ;;
         --) shift; break ;;
-        -*) echo "[ERROR] Unknown option: $1"; usage; exit 2 ;;
+        -*) echo "[ERROR] Unknown option: $1" >&2; exit 2 ;;
         *) CONFIG_PATH="$1"; shift ;;
     esac
 done
@@ -46,14 +46,14 @@ if [[ ! -f "$CONFIG_PATH" ]]; then
     exit 1
 fi
 
-# Read config to check mask mode setting
-if grep -A 2 "^mask_mode:" "$CONFIG_PATH" | grep "enabled:" | grep -q "true"; then
+# Read config to check mask mode setting (filter out commented lines)
+if grep -v '^\s*#' "$CONFIG_PATH" | grep -A 2 "^mask_mode:" | grep "enabled:" | grep -q "true"; then
     MASK_ENABLED="true"
 else
     MASK_ENABLED="false"
 fi
 
-if grep "strict_professional:" "$CONFIG_PATH" | grep -q "true"; then
+if grep -v '^\s*#' "$CONFIG_PATH" | grep "strict_professional:" | grep -q "true"; then
     STRICT_PROF="true"
 else
     STRICT_PROF="false"

@@ -95,7 +95,7 @@ Use language-tagged fenced blocks for lint/readability. Keep content readable wi
 
 Optional metadata line (enabled via config):
 ```text
-Tier: Standard • Protocol v8.2.0 • Brief: NBR-YUUJI-2025-11-06-001 • PR: #123
+Tier: Standard • Protocol v8.3.0 • Brief: NBR-YUUJI-2025-11-06-001 • PR: #123
 ```
 
 ---

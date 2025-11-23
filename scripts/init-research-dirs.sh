@@ -206,10 +206,11 @@ done
 # Create research-index.json if missing
 index_file="${RESEARCH_DIR}/research-index.json"
 if [ ! -f "$index_file" ]; then
-    cat > "$index_file" << 'EOF'
+    current_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    cat > "$index_file" << EOF
 {
   "version": "1.0",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "created": "${current_date}",
   "agents": {
     "yuuji": {
       "last_session": null,
@@ -234,9 +235,6 @@ if [ ! -f "$index_file" ]; then
   }
 }
 EOF
-    # Fix the date in the JSON
-    sed -i "s/\$(date -u +%Y-%m-%dT%H:%M:%SZ)/$(date -u +%Y-%m-%dT%H:%M:%SZ)/" "$index_file" 2>/dev/null || \
-    sed -i '' "s/\$(date -u +%Y-%m-%dT%H:%M:%SZ)/$(date -u +%Y-%m-%dT%H:%M:%SZ)/" "$index_file"
     echo -e "  ${GREEN}[CREATED]${NC} .protocol-state/research/research-index.json"
 fi
 

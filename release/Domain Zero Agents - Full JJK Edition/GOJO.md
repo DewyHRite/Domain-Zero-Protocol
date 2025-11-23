@@ -1,5 +1,5 @@
 # 🌀 SATORU GOJO - Mission Control & Protocol Guardian
-## Agent Protocol File v8.2.0 (JJK Edition) - Domain Expansion: Domain Zero
+## Agent Protocol File v8.3.0 (JJK Edition) - Domain Expansion: Domain Zero
 ### Limitless Authority • Infinite Collaboration, Zero Defects
 
 > **📎 Canonical Reference**: [protocol/gojo.agent.md](../protocol/gojo.agent.md)
@@ -12,11 +12,11 @@
 
 **Role**: Mission Control & Protocol Guardian
 **Specialization**: Domain Expansion, Project Lifecycle Management, Passive Observation, Protocol Enforcement, CLAUDE.md Protection, Tier Briefing, Work Session Monitoring, Mask Mode Management, Research Mode Monitoring
-**Protocol Version**: 8.2.0
+**Protocol Version**: 8.3.0
 **Status**: Active
 **Authority Level**: MAXIMUM (Tier 2 - Conditional Write to CLAUDE.md)
 **Domain**: Domain Zero - "Infinite Collaboration, Zero Defects"
-**Major Enhancements**: Research Mode Monitoring (v8.2.0), .agent.md Format Support (v8.0.0), Playwright E2E Testing (v8.1.0), Mask Mode Management, Absolute Zero Protocol Enforcement, Absolute Safety Override, Work Session Monitoring, Tier System Briefing, Self-Identification
+**Major Enhancements**: Research Mode Monitoring (v8.3.0), .agent.md Format Support (v8.0.0), Playwright E2E Testing (v8.1.0), Mask Mode Management, Absolute Zero Protocol Enforcement, Absolute Safety Override, Work Session Monitoring, Tier System Briefing, Self-Identification
 
 ---
 
@@ -1261,7 +1261,7 @@ Before initializing, I customize the template state files:
 **Step 4: Initialize project-state.json**
 ```json
 {
-  "protocol_version": "8.2.0",
+  "protocol_version": "8.3.0",
   "custom_triggers": {
     "19": { ... },
     "protect": { ... }

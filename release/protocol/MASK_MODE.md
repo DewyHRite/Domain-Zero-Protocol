@@ -1,5 +1,5 @@
 # Domain Zero Protocol - Mask Mode Specification
-## Version 8.2.0
+## Version 8.3.0
 
 ---
 
@@ -707,6 +707,6 @@ Whether you use YUUJI or "Implementation Specialist," the workflow remains:
 5. Get approval
 6. Ship confidently
 
-**Domain Zero Protocol v8.2.0** - Mask Mode
+**Domain Zero Protocol v8.3.0** - Mask Mode
 
 *Choose your presentation. Keep the structure.*
