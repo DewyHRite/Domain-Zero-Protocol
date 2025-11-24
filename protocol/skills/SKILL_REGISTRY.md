@@ -1,8 +1,8 @@
 # Domain Zero Protocol - Skill Registry
 
 **Version**: 1.0
-**Protocol Version**: 8.3.0
-**Last Updated**: 2025-11-22
+**Protocol Version**: 8.3.1
+**Last Updated**: 2025-11-24
 
 ---
 

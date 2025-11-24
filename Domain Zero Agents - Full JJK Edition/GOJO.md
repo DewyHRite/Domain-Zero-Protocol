@@ -1,5 +1,5 @@
 # 🌀 SATORU GOJO - Mission Control & Protocol Guardian
-## Agent Protocol File v8.3.0 (JJK Edition) - Domain Expansion: Domain Zero
+## Agent Protocol File v8.3.1 (JJK Edition) - Domain Expansion: Domain Zero
 ### Limitless Authority • Infinite Collaboration, Zero Defects
 
 > **📎 Canonical Reference**: [protocol/gojo.agent.md](../protocol/gojo.agent.md)

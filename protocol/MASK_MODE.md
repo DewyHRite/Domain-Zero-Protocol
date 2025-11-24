@@ -1,5 +1,5 @@
 # Domain Zero Protocol - Mask Mode Specification
-## Version 8.3.0
+## Version 8.3.1
 
 ---
 
