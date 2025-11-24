@@ -1,0 +1,30 @@
+{
+  "name": "@domain-zero/mcp-handoff-server",
+  "version": "1.0.0",
+  "description": "MCP server for Domain Zero Protocol agent handoff automation",
+  "type": "module",
+  "main": "handoff-server.js",
+  "scripts": {
+    "start": "node handoff-server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "mcp",
+    "domain-zero",
+    "handoff",
+    "ai-agents",
+    "claude"
+  ],
+  "author": "Domain Zero Protocol",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DewyHRite/Domain-Zero-Protocol.git"
+  }
+}
