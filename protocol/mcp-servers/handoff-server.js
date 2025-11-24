@@ -340,7 +340,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       // Generate event ID
-      const eventId = `HO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const eventId = `HO-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
       // Generate invocation command
       const targetAgent = triggerInfo.target;
