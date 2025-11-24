@@ -592,10 +592,10 @@ Runs only critical checks (dependencies, files, config, yaml)
 
 ---
 
-### How do I migrate from v6.x to v7.x (future major version)?
+### How do I migrate between major versions?
 
-**When v7.0.0 is released:**
-1. Read `MIGRATION_GUIDE_v6_to_v7.md` (will be provided)
+**For major version upgrades (e.g., v8.x to v9.x):**
+1. Read the `MIGRATION_GUIDE_vX_to_vY.md` (provided with major releases)
 2. Review breaking changes in CHANGELOG
 3. Create git branch for migration
 4. Update protocol files incrementally
@@ -635,6 +635,6 @@ Runs only critical checks (dependencies, files, config, yaml)
 
 ---
 
-**Last Updated:** November 2025
-**Protocol Version:** v8.3.0
+**Last Updated:** November 24, 2025
+**Protocol Version:** v8.3.1
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol
