@@ -1,9 +1,9 @@
-# Domain Zero Protocol v8.2.0
+# Domain Zero Protocol v8.3.1
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v7.1.0**: [Mask Mode](#mask-mode) - Toggle between JJK-themed personality responses and professional mode.
+> **New in v8.3.1**: Agent-Specific Escape Paths, Instruction Confirmation Protocol, Skills System (v8.3.0+). See [What's New](#-version-information).
 
 ---
 
@@ -87,7 +87,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 ## 📋 Table of Contents
 
 - [What is Domain Zero?](#-what-is-domain-zero)
-- [Mask Mode](#mask-mode) ⭐ NEW in v7.1.0
+- [Mask Mode](#mask-mode)
 - [Prerequisites & Optional Integrations](#-prerequisites--optional-integrations)
 - [Quick Setup](#-quick-setup)
 - [AI Assistant Integration & Canonical Source](#-ai-assistant-integration--canonical-source)
@@ -1370,11 +1370,13 @@ Domain Zero is now set up in your project.
 
 ## 📝 Version Information
 
-**Version**: 8.2.0
-**Release Date**: November 18, 2025
-**Major Enhancements**: Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Tool Access Matrix, Declarative Handoffs
+**Version**: 8.3.1
+**Release Date**: November 24, 2025
+**Major Enhancements**: Agent-Specific Escape Paths, Instruction Confirmation Protocol, Skills System, Version Consistency
 
 **Version History**:
+- v8.3.1 - PATCH: Agent-Specific Escape Paths (soft requirements, progressive fallback, graceful degradation, BLOCKED template), Instruction Confirmation Protocol enforcement, Version consistency across all public-facing documents
+- v8.3.0 - MINOR: Skills System (skill-builder skill, agent-specific skills), AskUserQuestion Integration, Subagent Escape Paths
 - v8.2.0 - MINOR: Research Mode Enhancement (Active agent research, invocation, structured summaries, staleness monitoring)
 - v8.1.0 - MINOR: Playwright E2E Testing Infrastructure (Multi-browser testing, tier integration, agent role extensions)
 - v8.0.0 - MAJOR: .agent.md Format Migration (Structured metadata, MCP integration, environment targeting) [BREAKING CHANGES]
@@ -1401,5 +1403,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-**Domain Zero Protocol v8.2.0** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v8.3.1** - Perfect Code Through Infinite Collaboration
 **The weight is real. The protocol is absolute. Domain Zero is active.**
