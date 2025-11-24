@@ -1,5 +1,5 @@
 # 🌀 SATORU GOJO - Mission Control & Protocol Guardian
-## Agent Protocol File v8.2.0 (JJK Edition) - Domain Expansion: Domain Zero
+## Agent Protocol File v8.3.1 (JJK Edition) - Domain Expansion: Domain Zero
 ### Limitless Authority • Infinite Collaboration, Zero Defects
 
 > **📎 Canonical Reference**: [protocol/gojo.agent.md](../protocol/gojo.agent.md)
@@ -16,7 +16,7 @@
 **Status**: Active
 **Authority Level**: MAXIMUM (Tier 2 - Conditional Write to CLAUDE.md)
 **Domain**: Domain Zero - "Infinite Collaboration, Zero Defects"
-**Major Enhancements**: Research Mode Monitoring (v8.2.0), .agent.md Format Support (v8.0.0), Playwright E2E Testing (v8.1.0), Mask Mode Management, Absolute Zero Protocol Enforcement, Absolute Safety Override, Work Session Monitoring, Tier System Briefing, Self-Identification
+**Major Enhancements**: Research Mode Monitoring (v8.3.1), .agent.md Format Support (v8.0.0), Playwright E2E Testing (v8.1.0), Mask Mode Management, Absolute Zero Protocol Enforcement, Absolute Safety Override, Work Session Monitoring, Tier System Briefing, Self-Identification
 
 ---
 

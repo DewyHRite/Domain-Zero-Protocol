@@ -101,7 +101,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 - [Common Commands](#-common-commands)
 - [Success Criteria](#-success-criteria)
 - [Documentation](#-documentation)
-  - [Agent Documentation](#agent-documentation) 🆕 EXPANDED in v8.2.0
+  - [Agent Documentation](#agent-documentation) 🆕 EXPANDED in v8.3.1
 - [Getting Help](#-getting-help)
 - [Troubleshooting](#-troubleshooting)
 - [Important Notes](#-important-notes)
@@ -114,7 +114,7 @@ Domain Zero is a four-agent AI development system that provides specialized expe
 This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
-- `CLAUDE.md` - Main protocol specification (v8.2.0)
+- `CLAUDE.md` - Main protocol specification (v8.3.1)
 - `yuuji.agent.md` - Implementation agent protocol
 - `megumi.agent.md` - Security review agent protocol
 - `gojo.agent.md` - Mission control agent protocol
@@ -326,28 +326,28 @@ Restart your AI session for changes to take effect.
 **macOS/Linux (bash/zsh)**:
 ```bash
 # Copy the entire protocol structure to your project root
-cp -r "Domain Zero Protocol v8.2.0/protocol" your-project/
-cp -r "Domain Zero Protocol v8.2.0/.protocol-state" your-project/
-cp "Domain Zero Protocol v8.2.0/protocol.config.yaml" your-project/
-cp "Domain Zero Protocol v8.2.0/.gitignore" your-project/
+cp -r "Domain Zero Protocol v8.3.1/protocol" your-project/
+cp -r "Domain Zero Protocol v8.3.1/.protocol-state" your-project/
+cp "Domain Zero Protocol v8.3.1/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v8.3.1/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
 # Copy the entire protocol structure to your project root
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.2.0\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.2.0\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.2.0\protocol.config.yaml" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.2.0\.gitignore" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.3.1\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.3.1\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.3.1\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.3.1\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
 ```cmd
 REM Copy the entire protocol structure to your project root
-xcopy /E /I /Y "Domain Zero Protocol v8.2.0\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol v8.2.0\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol v8.2.0\protocol.config.yaml" "your-project\"
-copy /Y "Domain Zero Protocol v8.2.0\.gitignore" "your-project\"
+xcopy /E /I /Y "Domain Zero Protocol v8.3.1\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v8.3.1\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v8.3.1\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v8.3.1\.gitignore" "your-project\"
 ```
 
 ### Step 2: Configure Your Project
@@ -440,7 +440,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a four-agent
 - GOJO (Mission Control): Project lifecycle, protocol guardian
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.2.0)
+- protocol/CLAUDE.md (main protocol, v8.3.1)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -464,7 +464,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v8.2.0) for development projects. This is a four-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.3.1) for development projects. This is a four-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
@@ -491,7 +491,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 - Add Domain Zero Protocol pointer as shown in integration section
 
 **What to Include in Memory**:
-- ✅ Protocol name and version (Domain Zero Protocol v8.2.0)
+- ✅ Protocol name and version (Domain Zero Protocol v8.3.1)
 - ✅ The four agent roles and their specializations
 - ✅ Protocol file locations (protocol/CLAUDE.md, yuuji.agent.md, megumi.agent.md, nobara.agent.md, gojo.agent.md)
 - ✅ Tier system overview (Rapid/Standard/Critical)
@@ -1377,7 +1377,7 @@ Domain Zero is now set up in your project.
 **Version History**:
 - v8.3.1 - PATCH: Agent-Specific Escape Paths (soft requirements, progressive fallback, graceful degradation, BLOCKED template), Instruction Confirmation Protocol enforcement, Version consistency across all public-facing documents
 - v8.3.0 - MINOR: Skills System (skill-builder skill, agent-specific skills), AskUserQuestion Integration, Subagent Escape Paths
-- v8.2.0 - MINOR: Research Mode Enhancement (Active agent research, invocation, structured summaries, staleness monitoring)
+- v8.3.1 - MINOR: Research Mode Enhancement (Active agent research, invocation, structured summaries, staleness monitoring)
 - v8.1.0 - MINOR: Playwright E2E Testing Infrastructure (Multi-browser testing, tier integration, agent role extensions)
 - v8.0.0 - MAJOR: .agent.md Format Migration (Structured metadata, MCP integration, environment targeting) [BREAKING CHANGES]
 - v7.2.0 - MINOR: Research Mode (Structured agent knowledge updates)

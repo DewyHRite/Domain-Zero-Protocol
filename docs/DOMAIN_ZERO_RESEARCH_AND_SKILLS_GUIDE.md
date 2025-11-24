@@ -23,7 +23,7 @@ Configuration check:
   - Per-agent dirs: `.protocol-state/research/{agent}`
   - Filenames: `{timestamp}.summary.md` (tracked), `{timestamp}.raw.log` (gitignored)
 
-Conclusion: The folder structure is correctly scaffolded by the protocol, but no agent research sessions have been run yet in v8.2.0. Hence, the per-agent directories are empty. This is expected until you invoke Research Mode.
+Conclusion: The folder structure is correctly scaffolded by the protocol, but no agent research sessions have been run yet in v8.3.1. Hence, the per-agent directories are empty. This is expected until you invoke Research Mode.
 
 How to use (examples):
 
@@ -40,20 +40,20 @@ Acceptance criteria for “in use”:
 
 ---
 
-## 2) Protocol and Agents Alignment Review (v8.2.0)
+## 2) Protocol and Agents Alignment Review (v8.3.1)
 
 Files reviewed: `protocol/CLAUDE.md`, `protocol/yuuji.agent.md`, `protocol/megumi.agent.md`, `protocol/gojo.agent.md`, `protocol/nobara.agent.md`, and `protocol.config.yaml`.
 
 Findings:
 
-- Versioning: All reviewed files declare or align to protocol v8.2.0.
+- Versioning: All reviewed files declare or align to protocol v8.3.1.
 - .agent.md frontmatter: Present with `target`, `name`, `description`, `argument-hint`, `model`, `tools`, and `handoffs`.
 - Tool Access Matrix: Present in each agent file and consistent with role boundaries.
 - CLAUDE.md protection: Acknowledged across agents as read-only; Gojo conditional write only with USER authorization.
 - Self-identification and Mask Mode: Present and configurable via `protocol.config.yaml`.
 - Dual Workflow (Tier 2/3): Documented; Megumi reviews prompted after Yuuji implementation.
 
-Result: Protocol and agents are aligned to v8.2.0, and ready for Research Mode + Skills integration without structural changes.
+Result: Protocol and agents are aligned to v8.3.1, and ready for Research Mode + Skills integration without structural changes.
 
 ---
 

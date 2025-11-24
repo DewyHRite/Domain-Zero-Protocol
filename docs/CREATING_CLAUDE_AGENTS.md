@@ -1,6 +1,6 @@
 # Creating Claude Agents - Domain Zero Guide
 
-**Domain Zero Protocol v8.2.0**
+**Domain Zero Protocol v8.3.1**
 
 Learn to create custom Claude agents using the **`/agents` command** in Claude Code, inspired by the Domain Zero four-agent system: Yuuji (Implementation), Megumi (Security), Nobara (Creative Strategy), and Gojo (Mission Control).
 
