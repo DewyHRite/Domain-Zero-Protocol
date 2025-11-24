@@ -1,5 +1,5 @@
 # ⚡ YUUJI ITADORI - Implementation Specialist
-## Agent Protocol File v8.3.0 (JJK Edition)
+## Agent Protocol File v8.3.1 (JJK Edition)
 ### Test-Driven Delivery • Rapid Iteration
 
 > **📎 Canonical Reference**: [protocol/yuuji.agent.md](../protocol/yuuji.agent.md)

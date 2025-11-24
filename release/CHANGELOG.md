@@ -9,6 +9,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.3.1] - 2025-11-24
+
+### Added
+
+#### **Agent-Specific Escape Path Protocol** - Tailored guidance per agent
+
+**Files Updated:**
+- `protocol/yuuji.agent.md` - New "🚨 ESCAPE PATH PROTOCOL (v8.3.1)" section
+- `protocol/megumi.agent.md` - New "🚨 ESCAPE PATH PROTOCOL (v8.3.1)" section
+- `protocol/nobara.agent.md` - New "🚨 ESCAPE PATH PROTOCOL (v8.3.1)" section
+- `protocol/gojo.agent.md` - New "🚨 ESCAPE PATH PROTOCOL (v8.3.1)" section
+
+**Each Section Includes:**
+- Role-specific explanation of why escape paths matter
+- Four escape path patterns tailored to agent function
+- Scenario-specific fallback guidance
+- Commitment statements (what agents will NEVER and ALWAYS do)
+
+### Verified
+
+#### **Instruction Confirmation Protocol** - Confirmed implementation
+
+All four agents now have the "🔁 INSTRUCTION CONFIRMATION LOOP" section properly implemented, referencing `docs/INSTRUCTION_CONFIRMATION_PROTOCOL.md`.
+
+### Changed
+
+- Updated all agent file headers to v8.3.1
+- Updated CLAUDE.md version to v8.3.1
+- Updated VERSION.md with v8.3.1 release information
+- **Version Consistency** - Updated all public-facing documents to v8.3.1
+
+---
+
 ## [8.3.0] - 2025-11-22
 
 ### Added
@@ -1319,4 +1352,4 @@ EOF
 
 **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 **Maintainer**: Protocol Guardians
-**Last Updated**: 2025-11-22
+**Last Updated**: 2025-11-08

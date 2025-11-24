@@ -1,9 +1,9 @@
-# Domain Zero Protocol v8.3.0
+# Domain Zero Protocol v8.3.1
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v8.3.0**: Subagent Escape Paths, Skill-Builder Skill, AskUserQuestion Integration, and Updated Add-to-Memory Prompts. See [What's New](#-version-information).
+> **New in v8.3.1**: Agent-Specific Escape Paths, Instruction Confirmation Protocol, Version Consistency. See [What's New](#-version-information).
 
 ---
 

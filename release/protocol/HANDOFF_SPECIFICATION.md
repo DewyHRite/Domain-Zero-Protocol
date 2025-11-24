@@ -794,8 +794,96 @@ Scenario: Full Tier 2 workflow
 
 ---
 
+## MCP Handoff Automation (v8.3.0+)
+
+### Overview
+
+As of v8.3.0, Domain Zero Protocol supports **automated handoffs via MCP** (Model Context Protocol). This reduces manual context reconstruction and saves ~50 seconds per handoff.
+
+### MCP Handoff Server
+
+**Location**: `protocol/mcp-servers/handoff-server.js`
+
+**Capabilities**:
+- ✅ Automatic context extraction from git diff, project state, and dev notes
+- ✅ Ready-to-execute invocation commands
+- ✅ Handoff event logging for audit trail
+- ✅ Validation of handoff permissions
+
+### Available MCP Tools
+
+| Tool | Purpose |
+|------|---------|
+| `prepare_handoff` | Extracts context and generates handoff payload |
+| `get_invocation_command` | Returns copy-paste ready agent invocation |
+| `log_handoff_event` | Logs handoff to `.protocol-state/handoff-log.json` |
+| `list_pending_handoffs` | Lists incomplete handoffs |
+| `validate_handoff` | Validates handoff is allowed |
+
+### Automated Context Extraction
+
+The MCP server automatically extracts context fields based on trigger:
+
+```javascript
+// @security-review trigger extracts:
+{
+  "files_modified": [...],      // From git diff
+  "tier_level": "standard",     // From project-state.json
+  "implementation_scope": "...", // From dev-notes.md
+  "test_coverage": {...}        // From coverage/coverage-summary.json
+}
+```
+
+### Configuration
+
+Add to Claude Code MCP configuration (`~/.config/claude-code/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "domain-zero-handoff": {
+      "command": "node",
+      "args": ["protocol/mcp-servers/handoff-server.js"]
+    }
+  }
+}
+```
+
+### Migration from Manual Handoffs
+
+**Manual (v8.2.0 and earlier)**:
+1. Agent outputs "Ready for review"
+2. User manually identifies changed files
+3. User manually invokes next agent
+4. User re-explains context
+5. **~60-90 seconds per handoff**
+
+**Automated (v8.3.0+)**:
+1. Agent calls `prepare_handoff` MCP tool
+2. MCP server extracts all context automatically
+3. User receives ready-to-execute command
+4. **~10-15 seconds per handoff**
+
+**Total savings**: ~3-4 minutes per Tier 2 workflow (5-10% time reduction)
+
+### Security Considerations
+
+1. **No sensitive data**: MCP server never extracts passwords, keys, or secrets
+2. **Audit trail**: All handoffs logged with timestamps
+3. **Validation**: Handoffs checked against allowed source/target pairs
+4. **Local only**: No external API calls, runs entirely locally
+
+### See Also
+
+- `protocol/MCP_INTEGRATION.md` - Complete MCP guide with handoff section
+- `protocol/mcp-servers/handoff-server.js` - MCP server implementation
+- `protocol/mcp-servers/package.json` - Server dependencies
+
+---
+
 ## Version History
 
+- **1.1.0** (2025-11-23): Added MCP Handoff Automation for v8.3.0
 - **1.0.0** (2025-11-18): Initial specification for v8.0.0 .agent.md format
 
 ---
