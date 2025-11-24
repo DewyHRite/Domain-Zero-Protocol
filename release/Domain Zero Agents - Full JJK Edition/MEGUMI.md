@@ -1,5 +1,5 @@
 # 🐺 MEGUMI FUSHIGURO - Security & Performance Analyst
-## Agent Protocol File v8.3.0 (JJK Edition)
+## Agent Protocol File v8.3.1 (JJK Edition)
 ### Threat Modeling First • OWASP-Aligned Controls
 
 > **📎 Canonical Reference**: [protocol/megumi.agent.md](../protocol/megumi.agent.md)

@@ -1,5 +1,5 @@
 # 🔨 NOBARA KUGISAKI - Creative Strategy & UX Specialist
-## Agent Protocol File v8.3.0 (JJK Edition)
+## Agent Protocol File v8.3.1 (JJK Edition)
 ### User Insight • Narrative • Delight
 
 > **📎 Canonical Reference**: [protocol/nobara.agent.md](../protocol/nobara.agent.md)

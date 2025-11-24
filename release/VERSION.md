@@ -1,16 +1,22 @@
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.3.0
-**Release Date:** November 22, 2025
-**Release Type:** Minor Release
+**Version:** v8.3.1
+**Release Date:** November 24, 2025
+**Release Type:** Patch Release
 
 ---
 
 ## Release Summary
 
-This minor release implements **critical subagent resilience features** including escape paths, skill-builder capabilities, enhanced AskUserQuestion integration, and updated add-to-memory prompts. These improvements prevent subagents from hanging or failing silently when encountering missing information or blocked resources.
+This patch release completes the **Escape Path Protocol** by adding agent-specific escape path guidance to all four agent files (yuuji.agent.md, megumi.agent.md, nobara.agent.md, gojo.agent.md). It also confirms implementation of the **Instruction Confirmation Protocol** across all agents, and ensures **version consistency** across all public-facing documents.
 
-### Key Changes
+### Key Changes in v8.3.1
+
+- **Agent-Specific Escape Paths** - Each agent now has tailored escape path patterns in their protocol files
+- **Instruction Confirmation Protocol** - Verified implementation across all agents
+- **Updated Agent Headers** - All agent files now reference v8.3.1
+
+### Previous Release (v8.3.0)
 
 - **Subagent Escape Paths** - Prevents subagents from hanging on hard requirements
 - **Skill-Builder Skill** - Enables rapid creation of new skills with proper structure
@@ -20,7 +26,31 @@ This minor release implements **critical subagent resilience features** includin
 
 ---
 
-## What's New in v8.3.0
+## What's New in v8.3.1
+
+### Added
+
+#### 1. **Agent-Specific Escape Paths** - Tailored guidance per agent
+
+**Files Updated:**
+- `protocol/yuuji.agent.md` - Implementation-focused escape paths
+- `protocol/megumi.agent.md` - Security review escape paths
+- `protocol/nobara.agent.md` - Design/UX escape paths
+- `protocol/gojo.agent.md` - Mission Control escape paths
+
+**Each Agent Section Includes:**
+- Why escape paths matter for that role
+- Four escape path patterns (Soft Requirements, Progressive Fallback, Graceful Degradation, BLOCKED Template)
+- Role-specific scenarios and fallbacks
+- Commitment to never hang or fail silently
+
+#### 2. **Instruction Confirmation Protocol Verification**
+
+Confirmed that all agents have the "INSTRUCTION CONFIRMATION LOOP" section properly implemented.
+
+---
+
+## Previous Release: What's New in v8.3.0
 
 ### Added
 

@@ -1,17 +1,17 @@
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.3.0
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.3.1
 ## Main Protocol File - Domain Zero
 
-**Version**: 8.3.0
+**Version**: 8.3.1
 **Status**: Production-Ready
-**Last Updated**: 2025-11-18
-**Major Enhancements**: Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Research Mode Specification (v7.2.0), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
+**Last Updated**: 2025-11-24
+**Major Enhancements**: Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 
 ---
 
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v8.3.0
+> **Current Local Protocol Version**: v8.3.1
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -1377,7 +1377,35 @@ See `protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md` for detailed session contin
 
 ---
 
-### 7. Backup and Rollback Requirements
+### 7. Instruction Confirmation Protocol
+
+**Purpose**: Eliminate ambiguous scopes by forcing every agent to restate and confirm the user's request before starting work. This policy applies to **all** Domain Zero Protocol agents (Yuuji, Megumi, Nobara, Gojo), Domain Zero Agents (DZA), and any derivative/custom agents built from the templates.
+
+**Key Rules**:
+- ✅ **Confirm before action**: Agents must echo the requested task (including tier, deliverables, constraints, and assumptions) and receive an explicit "Confirmed" from the user before doing anything else.
+- 🔁 **Repeat until aligned**: If the user clarifies or rejects the summary, the agent restates the scope and asks again. Work may only proceed after the user affirms accuracy.
+- ❓ **Surface unknowns**: Missing context or conflicting requirements must be raised during the confirmation loop instead of silently assumed.
+- 📝 **Document consent**: The final confirmed summary becomes the canonical scope reference for that task (captured automatically in chat logs and downstream documentation like `dev-notes.md`).
+
+**Standard Confirmation Loop**:
+1. User issues an instruction.
+2. Agent restates the instruction in plain language, calls out tier/constraints/deliverables, and lists open questions.
+3. Agent explicitly asks: "Please confirm that this restatement is accurate before I proceed."
+4. User replies with confirmation or corrections.
+5. Agent either proceeds (after confirmation) or revises and re-asks (after corrections).
+
+**Edge Cases**:
+- If the user is silent, the agent politely pauses and reminds them that confirmation is required.
+- If the scope changes later, the agent restates the new scope and collects a fresh confirmation.
+- Emergency stops or cancellations immediately halt the loop and are documented in the appropriate state file.
+
+**Reference**: `docs/INSTRUCTION_CONFIRMATION_PROTOCOL.md` contains the full policy, examples, and enforcement details. Agents should treat that document as the source of truth when implementing custom behaviors or templates.
+
+Gojo monitors compliance (especially when passive observation is enabled) and treats missing confirmations as Tier 2 protocol violations.
+
+---
+
+### 8. Backup and Rollback Requirements
 
 **Purpose**: Ensure all code changes can be safely reverted and project integrity is maintained.
 
@@ -1556,7 +1584,7 @@ Domain-Zero/                         # Project root
 ```bash
 # Design (Tier 1/2/3)
 "Read nobara.agent.md and design user onboarding flow"
-"Read nobara.agent.md --tier standard and design checkout UX"
+"Read nobara.agent.md --tier 2 and design checkout UX"
 "Read nobara.agent.md --tier 3 and design payment form accessibility"
 
 # Research Mode (v8.3.0+)
@@ -1603,16 +1631,19 @@ Create personalized workflow shortcuts for common operations.
 ---
 
 ### Token Efficiency
-The system is optimized to stay within Claude's context limits.
+The system is optimized to stay within Claude's context limits. With Claude Sonnet 4.5's 200K context window, Domain Zero provides excellent efficiency.
 
-| Component | Tokens | % of 25K Limit |
-|-----------|--------|----------------|
-| CLAUDE.md | 3,000 | 12% |
-| yuuji.agent.md | 3,200 | 12.8% |
-| megumi.agent.md | 4,300 | 17.2% |
-| gojo.agent.md | 5,500 | 22% |
-| **Total System** | **16,000** | **64%** |
-| **Available for Work** | **9,000** | **36%** |
+| Component | Tokens | % of 200K Limit |
+|-----------|--------|-----------------|
+| CLAUDE.md | ~3,000 | 1.5% |
+| yuuji.agent.md | ~3,200 | 1.6% |
+| megumi.agent.md | ~4,300 | 2.2% |
+| nobara.agent.md | ~3,000 | 1.5% |
+| gojo.agent.md | ~5,500 | 2.8% |
+| **Total System** | **~19,000** | **~9.5%** |
+| **Available for Work** | **~181,000** | **~90.5%** |
+
+**Note**: Token estimates are approximate and may vary based on configuration. The system uses less than 10% of available context, leaving over 90% for actual work.
 
 ---
 
@@ -1730,12 +1761,13 @@ The system is optimized to stay within Claude's context limits.
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 8.3.0
-**Protocol Version**: 8.3.0
-**Release Date**: November 18, 2025
-**Last Updated**: 2025-11-18
+**Current Version**: 8.3.1
+**Protocol Version**: 8.3.1
+**Release Date**: November 24, 2025
+**Last Updated**: 2025-11-24
 
 **Version History**:
+- v8.3.1 - **PATCH**: Escape Path Protocol (Agent-specific guidance for handling blocked scenarios), Instruction Confirmation Protocol enforcement, Version consistency across all public-facing documents
 - v8.3.0 - **MINOR**: Research Mode Enhancement (Active agent research with invocation, structured summaries, staleness monitoring)
 - v8.1.0 - **MINOR**: Playwright E2E Testing Infrastructure (Multi-browser testing, tier integration, agent role extensions)
 - v8.0.0 - **MAJOR**: .agent.md Format Migration (Structured metadata, MCP integration, environment targeting) [BREAKING CHANGES]
