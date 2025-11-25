@@ -78,7 +78,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 Add to Settings → Personalization → Custom Instructions:
 ```
 I use Domain Zero Protocol v8.4.0 (eight-agent AI dev framework).
-Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md.
+Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md, protocol/inumaki.agent.md.
 Always read protocol files first.
 ```
 
