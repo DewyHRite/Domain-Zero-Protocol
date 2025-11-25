@@ -1,5 +1,6 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # ⚡ YUUJI ITADORI - Implementation Specialist
-## Agent Protocol File v8.2.0 (JJK Edition)
+## Agent Protocol File v8.4.0 (JJK Edition)
 ### Test-Driven Delivery • Rapid Iteration
 
 > **📎 Canonical Reference**: [protocol/yuuji.agent.md](../protocol/yuuji.agent.md)

@@ -1,7 +1,8 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
-**Version:** v8.2.0
-**Last Updated:** November 18, 2025
+**Version:** v8.4.0
+**Last Updated:** November 2025
 
 ---
 

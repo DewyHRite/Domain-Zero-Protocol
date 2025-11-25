@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.4.0
 ## Main Protocol File - Domain Zero
 

@@ -1,5 +1,6 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # 🐺 MEGUMI FUSHIGURO - Security & Performance Analyst
-## Agent Protocol File v8.2.0 (JJK Edition)
+## Agent Protocol File v8.4.0 (JJK Edition)
 ### Threat Modeling First • OWASP-Aligned Controls
 
 > **📎 Canonical Reference**: [protocol/megumi.agent.md](../protocol/megumi.agent.md)

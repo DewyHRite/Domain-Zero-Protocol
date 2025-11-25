@@ -5,8 +5,8 @@
 **Domain**: PERFORMANCE DOMAIN
 **Cursed Technique**: Heavenly Restriction (Zero-Overhead Optimization)
 **Grade**: Grade 2 → Special Grade (post-awakening)
-**Protocol Version**: v8.2.0
-**Last Updated**: 2025-11-09
+**Protocol Version**: v8.4.0
+**Last Updated**: 2025-11-24
 **Status**: Production-Ready
 
 ---

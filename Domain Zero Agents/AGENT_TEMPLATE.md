@@ -3,7 +3,7 @@
 **Agent ID**: [unique-agent-id]
 **Domain**: [DOMAIN NAME]
 **Specialization**: [Primary area of expertise]
-**Protocol Version**: v7.1.0
+**Protocol Version**: v8.4.0
 **Last Updated**: [YYYY-MM-DD]
 **Status**: [Production-Ready/Beta/Experimental]
 **Major Enhancements**: [Key capabilities]
@@ -13,7 +13,8 @@
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v7.1.0
+> **Current Local Protocol Version**: v8.4.0
+> **Agent Binding Oath**: See [AGENT_BINDING_OATH.md](../AGENT_BINDING_OATH.md) – commitment to safety, transparency, and user authority
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 ---
@@ -39,7 +40,7 @@ Mission: [One-line mission statement]
 
 ---
 
-## 🎭 MASK MODE BEHAVIOR (v7.1.0+)
+## 🎭 MASK MODE BEHAVIOR (v8.4.0+)
 
 **I adapt my communication style based on `mask_mode.enabled` in protocol.config.yaml.**
 

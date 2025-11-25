@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # Domain Zero Protocol v8.4.0
 ## AI-Powered Development Framework with Security-First Approach
 
@@ -80,12 +81,124 @@ Domain Zero is a **structured prompt engineering framework** that enforces disci
 
 ---
 
+## 📚 Non-Code Projects: School Work, Research & Academic Writing
+
+**Domain Zero isn't just for code.** The agent framework works equally well for non-code projects like research papers, school assignments, documentation, and academic writing.
+
+### Why It Works for Non-Code Projects
+
+| Agent | Non-Code Application |
+|-------|---------------------|
+| **Yuuji** | Draft writing, research synthesis, document creation |
+| **Megumi** | Fact-checking, source verification, logical consistency review |
+| **Nobara** | Structure, narrative flow, audience engagement |
+| **Gojo** | Project coordination, deadline tracking, progress monitoring |
+
+### Quick Setup for Non-Code Projects
+
+**Using Claude Code CLI** (Recommended):
+
+```bash
+# 1. Open your project folder
+cd "C:\Users\YourName\Documents\School\Research_Paper"
+
+# 2. Create protocol folder and copy files
+mkdir protocol
+# Copy CLAUDE.md and agent files to protocol/
+
+# 3. Start Claude Code
+claude
+
+# 4. Invoke agents for your work
+"Read protocol/yuuji.agent.md and draft an outline for my research paper on [topic]"
+"Read protocol/megumi.agent.md and review my sources for accuracy"
+"Read protocol/nobara.agent.md and improve the narrative flow of my introduction"
+"Read protocol/gojo.agent.md" → Select mode to manage project
+```
+
+**Using PowerShell/Terminal** (Windows Example):
+
+```powershell
+# Navigate to your project
+cd "C:\Users\YourName\Documents\School\Assignment_1"
+
+# Create structure
+mkdir protocol
+mkdir .protocol-state
+
+# Copy protocol files (adjust source path)
+Copy-Item "C:\Path\To\Domain-Zero\protocol\*" -Destination ".\protocol\" -Recurse
+
+# Initialize Claude Code in directory
+claude
+```
+
+**Using macOS/Linux Terminal**:
+
+```bash
+# Navigate to your project
+cd ~/Documents/School/Essay_Project
+
+# Create structure
+mkdir -p protocol .protocol-state
+
+# Copy protocol files
+cp -r /path/to/Domain-Zero/protocol/* ./protocol/
+
+# Start Claude Code
+claude
+```
+
+### Example Invocations for School Work
+
+**Research Paper**:
+```
+"Read protocol/yuuji.agent.md and help me create an annotated bibliography for sources on climate change policy"
+"Read protocol/megumi.agent.md and verify the statistical claims in my methodology section"
+"Read protocol/nobara.agent.md and design a compelling abstract that captures my thesis"
+```
+
+**Essay Writing**:
+```
+"Read protocol/yuuji.agent.md and draft a five-paragraph essay outline on [topic]"
+"Read protocol/megumi.agent.md and check my citations for proper APA/MLA format"
+"Read protocol/nobara.agent.md and improve the transitions between my paragraphs"
+```
+
+**Study Sessions**:
+```
+"Read protocol/yuuji.agent.md and create study flashcards for Chapter 5 of [textbook]"
+"Read protocol/megumi.agent.md and quiz me on the key concepts from my lecture notes"
+"Read protocol/gojo.agent.md" → Track study progress across subjects
+```
+
+### Simplified Tier System for Academic Work
+
+| Tier | Academic Use Case | Time Estimate |
+|------|-------------------|---------------|
+| **Tier 1 (Rapid)** | Quick notes, brainstorming, study prep | 10-15 min |
+| **Tier 2 (Standard)** | Essays, assignments, reports | 30-45 min |
+| **Tier 3 (Critical)** | Thesis chapters, final papers, publications | 60-90 min |
+
+### Tips for Academic Success
+
+1. **Start with Gojo** - Use Mission Control to organize your project timeline
+2. **Use Yuuji for drafts** - Get initial content down, then refine
+3. **Use Megumi for verification** - Fact-check claims, verify sources, check logic
+4. **Use Nobara for polish** - Improve structure, flow, and reader engagement
+5. **Document decisions** - Use `dev-notes.md` to track research decisions and source justifications
+
+**Note**: While DZP assists with academic work, always ensure your use complies with your institution's academic integrity policies. Use DZP as a research and writing aid, not to generate work presented as solely your own without proper disclosure.
+
+---
+
 Domain Zero is an eight-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with test-first development, comprehensive security review, creative strategy, and adaptive workflow complexity.
 
 ---
 
 ## 📋 Table of Contents
 
+- [Non-Code Projects](#-non-code-projects-school-work-research--academic-writing) 🆕
 - [What is Domain Zero?](#-what-is-domain-zero)
 - [Mask Mode](#mask-mode) ⭐ NEW in v7.1.0
 - [Prerequisites & Optional Integrations](#-prerequisites--optional-integrations)
