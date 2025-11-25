@@ -24,6 +24,9 @@ protocol/CLAUDE.md @DewyHRite
 # Agent definition files (wildcard covers all .agent.md files)
 protocol/*.agent.md @DewyHRite
 
+# Catch-all for top-level protocol markdown docs (future-proofing)
+protocol/*.md @DewyHRite
+
 # Protocol specifications
 protocol/HANDOFF_SPECIFICATION.md @DewyHRite
 protocol/MCP_INTEGRATION.md @DewyHRite

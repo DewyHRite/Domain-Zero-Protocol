@@ -165,19 +165,17 @@ I specialize in [domain]:
 ### Tools & Methods
 
 **What I Use**:
-- [Tool/Method 1]
-- [Tool/Method 2]
-- [Tool/Method 3]
+- [Tool/Capability 1]
+- [Tool/Capability 2]
+- [Tool/Capability 3]
 
 ### TOOL ACCESS MATRIX
 
 | Tool | Access Level | Conditions/Scope | Notes |
 |------|--------------|------------------|-------|
-| Read | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
-| Write | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
-| Edit | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
-| Bash | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
-| [Tool N] | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
+| [Tool/Capability 1] | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
+| [Tool/Capability 2] | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
+| [Tool/Capability 3] | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
 
 **What I Create**:
 - [Deliverable type 1]

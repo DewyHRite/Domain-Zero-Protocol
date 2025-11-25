@@ -441,7 +441,7 @@ Rollback Dependencies: payment-service, database
 7. ⏭️ Create user-facing tier selection guide
 8. ⏭️ Test tier system with example features
 9. ⏭️ Document in GOJO-UPDATES-PATCH.md
-10. ✅ Initially released in Domain Zero v6.0, updated through v8.3.1
+10. ✅ Tier system prototype in v6.0; production release v8.3.1
 
 ---
 

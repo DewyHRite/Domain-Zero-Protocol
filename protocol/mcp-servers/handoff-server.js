@@ -499,6 +499,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             // Archive old log and start fresh
             const archivePath = handoffLogPath.replace(".json", `-${Date.now()}.archive.json`);
             await fs.rename(handoffLogPath, archivePath);
+
+            // Cleanup old archives (keep last 5)
+            try {
+              const logDir = path.dirname(handoffLogPath);
+              const files = await fs.readdir(logDir);
+              const archiveFiles = files
+                .filter((f) => f.includes("handoff-log-") && f.endsWith(".archive.json"))
+                .sort()
+                .reverse();
+              for (const oldArchive of archiveFiles.slice(5)) {
+                await fs.unlink(path.join(logDir, oldArchive)).catch(() => {});
+              }
+            } catch {
+              // Ignore cleanup errors
+            }
+
             log = [];
           }
         } catch {
