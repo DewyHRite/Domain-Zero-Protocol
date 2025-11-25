@@ -702,7 +702,7 @@ node custom-mcp-server.js
 
 ---
 
-## Handoff Automation (v8.3.0+)
+## Handoff Automation (v8.3.1+)
 
 ### Overview
 
@@ -790,7 +790,7 @@ The handoff MCP server provides the following tools:
 
 ### Tool: get_invocation_command
 
-**Description**: Generates a copy-paste ready command for agent invocation.
+**Description**: Generates a copy-paste-ready command for agent invocation.
 
 **Input**:
 ```json
@@ -814,7 +814,7 @@ The handoff MCP server provides the following tools:
 ### Workflow Integration
 
 **Before MCP Handoff Automation** (Manual):
-```
+```text
 1. Yuuji completes implementation
 2. Yuuji outputs: "Ready for security review"
 3. User manually figures out which files changed
@@ -824,7 +824,7 @@ The handoff MCP server provides the following tools:
 ```
 
 **After MCP Handoff Automation**:
-```
+```text
 1. Yuuji completes implementation
 2. Yuuji calls prepare_handoff with @security-review trigger
 3. MCP server extracts context automatically
@@ -891,7 +891,7 @@ node handoff-server.js
 
 ## Version History
 
-- **1.1.0** (2025-11-23): Added Handoff Automation MCP Server for v8.3.0
+- **1.1.0** (2025-11-24): Added Handoff Automation MCP Server for v8.3.1
 - **1.0.0** (2025-11-18): Initial MCP integration guide for v8.0.0
 
 ---

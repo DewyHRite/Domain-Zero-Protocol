@@ -802,11 +802,11 @@ Scenario: Full Tier 2 workflow
 
 ---
 
-## MCP Handoff Automation (v8.3.0+)
+## MCP Handoff Automation (v8.3.1+)
 
 ### Overview
 
-As of v8.3.0, Domain Zero Protocol supports **automated handoffs via MCP** (Model Context Protocol). This reduces manual context reconstruction and saves ~50 seconds per handoff.
+As of v8.3.1, Domain Zero Protocol supports **automated handoffs via MCP** (Model Context Protocol). This reduces manual context reconstruction and saves ~50 seconds per handoff.
 
 ### MCP Handoff Server
 
@@ -823,7 +823,7 @@ As of v8.3.0, Domain Zero Protocol supports **automated handoffs via MCP** (Mode
 | Tool | Purpose |
 |------|---------|
 | `prepare_handoff` | Extracts context and generates handoff payload |
-| `get_invocation_command` | Returns copy-paste ready agent invocation |
+| `get_invocation_command` | Returns copy-paste-ready agent invocation |
 | `log_handoff_event` | Logs handoff to `.protocol-state/handoff-log.json` |
 | `list_pending_handoffs` | Lists incomplete handoffs |
 | `validate_handoff` | Validates handoff is allowed |
@@ -891,7 +891,7 @@ Add to Claude Code MCP configuration (`~/.config/claude-code/mcp.json`):
 
 ## Version History
 
-- **1.1.0** (2025-11-23): Added MCP Handoff Automation for v8.3.0
+- **1.1.0** (2025-11-24): Added MCP Handoff Automation for v8.3.1
 - **1.0.0** (2025-11-18): Initial specification for v8.0.0 .agent.md format
 
 ---

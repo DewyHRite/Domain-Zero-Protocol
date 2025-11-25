@@ -1,0 +1,88 @@
+# Domain Zero Protocol - CODEOWNERS
+#
+# This file defines code ownership for protocol-protected files.
+# Changes to these files require review from designated owners.
+#
+# GitHub Documentation: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Format: [pattern] @owner1 @owner2
+#
+# NOTE: Enable "Require review from Code Owners" in branch protection
+# settings for this file to have effect.
+
+# =============================================================================
+# PROTOCOL FILES (PROTECTED)
+# =============================================================================
+# These files define the core protocol and require maintainer approval.
+
+# Main protocol file - highest protection
+protocol/CLAUDE.md @DewyHRite
+
+# Agent definition files
+protocol/*.agent.md @DewyHRite
+protocol/yuuji.agent.md @DewyHRite
+protocol/megumi.agent.md @DewyHRite
+protocol/nobara.agent.md @DewyHRite
+protocol/gojo.agent.md @DewyHRite
+
+# Protocol specifications
+protocol/HANDOFF_SPECIFICATION.md @DewyHRite
+protocol/MCP_INTEGRATION.md @DewyHRite
+protocol/ENVIRONMENT_TARGETING.md @DewyHRite
+protocol/RESEARCH_MODE.md @DewyHRite
+protocol/MASK_MODE.md @DewyHRite
+protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md @DewyHRite
+protocol/CANONICAL_SOURCE_ADOPTION.md @DewyHRite
+protocol/MODE_INDICATORS.md @DewyHRite
+protocol/TIER-SELECTION-GUIDE.md @DewyHRite
+
+# Skills registry
+protocol/skills/*.md @DewyHRite
+protocol/skills/*.yaml @DewyHRite
+
+# =============================================================================
+# CONFIGURATION FILES (PROTECTED)
+# =============================================================================
+
+# Protocol configuration
+protocol.config.yaml @DewyHRite
+
+# Version tracking
+VERSION.md @DewyHRite
+CHANGELOG.md @DewyHRite
+
+# Security policy
+SECURITY.md @DewyHRite
+
+# =============================================================================
+# GOVERNANCE FILES (PROTECTED)
+# =============================================================================
+
+# This file itself
+CODEOWNERS @DewyHRite
+
+# Agent binding oath and decision framework
+AGENT_BINDING_OATH.md @DewyHRite
+DECISION_REASONING_TEMPLATE.md @DewyHRite
+
+# =============================================================================
+# SCRIPTS (PROTECTED)
+# =============================================================================
+# Verification and update scripts
+
+scripts/verify-protocol.ps1 @DewyHRite
+scripts/verify-protocol.sh @DewyHRite
+scripts/validate-agents.ps1 @DewyHRite
+scripts/update-instructions.ps1 @DewyHRite
+scripts/update-instructions.sh @DewyHRite
+
+# =============================================================================
+# DOCUMENTATION (REVIEW ENCOURAGED)
+# =============================================================================
+# Documentation changes benefit from review but are less critical
+
+README.md @DewyHRite
+FAQ.md @DewyHRite
+IMPLEMENTATION_GUIDE.md @DewyHRite
+PROTOCOL_QUICKSTART.md @DewyHRite
+docs/*.md @DewyHRite

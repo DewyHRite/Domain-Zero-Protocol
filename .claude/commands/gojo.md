@@ -4,7 +4,7 @@ description: "Install Domain Zero Protocol - Setup guide for new projects and us
 
 # DOMAIN ZERO PROTOCOL INSTALLATION GUIDE
 
-**Version:** 8.3.1 | **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol
+**Version:** 8.3.1 | **Canonical Source:** <https://github.com/DewyHRite/Domain-Zero-Protocol>
 
 ## Quick Start Installation
 
@@ -12,7 +12,7 @@ description: "Install Domain Zero Protocol - Setup guide for new projects and us
 
 Copy these files to your project's `protocol/` directory:
 
-```
+```text
 protocol/
   CLAUDE.md          # Main protocol file
   yuuji.agent.md     # Implementation Specialist
@@ -33,7 +33,7 @@ Create `protocol.config.yaml` in your project root with your settings.
 
 ### Step 4: Add to .gitignore
 
-```
+```text
 .protocol-state/trigger-19.md
 .protocol-state/research/**/**.raw.log
 ```
@@ -43,24 +43,24 @@ Create `protocol.config.yaml` in your project root with your settings.
 ## Agent Invocation Patterns
 
 **Gojo (Mission Control):**
-```
+```text
 "Read protocol/gojo.agent.md"
 ```
 
 **Yuuji (Implementation):**
-```
+```text
 "Read protocol/yuuji.agent.md and implement [feature]"
 "Read protocol/yuuji.agent.md --tier rapid and create [script]"
 "Read protocol/yuuji.agent.md --tier critical and implement [auth feature]"
 ```
 
 **Megumi (Security):**
-```
+```text
 "Read protocol/megumi.agent.md and review [module]"
 ```
 
 **Nobara (UX/Design):**
-```
+```text
 "Read protocol/nobara.agent.md and design [feature]"
 ```
 
@@ -80,7 +80,7 @@ Create `protocol.config.yaml` in your project root with your settings.
 
 After copying files, invoke Gojo to initialize your project:
 
-```
+```text
 "Read protocol/gojo.agent.md"
 ```
 
