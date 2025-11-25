@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # Security Policy
 
 ## Scope
@@ -30,8 +30,9 @@ We provide security updates for the following versions:
 
 | Version | Supported          | Status |
 | ------- | ------------------ | ------ |
-| 8.4.0   | :white_check_mark: | Current stable release |
-| 8.3.x   | :white_check_mark: | Previous stable release (still supported) |
+| 8.4.1   | :white_check_mark: | Current stable release |
+| 8.4.0   | :white_check_mark: | Previous stable release (still supported) |
+| 8.3.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
 | 7.1.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
 | 7.0.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
 | 6.x     | :x:                | End of life (EOL) |

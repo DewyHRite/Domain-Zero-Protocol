@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # Domain Zero Protocol - The Brutal Reality Check
 
 ## How to Use This Framework for Best Results

@@ -1,0 +1,106 @@
+{
+  "_metadata": {
+    "document_type": "INTERNAL DOCUMENT",
+    "classification": "INTERNAL",
+    "description": "File Classification Registry - Enforces INTERNAL vs CORE file separation",
+    "created": "2025-11-25T00:00:00Z",
+    "last_updated": "2025-11-25T00:00:00Z",
+    "framework_version": "1.0.0"
+  },
+  "classification_system": {
+    "INTERNAL": {
+      "description": "Sensitive operational data, planning documents, version logs, framework records",
+      "markers": [
+        "[INTERNAL DOCUMENT]",
+        "[INTERNAL]"
+      ],
+      "git_policy": "NEVER_COMMIT",
+      "actions_blocked": [
+        "git add",
+        "git stage",
+        "git commit",
+        "git push"
+      ]
+    },
+    "CORE": {
+      "description": "Production codebase intended for version control and public repository",
+      "markers": [
+        "[CORE FILE]",
+        "[CORE]"
+      ],
+      "git_policy": "STANDARD_WORKFLOW",
+      "requirements": [
+        "version_verification",
+        "backup_before_modify"
+      ]
+    }
+  },
+  "internal_directories": [
+    ".protocol-state/system-update-framework/",
+    ".protocol-state/backups/",
+    ".protocol-state/research/**/*.raw.log",
+    ".protocol-state/trigger-19.md",
+    "notes/",
+    "conversion/"
+  ],
+  "internal_patterns": [
+    "*_INTERNAL.*",
+    "*_ACTIONABLE.md",
+    "*_REMEDIATION.md",
+    "*_DRAFT.md",
+    "*_WIP.md",
+    "*_PROGRESS.md",
+    "*_COMPLETE.md",
+    "*_ACTION_PLAN.md",
+    "*_DESIGN.md",
+    "*_REVIEW.md",
+    "SYSTEM_UPDATE_*.md",
+    "P0_*.md",
+    "P1_*.md",
+    "P2_*.md",
+    "P3_*.md",
+    "SESSION_SUMMARY_*.md",
+    "RELEASE_NOTES_*.md"
+  ],
+  "core_directories": [
+    "protocol/",
+    "docs/",
+    "scripts/",
+    "release/",
+    "Domain Zero Agents/",
+    ".github/"
+  ],
+  "core_files": [
+    "protocol/CLAUDE.md",
+    "protocol/gojo.agent.md",
+    "protocol/yuuji.agent.md",
+    "protocol/megumi.agent.md",
+    "protocol/nobara.agent.md",
+    "protocol.config.yaml",
+    "README.md",
+    "VERSION.md",
+    "CHANGELOG.md",
+    "IMPLEMENTATION_GUIDE.md",
+    "PROTOCOL_QUICKSTART.md",
+    "FAQ.md",
+    "SECURITY.md",
+    "LICENSE",
+    "CODEOWNERS"
+  ],
+  "classification_rules": {
+    "priority_order": [
+      "1. Explicit header marker takes precedence",
+      "2. Directory-based classification",
+      "3. Pattern-based classification",
+      "4. Default to CORE if ambiguous (request clarification)"
+    ],
+    "enforcement": {
+      "pre_git_check": true,
+      "block_internal_staging": true,
+      "require_classification_for_new_files": true,
+      "warn_on_ambiguous": true
+    }
+  },
+  "verification_log": [],
+  "blocked_operations_log": []
+}

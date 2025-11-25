@@ -1,0 +1,124 @@
+{
+  "update_id": "UPDATE-2025-11-25-010",
+  "title": "PR #28 CodeRabbit Review Fixes + .claude/commands Guide",
+  "classification": ["UPDATE", "FIX", "STRUCTURAL_CHANGE"],
+  "initiated": "2025-11-25T20:00:00Z",
+  "affected_files": {
+    "version_updates": [
+      {
+        "path": "Domain Zero Agents - Full JJK Edition/INUMAKI.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "MASK MODE version v7.1.0 → v8.4.0"
+      },
+      {
+        "path": "Domain Zero Agents - Full JJK Edition/MAKI.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "MASK MODE version v7.1.0 → v8.4.0"
+      },
+      {
+        "path": "Domain Zero Agents - Full JJK Edition/TODO.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "MASK MODE version v7.1.0 → v8.4.0"
+      },
+      {
+        "path": "Domain Zero Agents - Full JJK Edition/PANDA.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "MASK MODE version v7.1.0 → v8.4.0"
+      },
+      {
+        "path": ".protocol-state/tier-system-specification.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "version: 8.3.1 → 8.4.0, version: 6.2.8 → 8.4.0"
+      },
+      {
+        "path": "SECURITY.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "Protocol version v8.2.0 → v8.4.0"
+      },
+      {
+        "path": "Domain Zero Agents - Full JJK Edition/MEGUMI.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "Protocol Version: 8.2.0 → 8.4.0"
+      },
+      {
+        "path": "Domain Zero Agents - Full JJK Edition/GOJO.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "protocol_version in example JSON: 8.2.0 → 8.4.0"
+      }
+    ],
+    "documentation_updates": [
+      {
+        "path": "README.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "Update memory template to eight-agent system, fix broken links to JJK Edition files"
+      },
+      {
+        "path": "protocol/skills/SKILL_REGISTRY.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "Add extended agents (Todo, Maki, Panda, Inumaki) skill categories"
+      },
+      {
+        "path": "docs/SLASH_COMMANDS_INSTALLATION.md",
+        "classification": "CORE",
+        "change": "ADD",
+        "issue": "Create .claude/commands installation guide"
+      }
+    ],
+    "markdown_formatting": [
+      {
+        "path": "protocol/inumaki.agent.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "Convert bare URLs to markdown links (MD034)"
+      },
+      {
+        "path": "protocol/maki.agent.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "Convert bare URLs to markdown links (MD034)"
+      },
+      {
+        "path": "protocol/panda.agent.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "Convert bare URLs to markdown links (MD034)"
+      },
+      {
+        "path": "protocol/todo.agent.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "Convert bare URLs to markdown links (MD034)"
+      },
+      {
+        "path": "VERSION.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "Add language to code block (MD040)"
+      },
+      {
+        "path": "CHANGELOG.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "Replace emphasis with heading (MD036)"
+      },
+      {
+        "path": "PROTOCOL_QUICKSTART.md",
+        "classification": "CORE",
+        "change": "MODIFY",
+        "issue": "Add language specs to code blocks (MD040)"
+      }
+    ]
+  },
+  "total_files": 18,
+  "backup_required": true
+}

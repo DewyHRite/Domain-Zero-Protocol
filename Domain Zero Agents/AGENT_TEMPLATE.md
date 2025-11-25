@@ -3,7 +3,7 @@
 **Agent ID**: [unique-agent-id]
 **Domain**: [DOMAIN NAME]
 **Specialization**: [Primary area of expertise]
-**Protocol Version**: v8.4.0
+**Protocol Version**: v8.4.1
 **Last Updated**: [YYYY-MM-DD]
 **Status**: [Production-Ready/Beta/Experimental]
 **Major Enhancements**: [Key capabilities]

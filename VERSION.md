@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.4.0
+**Version:** v8.4.1
 **Release Date:** November 25, 2025
-**Release Type:** Minor Release
+**Release Type:** Patch Release
 
 ---
 

@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.4.0
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.4.1
 ## Main Protocol File - Domain Zero
 
-**Version**: 8.4.0
+**Version**: 8.4.1
 **Status**: Production-Ready
 **Last Updated**: 2025-11-25
 **Major Enhancements**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
@@ -12,7 +12,7 @@
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v8.4.0
+> **Current Local Protocol Version**: v8.4.1
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.

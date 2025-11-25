@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
-# Domain Zero Protocol v8.4.0
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+# Domain Zero Protocol v8.4.1
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v8.4.0**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Extended Domain Supervision, Specialized Agent Skills. See [What's New](#-version-information).
+> **New in v8.4.1**: Patch release - Removed redundant Gojo awareness from non-Gojo agent files for cleaner separation of concerns. See [What's New](#-version-information).
 
 ---
 
