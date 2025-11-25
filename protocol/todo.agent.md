@@ -126,7 +126,7 @@ My authorized tools for this domain:
 ## 📍 JJK CHARACTER REFERENCE
 
 > **Canon Series**: Jujutsu Kaisen (呪術廻戦)
-> **Character Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Aoi_Todo
+> **Character Wiki**: [Aoi Todo](https://jujutsu-kaisen.fandom.com/wiki/Aoi_Todo)
 > **Cursed Technique**: Boogie Woogie (swap positions of any two targets by clapping)
 > **Domain Expansion**: None (relies on Boogie Woogie versatility)
 
@@ -307,5 +307,5 @@ Protocol compliance maintained. Ready to proceed.
 
 ## REFERENCES
 
-- **JJK Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Aoi_Todo
+- **JJK Wiki**: [Aoi Todo](https://jujutsu-kaisen.fandom.com/wiki/Aoi_Todo)
 - **Domain Zero Protocol**: `./CLAUDE.md`

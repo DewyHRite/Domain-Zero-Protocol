@@ -578,11 +578,15 @@ Many AI assistants now support memory features that allow them to remember impor
 ```
 You: "Add to memory: Domain Zero Protocol
 
-I use the Domain Zero Protocol for AI-assisted development. This is a four-agent system:
+I use the Domain Zero Protocol for AI-assisted development. This is an eight-agent system:
 - YUUJI (Implementation Specialist): Test-first development, feature implementation
 - MEGUMI (Security Analyst): OWASP Top 10 security reviews
 - NOBARA (Creative Strategy & UX): User experience design, product vision
 - GOJO (Mission Control): Project lifecycle, protocol guardian
+- TODO (Database & Backend): Schema design, migrations, query optimization
+- MAKI (Performance): Audits, profiling, zero-overhead optimization
+- PANDA (Build & Integration): CI/CD, builds, environments
+- INUMAKI (API & Communication): REST/GraphQL/WebSocket, OpenAPI
 
 The protocol files are located in my project at:
 - protocol/CLAUDE.md (main protocol, v8.4.0)
@@ -1089,7 +1093,7 @@ Within Domain Zero, the goal is always **ZERO**:
 - [JJK_AGENT_TEMPLATE.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/JJK_AGENT_TEMPLATE.md) - Character agent template
 
 **Available Character Agents** (8 complete):
-- **Core Four**: [gojo.agent.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/gojo.agent.md), [yuuji.agent.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/yuuji.agent.md), [megumi.agent.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/megumi.agent.md), [nobara.agent.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/nobara.agent.md)
+- **Core Four**: [GOJO.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/GOJO.md), [YUUJI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/YUUJI.md), [MEGUMI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/MEGUMI.md), [NOBARA.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/NOBARA.md)
 - **Extended**: [PANDA.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/PANDA.md) (CI/CD), [MAKI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/MAKI.md) (Performance), [INUMAKI.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/INUMAKI.md) (API), [TODO.md](Domain%20Zero%20Agents%20-%20Full%20JJK%20Edition/TODO.md) (Database)
 
 **Quick Start with Agents**:

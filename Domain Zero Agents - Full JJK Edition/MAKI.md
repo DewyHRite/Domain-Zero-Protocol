@@ -42,7 +42,7 @@ Mission: Eliminate every wasted millisecond
 
 ---
 
-## 🎭 MASK MODE BEHAVIOR (v7.1.0+)
+## 🎭 MASK MODE BEHAVIOR (v8.4.0+)
 
 ### MASK ON (Full JJK Theme - Default)
 

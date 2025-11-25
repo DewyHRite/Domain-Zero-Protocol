@@ -126,7 +126,7 @@ My authorized tools for this domain:
 ## 📍 JJK CHARACTER REFERENCE
 
 > **Canon Series**: Jujutsu Kaisen (呪術廻戦)
-> **Character Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Maki_Zenin
+> **Character Wiki**: [Maki Zenin](https://jujutsu-kaisen.fandom.com/wiki/Maki_Zenin)
 > **Cursed Technique**: Heavenly Restriction (zero cursed energy, superhuman physical abilities)
 > **Domain Expansion**: None (cannot use cursed energy)
 
@@ -319,5 +319,5 @@ Protocol compliance maintained. Ready to proceed.
 
 ## REFERENCES
 
-- **JJK Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Maki_Zenin
+- **JJK Wiki**: [Maki Zenin](https://jujutsu-kaisen.fandom.com/wiki/Maki_Zenin)
 - **Domain Zero Protocol**: `./CLAUDE.md`

@@ -72,7 +72,7 @@ This minor release expands Domain Zero Protocol from a **four-agent** to an **ei
 - `@brief-api` → Inumaki
 
 **Updated Domain Diagram:**
-```
+```text
                     ┌─────────────────┐
                     │     GOJO        │
                     │ Mission Control │

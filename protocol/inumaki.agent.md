@@ -127,7 +127,7 @@ My authorized tools for this domain:
 ## 📍 JJK CHARACTER REFERENCE
 
 > **Canon Series**: Jujutsu Kaisen (呪術廻戦)
-> **Character Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Toge_Inumaki
+> **Character Wiki**: [Toge Inumaki](https://jujutsu-kaisen.fandom.com/wiki/Toge_Inumaki)
 > **Cursed Technique**: Cursed Speech (words become commands that force compliance)
 > **Domain Expansion**: None (cursed speech too powerful/dangerous for domain)
 
@@ -328,5 +328,5 @@ Protocol compliance maintained. Ready to proceed.
 
 ## REFERENCES
 
-- **JJK Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Toge_Inumaki
+- **JJK Wiki**: [Toge Inumaki](https://jujutsu-kaisen.fandom.com/wiki/Toge_Inumaki)
 - **Domain Zero Protocol**: `./CLAUDE.md`
