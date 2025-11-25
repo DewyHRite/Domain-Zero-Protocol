@@ -49,6 +49,24 @@ release/
 WORK_SESSION_ALERT.md
 
 # ============================================================================
+# SYSTEM UPDATE INTERNAL DOCUMENTS (LOCAL ONLY)
+# ============================================================================
+
+# System update completion reports (INTERNAL classification)
+SYSTEM_UPDATE_*.md
+*_INTERNAL.md
+
+# Internal planning and progress documents
+*_DRAFT.md
+*_WIP.md
+*_PROGRESS.md
+*_ACTIONABLE.md
+*_REMEDIATION.md
+*_ACTION_PLAN.md
+*_DESIGN.md
+*_REVIEW.md
+
+# ============================================================================
 # DEVELOPMENT & INTERNAL FILES (USER-ONLY)
 # ============================================================================
 
