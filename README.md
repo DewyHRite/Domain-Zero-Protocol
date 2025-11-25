@@ -10,7 +10,7 @@
 
 ## 🎯 Start Here: Honest Assessment
 
-**Before you dive in**, read [REALITY_CHECK.md](REALITY_CHECK.md) for an **honest, no-marketing-fluff assessment** of what Domain Zero actually is:
+**Before you dive in**, read [REALITY_CHECK.md](docs/reference/REALITY_CHECK.md) for an **honest, no-marketing-fluff assessment** of what Domain Zero actually is:
 
 ### What You're Actually Getting
 - ✅ **Structured prompt engineering** for AI-assisted development (not magic AI)
@@ -33,7 +33,7 @@
 - ❌ **Not for mission-critical systems** - AI reviews can't replace human security experts
 - ❌ **Productivity gains vary** - Depends heavily on your existing process
 
-**Read the full honest assessment**: [REALITY_CHECK.md](REALITY_CHECK.md)
+**Read the full honest assessment**: [REALITY_CHECK.md](docs/reference/REALITY_CHECK.md)
 
 ---
 
@@ -77,7 +77,7 @@ Domain Zero is a **structured prompt engineering framework** that enforces disci
 | Want structure for AI-assisted dev | ✅ **YES** - That's what this is |
 | Building sensitive features (auth/payments) | ⚠️ **MAYBE** - Use Tier 3, but still get human review |
 
-**Read the complete decision framework**: [REALITY_CHECK.md](REALITY_CHECK.md)
+**Read the complete decision framework**: [REALITY_CHECK.md](docs/reference/REALITY_CHECK.md)
 
 ---
 
@@ -382,7 +382,7 @@ Domain Zero creates a **controlled collaboration space** where eight specialized
 
 ### What is Mask Mode?
 
-As explained in [REALITY_CHECK.md](REALITY_CHECK.md), the "agents" (Yuuji, Megumi, Nobara, Gojo) are **the same AI reading different instruction files** - they're prompt engineering, not true multi-agent systems. Mask Mode gives you control over the presentation style.
+As explained in [REALITY_CHECK.md](docs/reference/REALITY_CHECK.md), the "agents" (Yuuji, Megumi, Nobara, Gojo) are **the same AI reading different instruction files** - they're prompt engineering, not true multi-agent systems. Mask Mode gives you control over the presentation style.
 
 ### The Two Modes
 
@@ -458,7 +458,7 @@ Restart your AI session for changes to take effect.
 ### Learn More
 
 - **[MASK_MODE.md](protocol/MASK_MODE.md)** - Complete specification with examples and configuration options
-- **[REALITY_CHECK.md](REALITY_CHECK.md)** - Honest assessment of what Domain Zero actually is (no marketing fluff)
+- **[REALITY_CHECK.md](docs/reference/REALITY_CHECK.md)** - Honest assessment of what Domain Zero actually is (no marketing fluff)
 
 ---
 
@@ -1540,7 +1540,7 @@ Domain Zero is now set up in your project.
 - v8.1.0 - MINOR: Playwright E2E Testing Infrastructure (Multi-browser testing, tier integration, agent role extensions)
 - v8.0.0 - MAJOR: .agent.md Format Migration (Structured metadata, MCP integration, environment targeting) [BREAKING CHANGES]
 - v7.2.0 - MINOR: Research Mode (Structured agent knowledge updates)
-- v7.1.0 - MINOR: Mask Mode (presentation toggle), Dual Workflow Enforcement (Tier 2/3), REALITY_CHECK.md
+- v7.1.0 - MINOR: Mask Mode (presentation toggle), Dual Workflow Enforcement (Tier 2/3), docs/reference/REALITY_CHECK.md
 - v6.1 - MINOR: Canonical Source Adoption, Agent Self-Identification, AI Memory Integration, Session Continuity (long sessions & user absence re-identification)
 - v6.0 - MAJOR: Adaptive Workflow Complexity (Tier System)
 - v5.1 - CLAUDE.md Protection System, Backup & Rollback Requirements
