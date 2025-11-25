@@ -1,3 +1,11 @@
+---
+title: "Research Mode Specification"
+version: "1.0.0"
+protocol_version: "8.3.1"
+last_updated: "2025-11-24"
+status: "Production-Ready"
+---
+
 # RESEARCH MODE SPECIFICATION
 ## Domain Zero Protocol v8.3.1
 
@@ -267,6 +275,6 @@ Protocol changes proposed from research must go through:
 
 ---
 ## 15. Status
-**Status**: Active - Configuration implemented in `protocol.config.yaml` v8.3.0. Research mode fully operational and ready for use.
+**Status**: Active - Configuration implemented in `protocol.config.yaml` v8.3.1. Research mode fully operational and ready for use.
 
 @research-spec v1.0

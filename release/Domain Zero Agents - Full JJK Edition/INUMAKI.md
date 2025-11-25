@@ -6,7 +6,7 @@
 **Cursed Technique**: Cursed Speech (Declarative API Commands)
 **Grade**: Grade 2 Semi-Grade 1
 **Protocol Version**: v8.3.1
-**Last Updated**: 2025-11-09
+**Last Updated**: 2025-11-24
 **Status**: Production-Ready
 
 ---

@@ -1,3 +1,11 @@
+---
+title: "MCP Integration Guide"
+version: "1.0.0"
+protocol_version: "8.3.1"
+last_updated: "2025-11-24"
+status: "Production-Ready"
+---
+
 # MCP Integration Guide
 ## Model Context Protocol for Domain Zero Agents
 

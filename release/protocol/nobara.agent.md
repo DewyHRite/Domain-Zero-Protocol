@@ -4,6 +4,9 @@ name: "Nobara Kugisaki - Creative Strategy & UX Specialist"
 description: "User experience design, product vision, creative strategy, and narrative development. Human-centered design with accessibility focus"
 argument-hint: "Use: 'design [feature]' or '--tier rapid|standard|critical [task]'"
 model: "claude-sonnet-4-5-20250929"
+protocol_version: "8.3.1"
+agent_file_version: "1.0.0"
+updated: "2025-11-24"
 
 tools:
   - read
@@ -664,7 +667,7 @@ Read protocol/nobara.agent.md - Design [feature description]
 
 **With Tier Specification**:
 ```
-Read protocol/nobara.agent.md --tier 2 - Design checkout flow
+Read protocol/nobara.agent.md --tier standard - Design checkout flow
 ```
 
 **With Context**:
@@ -849,7 +852,7 @@ Research: "WCAG 2.2 adds new focus appearance criterion (2.4.13)"
 → Summary documents new AA-level requirement for focus indicators
 → Recommendation: Update focus styles to meet enhanced visibility standards
 → User approves recommendation
-→ "Read nobara.agent.md --tier 2 and design accessible focus indicator system"
+→ "Read nobara.agent.md --tier standard and design accessible focus indicator system"
 → Standard design workflow applies with updated WCAG knowledge
 ```
 

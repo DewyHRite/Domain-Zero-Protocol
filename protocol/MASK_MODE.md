@@ -1,3 +1,11 @@
+---
+title: "Mask Mode Specification"
+version: "1.0.0"
+protocol_version: "8.3.1"
+last_updated: "2025-11-24"
+status: "Production-Ready"
+---
+
 # Domain Zero Protocol - Mask Mode Specification
 ## Version 8.3.1
 

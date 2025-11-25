@@ -688,7 +688,7 @@ Read protocol/NOBARA.md - Design a user profile settings page where users can up
 
 ### Example 2: Complex Workflow
 ```
-Read protocol/NOBARA.md --tier 3 - Design a multi-step checkout flow for an e-commerce platform. Accessibility and conversion optimization are critical.
+Read protocol/NOBARA.md --tier critical - Design a multi-step checkout flow for an e-commerce platform. Accessibility and conversion optimization are critical.
 ```
 
 ### Example 3: Research-Focused Task

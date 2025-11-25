@@ -1,6 +1,14 @@
+---
+title: "Skill Registry"
+version: "1.0.0"
+protocol_version: "8.3.1"
+last_updated: "2025-11-24"
+status: "Production-Ready"
+---
+
 # Domain Zero Protocol - Skill Registry
 
-**Version**: 1.0
+**Version**: 1.0.0
 **Protocol Version**: 8.3.1
 **Last Updated**: 2025-11-24
 
