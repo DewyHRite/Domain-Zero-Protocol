@@ -6,6 +6,12 @@
 # This script verifies that all protected files exist in the repository.
 # Run this before every commit to prevent file loss.
 
+# Verify we're in the repository root
+if (-not (Test-Path "protocol.config.yaml") -or -not (Test-Path "protocol" -PathType Container)) {
+    Write-Host "[ERROR] Script must be run from repository root" -ForegroundColor Red
+    exit 1
+}
+
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "Domain Zero Protocol - File Structure Check" -ForegroundColor Cyan
 Write-Host "Protocol Version: 8.3.1" -ForegroundColor Cyan

@@ -48,6 +48,7 @@ protocol/mcp-servers/*.json @DewyHRite
 
 # Protocol state tracking (audit trail integrity)
 .protocol-state/dev-notes.md @DewyHRite
+.protocol-state/project-state.json @DewyHRite
 
 # =============================================================================
 # CONFIGURATION FILES (PROTECTED)

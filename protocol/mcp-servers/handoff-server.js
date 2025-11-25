@@ -167,8 +167,8 @@ const CONTEXT_EXTRACTORS = {
       const reviewPath = path.join(projectRoot, ".protocol-state", "security-review.md");
       const review = await fs.readFile(reviewPath, "utf-8");
       const findings = [];
-      // Limit match length to 500 chars with non-greedy quantifier to prevent excessive memory usage
-      const secIdRegex = /SEC-(\d+):\s*(.{0,500}?)/g;
+      // Capture SEC-ID and description until end of line, limit to 500 chars for memory safety
+      const secIdRegex = /SEC-(\d+):\s*(.{0,500}?)(?:\n|$)/g;
       let match;
       while ((match = secIdRegex.exec(review)) !== null) {
         findings.push({
@@ -419,8 +419,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         Object.assign(context, safeContext);
       }
 
-      // Generate event ID
-      const eventId = `HO-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+      // Generate event ID using cryptographically secure random
+      const eventId = `HO-${Date.now()}-${randomUUID()}`;
 
       // Generate invocation command
       const targetAgent = triggerInfo.target;
@@ -444,6 +444,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     case "get_invocation_command": {
       const { target_agent, tier, task_description } = args;
+
+      // Validate target_agent is a known agent
+      if (!AGENTS.includes(target_agent)) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                { error: `Invalid agent: ${target_agent}`, valid_agents: AGENTS },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      }
 
       let command = `Read ${target_agent}.agent.md`;
 

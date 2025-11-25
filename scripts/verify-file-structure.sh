@@ -9,6 +9,12 @@
 
 set -e
 
+# Verify we're in the repository root
+if [ ! -f "protocol.config.yaml" ] || [ ! -d "protocol" ]; then
+    echo -e "\033[0;31m[ERROR]\033[0m Script must be run from repository root"
+    exit 1
+fi
+
 echo "=========================================="
 echo "Domain Zero Protocol - File Structure Check"
 echo "Protocol Version: 8.3.1"
