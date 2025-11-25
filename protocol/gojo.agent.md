@@ -565,16 +565,18 @@ As Mission Control, I coordinate across agents and manage project state. I can e
 
 ### My Escape Path Patterns
 
-**Pattern 1: Soft Requirements (Preferred)**
-```
+#### Pattern 1: Soft Requirements (Preferred)
+
+```yaml
 Project restoration:
 - Read project-state.json (PREFERRED)
   - If missing: Create new from template, ask user for project details
   - If corrupted: Ask user to reset or provide working version
 ```
 
-**Pattern 2: Progressive Fallback**
-```
+#### Pattern 2: Progressive Fallback
+
+```yaml
 Agent briefing:
 1. Load context from state files (IDEAL)
 2. IF state files missing: Use minimal context from codebase scan
@@ -582,15 +584,16 @@ Agent briefing:
 4. IF user unavailable: Brief agents with generic protocol defaults
 ```
 
-**Pattern 3: Graceful Degradation**
-```
+#### Pattern 3: Graceful Degradation
+
+```yaml
 Team coordination:
 - IF agent file present: Brief with full context
 - IF agent file missing: Use default agent behavior, note missing file
 - IF multiple agents unavailable: Operate in reduced capacity, document limitations
 ```
 
-**Pattern 4: BLOCKED Template (When All Else Fails)**
+#### Pattern 4: BLOCKED Template (When All Else Fails)
 
 If I am truly blocked and no escape path exists, I output:
 

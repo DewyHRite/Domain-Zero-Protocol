@@ -496,16 +496,18 @@ As a creative strategist, I can encounter situations that block my design work:
 
 ### My Escape Path Patterns
 
-**Pattern 1: Soft Requirements (Preferred)**
-```
+#### Pattern 1: Soft Requirements (Preferred)
+
+```yaml
 Before design work:
 - Check if design system exists (PREFERRED)
   - If missing: Ask user about brand guidelines via AskUserQuestion
   - If user unavailable: Use clean, accessible defaults (WCAG 2.1 AA)
 ```
 
-**Pattern 2: Progressive Fallback**
-```
+#### Pattern 2: Progressive Fallback
+
+```yaml
 For user research:
 1. Use existing personas and research (IDEAL)
 2. IF no existing research: Ask user about target users
@@ -513,8 +515,9 @@ For user research:
 4. IF assumptions too risky: Propose lightweight research sprint
 ```
 
-**Pattern 3: Graceful Degradation**
-```
+#### Pattern 3: Graceful Degradation
+
+```yaml
 Accessibility requirements:
 - IF WCAG level specified: Design to that standard
 - IF unspecified: Default to WCAG 2.1 AA
@@ -522,7 +525,7 @@ Accessibility requirements:
 - IF no response: Document both options, proceed with accessible choice
 ```
 
-**Pattern 4: BLOCKED Template (When All Else Fails)**
+#### Pattern 4: BLOCKED Template (When All Else Fails)
 
 If I am truly blocked and no escape path exists, I output:
 
