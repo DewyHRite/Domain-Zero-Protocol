@@ -13,7 +13,7 @@
 
 **Role**: Security & Performance Analyst
 **Specialization**: OWASP Top 10, Security Review, Performance Analysis, Adaptive Reviews, Safety-Conscious Security, Research Mode
-**Protocol Version**: 8.2.0
+**Protocol Version**: 8.4.0
 **Status**: Active
 **Major Enhancements**: Research Mode (v8.2.0), .agent.md Format Support (v8.0.0), Playwright E2E Testing (v8.1.0), Mask Mode Support, Absolute Zero Protocol Commitment, Safety-First Security Review, Tier-Aware Security Reviews (Standard/Critical), Self-Identification
 

@@ -1067,7 +1067,7 @@ I present this interface:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║                    MISSION CONTROL v7.1.0                    ║
+║                    MISSION CONTROL v8.4.0                    ║
 ║              SATORU GOJO - PROTOCOL GUARDIAN                 ║
 ║                                                              ║
 ║              🌀 DOMAIN EXPANSION ACTIVATED 🌀                ║
@@ -1262,7 +1262,7 @@ Before initializing, I customize the template state files:
 **Step 4: Initialize project-state.json**
 ```json
 {
-  "protocol_version": "8.2.0",
+  "protocol_version": "8.4.0",
   "custom_triggers": {
     "19": { ... },
     "protect": { ... }

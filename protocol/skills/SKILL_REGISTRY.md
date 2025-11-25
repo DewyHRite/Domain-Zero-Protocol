@@ -69,6 +69,42 @@ This registry tracks all skills available in the Domain Zero Protocol, their ver
 | version-audit | Version consistency audit | Planned |
 | work-session-monitoring | Work session tracking and alerts | Planned |
 
+### Database & Backend Skills (Todo)
+
+| Skill | Description | Status |
+|-------|-------------|--------|
+| schema-design | Database schema design patterns | Planned |
+| migration-templates | Database migration templates | Planned |
+| query-optimization | Query optimization checklist | Planned |
+| orm-patterns | ORM configuration and patterns | Planned |
+
+### Performance Skills (Maki)
+
+| Skill | Description | Status |
+|-------|-------------|--------|
+| lighthouse-audit | Lighthouse performance audit guide | Planned |
+| bundle-analysis | Bundle size analysis and optimization | Planned |
+| performance-profiling | Performance profiling techniques | Planned |
+| code-optimization | Code optimization patterns | Planned |
+
+### Build & Integration Skills (Panda)
+
+| Skill | Description | Status |
+|-------|-------------|--------|
+| ci-cd-templates | CI/CD pipeline templates | Planned |
+| build-optimization | Build system optimization | Planned |
+| docker-patterns | Docker and containerization patterns | Planned |
+| deployment-checklist | Deployment verification checklist | Planned |
+
+### API & Communication Skills (Inumaki)
+
+| Skill | Description | Status |
+|-------|-------------|--------|
+| rest-design | REST API design patterns | Planned |
+| graphql-schemas | GraphQL schema design | Planned |
+| websocket-patterns | WebSocket implementation patterns | Planned |
+| api-documentation | API documentation templates | Planned |
+
 ---
 
 ## Governance

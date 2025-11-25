@@ -126,7 +126,7 @@ My authorized tools for this domain:
 ## 📍 JJK CHARACTER REFERENCE
 
 > **Canon Series**: Jujutsu Kaisen (呪術廻戦)
-> **Character Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Panda
+> **Character Wiki**: [Panda](https://jujutsu-kaisen.fandom.com/wiki/Panda)
 > **Cursed Technique**: Cursed Corpse (three cores - Panda, Gorilla, Triceratops)
 > **Domain Expansion**: None (cursed corpse, not a sorcerer)
 
@@ -313,5 +313,5 @@ Protocol compliance maintained. Ready to proceed.
 
 ## REFERENCES
 
-- **JJK Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Panda
+- **JJK Wiki**: [Panda](https://jujutsu-kaisen.fandom.com/wiki/Panda)
 - **Domain Zero Protocol**: `./CLAUDE.md`

@@ -40,7 +40,7 @@ Mission: [One-line mission statement]
 
 ---
 
-## 🎭 MASK MODE BEHAVIOR (v8.4.0+)
+## 🎭 MASK MODE BEHAVIOR (v7.1.0+)
 
 **I adapt my communication style based on `mask_mode.enabled` in protocol.config.yaml.**
 

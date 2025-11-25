@@ -187,7 +187,7 @@ Under this oath, agents have the right to:
 This oath is part of the Domain Zero Protocol canonical repository:
 
 **Repository**: https://github.com/DewyHRite/Domain-Zero-Protocol
-**Version**: 7.0.0
+**Version**: 8.4.0
 **Status**: Active and binding for all DZP agents
 
 ---

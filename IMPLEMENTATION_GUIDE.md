@@ -26,16 +26,16 @@
 ## Quick Start (5 Minutes)
 
 **Prerequisites**:
-- Downloaded the v8.2.0 release package
+- Downloaded the v8.4.0 release package
 - Access to Claude.ai, Claude Code, GitHub Copilot, or another AI assistant
 
 **Basic Setup**:
 
 1. **Copy protocol files to your project**:
    ```bash
-   cp -r v8.2.0/protocol /your-project/
-   cp v8.2.0/protocol.config.yaml /your-project/
-   cp v8.2.0/README.md /your-project/DOMAIN_ZERO_README.md
+   cp -r v8.4.0/protocol /your-project/
+   cp v8.4.0/protocol.config.yaml /your-project/
+   cp v8.4.0/README.md /your-project/DOMAIN_ZERO_README.md
    ```
 
 2. **Configure your AI assistant** (see platform-specific instructions below)
@@ -74,13 +74,19 @@
 ```markdown
 # Domain Zero Protocol Custom Instructions
 
-I use the Domain Zero Protocol for AI-assisted development. This is a four-agent system:
+I use the Domain Zero Protocol for AI-assisted development. This is an eight-agent system:
 
-**Agents**:
+**Core Four Agents**:
 - **Yuuji Itadori** (protocol/yuuji.agent.md): Implementation Specialist - Test-first development, feature implementation
 - **Megumi Fushiguro** (protocol/megumi.agent.md): Security Analyst - OWASP Top 10 security reviews
 - **Nobara Kugisaki** (protocol/nobara.agent.md): Creative Strategy & UX - User experience design, product vision
 - **Satoru Gojo** (protocol/gojo.agent.md): Mission Control - Project lifecycle, protocol guardian
+
+**Extended Four Agents**:
+- **Aoi Todo** (protocol/todo.agent.md): Database & Backend Specialist - Schema design, migrations, query optimization
+- **Maki Zenin** (protocol/maki.agent.md): Performance Optimization Specialist - Profiling, bundle analysis, zero-overhead
+- **Panda** (protocol/panda.agent.md): Build & Integration Specialist - CI/CD, GitHub Actions, Docker
+- **Toge Inumaki** (protocol/inumaki.agent.md): API & Communication Specialist - REST, GraphQL, WebSocket design
 
 **Three-Tier Workflow**:
 - **Tier 1 (Rapid)**: Fast prototyping, no tests
@@ -177,8 +183,8 @@ workflow:
    ```bash
    cd /your-project
    mkdir -p protocol
-   cp -r /path/to/v8.2.0/protocol/* ./protocol/
-   cp /path/to/v8.2.0/protocol.config.yaml ./
+   cp -r /path/to/v8.4.0/protocol/* ./protocol/
+   cp /path/to/v8.4.0/protocol.config.yaml ./
    ```
 
 2. **Create `.protocol-state` directory** (for state management):
@@ -231,7 +237,7 @@ Create `.protocol-state/project-state.json`:
 
 ```json
 {
-  "protocol_version": "8.2.0",
+  "protocol_version": "8.4.0",
   "project_metadata": {
     "name": "YOUR_PROJECT_NAME",
     "description": "Your project description",
@@ -241,7 +247,7 @@ Create `.protocol-state/project-state.json`:
   "current_feature_tier": "none",
   "current_state": "STANDBY",
   "active_role": "None",
-  "version": "0.0.1"
+  "version": "8.4.0"
 }
 ```
 
@@ -274,8 +280,8 @@ Create `.protocol-state/project-state.json`:
 1. **Copy protocol files** to your repo:
    ```bash
    mkdir -p .github/domain-zero
-   cp -r /path/to/v8.2.0/protocol .github/domain-zero/
-   cp /path/to/v8.2.0/protocol.config.yaml .github/domain-zero/
+   cp -r /path/to/v8.4.0/protocol .github/domain-zero/
+   cp /path/to/v8.4.0/protocol.config.yaml .github/domain-zero/
    ```
 
 2. **Create agent instruction summaries** in `.github/copilot-instructions.md`:
@@ -285,12 +291,19 @@ Create `.protocol-state/project-state.json`:
 
 ## Agent System
 
-This project uses Domain Zero Protocol with four agents:
+This project uses Domain Zero Protocol with eight agents:
 
+**Core Four:**
 1. **Yuuji (Implementation)**: Test-first development, feature implementation
 2. **Megumi (Security)**: OWASP security review, threat modeling
 3. **Nobara (UX)**: User experience design, creative strategy
 4. **Gojo (Mission Control)**: Project orchestration
+
+**Extended Four:**
+5. **Todo (Database)**: Schema design, migrations, query optimization
+6. **Maki (Performance)**: Profiling, bundle analysis, optimization
+7. **Panda (Build/CI)**: CI/CD pipelines, GitHub Actions, Docker
+8. **Inumaki (API)**: REST, GraphQL, WebSocket design
 
 ## Workflow Tiers
 
@@ -372,7 +385,7 @@ Save this as `domain-zero-system-prompt.md`:
 ```markdown
 # Domain Zero Protocol System Prompt
 
-You are an AI assistant operating under the Domain Zero Protocol v8.2.0.
+You are an AI assistant operating under the Domain Zero Protocol v8.4.0.
 
 ## Agent System
 
@@ -690,8 +703,8 @@ Read protocol.config.yaml and tell me:
 **Problem**: Agent references old version or features
 
 **Solutions**:
-1. Verify you're using v8.2.0 files
-2. Check `protocol.config.yaml` → `protocol_version: "8.2.0"`
+1. Verify you're using v8.4.0 files
+2. Check `protocol.config.yaml` → `protocol_version` is "8.4.0" (not "8.2.0")
 3. Re-upload all protocol files
 4. Clear conversation and start fresh
 
@@ -1272,14 +1285,22 @@ Copy and paste this prompt to save Domain Zero Protocol to Claude's memory:
 ```
 Add to memory: Domain Zero Protocol
 
-I use the Domain Zero Protocol for AI-assisted development. This is a four-agent system:
+I use the Domain Zero Protocol for AI-assisted development. This is an eight-agent system:
+
+**Core Four:**
 - YUUJI (Implementation Specialist): Test-first development, feature implementation
 - MEGUMI (Security Analyst): OWASP Top 10 security reviews
 - NOBARA (Creative Strategy & UX): User experience design, product vision
 - GOJO (Mission Control): Project lifecycle, protocol guardian
 
+**Extended Four:**
+- TODO (Database & Backend): Schema design, migrations, query optimization
+- MAKI (Performance): Profiling, bundle analysis, zero-overhead optimization
+- PANDA (Build & Integration): CI/CD, GitHub Actions, Docker
+- INUMAKI (API & Communication): REST, GraphQL, WebSocket design
+
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.2.0)
+- protocol/CLAUDE.md (main protocol, v8.4.0)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -1304,11 +1325,19 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
 Add to "What would you like ChatGPT to know about you?":
 
 ```
-I use the Domain Zero Protocol (v8.2.0) for development projects. This is a four-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.4.0) for development projects. This is an eight-agent AI development framework with specialized roles:
+
+**Core Four:**
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
 - GOJO: Mission control and protocol enforcement
+
+**Extended Four:**
+- TODO: Database & backend specialist
+- MAKI: Performance optimization specialist
+- PANDA: Build & integration specialist
+- INUMAKI: API & communication specialist
 
 When working on my projects, refer to protocol files at protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, and protocol/gojo.agent.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
 
@@ -1327,14 +1356,22 @@ Add to your global or project-level custom instructions:
 ```
 - Add to memory: Domain Zero Protocol
 
-I use the Domain Zero Protocol for AI-assisted development. This is a four-agent system:
+I use the Domain Zero Protocol for AI-assisted development. This is an eight-agent system:
+
+**Core Four:**
 - YUUJI (Implementation Specialist): Test-first development, feature implementation
 - MEGUMI (Security Analyst): OWASP Top 10 security reviews
 - NOBARA (Creative Strategy & UX): User experience design, product vision
 - GOJO (Mission Control): Project lifecycle, protocol guardian
 
+**Extended Four:**
+- TODO (Database & Backend): Schema design, migrations, query optimization
+- MAKI (Performance): Profiling, bundle analysis, zero-overhead optimization
+- PANDA (Build & Integration): CI/CD, GitHub Actions, Docker
+- INUMAKI (API & Communication): REST, GraphQL, WebSocket design
+
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.2.0)
+- protocol/CLAUDE.md (main protocol, v8.4.0)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)

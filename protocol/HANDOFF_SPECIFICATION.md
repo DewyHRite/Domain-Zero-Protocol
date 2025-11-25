@@ -10,7 +10,7 @@ status: "Production-Ready"
 # Agent Handoff Specification
 ## Domain Zero Protocol v8.4.0
 
-**Version**: 1.0.0
+**Version**: 1.1.0
 **Created**: November 18, 2025
 **Status**: Production-Ready
 **Purpose**: Define agent-to-agent context transfer mechanisms for .agent.md format
@@ -805,6 +805,7 @@ Scenario: Full Tier 2 workflow
 
 ## Version History
 
+- **1.1.0** (2025-11-25): Updated for v8.4.0, Extended Four agents, 8-agent architecture
 - **1.0.0** (2025-11-18): Initial specification for v8.0.0 .agent.md format
 
 ---
