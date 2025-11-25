@@ -1,4 +1,7 @@
-# Work Session Alert: Save Progress & Take a Break
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
+---
+
+# Work Session Alert: Save Progress & Take a Break - Must be followed verbatim!!!
 
 **Date:** {DATE}
 **Session Duration:** {DURATION}

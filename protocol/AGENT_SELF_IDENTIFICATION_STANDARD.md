@@ -1,4 +1,6 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # Agent Self-Identification Standard (v1.0)
+## Core Directive - Must be followed verbatim!!!
 
 Date: 2025-11-06  
 Applies to: All Domain Zero agents (YUUJI, MEGUMI, GOJO, NOBARA)  
