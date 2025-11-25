@@ -227,15 +227,15 @@ Domain Zero is an eight-agent AI development system that provides specialized ex
 This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
-- `CLAUDE.md` - Main protocol specification (v8.4.0)
+- `CLAUDE.md` - Main protocol specification (v8.4.1)
 - `yuuji.agent.md` - Implementation agent protocol
 - `megumi.agent.md` - Security review agent protocol
 - `gojo.agent.md` - Mission control agent protocol
 - `nobara.agent.md` - Creative strategy & UX agent protocol
-- `todo.agent.md` - Database & backend agent protocol (v8.4.0+)
-- `maki.agent.md` - Performance optimization agent protocol (v8.4.0+)
-- `panda.agent.md` - Build & integration agent protocol (v8.4.0+)
-- `inumaki.agent.md` - API & communication agent protocol (v8.4.0+)
+- `todo.agent.md` - Database & backend agent protocol (v8.4.1+)
+- `maki.agent.md` - Performance optimization agent protocol (v8.4.1+)
+- `panda.agent.md` - Build & integration agent protocol (v8.4.1+)
+- `inumaki.agent.md` - API & communication agent protocol (v8.4.1+)
 - `TIER-SELECTION-GUIDE.md` - Quick reference for tier selection
 - `GOJO-UPDATES-PATCH.md` - Protocol change audit trail
 
@@ -346,7 +346,7 @@ Domain Zero creates a **controlled collaboration space** where eight specialized
 - Protocol enforcement
 - Team coordination
 
-**Extended Four (v8.4.0+):**
+**Extended Four (v8.4.1+):**
 
 **👏 AOI TODO** - Database & Backend Specialist
 - Schema design & migrations
@@ -471,28 +471,28 @@ Restart your AI session for changes to take effect.
 **macOS/Linux (bash/zsh)**:
 ```bash
 # Copy the entire protocol structure to your project root
-cp -r "Domain Zero Protocol v8.4.0/protocol" your-project/
-cp -r "Domain Zero Protocol v8.4.0/.protocol-state" your-project/
-cp "Domain Zero Protocol v8.4.0/protocol.config.yaml" your-project/
-cp "Domain Zero Protocol v8.4.0/.gitignore" your-project/
+cp -r "Domain Zero Protocol v8.4.1/protocol" your-project/
+cp -r "Domain Zero Protocol v8.4.1/.protocol-state" your-project/
+cp "Domain Zero Protocol v8.4.1/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v8.4.1/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
 # Copy the entire protocol structure to your project root
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.4.0\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.4.0\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.4.0\protocol.config.yaml" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.4.0\.gitignore" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.4.1\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.4.1\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.4.1\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.4.1\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
 ```cmd
 REM Copy the entire protocol structure to your project root
-xcopy /E /I /Y "Domain Zero Protocol v8.4.0\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol v8.4.0\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol v8.4.0\protocol.config.yaml" "your-project\"
-copy /Y "Domain Zero Protocol v8.4.0\.gitignore" "your-project\"
+xcopy /E /I /Y "Domain Zero Protocol v8.4.1\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v8.4.1\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v8.4.1\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v8.4.1\.gitignore" "your-project\"
 ```
 
 ### Step 2: Configure Your Project
@@ -589,7 +589,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is an eight-age
 - INUMAKI (API & Communication): REST/GraphQL/WebSocket, OpenAPI
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.4.0)
+- protocol/CLAUDE.md (main protocol, v8.4.1)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -613,7 +613,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v8.4.0) for development projects. This is an eight-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.4.1) for development projects. This is an eight-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
@@ -644,7 +644,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 - Add Domain Zero Protocol pointer as shown in integration section
 
 **What to Include in Memory**:
-- ✅ Protocol name and version (Domain Zero Protocol v8.4.0)
+- ✅ Protocol name and version (Domain Zero Protocol v8.4.1)
 - ✅ The eight agent roles and their specializations
 - ✅ Protocol file locations (protocol/CLAUDE.md and all eight agent files)
 - ✅ Tier system overview (Rapid/Standard/Critical)
@@ -1527,14 +1527,14 @@ Domain Zero is now set up in your project.
 **Release Date**: November 25, 2025
 **Major Enhancements**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Extended Domain Supervision, Specialized Agent Skills
 
-**v8.4.0 Key Features**:
+**v8.4.1 Key Features**:
 - **Full 8-Agent Integration**: Four new agents - Todo (Database), Maki (Performance), Panda (Build), Inumaki (API)
 - **Extended Domain Supervision**: Gojo coordinates all 8 agents with declarative handoffs
 - **Specialized Agent Skills**: New skills in AGENT_SKILLS_MAP.yaml for each extended agent
 - **Consistent .agent.md Format**: All agents use YAML frontmatter with tool access matrices
 
 **Version History**:
-- v8.4.0 - MINOR: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Extended Domain Supervision
+- v8.4.1 - MINOR: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Extended Domain Supervision
 - v8.3.1 - PATCH: Agent-Specific Escape Paths, Instruction Confirmation Protocol, Version Consistency
 - v8.3.0 - MINOR: Subagent Escape Paths, Skills Enhancement, AskUserQuestion Integration
 - v8.1.0 - MINOR: Playwright E2E Testing Infrastructure (Multi-browser testing, tier integration, agent role extensions)
@@ -1562,5 +1562,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-**Domain Zero Protocol v8.4.0** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v8.4.1** - Perfect Code Through Infinite Collaboration
 **The weight is real. The protocol is absolute. Domain Zero is active.**

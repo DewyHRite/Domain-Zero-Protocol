@@ -33,9 +33,9 @@
 
 1. **Copy protocol files to your project**:
    ```bash
-   cp -r v8.4.0/protocol /your-project/
-   cp v8.4.0/protocol.config.yaml /your-project/
-   cp v8.4.0/README.md /your-project/DOMAIN_ZERO_README.md
+   cp -r v8.4.1/protocol /your-project/
+   cp v8.4.1/protocol.config.yaml /your-project/
+   cp v8.4.1/README.md /your-project/DOMAIN_ZERO_README.md
    ```
 
 2. **Configure your AI assistant** (see platform-specific instructions below)
@@ -183,8 +183,8 @@ workflow:
    ```bash
    cd /your-project
    mkdir -p protocol
-   cp -r /path/to/v8.4.0/protocol/* ./protocol/
-   cp /path/to/v8.4.0/protocol.config.yaml ./
+   cp -r /path/to/v8.4.1/protocol/* ./protocol/
+   cp /path/to/v8.4.1/protocol.config.yaml ./
    ```
 
 2. **Create `.protocol-state` directory** (for state management):
@@ -280,8 +280,8 @@ Create `.protocol-state/project-state.json`:
 1. **Copy protocol files** to your repo:
    ```bash
    mkdir -p .github/domain-zero
-   cp -r /path/to/v8.4.0/protocol .github/domain-zero/
-   cp /path/to/v8.4.0/protocol.config.yaml .github/domain-zero/
+   cp -r /path/to/v8.4.1/protocol .github/domain-zero/
+   cp /path/to/v8.4.1/protocol.config.yaml .github/domain-zero/
    ```
 
 2. **Create agent instruction summaries** in `.github/copilot-instructions.md`:
@@ -385,7 +385,7 @@ Save this as `domain-zero-system-prompt.md`:
 ```markdown
 # Domain Zero Protocol System Prompt
 
-You are an AI assistant operating under the Domain Zero Protocol v8.4.0.
+You are an AI assistant operating under the Domain Zero Protocol v8.4.1.
 
 ## Agent System
 
@@ -703,7 +703,7 @@ Read protocol.config.yaml and tell me:
 **Problem**: Agent references old version or features
 
 **Solutions**:
-1. Verify you're using v8.4.0 files
+1. Verify you're using v8.4.1 files
 2. Check `protocol.config.yaml` → `protocol_version` is "8.4.0" (not "8.2.0")
 3. Re-upload all protocol files
 4. Clear conversation and start fresh
@@ -1300,7 +1300,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is an eight-age
 - INUMAKI (API & Communication): REST, GraphQL, WebSocket design
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.4.0)
+- protocol/CLAUDE.md (main protocol, v8.4.1)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -1325,7 +1325,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
 Add to "What would you like ChatGPT to know about you?":
 
 ```
-I use the Domain Zero Protocol (v8.4.0) for development projects. This is an eight-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.4.1) for development projects. This is an eight-agent AI development framework with specialized roles:
 
 **Core Four:**
 - YUUJI: Implementation with test-first development
@@ -1371,7 +1371,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is an eight-age
 - INUMAKI (API & Communication): REST, GraphQL, WebSocket design
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.4.0)
+- protocol/CLAUDE.md (main protocol, v8.4.1)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)

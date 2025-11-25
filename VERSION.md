@@ -11,7 +11,7 @@
 
 This minor release expands Domain Zero Protocol from a **four-agent** to an **eight-agent** system by fully integrating the second-year specialists: Todo, Maki, Panda, and Inumaki. All new agents follow the `.agent.md` format with YAML frontmatter, tool access matrices, and declarative handoffs.
 
-### Key Changes in v8.4.0
+### Key Changes in v8.4.1
 
 - **Full 8-Agent Integration** - Four new agents added to core protocol
 - **Todo (Database & Backend)** - Schema design, migrations, query optimization
@@ -29,7 +29,7 @@ This minor release expands Domain Zero Protocol from a **four-agent** to an **ei
 
 ---
 
-## What's New in v8.4.0
+## What's New in v8.4.1
 
 ### Added
 
@@ -109,16 +109,16 @@ This minor release expands Domain Zero Protocol from a **four-agent** to an **ei
 **Core Protocol Files:**
 - `protocol/CLAUDE.md` - Updated to 8-agent system, new invocations
 - `protocol/gojo.agent.md` - Domain supervision for all 8 agents
-- `protocol/yuuji.agent.md` - Version sync to 8.4.0
-- `protocol/megumi.agent.md` - Version sync to 8.4.0
-- `protocol/nobara.agent.md` - Version sync to 8.4.0
+- `protocol/yuuji.agent.md` - Version sync to 8.4.1
+- `protocol/megumi.agent.md` - Version sync to 8.4.1
+- `protocol/nobara.agent.md` - Version sync to 8.4.1
 
 **Configuration:**
 - `protocol.config.yaml` - Added 4 new agent configurations
 - `protocol/skills/AGENT_SKILLS_MAP.yaml` - Extended with new agent skills
 
 **State:**
-- `.protocol-state/project-state.json` - Version 8.4.0
+- `.protocol-state/project-state.json` - Version 8.4.1
 
 ---
 

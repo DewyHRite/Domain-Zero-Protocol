@@ -1871,8 +1871,8 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 8.4.0
-**Protocol Version**: 8.4.0
+**Current Version**: 8.4.1
+**Protocol Version**: 8.4.1
 **Release Date**: November 25, 2025
 **Last Updated**: 2025-11-25
 
