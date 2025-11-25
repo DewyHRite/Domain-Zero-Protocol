@@ -1,9 +1,9 @@
-# Domain Zero – Agent ↔ Skills Mapping (v1)
+# Domain Zero – Agent ↔ Skills Mapping (v2)
 # Purpose: Provide a single place to record which Claude Skills (example or custom)
 # are recommended per agent. Keep organization-specific skills in a private repo.
 
-version: 1
-updated: 2025-11-22
+version: 2
+updated: 2025-11-25
 
 canonical_reference:
   overview: https://claude.com/blog/skills
@@ -65,6 +65,50 @@ agents:
       - release-briefing
       - version-audit
       - work-session-monitoring
+
+  todo:
+    example_skills:
+      - mcp-server            # Database integrations via MCP
+    document_skills: []
+    custom_skills:
+      - schema-design         # Database schema design patterns
+      - migration-planner     # Data migration planning and execution
+      - query-optimization    # SQL/NoSQL query optimization
+      - orm-configuration     # ORM setup and relationship mapping
+      - data-normalization    # Database normalization strategies
+
+  maki:
+    example_skills:
+      - webapp-testing        # For performance testing hooks
+    document_skills: []
+    custom_skills:
+      - lighthouse-audit      # Web performance auditing
+      - bundle-analysis       # JavaScript bundle optimization
+      - profiling-tools       # Chrome DevTools and profiler usage
+      - memory-optimization   # Memory leak detection and resolution
+      - critical-path         # Critical rendering path optimization
+
+  panda:
+    example_skills:
+      - mcp-server            # CI/CD tool integrations
+    document_skills: []
+    custom_skills:
+      - github-actions        # GitHub Actions workflow configuration
+      - vite-config           # Vite build tool configuration
+      - docker-builds         # Docker containerization for builds
+      - build-caching         # Build cache optimization strategies
+      - test-pipelines        # Test automation pipeline setup
+
+  inumaki:
+    example_skills:
+      - mcp-server            # API gateway integrations
+    document_skills: []
+    custom_skills:
+      - openapi-design        # OpenAPI 3.0 specification design
+      - graphql-schema        # GraphQL schema and resolver design
+      - rest-patterns         # RESTful API design patterns
+      - api-validation        # Request/response validation schemas
+      - websocket-design      # Real-time communication design
 
 policy:
   execution_risk:

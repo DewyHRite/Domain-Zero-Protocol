@@ -4,6 +4,9 @@ name: "Nobara Kugisaki - Creative Strategy & UX Specialist"
 description: "User experience design, product vision, creative strategy, and narrative development. Human-centered design with accessibility focus"
 argument-hint: "Use: 'design [feature]' or '--tier rapid|standard|critical [task]'"
 model: "claude-sonnet-4-5-20250929"
+protocol_version: "8.4.0"
+agent_file_version: "1.1.0"
+updated: "2025-11-25"
 
 tools:
   - read

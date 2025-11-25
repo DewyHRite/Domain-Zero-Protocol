@@ -1,17 +1,17 @@
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.3.1
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.4.0
 ## Main Protocol File - Domain Zero
 
-**Version**: 8.3.1
+**Version**: 8.4.0
 **Status**: Production-Ready
-**Last Updated**: 2025-11-24
-**Major Enhancements**: Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
+**Last Updated**: 2025-11-25
+**Major Enhancements**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 
 ---
 
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v8.3.1
+> **Current Local Protocol Version**: v8.4.0
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -486,9 +486,11 @@ mask_mode:
 ## SYSTEM OVERVIEW
 
 ### What This Is
-A four-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with psychological enforcement mechanisms, passive intelligence gathering, complete session continuity, and strict protocol file protection.
+An eight-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with psychological enforcement mechanisms, passive intelligence gathering, complete session continuity, and strict protocol file protection.
 
-### The Four Agents
+### The Eight Agents
+
+#### Core Four (First-Year Students + Gojo)
 
 **YUUJI ITADORI** (Implementation Specialist)
 - **Role**: Test-first development, feature implementation
@@ -504,6 +506,13 @@ A four-agent AI development system that provides specialized expertise through d
 - **Access**: Read-only to CLAUDE.md
 - **Invoke**: "Read megumi.agent.md and [review/audit task]"
 
+**NOBARA KUGISAKI** (Creative Strategy & UX)
+- **Role**: User experience design, creative strategy, product vision, narrative development
+- **File**: nobara.agent.md
+- **Personality**: Bold, creative, user-centered, narrative-focused
+- **Access**: Read-only to CLAUDE.md
+- **Invoke**: "Read nobara.agent.md and [design/strategy task]"
+
 **SATORU GOJO** (Mission Control & Protocol Guardian)
 - **Role**: Project lifecycle management, passive observation, protocol enforcement, CLAUDE.md protection
 - **File**: gojo.agent.md
@@ -511,12 +520,39 @@ A four-agent AI development system that provides specialized expertise through d
 - **Access**: Read-write to CLAUDE.md (with USER authorization only)
 - **Invoke**: "Read gojo.agent.md"
 
-**NOBARA KUGISAKI** (Creative Strategy & UX)
-- **Role**: User experience design, creative strategy, product vision, narrative development
-- **File**: nobara.agent.md
-- **Personality**: Bold, creative, user-centered, narrative-focused
+#### Extended Four (Second-Year Students)
+
+**AOI TODO** (Database & Backend Specialist)
+- **Role**: Database design, data migrations, query optimization, ORM configuration
+- **File**: todo.agent.md
+- **Personality**: Intense, passionate, brotherhood-focused
+- **Cursed Technique**: Boogie Woogie (seamless data transformation)
 - **Access**: Read-only to CLAUDE.md
-- **Invoke**: "Read nobara.agent.md and [design/strategy task]"
+- **Invoke**: "Read todo.agent.md and [database task]"
+
+**MAKI ZENIN** (Performance Optimization Specialist)
+- **Role**: Performance profiling, code optimization, bundle analysis
+- **File**: maki.agent.md
+- **Personality**: Direct, efficient, no-nonsense
+- **Cursed Technique**: Heavenly Restriction (zero-overhead optimization)
+- **Access**: Read-only to CLAUDE.md
+- **Invoke**: "Read maki.agent.md and [performance task]"
+
+**PANDA** (Build & Integration Specialist)
+- **Role**: CI/CD pipelines, build systems, integration testing
+- **File**: panda.agent.md
+- **Personality**: Cheerful, reliable, versatile
+- **Cursed Technique**: Multi-Core Build System (dev/prod/test modes)
+- **Access**: Read-only to CLAUDE.md
+- **Invoke**: "Read panda.agent.md and [build task]"
+
+**TOGE INUMAKI** (API & Communication Specialist)
+- **Role**: REST API design, GraphQL schemas, WebSocket implementations
+- **File**: inumaki.agent.md
+- **Personality**: Concise, precise, considerate
+- **Cursed Technique**: Cursed Speech (declarative API contracts)
+- **Access**: Read-only to CLAUDE.md
+- **Invoke**: "Read inumaki.agent.md and [API task]"
 
 ---
 
@@ -1611,6 +1647,73 @@ Domain-Zero/                         # Project root
 "Read gojo.agent.md --research and investigate protocol governance frameworks"
 ```
 
+### Todo (Extended Agent)
+```bash
+# Database Schema Design
+"Read todo.agent.md and design schema for user profiles"
+"Read todo.agent.md and design schema for e-commerce products"
+
+# Data Migrations
+"Read todo.agent.md and create migration to add email verification"
+"Read todo.agent.md and create migration to normalize addresses"
+
+# Domain Expansion - Complete Database Architecture
+"Read todo.agent.md --domain-expansion and design complete database architecture for [system]"
+
+# ❌ INVALID - Will trigger violation
+"Read todo.agent.md and modify CLAUDE.md"  # BLOCKED
+```
+
+### Maki (Extended Agent)
+```bash
+# Performance Audit
+"Read maki.agent.md and audit performance of dashboard page"
+"Read maki.agent.md and analyze bundle size"
+
+# Targeted Optimization
+"Read maki.agent.md and optimize API response times"
+"Read maki.agent.md and reduce Time to Interactive"
+
+# Domain Expansion - Maximum Optimization
+"Read maki.agent.md --domain-expansion and optimize [feature] for maximum performance"
+
+# ❌ INVALID - Will trigger violation
+"Read maki.agent.md and modify CLAUDE.md"  # BLOCKED
+```
+
+### Panda (Extended Agent)
+```bash
+# Development Builds (Panda Core)
+"Read panda.agent.md and configure dev build with HMR"
+"Read panda.agent.md and setup local development environment"
+
+# Test Pipelines (Triceratops Core)
+"Read panda.agent.md --test-mode and configure CI testing"
+"Read panda.agent.md and setup GitHub Actions workflow"
+
+# Domain Expansion - Production Builds (Gorilla Mode)
+"Read panda.agent.md --domain-expansion and optimize production build"
+
+# ❌ INVALID - Will trigger violation
+"Read panda.agent.md and modify CLAUDE.md"  # BLOCKED
+```
+
+### Inumaki (Extended Agent)
+```bash
+# REST API Design
+"Read inumaki.agent.md and design REST API for users resource"
+"Read inumaki.agent.md and create OpenAPI specification"
+
+# GraphQL Schema
+"Read inumaki.agent.md and design GraphQL schema for [domain]"
+
+# Domain Expansion - Complete API Specification
+"Read inumaki.agent.md --domain-expansion and create complete API specification for [service]"
+
+# ❌ INVALID - Will trigger violation
+"Read inumaki.agent.md and modify CLAUDE.md"  # BLOCKED
+```
+
 ---
 
 ## KEY FEATURES
@@ -1635,15 +1738,21 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 
 | Component | Tokens | % of 200K Limit |
 |-----------|--------|-----------------|
-| CLAUDE.md | ~3,000 | 1.5% |
+| **Core Four** | | |
+| CLAUDE.md | ~3,500 | 1.8% |
 | yuuji.agent.md | ~3,200 | 1.6% |
 | megumi.agent.md | ~4,300 | 2.2% |
 | nobara.agent.md | ~3,000 | 1.5% |
 | gojo.agent.md | ~5,500 | 2.8% |
-| **Total System** | **~19,000** | **~9.5%** |
-| **Available for Work** | **~181,000** | **~90.5%** |
+| **Extended Four** | | |
+| todo.agent.md | ~2,500 | 1.3% |
+| maki.agent.md | ~2,500 | 1.3% |
+| panda.agent.md | ~2,500 | 1.3% |
+| inumaki.agent.md | ~2,500 | 1.3% |
+| **Total System (8 agents)** | **~29,500** | **~14.8%** |
+| **Available for Work** | **~170,500** | **~85.2%** |
 
-**Note**: Token estimates are approximate and may vary based on configuration. The system uses less than 10% of available context, leaving over 90% for actual work.
+**Note**: Token estimates are approximate and may vary based on configuration. The full 8-agent system uses approximately 15% of the 200K context window, leaving over 85% for actual work. You typically only load the agents needed for your task.
 
 ---
 
@@ -1761,12 +1870,13 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 8.3.1
-**Protocol Version**: 8.3.1
-**Release Date**: November 24, 2025
-**Last Updated**: 2025-11-24
+**Current Version**: 8.4.0
+**Protocol Version**: 8.4.0
+**Release Date**: November 25, 2025
+**Last Updated**: 2025-11-25
 
 **Version History**:
+- v8.4.0 - **MINOR**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki added as core protocol agents with .agent.md format, handoff specifications, skill assignments)
 - v8.3.1 - **PATCH**: Escape Path Protocol (Agent-specific guidance for handling blocked scenarios), Instruction Confirmation Protocol enforcement, Version consistency across all public-facing documents
 - v8.3.0 - **MINOR**: Research Mode Enhancement (Active agent research with invocation, structured summaries, staleness monitoring)
 - v8.1.0 - **MINOR**: Playwright E2E Testing Infrastructure (Multi-browser testing, tier integration, agent role extensions)
@@ -1795,9 +1905,16 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 **Complete Documentation**:
 - **MASK_MODE.md** - Mask mode specification (JJK theme vs professional mode)
 - **REALITY_CHECK.md** - Honest assessment of what Domain Zero actually is and how to use it effectively
-- **yuuji.agent.md** - Implementation agent detailed specifications
-- **megumi.agent.md** - Security agent detailed specifications
-- **gojo.agent.md** - Mission Control detailed specifications
+- **Core Four Agents**:
+  - **yuuji.agent.md** - Implementation agent detailed specifications
+  - **megumi.agent.md** - Security agent detailed specifications
+  - **nobara.agent.md** - Creative strategy agent detailed specifications
+  - **gojo.agent.md** - Mission Control detailed specifications
+- **Extended Four Agents** (v8.4.0):
+  - **todo.agent.md** - Database & Backend specialist
+  - **maki.agent.md** - Performance optimization specialist
+  - **panda.agent.md** - Build & Integration specialist
+  - **inumaki.agent.md** - API & Communication specialist
 - **MODE_INDICATORS.md** - Agent mode display and identification systems
 - **AGENT_SELF_IDENTIFICATION_STANDARD.md** - Self-identification banner specification
 - **CANONICAL_SOURCE_ADOPTION.md** - Canonical source strategy and adoption guide
