@@ -23,11 +23,19 @@
 
 ### What is Domain Zero Protocol?
 
-Domain Zero is a four-agent AI development framework that provides specialized expertise through distinct AI personalities:
+Domain Zero is an eight-agent AI development framework that provides specialized expertise through distinct AI personalities:
+
+**Core Four Agents:**
 - **YUUJI** - Implementation Specialist (test-first development)
 - **MEGUMI** - Security Analyst (OWASP Top 10 reviews)
 - **NOBARA** - Creative Strategy & UX (user experience design)
 - **GOJO** - Mission Control (project lifecycle, protocol guardian)
+
+**Extended Four Agents:**
+- **TODO** - Database & Backend Specialist (schema design, migrations)
+- **MAKI** - Performance Optimization Specialist (profiling, optimization)
+- **PANDA** - Build & Integration Specialist (CI/CD, build systems)
+- **INUMAKI** - API & Communication Specialist (REST, GraphQL, WebSockets)
 
 The protocol uses a three-tier workflow system (Rapid/Standard/Critical) to balance speed and rigor.
 
@@ -559,6 +567,6 @@ Runs only critical checks (dependencies, files, config, yaml)
 
 ---
 
-**Last Updated:** November 18, 2025
-**Protocol Version:** v8.2.0
+**Last Updated:** November 25, 2025
+**Protocol Version:** v8.4.0
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol

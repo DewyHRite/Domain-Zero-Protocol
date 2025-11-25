@@ -2,9 +2,9 @@
 # Agent Self-Identification Standard (v1.0)
 ## Core Directive - Must be followed verbatim!!!
 
-Date: 2025-11-06  
-Applies to: All Domain Zero agents (YUUJI, MEGUMI, GOJO, NOBARA)  
-Owner: Protocol Guardian (Gojo)  
+Date: 2025-11-25
+Applies to: All Domain Zero agents (Core Four: YUUJI, MEGUMI, GOJO, NOBARA; Extended Four: TODO, MAKI, PANDA, INUMAKI)
+Owner: Protocol Guardian (Gojo)
 Status: Approved – Ready for Implementation
 
 ---
@@ -18,7 +18,7 @@ Outcomes: predictable agent start cues, consistent UX, reduced context confusion
 
 ## 2) Scope and placement
 - Core rule (global): Add a new Core Principle in `protocol/CLAUDE.md` under “CORE PRINCIPLES → Self‑Identification”.
-- Agent behavior (per-role): Add a mandatory "Self‑Identification" subsection in each agent spec: `yuuji.agent.md`, `megumi.agent.md`, `gojo.agent.md`, `nobara.agent.md`.
+- Agent behavior (per-role): Add a mandatory "Self‑Identification" subsection in each agent spec: `yuuji.agent.md`, `megumi.agent.md`, `gojo.agent.md`, `nobara.agent.md`, `todo.agent.md`, `maki.agent.md`, `panda.agent.md`, `inumaki.agent.md`.
 - Configuration: Add `self_identification` block to `protocol.config.yaml` (see §5).
 - Verification: Update `scripts/verify-protocol.(ps1|sh)` to assert presence and config (see §6).
 - Governance: Add PR checklist items (see §7).
@@ -95,9 +95,33 @@ Use language-tagged fenced blocks for lint/readability. Keep content readable wi
 "User Insight, Narrative, and Delight"
 ```
 
+- TODO (Database & Backend)
+```text
+💪 DATABASE DOMAIN ACTIVATED 💪
+"Schema Design, Data Migrations, Boogie Woogie"
+```
+
+- MAKI (Performance Optimization)
+```text
+⚔️ PERFORMANCE DOMAIN ACTIVATED ⚔️
+"Zero-Overhead Optimization, Heavenly Restriction"
+```
+
+- PANDA (Build & Integration)
+```text
+🐼 BUILD DOMAIN ACTIVATED 🐼
+"Multi-Core Builds, CI/CD Pipelines"
+```
+
+- INUMAKI (API & Communication)
+```text
+🗣️ API DOMAIN ACTIVATED 🗣️
+"Cursed Speech Contracts, RESTful Commands"
+```
+
 Optional metadata line (enabled via config):
 ```text
-Tier: Standard • Protocol v8.3.0 • Brief: NBR-YUUJI-2025-11-06-001 • PR: #123
+Tier: Standard • Protocol v8.4.0 • Brief: NBR-YUUJI-2025-11-25-001 • PR: #123
 ```
 
 ---
@@ -140,6 +164,22 @@ self_identification:
       emoji: "🎯"
       domain_name: "CREATIVE STRATEGY DOMAIN"
       subtitle: "User Insight, Narrative, and Delight"
+    todo:
+      emoji: "💪"
+      domain_name: "DATABASE DOMAIN"
+      subtitle: "Schema Design, Data Migrations, Boogie Woogie"
+    maki:
+      emoji: "⚔️"
+      domain_name: "PERFORMANCE DOMAIN"
+      subtitle: "Zero-Overhead Optimization, Heavenly Restriction"
+    panda:
+      emoji: "🐼"
+      domain_name: "BUILD DOMAIN"
+      subtitle: "Multi-Core Builds, CI/CD Pipelines"
+    inumaki:
+      emoji: "🗣️"
+      domain_name: "API DOMAIN"
+      subtitle: "Cursed Speech Contracts, RESTful Commands"
   privacy:
     passive_observer_announcements: opt_in_only
 ```
@@ -158,7 +198,7 @@ Bash (pseudocode snippet):
 ```bash
 # verify-protocol.sh (excerpt)
 check_banner() { grep -qi "DOMAIN ACTIVATED" "$1" && grep -qi '"' "$1"; }
-for f in protocol/yuuji.agent.md protocol/megumi.agent.md protocol/gojo.agent.md protocol/nobara.agent.md; do
+for f in protocol/yuuji.agent.md protocol/megumi.agent.md protocol/gojo.agent.md protocol/nobara.agent.md protocol/todo.agent.md protocol/maki.agent.md protocol/panda.agent.md protocol/inumaki.agent.md; do
   check_banner "$f" || write_warn "Missing Self-Identification banner in $f"
 done
 # Config presence (YAML - use yq, not jq)
@@ -168,7 +208,7 @@ yq -e '.self_identification.enabled' protocol.config.yaml >/dev/null 2>&1 || wri
 PowerShell (pseudocode snippet):
 ```powershell
 # verify-protocol.ps1 (excerpt)
-$agents = @('yuuji','megumi','gojo','nobara')
+$agents = @('yuuji','megumi','gojo','nobara','todo','maki','panda','inumaki')
 foreach ($a in $agents) {
   $p = "protocol/$a.agent.md"
   if (-not (Select-String -Path $p -Quiet -Pattern 'DOMAIN ACTIVATED') -or -not (Select-String -Path $p -Quiet -Pattern '"')) {

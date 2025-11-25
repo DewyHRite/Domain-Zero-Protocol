@@ -33,8 +33,8 @@
 
 ```bash
 # Copy to your project
-cp -r v8.2.0/protocol /your-project/
-cp v8.2.0/protocol.config.yaml /your-project/
+cp -r v8.4.0/protocol /your-project/
+cp v8.4.0/protocol.config.yaml /your-project/
 ```
 
 ### 4. Configure Your AI
@@ -503,7 +503,7 @@ Created a new JJK agent? Share it!
 
 ## 🔄 Protocol Version Compatibility
 
-**Current Protocol Version**: v8.2.0
+**Current Protocol Version**: v8.4.0
 
 ### v8.0.0+ Updates (.agent.md Format)
 

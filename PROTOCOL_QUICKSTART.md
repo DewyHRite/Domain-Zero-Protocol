@@ -55,10 +55,18 @@ cp "Domain Zero Protocol/protocol.config.yaml" your-project/
 Add to memory: Domain Zero Protocol
 
 I use Domain Zero Protocol v8.4.0 for AI development. Eight-agent system:
+
+Core Four:
 - YUUJI: Implementation (TDD)
 - MEGUMI: Security review (OWASP)
 - NOBARA: Creative strategy & UX
 - GOJO: Mission control
+
+Extended Four:
+- TODO: Database & backend
+- MAKI: Performance optimization
+- PANDA: Build & integration
+- INUMAKI: API & communication
 
 Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md
 Tiers: Rapid/Standard/Critical
@@ -461,6 +469,6 @@ You'll know Domain Zero is working when:
 
 ---
 
-**Domain Zero Protocol v8.2.0** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v8.4.0** - Perfect Code Through Infinite Collaboration
 
 *The weight is real. The protocol is absolute. Domain Zero is active.*
