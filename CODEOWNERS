@@ -74,6 +74,8 @@ scripts/verify-protocol.sh @DewyHRite
 scripts/validate-agents.ps1 @DewyHRite
 scripts/update-instructions.ps1 @DewyHRite
 scripts/update-instructions.sh @DewyHRite
+scripts/verify-file-structure.ps1 @DewyHRite
+scripts/verify-file-structure.sh @DewyHRite
 
 # =============================================================================
 # DOCUMENTATION (REVIEW ENCOURAGED)

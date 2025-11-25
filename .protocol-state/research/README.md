@@ -15,11 +15,13 @@ This directory contains research session outputs from Domain Zero agents.
 
 ## File Naming Convention
 
-**Summary files** (tracked, optional):
+### Summary files (tracked, optional)
+
 - `{ISO-8601-timestamp}.summary.md`
 - Example: `2025-11-09T14-30-00Z.summary.md`
 
-**Raw notes** (gitignored):
+### Raw notes (gitignored)
+
 - `{ISO-8601-timestamp}.raw.log`
 - Example: `2025-11-09T14-30-00Z.raw.log`
 
@@ -47,4 +49,4 @@ See `protocol.config.yaml` → `research` section and `protocol/RESEARCH_MODE.md
 
 ## Version
 
-Research Mode introduced in Domain Zero Protocol v7.2.0
+Research Mode introduced in Domain Zero Protocol v7.2.0 (current: v8.3.1)

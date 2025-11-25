@@ -18,7 +18,7 @@
   "author": "Domain Zero Protocol",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "~1.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

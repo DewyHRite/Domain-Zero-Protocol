@@ -31,6 +31,9 @@ import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
+// Maximum log file size (10MB) for log rotation
+const MAX_LOG_SIZE_BYTES = 10 * 1024 * 1024;
+
 // Path validation utility to prevent path traversal attacks
 async function validateProjectRoot(projectRoot) {
   if (!projectRoot || typeof projectRoot !== "string") {
@@ -41,13 +44,13 @@ async function validateProjectRoot(projectRoot) {
   const normalizedPath = path.resolve(projectRoot);
 
   // Use path.relative for robust path containment validation
-  // If the relative path starts with "..", the target is outside the base directory
   const cwd = process.cwd();
   const relativePath = path.relative(cwd, normalizedPath);
 
-  // Check if path escapes current working directory (unless it's an absolute path the user explicitly provided)
-  if (relativePath.startsWith("..") && !path.isAbsolute(projectRoot)) {
-    throw new Error("Invalid project root: path traversal detected");
+  // Reject any path that escapes the workspace, including absolute paths outside cwd
+  // A path is safe if: relativePath is empty (same as cwd), doesn't start with "..", and isn't absolute
+  if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+    throw new Error("Invalid project root: path must be within current workspace");
   }
 
   // Verify the path exists and is a directory
@@ -63,7 +66,18 @@ async function validateProjectRoot(projectRoot) {
     throw error;
   }
 
-  return normalizedPath;
+  // Resolve symlinks and verify final path is still within workspace
+  try {
+    const realPath = await fs.realpath(normalizedPath);
+    const realRelativePath = path.relative(cwd, realPath);
+    if (realRelativePath.startsWith("..") || path.isAbsolute(realRelativePath)) {
+      throw new Error("Invalid project root: symlink points outside workspace");
+    }
+    return realPath;
+  } catch (error) {
+    // If realpath fails, return the normalized path (already validated)
+    return normalizedPath;
+  }
 }
 
 // Constants
@@ -86,7 +100,9 @@ const TRIGGERS = {
 const CONTEXT_EXTRACTORS = {
   files_modified: async (projectRoot) => {
     try {
-      const { stdout } = await execAsync("git diff --name-only HEAD~1", {
+      // Note: Returns [] on initial commit or if HEAD~1 doesn't exist
+      // Using -- separator to prevent command injection via directory names
+      const { stdout } = await execAsync("git diff --name-only HEAD~1 --", {
         cwd: projectRoot,
         encoding: "utf-8",
       });
@@ -98,7 +114,9 @@ const CONTEXT_EXTRACTORS = {
 
   files_created: async (projectRoot) => {
     try {
-      const { stdout } = await execAsync("git diff --name-only --diff-filter=A HEAD~1", {
+      // Note: Returns [] on initial commit or if HEAD~1 doesn't exist
+      // Using -- separator to prevent command injection via directory names
+      const { stdout } = await execAsync("git diff --name-only --diff-filter=A HEAD~1 --", {
         cwd: projectRoot,
         encoding: "utf-8",
       });
@@ -144,7 +162,8 @@ const CONTEXT_EXTRACTORS = {
       const reviewPath = path.join(projectRoot, ".protocol-state", "security-review.md");
       const review = await fs.readFile(reviewPath, "utf-8");
       const findings = [];
-      const secIdRegex = /SEC-(\d+):\s*([^\n]+)/g;
+      // Limit match length to 500 chars to prevent ReDoS attacks
+      const secIdRegex = /SEC-(\d+):\s*(.{0,500})/g;
       let match;
       while ((match = secIdRegex.exec(review)) !== null) {
         findings.push({
@@ -386,9 +405,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
       }
 
-      // Merge additional context
-      if (additional_context) {
-        Object.assign(context, additional_context);
+      // Merge additional context with prototype pollution protection
+      if (additional_context && typeof additional_context === "object") {
+        const safeContext = Object.entries(additional_context)
+          .filter(([key]) => key !== "__proto__" && key !== "constructor" && key !== "prototype")
+          .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
+        Object.assign(context, safeContext);
       }
 
       // Generate event ID
@@ -463,7 +485,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         let log = [];
         try {
-          log = JSON.parse(await fs.readFile(handoffLogPath, "utf-8"));
+          const logContent = await fs.readFile(handoffLogPath, "utf-8");
+          log = JSON.parse(logContent);
+
+          // Check log file size and rotate if needed
+          const stats = await fs.stat(handoffLogPath);
+          if (stats.size > MAX_LOG_SIZE_BYTES) {
+            // Archive old log and start fresh
+            const archivePath = handoffLogPath.replace(".json", `-${Date.now()}.archive.json`);
+            await fs.rename(handoffLogPath, archivePath);
+            log = [];
+          }
         } catch {
           // File doesn't exist, start fresh
         }

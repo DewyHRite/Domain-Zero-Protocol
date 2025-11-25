@@ -1643,7 +1643,7 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 | **Total System** | **~19,000** | **~9.5%** |
 | **Available for Work** | **~181,000** | **~90.5%** |
 
-**Note**: Token estimates are approximate and may vary based on configuration. The system uses less than 10% of available context, leaving over 90% for actual work.
+**Note**: Token estimates are approximate and may vary based on configuration. The system uses approximately 9.5% of the 200K context window, leaving over 90% for actual work.
 
 ---
 

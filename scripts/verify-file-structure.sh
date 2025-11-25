@@ -21,8 +21,9 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-ERRORS=0
-WARNINGS=0
+# Initialize counters as integers to prevent set -e issues
+declare -i ERRORS=0
+declare -i WARNINGS=0
 
 # Function to check if file exists
 check_file() {
@@ -34,10 +35,10 @@ check_file() {
     else
         if [ "$level" = "CRITICAL" ]; then
             echo -e "${RED}[CRITICAL MISSING]${NC} $file"
-            ((ERRORS++))
+            ((ERRORS++)) || true
         else
             echo -e "${YELLOW}[MISSING]${NC} $file"
-            ((WARNINGS++))
+            ((WARNINGS++)) || true
         fi
     fi
 }
@@ -50,7 +51,7 @@ check_dir() {
         echo -e "${GREEN}[OK]${NC} $dir/"
     else
         echo -e "${RED}[MISSING DIR]${NC} $dir/"
-        ((ERRORS++))
+        ((ERRORS++)) || true
     fi
 }
 

@@ -13,7 +13,7 @@
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v7.1.0
+> **Current Local Protocol Version**: v8.3.1
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 ---
@@ -39,7 +39,7 @@ Mission: [One-line mission statement]
 
 ---
 
-## 🎭 MASK MODE BEHAVIOR (v7.1.0+)
+## 🎭 MASK MODE BEHAVIOR (v8.3.1+)
 
 **I adapt my communication style based on `mask_mode.enabled` in protocol.config.yaml.**
 
