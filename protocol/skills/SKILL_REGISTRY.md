@@ -70,6 +70,7 @@ This registry tracks all skills available in the Domain Zero Protocol, their ver
 | work-session-monitoring | Work session tracking and alerts | Planned |
 
 ### Database & Backend Skills (Todo)
+
 | Skill | Description | Status |
 |-------|-------------|--------|
 | schema-design | Database schema design patterns | Planned |
@@ -78,6 +79,7 @@ This registry tracks all skills available in the Domain Zero Protocol, their ver
 | orm-patterns | ORM configuration and patterns | Planned |
 
 ### Performance Skills (Maki)
+
 | Skill | Description | Status |
 |-------|-------------|--------|
 | lighthouse-audit | Lighthouse performance audit guide | Planned |
@@ -86,6 +88,7 @@ This registry tracks all skills available in the Domain Zero Protocol, their ver
 | code-optimization | Code optimization patterns | Planned |
 
 ### Build & Integration Skills (Panda)
+
 | Skill | Description | Status |
 |-------|-------------|--------|
 | ci-cd-templates | CI/CD pipeline templates | Planned |
@@ -94,6 +97,7 @@ This registry tracks all skills available in the Domain Zero Protocol, their ver
 | deployment-checklist | Deployment verification checklist | Planned |
 
 ### API & Communication Skills (Inumaki)
+
 | Skill | Description | Status |
 |-------|-------------|--------|
 | rest-design | REST API design patterns | Planned |

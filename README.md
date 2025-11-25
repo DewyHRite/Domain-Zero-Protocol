@@ -618,8 +618,12 @@ I use the Domain Zero Protocol (v8.4.0) for development projects. This is an eig
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
 - GOJO: Mission control and protocol enforcement
+- TODO: Database & backend specialist
+- MAKI: Performance optimization specialist
+- PANDA: Build & integration specialist
+- INUMAKI: API & communication specialist
 
-When working on my projects, refer to protocol files at protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, and protocol/gojo.agent.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
+When working on my projects, refer to protocol files at protocol/CLAUDE.md and all eight agent files (yuuji, megumi, nobara, gojo, todo, maki, panda, inumaki). The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
 
 Key features:
 - Use skills for common operations (saves tokens)
@@ -641,8 +645,8 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 
 **What to Include in Memory**:
 - ✅ Protocol name and version (Domain Zero Protocol v8.4.0)
-- ✅ The four agent roles and their specializations
-- ✅ Protocol file locations (protocol/CLAUDE.md, yuuji.agent.md, megumi.agent.md, nobara.agent.md, gojo.agent.md)
+- ✅ The eight agent roles and their specializations
+- ✅ Protocol file locations (protocol/CLAUDE.md and all eight agent files)
 - ✅ Tier system overview (Rapid/Standard/Critical)
 - ✅ Canonical source URL (https://github.com/DewyHRite/Domain-Zero-Protocol)
 - ✅ Key principles: test-first development, OWASP security review, zero-defect philosophy
