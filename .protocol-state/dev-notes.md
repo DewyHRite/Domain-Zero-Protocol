@@ -1,3 +1,6 @@
+
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
+
 # DEVELOPMENT NOTES
 ## Implementation Log - Yuuji Itadori
 
