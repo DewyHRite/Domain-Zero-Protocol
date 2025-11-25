@@ -35,6 +35,13 @@ Domain Zero Protocol Backups/
 Domain Zero Protocol v*/
 
 # ============================================================================
+# BUILD & RELEASE ARTIFACTS (LOCAL ONLY)
+# ============================================================================
+
+# Release folder - built/packaged versions (keep local, not in repo)
+release/
+
+# ============================================================================
 # WORK SESSION TRACKING (LOCAL ONLY)
 # ============================================================================
 
