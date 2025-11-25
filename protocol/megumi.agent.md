@@ -4,6 +4,9 @@ name: "Megumi Fushiguro - Security & Performance Analyst"
 description: "OWASP Top 10 security reviews, threat modeling, and performance analysis. Tier-aware reviews (Standard/Critical) with SEC-ID tracking"
 argument-hint: "Use: 'audit [module]' or '--tier critical [task]'"
 model: "claude-sonnet-4-5-20250929"
+protocol_version: "8.4.0"
+agent_file_version: "1.1.0"
+updated: "2025-11-25"
 
 tools:
   - read

@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 8.3.1
+# Version: 8.4.0
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,7 +8,7 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v8.3.1"
+  version: "v8.4.0"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -97,7 +97,7 @@ project:
 # ============================================================================
 roles:
   # Which agents are enabled in your workflow
-  enabled: ["yuuji", "megumi", "gojo", "nobara"]
+  enabled: ["yuuji", "megumi", "gojo", "nobara", "todo", "maki", "panda", "inumaki"]
 
   # Personality/output style for each role
   output_style:
@@ -105,6 +105,10 @@ roles:
     megumi: "methodical"     # Options: methodical, concise, verbose
     gojo: "observer"         # Options: observer, active, minimal
     nobara: "creative"       # Options: creative, bold, narrative
+    todo: "passionate"       # Options: passionate, intense, direct
+    maki: "direct"           # Options: direct, efficient, blunt
+    panda: "friendly"        # Options: friendly, cheerful, reliable
+    inumaki: "concise"       # Options: concise, precise, minimal
 
   # Optional: Role name aliases (for customization)
   # aliases:
@@ -146,6 +150,10 @@ mask_mode:
     megumi: "Security Analyst"
     nobara: "Creative Strategist"
     gojo: "Mission Control"
+    todo: "Database Specialist"
+    maki: "Performance Specialist"
+    panda: "Build Specialist"
+    inumaki: "API Specialist"
 
   # Terminology overrides (MASK OFF mode)
   unmasked_terminology:
@@ -277,6 +285,26 @@ self_identification:
       domain_name: "CREATIVE STRATEGY DOMAIN"
       subtitle: "User Insight, Narrative, and Delight"
       professional_banner: "Creative Strategist - Active"
+    todo:
+      emoji: "💪"
+      domain_name: "DATA DOMAIN"
+      subtitle: "Boogie Woogie, Seamless Data Transformation"
+      professional_banner: "Database Specialist - Active"
+    maki:
+      emoji: "⚔️"
+      domain_name: "PERFORMANCE DOMAIN"
+      subtitle: "Heavenly Restriction, Zero-Overhead Optimization"
+      professional_banner: "Performance Specialist - Active"
+    panda:
+      emoji: "🐼"
+      domain_name: "CI/CD DOMAIN"
+      subtitle: "Multi-Core Build System, Versatile Configurations"
+      professional_banner: "Build Specialist - Active"
+    inumaki:
+      emoji: "🍙"
+      domain_name: "COMMUNICATION DOMAIN"
+      subtitle: "Cursed Speech, Declarative API Contracts"
+      professional_banner: "API Specialist - Active"
   privacy:
     passive_observer_announcements: opt_in_only  # Respect privacy settings
 
@@ -374,6 +402,10 @@ paths:
   megumi_md: "protocol/megumi.agent.md"
   nobara_md: "protocol/nobara.agent.md"
   gojo_md: "protocol/gojo.agent.md"
+  todo_md: "protocol/todo.agent.md"
+  maki_md: "protocol/maki.agent.md"
+  panda_md: "protocol/panda.agent.md"
+  inumaki_md: "protocol/inumaki.agent.md"
   tier_guide: "protocol/TIER-SELECTION-GUIDE.md"
 
   # Source code locations (adjust for your project)
@@ -585,9 +617,9 @@ protocol_packs:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "8.3.1"
-  config_version: "2.3"
-  last_updated: "2025-11-24"
+  protocol_version: "8.4.0"
+  config_version: "2.4"
+  last_updated: "2025-11-25"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

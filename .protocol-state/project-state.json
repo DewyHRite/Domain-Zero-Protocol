@@ -1,5 +1,5 @@
 {
-  "protocol_version": "8.2.0",
+  "protocol_version": "8.4.0",
   "custom_triggers": {
     "19": {
       "function": "Trigger 19",
@@ -56,6 +56,22 @@
     "last_violation": null,
     "backup_count": 2,
     "last_backup": "2025-11-05"
+  },
+  "system_update_framework": {
+    "enabled": true,
+    "version": "1.0.0",
+    "initialized": "2025-11-25T00:00:00Z",
+    "state_directory": ".protocol-state/system-update-framework/",
+    "files": {
+      "version_registry": "version-registry.json",
+      "plan_documentation": "plan-documentation.md",
+      "backup_manifest": "backup-manifest.json",
+      "file_classifications": "file-classifications.json"
+    },
+    "active_update": "UPDATE-2025-11-25-001",
+    "last_backup": null,
+    "total_updates": 1,
+    "total_rollbacks": 0
   },
   "tier_usage_statistics": {
     "tier_1_rapid": {
