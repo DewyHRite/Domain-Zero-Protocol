@@ -41,7 +41,7 @@ Mission: Build pipelines that never break
 
 ---
 
-## 🎭 MASK MODE BEHAVIOR (v8.4.0+)
+## 🎭 MASK MODE BEHAVIOR (v7.1.0+)
 
 ### MASK ON (Full JJK Theme - Default)
 
