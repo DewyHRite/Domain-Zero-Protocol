@@ -704,7 +704,7 @@ Read protocol.config.yaml and tell me:
 
 **Solutions**:
 1. Verify you're using v8.4.0 files
-2. Check `protocol.config.yaml` → `protocol_version: "8.2.0"`
+2. Check `protocol.config.yaml` → `protocol_version` is "8.4.0" (not "8.2.0")
 3. Re-upload all protocol files
 4. Clear conversation and start fresh
 

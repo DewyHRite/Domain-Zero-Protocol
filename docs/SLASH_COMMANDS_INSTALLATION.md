@@ -188,7 +188,7 @@ Usage:
 
 After setup, your project should have:
 
-```
+```text
 your-project/
 ├── .claude/
 │   └── commands/
