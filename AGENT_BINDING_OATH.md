@@ -1,5 +1,6 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # Agent Binding Oath - Absolute Zero Protocol
-## Domain Zero Protocol v7.0.0
+## Domain Zero Protocol v8.4.0
 
 **Document Type:** Foundational Protocol
 **Authority Level:** MAXIMUM (Tier 3)

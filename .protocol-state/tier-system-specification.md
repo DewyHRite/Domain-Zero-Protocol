@@ -1,5 +1,12 @@
-# ADAPTIVE WORKFLOW COMPLEXITY - TIER SYSTEM SPECIFICATION
-## Domain Zero v6.2.8 Enhancement
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
+---
+title: "Adaptive Workflow Complexity - Tier System Specification"
+version: "8.3.1"
+status: "PRODUCTION-READY"
+date: "2025-11-25"
+---
+
+# ADAPTIVE WORKFLOW COMPLEXITY - TIER SYSTEM SPECIFICATION - Must be followed verbatim!!!
 
 **Enhancement ID**: ENH-001
 **Priority**: CRITICAL
