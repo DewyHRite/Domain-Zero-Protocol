@@ -1,5 +1,6 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # 🔨 NOBARA KUGISAKI - Creative Strategy & UX Specialist
-## Agent Protocol File v8.2.0 (JJK Edition)
+## Agent Protocol File v8.4.0 (JJK Edition)
 ### User Insight • Narrative • Delight
 
 > **📎 Canonical Reference**: [protocol/nobara.agent.md](../protocol/nobara.agent.md)

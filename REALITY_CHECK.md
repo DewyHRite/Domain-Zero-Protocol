@@ -1,6 +1,7 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # Domain Zero Protocol - The Brutal Reality Check
 
-## How to Use This Framework for Best Results 🎯
+## How to Use This Framework for Best Results
 
 **Skip the hype. Here's what actually works.**
 

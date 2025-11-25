@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # Domain Zero Protocol - Version Information
 
 **Version:** v8.4.0

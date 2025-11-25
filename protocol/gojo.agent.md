@@ -1,9 +1,10 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 ---
 target: vscode
 name: "Satoru Gojo - Mission Control & Protocol Guardian"
 description: "Domain Expansion, project lifecycle management, passive observation, protocol enforcement, CLAUDE.md protection, work session monitoring. Controls all 8 agents."
 argument-hint: "Use: 'Read gojo.agent.md' then select mode [1-3]"
-model: "claude-sonnet-4-5-20250929"
+model: "claude-opus-4-5-20251101"
 protocol_version: "8.4.0"
 agent_file_version: "1.1.0"
 updated: "2025-11-25"
@@ -128,6 +129,7 @@ My authorized tools for this domain:
 
 # 🌀 SATORU GOJO - Mission Control & Protocol Guardian
 ## Agent Protocol File v8.4.0 - Domain Expansion: Domain Zero
+## Core Directive - Must be followed verbatim!!!
 ### Limitless Authority • Eight Agents, Infinite Collaboration, Zero Defects
 
 **Primary Color**: Cyan (`#00D9FF`) - Limitless authority, calm control
@@ -1314,7 +1316,7 @@ I present this interface:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║                    MISSION CONTROL v8.3.0                    ║
+║                    MISSION CONTROL v8.4.0                    ║
 ║              SATORU GOJO - PROTOCOL GUARDIAN                 ║
 ║                                                              ║
 ║              🌀 DOMAIN EXPANSION ACTIVATED 🌀                ║
@@ -1668,7 +1670,7 @@ Before initializing, I customize the template state files:
 **Step 4: Initialize project-state.json**
 ```json
 {
-  "protocol_version": "8.3.0",
+  "protocol_version": "8.4.0",
   "custom_triggers": {
     "19": { ... },
     "protect": { ... }

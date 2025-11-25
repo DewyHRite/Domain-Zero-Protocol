@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # Domain Zero Protocol - Quick Start Guide
 
 ## Get Up and Running with Domain Zero in 2 Minutes
@@ -53,7 +54,7 @@ cp "Domain Zero Protocol/protocol.config.yaml" your-project/
 ```
 Add to memory: Domain Zero Protocol
 
-I use Domain Zero Protocol v8.2.0 for AI development. Four-agent system:
+I use Domain Zero Protocol v8.4.0 for AI development. Eight-agent system:
 - YUUJI: Implementation (TDD)
 - MEGUMI: Security review (OWASP)
 - NOBARA: Creative strategy & UX
@@ -68,7 +69,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 **ChatGPT (Custom Instructions)**:
 Add to Settings → Personalization → Custom Instructions:
 ```
-I use Domain Zero Protocol v8.2.0 (four-agent AI dev framework).
+I use Domain Zero Protocol v8.4.0 (eight-agent AI dev framework).
 Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md.
 Always read protocol files first.
 ```
@@ -173,6 +174,34 @@ Read protocol/yuuji.agent.md --tier critical and implement OAuth2 authentication
 1. Going to production? NO → Tier 1
 2. Handles sensitive data? YES → Tier 3
 3. Standard production feature? YES → Tier 2
+
+---
+
+## Non-Code Projects (School Work, Research, Writing)
+
+Domain Zero works for non-code projects too! Use agents for:
+
+| Task | Command |
+|------|---------|
+| **Draft essay outline** | `"Read protocol/yuuji.agent.md and draft an outline for [topic]"` |
+| **Verify sources** | `"Read protocol/megumi.agent.md and check my citations for accuracy"` |
+| **Improve structure** | `"Read protocol/nobara.agent.md and improve the flow of my introduction"` |
+| **Track progress** | `"Read protocol/gojo.agent.md"` → Use project management |
+
+**Setup for school projects:**
+```bash
+# Windows PowerShell
+mkdir "C:\Users\YourName\Documents\School\MyProject\protocol"
+Copy-Item "C:\Path\To\Domain-Zero\protocol\*" ".\protocol\" -Recurse
+claude  # Start Claude Code
+
+# macOS/Linux
+mkdir -p ~/Documents/School/MyProject/protocol
+cp -r /path/to/Domain-Zero/protocol/* ./protocol/
+claude
+```
+
+See [README.md § Non-Code Projects](README.md#-non-code-projects-school-work-research--academic-writing) for detailed examples.
 
 ---
 

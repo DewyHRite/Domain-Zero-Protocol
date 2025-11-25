@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
 # Security Policy
 
 ## Scope
