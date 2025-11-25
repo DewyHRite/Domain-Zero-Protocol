@@ -861,12 +861,12 @@ Add to Claude Code MCP configuration (`~/.config/claude-code/mcp.json`):
 
 **Manual (v8.2.0 and earlier)**:
 1. Agent outputs "Ready for review"
-2. User manually identifies changed files
-3. User manually invokes next agent
+2. User identifies changed files
+3. User invokes next agent
 4. User re-explains context
 5. **~60-90 seconds per handoff**
 
-**Automated (v8.3.0+)**:
+**Automated (v8.3.1+)**:
 1. Agent calls `prepare_handoff` MCP tool
 2. MCP server extracts all context automatically
 3. User receives ready-to-execute command

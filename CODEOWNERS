@@ -18,12 +18,8 @@
 # Main protocol file - highest protection
 protocol/CLAUDE.md @DewyHRite
 
-# Agent definition files
+# Agent definition files (wildcard covers all .agent.md files)
 protocol/*.agent.md @DewyHRite
-protocol/yuuji.agent.md @DewyHRite
-protocol/megumi.agent.md @DewyHRite
-protocol/nobara.agent.md @DewyHRite
-protocol/gojo.agent.md @DewyHRite
 
 # Protocol specifications
 protocol/HANDOFF_SPECIFICATION.md @DewyHRite
@@ -39,6 +35,9 @@ protocol/TIER-SELECTION-GUIDE.md @DewyHRite
 # Skills registry
 protocol/skills/*.md @DewyHRite
 protocol/skills/*.yaml @DewyHRite
+
+# Protocol state tracking (audit trail integrity)
+.protocol-state/dev-notes.md @DewyHRite
 
 # =============================================================================
 # CONFIGURATION FILES (PROTECTED)

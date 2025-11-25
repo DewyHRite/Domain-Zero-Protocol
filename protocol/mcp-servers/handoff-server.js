@@ -27,6 +27,40 @@ import {
 import * as fs from "fs/promises";
 import * as path from "path";
 
+// Path validation utility to prevent path traversal attacks
+async function validateProjectRoot(projectRoot) {
+  if (!projectRoot || typeof projectRoot !== "string") {
+    throw new Error("Invalid project root: path is required");
+  }
+
+  // Normalize and resolve the path
+  const normalizedPath = path.resolve(projectRoot);
+
+  // Check for path traversal patterns
+  if (projectRoot.includes("..") || projectRoot.includes("./")) {
+    // After normalization, verify the path doesn't escape intended boundaries
+    const cwd = process.cwd();
+    if (!normalizedPath.startsWith(cwd) && !path.isAbsolute(projectRoot)) {
+      throw new Error("Invalid project root: path traversal detected");
+    }
+  }
+
+  // Verify the path exists and is a directory
+  try {
+    const stats = await fs.stat(normalizedPath);
+    if (!stats.isDirectory()) {
+      throw new Error("Invalid project root: path is not a directory");
+    }
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      throw new Error("Invalid project root: directory does not exist");
+    }
+    throw error;
+  }
+
+  return normalizedPath;
+}
+
 // Constants
 const AGENTS = ["yuuji", "megumi", "nobara", "gojo"];
 const TRIGGERS = {
@@ -286,6 +320,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "prepare_handoff": {
       const { trigger, source_agent, project_root, additional_context } = args;
 
+      // Validate project root path
+      let validatedProjectRoot;
+      try {
+        validatedProjectRoot = await validateProjectRoot(project_root);
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ error: error.message }, null, 2),
+            },
+          ],
+        };
+      }
+
       // Validate trigger
       if (!TRIGGERS[trigger]) {
         return {
@@ -330,7 +379,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       for (const field of contextFields) {
         if (CONTEXT_EXTRACTORS[field]) {
-          context[field] = await CONTEXT_EXTRACTORS[field](project_root);
+          context[field] = await CONTEXT_EXTRACTORS[field](validatedProjectRoot);
         }
       }
 
@@ -391,8 +440,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "log_handoff_event": {
       const { project_root, event } = args;
 
+      // Validate project root path
+      let validatedProjectRoot;
       try {
-        const handoffLogPath = path.join(project_root, ".protocol-state", "handoff-log.json");
+        validatedProjectRoot = await validateProjectRoot(project_root);
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ error: error.message }, null, 2),
+            },
+          ],
+        };
+      }
+
+      try {
+        const handoffLogPath = path.join(validatedProjectRoot, ".protocol-state", "handoff-log.json");
 
         let log = [];
         try {
@@ -436,8 +500,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "list_pending_handoffs": {
       const { project_root } = args;
 
+      // Validate project root path
+      let validatedProjectRoot;
       try {
-        const handoffLogPath = path.join(project_root, ".protocol-state", "handoff-log.json");
+        validatedProjectRoot = await validateProjectRoot(project_root);
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ error: error.message }, null, 2),
+            },
+          ],
+        };
+      }
+
+      try {
+        const handoffLogPath = path.join(validatedProjectRoot, ".protocol-state", "handoff-log.json");
         const log = JSON.parse(await fs.readFile(handoffLogPath, "utf-8"));
         const pending = log.filter((entry) => entry.status === "pending");
 

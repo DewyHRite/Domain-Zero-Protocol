@@ -66,14 +66,14 @@ This protocol applies to:
 
 ### Step-by-Step Details
 
-**Step 1: User Issues Instruction**
+#### Step 1: User Issues Instruction
 
 User provides a task, question, or directive. Examples:
 - "Implement user authentication with JWT"
 - "Review the payment module for security issues"
 - "Design an onboarding flow for new users"
 
-**Step 2: Agent Restates Instruction**
+#### Step 2: Agent Restates Instruction
 
 Agent echoes back the understood request in a structured format:
 
@@ -104,13 +104,13 @@ Agent echoes back the understood request in a structured format:
 Please confirm this is accurate before I proceed.
 ```
 
-**Step 3: Agent Asks for Confirmation**
+#### Step 3: Agent Asks for Confirmation
 
 Agent explicitly requests confirmation with clear language:
 - "Please confirm that this restatement is accurate before I proceed."
 - "Is this correct? I will not begin until you confirm."
 
-**Step 4: User Responds**
+#### Step 4: User Responds
 
 Three possible responses:
 
