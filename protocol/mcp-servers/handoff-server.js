@@ -75,7 +75,11 @@ async function validateProjectRoot(projectRoot) {
     }
     return realPath;
   } catch (error) {
-    // If realpath fails, return the normalized path (already validated)
+    // Log non-ENOENT errors (permission issues, broken symlinks, etc.)
+    if (error.code !== "ENOENT") {
+      console.error(`Warning: symlink resolution failed for ${normalizedPath}:`, error.message);
+    }
+    // Return the normalized path (already validated above)
     return normalizedPath;
   }
 }
@@ -162,7 +166,7 @@ const CONTEXT_EXTRACTORS = {
       const reviewPath = path.join(projectRoot, ".protocol-state", "security-review.md");
       const review = await fs.readFile(reviewPath, "utf-8");
       const findings = [];
-      // Limit match length to 500 chars to prevent ReDoS attacks
+      // Limit match length to 500 chars to prevent excessive memory usage
       const secIdRegex = /SEC-(\d+):\s*(.{0,500})/g;
       let match;
       while ((match = secIdRegex.exec(review)) !== null) {

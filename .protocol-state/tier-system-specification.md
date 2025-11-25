@@ -352,7 +352,7 @@ Rollback Dependencies: payment-service, database
 - Standard feature: 30-45 minutes (APPROPRIATE)
 - Critical feature: 30-45 minutes (INSUFFICIENT)
 
-**After (v6.0+, current v8.3.1)**:
+**After (v8.3.1)**:
 - Simple script (Tier 1): 10-15 minutes (**70% faster**)
 - Standard feature (Tier 2): 30-45 minutes (same)
 - Critical feature (Tier 3): 60-90 minutes (**50% more thorough**)
@@ -441,7 +441,7 @@ Rollback Dependencies: payment-service, database
 7. ⏭️ Create user-facing tier selection guide
 8. ⏭️ Test tier system with example features
 9. ⏭️ Document in GOJO-UPDATES-PATCH.md
-10. ✅ Released as Domain Zero v6.0 (current: v8.3.1)
+10. ✅ Initially released in Domain Zero v6.0, updated through v8.3.1
 
 ---
 

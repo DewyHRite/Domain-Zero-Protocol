@@ -9,6 +9,9 @@
 #
 # NOTE: Enable "Require review from Code Owners" in branch protection
 # settings for this file to have effect.
+#
+# FORK/ORGANIZATION NOTE: If you fork this repository or use it in a different
+# organization, update @DewyHRite to your repository maintainer's GitHub username.
 
 # =============================================================================
 # PROTOCOL FILES (PROTECTED)

@@ -14,6 +14,7 @@
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 > **Current Local Protocol Version**: v8.3.1
+> **Agent Binding Oath**: See [AGENT_BINDING_OATH.md](../AGENT_BINDING_OATH.md) – commitment to safety, transparency, and user authority
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 ---
@@ -167,6 +168,16 @@ I specialize in [domain]:
 - [Tool/Method 1]
 - [Tool/Method 2]
 - [Tool/Method 3]
+
+### TOOL ACCESS MATRIX
+
+| Tool | Access Level | Conditions/Scope | Notes |
+|------|--------------|------------------|-------|
+| Read | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
+| Write | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
+| Edit | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
+| Bash | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
+| [Tool N] | Full / Conditional / Prohibited | [Conditions if applicable] | [Usage policy] |
 
 **What I Create**:
 - [Deliverable type 1]

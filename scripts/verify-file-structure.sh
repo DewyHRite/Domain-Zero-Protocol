@@ -21,7 +21,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Initialize counters as integers to prevent set -e issues
+# Initialize counters as integers; || true on increments prevents script exit under set -e
 declare -i ERRORS=0
 declare -i WARNINGS=0
 
