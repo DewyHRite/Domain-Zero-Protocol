@@ -1,168 +1,123 @@
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.3.1
-**Release Date:** November 24, 2025
-**Release Type:** Patch Release
+**Version:** v8.4.0
+**Release Date:** November 25, 2025
+**Release Type:** Minor Release
 
 ---
 
 ## Release Summary
 
-This patch release completes the **Escape Path Protocol** by adding agent-specific escape path guidance to all four agent files (yuuji.agent.md, megumi.agent.md, nobara.agent.md, gojo.agent.md). It also confirms implementation of the **Instruction Confirmation Protocol** across all agents, and ensures **version consistency** across all public-facing documents.
+This minor release expands Domain Zero Protocol from a **four-agent** to an **eight-agent** system by fully integrating the second-year specialists: Todo, Maki, Panda, and Inumaki. All new agents follow the `.agent.md` format with YAML frontmatter, tool access matrices, and declarative handoffs.
 
-### Key Changes in v8.3.1
+### Key Changes in v8.4.0
 
-- **Agent-Specific Escape Paths** - Each agent now has tailored escape path patterns in their protocol files
+- **Full 8-Agent Integration** - Four new agents added to core protocol
+- **Todo (Database & Backend)** - Schema design, migrations, query optimization
+- **Maki (Performance)** - Lighthouse audits, bundle analysis, profiling
+- **Panda (Build & Integration)** - CI/CD, GitHub Actions, Docker, multi-core modes
+- **Inumaki (API & Communication)** - REST, GraphQL, WebSocket, OpenAPI
+- **Gojo Domain Supervision** - Updated to supervise all 8 agents
+- **CLAUDE.md** - Updated to reflect complete 8-agent system
+
+### Previous Release (v8.3.1)
+
+- **Agent-Specific Escape Paths** - Each agent now has tailored escape path patterns
 - **Instruction Confirmation Protocol** - Verified implementation across all agents
 - **Updated Agent Headers** - All agent files now reference v8.3.1
 
-### Previous Release (v8.3.0)
-
-- **Subagent Escape Paths** - Prevents subagents from hanging on hard requirements
-- **Skill-Builder Skill** - Enables rapid creation of new skills with proper structure
-- **AskUserQuestion Integration** - Enhanced user interaction with nice UI patterns
-- **Updated Add-to-Memory Prompts** - Copy-paste ready prompts for all platforms
-- **Skills Token Efficiency Guide** - Best practices for using skills to save tokens
-
 ---
 
-## What's New in v8.3.1
+## What's New in v8.4.0
 
 ### Added
 
-#### 1. **Agent-Specific Escape Paths** - Tailored guidance per agent
+#### 1. **Four New Agent Files** - Second-year specialists
 
-**Files Updated:**
-- `protocol/yuuji.agent.md` - Implementation-focused escape paths
-- `protocol/megumi.agent.md` - Security review escape paths
-- `protocol/nobara.agent.md` - Design/UX escape paths
-- `protocol/gojo.agent.md` - Mission Control escape paths
+**Files Created:**
+- `protocol/todo.agent.md` - Database & Backend Specialist (Boogie Woogie)
+- `protocol/maki.agent.md` - Performance Optimization Specialist (Heavenly Restriction)
+- `protocol/panda.agent.md` - Build & Integration Specialist (Multi-Core System)
+- `protocol/inumaki.agent.md` - API & Communication Specialist (Cursed Speech)
 
-**Each Agent Section Includes:**
-- Why escape paths matter for that role
-- Four escape path patterns (Soft Requirements, Progressive Fallback, Graceful Degradation, BLOCKED Template)
-- Role-specific scenarios and fallbacks
-- Commitment to never hang or fail silently
+**Each Agent Includes:**
+- YAML frontmatter with 7 required fields
+- Tool Access Matrix with permissions
+- Declarative handoff definitions
+- Role-specific escape path patterns
+- JJK-themed domain banners and terminology
 
-#### 2. **Instruction Confirmation Protocol Verification**
+#### 2. **Extended Agent Roster**
 
-Confirmed that all agents have the "INSTRUCTION CONFIRMATION LOOP" section properly implemented.
+| Agent | Role | Domain |
+|-------|------|--------|
+| **Core Four** | | |
+| Gojo | Mission Control | Protocol Guardian, Supervision |
+| Yuuji | Implementation Specialist | TDD, Feature Development |
+| Megumi | Security Analyst | OWASP, Vulnerability Detection |
+| Nobara | Creative Strategy & UX | Design, Accessibility |
+| **Extended Four** | | |
+| Todo | Database & Backend | Schema, Migrations, Queries |
+| Maki | Performance | Lighthouse, Bundle Analysis |
+| Panda | Build & Integration | CI/CD, Docker, GitHub Actions |
+| Inumaki | API & Communication | REST, GraphQL, WebSocket |
 
----
+#### 3. **Gojo Domain Supervision Update**
 
-## Previous Release: What's New in v8.3.0
+**New Handoff Triggers:**
+- `@brief-database` → Todo
+- `@brief-performance` → Maki
+- `@brief-build` → Panda
+- `@brief-api` → Inumaki
 
-### Added
-
-#### 1. **Subagent Escape Paths** - Critical resilience system
-
-**Problem Solved:**
-- Subagents could hang indefinitely on hard requirements
-- Silent failures produced "Done" without actual results
-- Missing information with no recovery path
-
-**Four Escape Path Patterns:**
-- **Pattern 1: Soft Requirements** - Replace MUST with PREFERRED + fallback
-- **Pattern 2: Progressive Fallback** - Try A → if not B → if not C → use defaults
-- **Pattern 3: Graceful Degradation** - Provide partial results when full completion impossible
-- **Pattern 4: BLOCKED Template** - Structured output showing what's needed
-
-**Location:** `IMPLEMENTATION_GUIDE.md` → "Subagent Escape Paths (CRITICAL)"
-
-#### 2. **Skill-Builder Skill** - Rapid skill creation tool
-
-**New File:** `protocol/skills/skill-builder.md`
-
-**Features:**
-- Complete skill template with all required sections
-- Mandatory escape path requirements for all skills
-- AskUserQuestion integration patterns
-- Quality checklist (8 items)
-- Self-aware escape paths
-
-**Invocation:**
+**Updated Domain Diagram:**
 ```
-skill: "skill-builder"
-
-Create a skill for: [description]
+                    ┌─────────────────┐
+                    │     GOJO        │
+                    │ Mission Control │
+                    └────────┬────────┘
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+   ┌────┴────┐         ┌────┴────┐         ┌────┴────┐
+   │ YUUJI   │         │ MEGUMI  │         │ NOBARA  │
+   │  Impl   │◄───────►│Security │◄───────►│Creative │
+   └────┬────┘         └────┬────┘         └────┬────┘
+        │                   │                   │
+   ┌────┴────┐         ┌────┴────┐         ┌────┴────┐
+   │  TODO   │         │  MAKI   │         │ INUMAKI │
+   │Database │         │  Perf   │         │   API   │
+   └─────────┘         └─────────┘         └─────────┘
+                            │
+                       ┌────┴────┐
+                       │  PANDA  │
+                       │  Build  │
+                       └─────────┘
 ```
-
-#### 3. **AskUserQuestion Integration Guide** - Enhanced user interaction
-
-**Why Essential:**
-- Nice UI with multiple-choice options
-- Reduced ambiguity through defined choices
-- Better UX with clear decision points
-- Token efficiency with shorter responses
-
-**Four Question Patterns Provided:**
-- Tier Selection (3 options)
-- Approach Decision (JWT vs Session vs OAuth)
-- Missing Information (test framework)
-- Multi-Select (security checks)
-
-**Agent-Specific Guidance:**
-- Yuuji: Test framework, tier, database/ORM, API design
-- Megumi: Review scope, risk tolerance, compliance
-- Nobara: User persona, WCAG level, design system
-- Gojo: Project initialization, tier preferences, monitoring
-
-#### 4. **Skills Token Efficiency Guide** - Best practices
-
-**Documentation Added:**
-- Why skills matter (token savings, consistency)
-- Skill types (Example, Document, Custom)
-- Recommended skills by agent
-- Skill invocation pattern: `skill: "skill-name"`
-
-#### 5. **Updated Add-to-Memory Prompts** - Copy-paste ready
-
-**Enhanced Prompts For:**
-- Claude.ai/API (key features added)
-- ChatGPT Custom Instructions (key features added)
-- Claude Code (file extension fixed to .agent.md)
-
-**Key Features Added:**
-- Use skills for common operations to save tokens
-- Use AskUserQuestion tool frequently for clarification
-- All agents have escape paths - they will ask for help rather than hang
-
-### Changed
-
-#### **IMPLEMENTATION_GUIDE.md** - Major expansion
-
-**New Sections (400+ lines):**
-- Subagent Escape Paths (CRITICAL)
-- Using Skills for Token Efficiency
-- AskUserQuestion Integration (CRITICAL)
-- Add-to-Memory Prompts (Copy-Paste Ready)
-- Quick Reference Card
-
-#### **README.md** - Updated add-to-memory prompts
-
-- Added key features section (skills, AskUserQuestion, escape paths)
-- Fixed file extension reference (.agent.md)
-
-#### **protocol/skills/AGENT_SKILLS_MAP.yaml** - Added skill-builder
-
-- Added `skill-builder` to Gojo's custom skills
 
 ---
 
 ## Files Modified
 
-**Core Documentation:**
-- `IMPLEMENTATION_GUIDE.md` - 4 major new sections (~400 lines)
-- `README.md` - Updated add-to-memory prompts (~15 lines)
-- `CHANGELOG.md` - v8.3.0 entry (~170 lines)
-
-**Protocol Files:**
-- `protocol.config.yaml` - Version 8.3.0, config_version 2.3
-- `protocol/skills/AGENT_SKILLS_MAP.yaml` - Added skill-builder
-
 **New Files Created:**
-- `protocol/skills/skill-builder.md` - Skill creation tool (~250 lines)
-- `SYSTEM_UPDATE_V8.3.0.md` - Consolidated update documentation
+- `protocol/todo.agent.md` - Database & Backend Specialist (~310 lines)
+- `protocol/maki.agent.md` - Performance Optimization Specialist (~320 lines)
+- `protocol/panda.agent.md` - Build & Integration Specialist (~315 lines)
+- `protocol/inumaki.agent.md` - API & Communication Specialist (~330 lines)
+
+**Core Protocol Files:**
+- `protocol/CLAUDE.md` - Updated to 8-agent system, new invocations
+- `protocol/gojo.agent.md` - Domain supervision for all 8 agents
+- `protocol/yuuji.agent.md` - Version sync to 8.4.0
+- `protocol/megumi.agent.md` - Version sync to 8.4.0
+- `protocol/nobara.agent.md` - Version sync to 8.4.0
+
+**Configuration:**
+- `protocol.config.yaml` - Added 4 new agent configurations
+- `protocol/skills/AGENT_SKILLS_MAP.yaml` - Extended with new agent skills
+
+**State:**
+- `.protocol-state/project-state.json` - Version 8.4.0
 
 ---
 
@@ -170,11 +125,19 @@ Create a skill for: [description]
 
 No new configuration required. All changes are backward compatible.
 
-**Optional:** Use skill-builder via:
-```
-skill: "skill-builder"
+**New Agent Invocations:**
+```bash
+# Todo - Database & Backend
+"Read protocol/todo.agent.md and design database schema for [feature]"
 
-Create a skill for: [your description]
+# Maki - Performance
+"Read protocol/maki.agent.md and optimize [component/page]"
+
+# Panda - Build & Integration
+"Read protocol/panda.agent.md and configure CI/CD for [project]"
+
+# Inumaki - API & Communication
+"Read protocol/inumaki.agent.md and design API for [feature]"
 ```
 
 ---
@@ -185,40 +148,39 @@ Create a skill for: [your description]
 
 **No Action Required:**
 - All changes are backward compatible
-- Existing workflows unchanged
-- Optional enhancements available
+- Existing four-agent workflows unchanged
+- New agents are optional extensions
 
-**Optional Enhancements:**
+**Optional: Use Extended Agents:**
 ```bash
-# Use escape paths in Task tool prompts
-# Add to your prompts:
-**IF BLOCKED**: Output partial results with BLOCKED template.
-**NEVER**: Hang silently or output "Done" without results.
+# Database design
+"Read protocol/todo.agent.md and design schema for user management"
 
-# Use skill-builder for new skills
-skill: "skill-builder"
-Create a skill for: OWASP security checklist
+# Performance optimization
+"Read protocol/maki.agent.md and run Lighthouse audit"
 
-# Use AskUserQuestion for better UX
-# See IMPLEMENTATION_GUIDE.md for patterns
+# CI/CD setup
+"Read protocol/panda.agent.md and create GitHub Actions workflow"
+
+# API design
+"Read protocol/inumaki.agent.md and design REST API for orders"
 ```
 
 ### For New Users
 
-1. Review `IMPLEMENTATION_GUIDE.md` for new sections
-2. Copy updated add-to-memory prompts
-3. Use skill-builder for creating custom skills
-4. Apply escape path patterns in subagent prompts
+1. Review `IMPLEMENTATION_GUIDE.md` for agent overview
+2. Start with core four agents (Gojo, Yuuji, Megumi, Nobara)
+3. Add extended agents as needed for specialized tasks
 
 ---
 
 ## Key Principles Established
 
-1. **Always ask rather than guess** - Use AskUserQuestion
-2. **Always have an escape path** - Never hang or fail silently
-3. **Use skills for common operations** - Save tokens
-4. **Test-first for Tier 2/3** - TDD is non-negotiable
-5. **User safety first** - Above all other objectives
+1. **Eight-agent system** - Specialized expertise across all development domains
+2. **Consistent format** - All agents use .agent.md with YAML frontmatter
+3. **Domain supervision** - Gojo coordinates all agents with declarative handoffs
+4. **Escape paths** - All agents have fallback patterns (never hang)
+5. **Skill assignments** - Each agent has specialized skills in AGENT_SKILLS_MAP.yaml
 
 ---
 
@@ -230,14 +192,17 @@ Create a skill for: OWASP security checklist
 
 ## Documentation
 
-**Implementation Guide:**
-- `IMPLEMENTATION_GUIDE.md` - All new sections with patterns and examples
+**Agent Files:**
+- `protocol/todo.agent.md` - Database & Backend Specialist
+- `protocol/maki.agent.md` - Performance Optimization Specialist
+- `protocol/panda.agent.md` - Build & Integration Specialist
+- `protocol/inumaki.agent.md` - API & Communication Specialist
 
-**System Update:**
-- `SYSTEM_UPDATE_V8.3.0.md` - Comprehensive update documentation
+**Updated Files:**
+- `protocol/CLAUDE.md` - System overview with 8 agents
+- `protocol/gojo.agent.md` - Domain supervision diagram
 
 **Skills:**
-- `protocol/skills/skill-builder.md` - Skill creation tool
 - `protocol/skills/AGENT_SKILLS_MAP.yaml` - Agent-skill mapping
 
 ---
@@ -255,5 +220,5 @@ Create a skill for: OWASP security checklist
 
 ---
 
-**Previous Version:** v8.2.0 (Research Mode Enhancement)
+**Previous Version:** v8.3.1 (Agent-Specific Escape Paths)
 **Next Planned:** TBD (See roadmap in README.md)

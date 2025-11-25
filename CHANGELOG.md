@@ -9,6 +9,134 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.4.0] - 2025-11-25
+
+### Added
+
+#### **Full 8-Agent Integration** - Expand from four-agent to eight-agent system
+
+**New Agent Files Created:**
+- `protocol/todo.agent.md` - Database & Backend Specialist (Boogie Woogie)
+- `protocol/maki.agent.md` - Performance Optimization Specialist (Heavenly Restriction)
+- `protocol/panda.agent.md` - Build & Integration Specialist (Multi-Core System)
+- `protocol/inumaki.agent.md` - API & Communication Specialist (Cursed Speech)
+
+**Agent Capabilities:**
+- **Todo**: Schema design, data migrations, query optimization, ORM configuration
+- **Maki**: Lighthouse audits, bundle analysis, profiling, zero-overhead optimization
+- **Panda**: CI/CD pipelines, GitHub Actions, Docker, multi-core build modes (Panda/Gorilla/Triceratops)
+- **Inumaki**: REST API design, GraphQL schemas, WebSocket protocols, OpenAPI specs
+
+**Each Agent Includes:**
+- YAML frontmatter with 7 required fields (target, name, description, argument-hint, model, tools, handoffs)
+- Tool Access Matrix with full/conditional/prohibited permissions
+- Declarative handoff definitions for agent-to-agent transitions
+- Role-specific escape path patterns (soft requirements, progressive fallback, graceful degradation)
+- JJK-themed domain banners and terminology
+
+#### **Extended Agent Skills** - New skills in AGENT_SKILLS_MAP.yaml
+
+**Todo Skills:**
+- `schema-design` - Database schema design
+- `migration-planning` - Data migration strategies
+- `query-optimization` - SQL/ORM query optimization
+
+**Maki Skills:**
+- `lighthouse-audit` - Web performance audits
+- `bundle-analysis` - JavaScript bundle optimization
+- `profiling-tools` - Runtime profiling
+
+**Panda Skills:**
+- `github-actions` - CI/CD workflow creation
+- `docker-compose` - Container orchestration
+- `build-optimization` - Build pipeline optimization
+
+**Inumaki Skills:**
+- `openapi-design` - OpenAPI/Swagger specification
+- `graphql-schema` - GraphQL schema design
+- `websocket-protocol` - Real-time communication
+
+### Changed
+
+#### **protocol/CLAUDE.md** - Updated to 8-agent system
+
+**System Overview:**
+- Changed "four-agent" to "eight-agent" throughout
+- Added "The Eight Agents" section with Core Four + Extended Four
+- Added invocation patterns for Todo, Maki, Panda, Inumaki
+- Updated token efficiency table to include all 8 agents (~29,500 tokens, ~14.8%)
+
+#### **protocol/gojo.agent.md** - Domain supervision for all 8 agents
+
+**New Handoff Triggers:**
+- `@brief-database` → Todo
+- `@brief-performance` → Maki
+- `@brief-build` → Panda
+- `@brief-api` → Inumaki
+
+**Updated Domain Diagram:**
+- Visual hierarchy showing all 8 agents under Gojo's supervision
+- Core four (Yuuji, Megumi, Nobara) with extended four underneath
+
+#### **protocol.config.yaml** - Extended configuration
+
+**New Entries:**
+- `roles.enabled` - Now includes all 8 agents
+- `output_style` - Styling for new agents
+- `unmasked_names` - Professional mode names for new agents
+- `self_identification.agents` - Emoji/domain/subtitle for new agents
+- `paths` - File paths for new agent files
+
+#### **All Core Agent Files** - Version sync
+
+**Updated:**
+- `protocol/yuuji.agent.md` - protocol_version: 8.4.0, agent_file_version: 1.1.0
+- `protocol/megumi.agent.md` - protocol_version: 8.4.0, agent_file_version: 1.1.0
+- `protocol/nobara.agent.md` - protocol_version: 8.4.0, agent_file_version: 1.1.0
+- `protocol/gojo.agent.md` - protocol_version: 8.4.0
+
+### Documentation
+
+**Files Created:**
+- `protocol/todo.agent.md` (~310 lines)
+- `protocol/maki.agent.md` (~320 lines)
+- `protocol/panda.agent.md` (~315 lines)
+- `protocol/inumaki.agent.md` (~330 lines)
+
+**Files Modified:**
+- `protocol/CLAUDE.md` - 8-agent system documentation (~160 lines added)
+- `protocol/gojo.agent.md` - Domain supervision (~100 lines added)
+- `protocol/skills/AGENT_SKILLS_MAP.yaml` - New agent skills (~50 lines added)
+- `protocol.config.yaml` - Agent configurations (~40 lines added)
+
+### No Breaking Changes
+
+- All changes are backward compatible
+- Existing four-agent workflows unchanged
+- New agents are optional extensions
+- Invocation patterns follow existing conventions
+
+### Upgrade Notes
+
+**No action required** - This is a backward-compatible minor release.
+
+**Optional: Use Extended Agents**
+```bash
+# Database design
+"Read protocol/todo.agent.md and design schema for user management"
+
+# Performance optimization
+"Read protocol/maki.agent.md and run Lighthouse audit"
+
+# CI/CD setup
+"Read protocol/panda.agent.md and create GitHub Actions workflow"
+
+# API design
+"Read protocol/inumaki.agent.md and design REST API for orders"
+```
+
+---
+
 ## [8.3.1] - 2025-11-24
 
 ### Added
@@ -1352,4 +1480,4 @@ EOF
 
 **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 **Maintainer**: Protocol Guardians
-**Last Updated**: 2025-11-08
+**Last Updated**: 2025-11-25
