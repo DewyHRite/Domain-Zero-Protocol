@@ -4,7 +4,7 @@ This directory contains research session outputs from Domain Zero agents.
 
 ## Structure
 
-```
+```bash
 .protocol-state/research/
 ├── research-index.json       # Global index tracking all research sessions
 ├── yuuji/                    # Yuuji (Implementation) research outputs

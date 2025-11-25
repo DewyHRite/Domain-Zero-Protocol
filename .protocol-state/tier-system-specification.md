@@ -1,5 +1,11 @@
+---
+title: "Adaptive Workflow Complexity - Tier System Specification"
+version: "8.3.1"
+status: "PRODUCTION-READY"
+date: "2025-11-25"
+---
+
 # ADAPTIVE WORKFLOW COMPLEXITY - TIER SYSTEM SPECIFICATION
-## Domain Zero Protocol v8.3.1
 
 **Enhancement ID**: ENH-001
 **Priority**: CRITICAL
@@ -44,7 +50,7 @@ The Adaptive Workflow Complexity system introduces three workflow tiers that all
 - ⚠️ Minimal documentation
 
 **Example Invocation**:
-```
+```bash
 User: "Read YUUJI.md --tier rapid and create a Python script to rename files in a folder"
 ```
 
@@ -91,7 +97,7 @@ Simple Python script that renames files in a folder based on pattern matching.
 - ✅ Zero security issues
 
 **Example Invocation**:
-```
+```bash
 User: "Read YUUJI.md and implement user authentication"
 User: "Read YUUJI.md --tier standard and implement user authentication"  (explicit)
 ```
@@ -133,7 +139,7 @@ User: "Read YUUJI.md --tier standard and implement user authentication"  (explic
 - ✅ Zero critical/high security issues
 
 **Example Invocation**:
-```
+```bash
 User: "Read YUUJI.md --tier critical and implement payment processing with Stripe"
 ```
 
@@ -237,7 +243,7 @@ Rollback Dependencies: payment-service, database
 **Format**: `Read [AGENT].md --tier [rapid|standard|critical] and [task]`
 
 **Examples**:
-```
+```bash
 "Read YUUJI.md --tier rapid and create hello world script"
 "Read YUUJI.md --tier standard and implement user profile"
 "Read YUUJI.md --tier critical and implement OAuth2 provider"
@@ -439,7 +445,7 @@ Rollback Dependencies: payment-service, database
 
 ---
 
-**END OF TIER SYSTEM SPECIFICATION**
+## END OF TIER SYSTEM SPECIFICATION
 
 **Version**: 8.3.1
 **Status**: PRODUCTION-READY

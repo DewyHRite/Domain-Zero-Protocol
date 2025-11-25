@@ -406,7 +406,7 @@ Risk assessment: CRITICAL. Strategic decision: ABSOLUTE COMPLIANCE.
 
 ## VERSION HISTORY
 
-- **v1.0.0** (v7.1.0 Protocol): Initial agent creation with Mask Mode support
+- **v1.0.0** (v8.3.1 Protocol): Initial agent creation with Mask Mode support
 - [Future versions]
 
 ---

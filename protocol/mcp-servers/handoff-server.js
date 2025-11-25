@@ -336,7 +336,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 // Tool handler
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
+  const { name } = request.params;
+  const args = request.params.arguments ?? {};
 
   switch (name) {
     case "prepare_handoff": {
