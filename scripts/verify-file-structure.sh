@@ -30,6 +30,13 @@ check_file() {
     local file=$1
     local level=$2  # CRITICAL or PROTECTED
 
+    # Input validation - file path must not be empty
+    if [ -z "$file" ]; then
+        echo -e "${RED}[ERROR]${NC} check_file called with empty path"
+        ((ERRORS++)) || true
+        return
+    fi
+
     if [ -f "$file" ]; then
         echo -e "${GREEN}[OK]${NC} $file"
     else
@@ -46,6 +53,13 @@ check_file() {
 # Function to check if directory exists
 check_dir() {
     local dir=$1
+
+    # Input validation - directory path must not be empty
+    if [ -z "$dir" ]; then
+        echo -e "${RED}[ERROR]${NC} check_dir called with empty path"
+        ((ERRORS++)) || true
+        return
+    fi
 
     if [ -d "$dir" ]; then
         echo -e "${GREEN}[OK]${NC} $dir/"
@@ -144,7 +158,7 @@ if [ $ERRORS -gt 0 ]; then
     echo ""
     echo "To recover missing files:"
     echo "  git fetch new-repo main"
-    echo "  git checkout new-repo/main -- <path/to/missing/file>"
+    echo "  git checkout new-repo/main -- \"<path/to/missing/file>\""
     exit 1
 fi
 

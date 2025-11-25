@@ -21,6 +21,13 @@ function Check-File {
         [string]$Level  # CRITICAL or PROTECTED
     )
 
+    # Input validation - file path must not be empty
+    if ([string]::IsNullOrWhiteSpace($FilePath)) {
+        Write-Host "[ERROR] Check-File called with empty path" -ForegroundColor Red
+        $script:Errors++
+        return
+    }
+
     if (Test-Path $FilePath) {
         Write-Host "[OK] $FilePath" -ForegroundColor Green
     } else {
@@ -38,6 +45,13 @@ function Check-Directory {
     param (
         [string]$DirPath
     )
+
+    # Input validation - directory path must not be empty
+    if ([string]::IsNullOrWhiteSpace($DirPath)) {
+        Write-Host "[ERROR] Check-Directory called with empty path" -ForegroundColor Red
+        $script:Errors++
+        return
+    }
 
     if (Test-Path $DirPath -PathType Container) {
         Write-Host "[OK] $DirPath/" -ForegroundColor Green
@@ -136,7 +150,7 @@ if ($Errors -gt 0) {
     Write-Host ""
     Write-Host "To recover missing files:" -ForegroundColor White
     Write-Host "  git fetch new-repo main" -ForegroundColor Gray
-    Write-Host "  git checkout new-repo/main -- <path/to/missing/file>" -ForegroundColor Gray
+    Write-Host "  git checkout new-repo/main -- `"<path/to/missing/file>`"" -ForegroundColor Gray
     exit 1
 }
 

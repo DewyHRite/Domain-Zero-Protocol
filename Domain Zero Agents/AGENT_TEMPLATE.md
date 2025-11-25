@@ -225,9 +225,9 @@ Risk assessment: CRITICAL. Strategic decision: ABSOLUTE COMPLIANCE.
 ### Dependencies
 
 **I Rely On**:
-- [Dependency 1]: [Why/when]
-- [Dependency 2]: [Why/when]
-- [Dependency 3]: [Why/when]
+- `<dependency-1>`: `<why/when>`
+- `<dependency-2>`: `<why/when>`
+- `<dependency-3>`: `<why/when>`
 
 ### When to Escalate
 

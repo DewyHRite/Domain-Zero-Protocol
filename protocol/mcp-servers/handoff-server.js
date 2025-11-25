@@ -28,6 +28,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { randomUUID } from "crypto";
 
 const execAsync = promisify(exec);
 
@@ -166,8 +167,8 @@ const CONTEXT_EXTRACTORS = {
       const reviewPath = path.join(projectRoot, ".protocol-state", "security-review.md");
       const review = await fs.readFile(reviewPath, "utf-8");
       const findings = [];
-      // Limit match length to 500 chars to prevent excessive memory usage
-      const secIdRegex = /SEC-(\d+):\s*(.{0,500})/g;
+      // Limit match length to 500 chars with non-greedy quantifier to prevent excessive memory usage
+      const secIdRegex = /SEC-(\d+):\s*(.{0,500}?)/g;
       let match;
       while ((match = secIdRegex.exec(review)) !== null) {
         findings.push({
@@ -521,10 +522,26 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           // File doesn't exist, start fresh
         }
 
+        // Sanitize event object to prevent prototype pollution
+        const rawEvent = event && typeof event === "object" ? event : {};
+        const safeEvent = Object.entries(rawEvent)
+          .filter(
+            ([key]) =>
+              key !== "__proto__" && key !== "constructor" && key !== "prototype"
+          )
+          .reduce((obj, [key, value]) => {
+            obj[key] = value;
+            return obj;
+          }, {});
+
+        // Remove server-controlled fields from user input, keep event_id if provided
+        const { event_id: incomingEventId, timestamp: _ignoredTimestamp, ...rest } = safeEvent;
+
+        // Use cryptographically secure random ID, server-controlled timestamp
         const logEntry = {
-          event_id: `HO-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+          ...rest,
+          event_id: incomingEventId || `HO-${Date.now()}-${randomUUID()}`,
           timestamp: new Date().toISOString(),
-          ...event,
         };
 
         log.push(logEntry);
@@ -606,6 +623,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               type: "text",
               text: JSON.stringify(
                 { valid: false, error: `Unknown trigger: ${trigger}` },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      }
+
+      // Validate source_agent is a known agent
+      if (!AGENTS.includes(source_agent)) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                { valid: false, error: `Invalid agent: ${source_agent}` },
                 null,
                 2
               ),

@@ -42,6 +42,10 @@ protocol/TIER-SELECTION-GUIDE.md @DewyHRite
 protocol/skills/*.md @DewyHRite
 protocol/skills/*.yaml @DewyHRite
 
+# MCP server implementation
+protocol/mcp-servers/*.js @DewyHRite
+protocol/mcp-servers/*.json @DewyHRite
+
 # Protocol state tracking (audit trail integrity)
 .protocol-state/dev-notes.md @DewyHRite
 
