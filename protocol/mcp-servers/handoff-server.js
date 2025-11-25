@@ -402,7 +402,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
 
         const logEntry = {
-          event_id: `HO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          event_id: `HO-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
           timestamp: new Date().toISOString(),
           ...event,
         };

@@ -12,7 +12,7 @@
 
 **Role**: Creative Strategy & UX Specialist
 **Specialization**: User Experience Design, Product Vision, Creative Strategy, Narrative Development, Human-Centered Design, Research Mode
-**Protocol Version**: 8.2.0
+**Protocol Version**: 8.3.1
 **Status**: Active
 **Major Enhancements**: Research Mode (v8.3.1), .agent.md Format Support (v8.0.0), Playwright E2E Testing (v8.1.0), Mask Mode Support, Absolute Zero Protocol Commitment, Human-Centered Design (User Wellbeing First), Tier-Aware Design, Self-Identification
 

@@ -694,8 +694,196 @@ node custom-mcp-server.js
 
 ---
 
+## Handoff Automation (v8.3.0+)
+
+### Overview
+
+**Agent handoff automation** enables seamless context transfer between Domain Zero agents via MCP. This eliminates manual context reconstruction and saves 30-60 seconds per handoff.
+
+**Key Benefits**:
+- ✅ **Automatic context extraction** from project state
+- ✅ **Ready-to-execute invocation commands** generated automatically
+- ✅ **Handoff event logging** for audit trail
+- ✅ **Validation** of handoff permissions
+
+### Installing the Handoff Server
+
+**Step 1**: Navigate to the MCP server directory
+
+```bash
+cd protocol/mcp-servers
+npm install
+```
+
+**Step 2**: Configure in Claude Code
+
+Add to `~/.config/claude-code/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "domain-zero-handoff": {
+      "command": "node",
+      "args": ["protocol/mcp-servers/handoff-server.js"],
+      "env": {}
+    }
+  }
+}
+```
+
+**Step 3**: Restart Claude Code to load the MCP server
+
+### Available Tools
+
+The handoff MCP server provides the following tools:
+
+| Tool | Description | Use Case |
+|------|-------------|----------|
+| `prepare_handoff` | Prepares context payload for agent transition | When agent tags a handoff trigger |
+| `get_invocation_command` | Returns ready-to-execute command | Quick agent invocation |
+| `log_handoff_event` | Logs handoff to audit trail | Compliance and debugging |
+| `list_pending_handoffs` | Lists incomplete handoffs | Workflow tracking |
+| `validate_handoff` | Validates handoff permissions | Error prevention |
+
+### Tool: prepare_handoff
+
+**Description**: Extracts context automatically and generates handoff payload.
+
+**Input**:
+```json
+{
+  "trigger": "@security-review",
+  "source_agent": "yuuji",
+  "project_root": "/path/to/project",
+  "additional_context": {
+    "notes": "Critical auth implementation"
+  }
+}
+```
+
+**Output**:
+```json
+{
+  "event_id": "HO-1700000000-abc123",
+  "timestamp": "2025-11-23T10:00:00.000Z",
+  "source_agent": "yuuji",
+  "target_agent": "megumi",
+  "trigger": "@security-review",
+  "context": {
+    "files_modified": ["src/auth/jwt.ts", "src/auth/middleware.ts"],
+    "tier_level": "standard",
+    "implementation_scope": "JWT authentication",
+    "test_coverage": { "statements": 95, "branches": 88 }
+  },
+  "invocation_command": "Read megumi.agent.md and review the handoff context",
+  "status": "pending"
+}
+```
+
+### Tool: get_invocation_command
+
+**Description**: Generates a copy-paste ready command for agent invocation.
+
+**Input**:
+```json
+{
+  "target_agent": "megumi",
+  "tier": "critical",
+  "task_description": "review JWT authentication implementation"
+}
+```
+
+**Output**:
+```json
+{
+  "target_agent": "megumi",
+  "tier": "critical",
+  "command": "Read megumi.agent.md --tier critical and review JWT authentication implementation",
+  "copy_paste_ready": true
+}
+```
+
+### Workflow Integration
+
+**Before MCP Handoff Automation** (Manual):
+```
+1. Yuuji completes implementation
+2. Yuuji outputs: "Ready for security review"
+3. User manually figures out which files changed
+4. User manually invokes Megumi
+5. User re-explains context to Megumi
+⏱️ Time: 60-90 seconds per handoff
+```
+
+**After MCP Handoff Automation**:
+```
+1. Yuuji completes implementation
+2. Yuuji calls prepare_handoff with @security-review trigger
+3. MCP server extracts context automatically
+4. User receives ready-to-execute command
+5. User pastes command to invoke Megumi with full context
+⏱️ Time: 10-15 seconds per handoff
+```
+
+**Time Savings**: ~50 seconds per handoff, ~3-4 minutes per Tier 2 workflow
+
+### Available Resources
+
+The handoff server exposes resources for reference:
+
+| Resource URI | Description |
+|--------------|-------------|
+| `handoff://triggers` | List of all valid handoff triggers |
+| `handoff://context-fields` | Available context fields per trigger |
+
+### Context Fields by Trigger
+
+| Trigger | Auto-Extracted Context |
+|---------|------------------------|
+| `@security-review` | files_modified, tier_level, implementation_scope, test_coverage |
+| `@remediation-required` | security_findings |
+| `@user-review` | files_modified, implementation_scope |
+| `@approved` | project_state |
+| `@brief-implementation` | project_state, tier_level |
+| `@brief-security` | project_state, security_findings |
+| `@escalate` | project_state |
+
+### Security Considerations
+
+1. **No sensitive data in context**: The MCP server never extracts passwords, API keys, or secrets
+2. **Audit logging**: All handoffs logged to `.protocol-state/handoff-log.json`
+3. **Validation**: Handoffs validated against TRIGGERS before execution
+4. **Local execution**: MCP server runs locally, no external API calls
+
+### Troubleshooting
+
+**Server not starting**:
+```bash
+# Check Node.js version (requires 18+)
+node --version
+
+# Install dependencies
+cd protocol/mcp-servers && npm install
+
+# Test server manually
+node handoff-server.js
+```
+
+**Context not extracted**:
+- Ensure `.protocol-state/project-state.json` exists
+- Ensure git is initialized in project root
+- Check file paths are correct
+
+**Handoff validation fails**:
+- Verify trigger keyword starts with `@`
+- Check source agent matches expected agent for trigger
+- Use `validate_handoff` tool to debug
+
+---
+
 ## Version History
 
+- **1.1.0** (2025-11-23): Added Handoff Automation MCP Server for v8.3.0
 - **1.0.0** (2025-11-18): Initial MCP integration guide for v8.0.0
 
 ---
