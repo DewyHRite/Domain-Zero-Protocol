@@ -26,6 +26,10 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import * as fs from "fs/promises";
 import * as path from "path";
+import { exec } from "child_process";
+import { promisify } from "util";
+
+const execAsync = promisify(exec);
 
 // Path validation utility to prevent path traversal attacks
 async function validateProjectRoot(projectRoot) {
@@ -36,13 +40,14 @@ async function validateProjectRoot(projectRoot) {
   // Normalize and resolve the path
   const normalizedPath = path.resolve(projectRoot);
 
-  // Check for path traversal patterns
-  if (projectRoot.includes("..") || projectRoot.includes("./")) {
-    // After normalization, verify the path doesn't escape intended boundaries
-    const cwd = process.cwd();
-    if (!normalizedPath.startsWith(cwd) && !path.isAbsolute(projectRoot)) {
-      throw new Error("Invalid project root: path traversal detected");
-    }
+  // Use path.relative for robust path containment validation
+  // If the relative path starts with "..", the target is outside the base directory
+  const cwd = process.cwd();
+  const relativePath = path.relative(cwd, normalizedPath);
+
+  // Check if path escapes current working directory (unless it's an absolute path the user explicitly provided)
+  if (relativePath.startsWith("..") && !path.isAbsolute(projectRoot)) {
+    throw new Error("Invalid project root: path traversal detected");
   }
 
   // Verify the path exists and is a directory
@@ -81,12 +86,11 @@ const TRIGGERS = {
 const CONTEXT_EXTRACTORS = {
   files_modified: async (projectRoot) => {
     try {
-      const { execSync } = await import("child_process");
-      const result = execSync("git diff --name-only HEAD~1", {
+      const { stdout } = await execAsync("git diff --name-only HEAD~1", {
         cwd: projectRoot,
         encoding: "utf-8",
       });
-      return result.trim().split("\n").filter(Boolean);
+      return stdout.trim().split("\n").filter(Boolean);
     } catch {
       return [];
     }
@@ -94,12 +98,11 @@ const CONTEXT_EXTRACTORS = {
 
   files_created: async (projectRoot) => {
     try {
-      const { execSync } = await import("child_process");
-      const result = execSync("git diff --name-only --diff-filter=A HEAD~1", {
+      const { stdout } = await execAsync("git diff --name-only --diff-filter=A HEAD~1", {
         cwd: projectRoot,
         encoding: "utf-8",
       });
-      return result.trim().split("\n").filter(Boolean);
+      return stdout.trim().split("\n").filter(Boolean);
     } catch {
       return [];
     }

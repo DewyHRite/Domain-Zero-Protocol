@@ -1,6 +1,6 @@
 ---
 title: "Agent Handoff Specification"
-version: "1.0.0"
+version: "1.1.0"
 protocol_version: "8.3.1"
 last_updated: "2025-11-24"
 status: "Production-Ready"
@@ -9,7 +9,7 @@ status: "Production-Ready"
 # Agent Handoff Specification
 ## Domain Zero Protocol v8.3.1
 
-**Version**: 1.0.0
+**Version**: 1.1.0
 **Created**: November 18, 2025
 **Status**: Production-Ready
 **Purpose**: Define agent-to-agent context transfer mechanisms for .agent.md format
