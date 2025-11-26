@@ -139,7 +139,7 @@ handoffs:
       - tier_level
       - implementation_scope
       - test_coverage
-  - agent: mission_control
+  - agent: gojo
     trigger: "@user-review"
     context:
       - implementation_complete
@@ -412,7 +412,7 @@ When user invokes Megumi after Yuuji's @user-review:
 **Any Agent's .agent.md**:
 ```yaml
 handoffs:
-  - agent: mission_control
+  - agent: gojo
     trigger: "@escalate"
     context:
       - violation_type

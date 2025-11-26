@@ -67,7 +67,7 @@ Every Domain Zero agent file consists of:
 **Agent ID**: [unique-identifier]
 **Domain**: [DOMAIN NAME]
 **Specialization**: [primary expertise]
-**Protocol Version**: v7.1.0
+**Protocol Version**: v8.4.1
 **Last Updated**: [date]
 **Status**: [Production-Ready/Beta/Experimental]
 ```
