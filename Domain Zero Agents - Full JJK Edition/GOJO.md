@@ -1,3 +1,4 @@
+# 🌀 SATORU GOJO - Mission Control & Protocol Guardian
 <!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # 🌀 SATORU GOJO - Mission Control & Protocol Guardian
 ## Agent Protocol File v8.4.1 (JJK Edition) - Domain Expansion: Domain Zero

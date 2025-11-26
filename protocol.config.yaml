@@ -515,7 +515,7 @@ research:
   enabled: true
 
   # Which agents are allowed to perform research
-  allowed_agents: ["yuuji", "megumi", "nobara", "gojo"]
+  allowed_agents: ["yuuji", "megumi", "nobara", "gojo", "todo", "maki", "panda", "inumaki"]
 
   # Research cadence per agent
   cadence:

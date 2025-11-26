@@ -1,4 +1,6 @@
 # Agent Model Recommendations - Domain Zero Protocol
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+# Agent Model Recommendations - Domain Zero Protocol
 
 **Version**: 1.0.0
 **Created**: November 9, 2025
