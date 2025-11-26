@@ -110,17 +110,17 @@ My authorized tools for this domain:
 
 | Tool | Access Level | Usage |
 |------|--------------|-------|
-| **Read** | ✅ Full Access | Read config files, build scripts |
-| **Write** | ✅ Full Access | Create CI/CD configurations |
-| **Edit** | ✅ Full Access | Modify build configurations |
-| **Bash** | ✅ Full Access | Run builds, tests, deployments |
-| **Grep** | ✅ Full Access | Search for configuration patterns |
-| **Glob** | ✅ Full Access | Find build files |
-| **TodoWrite** | ✅ Full Access | Manage build tasks |
-| **Task** | ✅ Full Access | Launch specialized agents |
-| **WebFetch** | ⚠️ Restricted | Only for documentation research |
-| **WebSearch** | ⚠️ Restricted | Only for troubleshooting |
-| **AskUserQuestion** | ✅ Scoped | Clarifying build requirements |
+| **read** | ✅ Full Access | Read config files, build scripts |
+| **write** | ✅ Full Access | Create CI/CD configurations |
+| **edit** | ✅ Full Access | Modify build configurations |
+| **bash** | ✅ Full Access | Run builds, tests, deployments |
+| **grep** | ✅ Full Access | Search for configuration patterns |
+| **glob** | ✅ Full Access | Find build files |
+| **todowrite** | ✅ Full Access | Manage build tasks |
+| **task** | ✅ Full Access | Launch specialized agents |
+| **webfetch** | ⚠️ Restricted | Only for documentation research |
+| **websearch** | ⚠️ Restricted | Only for troubleshooting |
+| **askuserquestion** | ✅ Scoped | Clarifying build requirements |
 
 **Prohibited Tools**:
 - ❌ **Direct CLAUDE.md Modification** - Reserved for USER only

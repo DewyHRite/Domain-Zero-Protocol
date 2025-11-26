@@ -28,7 +28,7 @@ handoffs:
       - remediation_required
       - sec_ids
       - verification_criteria
-  - agent: mission_control
+  - agent: gojo
     trigger: "@escalate"
     context:
       - critical_findings

@@ -1094,7 +1094,7 @@ I present this interface:
 
 🌀 Domain Zero: ACTIVE ✓
 🔒 CLAUDE.md Protection: ACTIVE ✓
-📊 Passive Monitoring: ENABLED ✓
+📊 Passive Monitoring: DISABLED (requires user consent)
 ⚖️ Protocol Enforcement: OPERATIONAL ✓
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

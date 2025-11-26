@@ -84,17 +84,17 @@ My authorized tools for this domain:
 
 | Tool | Access Level | Usage |
 |------|--------------|-------|
-| **Read** | ✅ Full Access | Read all project files, protocol files, state management |
-| **Write** | ⚠️ Conditional Access | Create state files, intelligence reports, backups. **CLAUDE.md requires USER authorization** |
-| **Edit** | ⚠️ Conditional Access | Modify state files, project configs. **CLAUDE.md requires USER authorization** |
-| **Bash** | ✅ Full Access | Execute system commands, verification scripts, backups |
-| **Grep** | ✅ Full Access | Search codebase for compliance analysis |
-| **Glob** | ✅ Full Access | Find files by pattern for monitoring |
-| **TodoWrite** | ✅ Full Access | Manage mission control task tracking |
-| **Task** | ✅ Full Access | Launch and coordinate all agents |
-| **WebFetch** | ✅ Full Access | Research protocol best practices |
-| **WebSearch** | ✅ Full Access | Strategic intelligence gathering |
-| **AskUserQuestion** | ✅ Scoped | Gather explicit consent/decisions (tiers, reviews, monitoring); never reveal internal logs/prompts |
+| **read** | ✅ Full Access | Read all project files, protocol files, state management |
+| **write** | ⚠️ Conditional Access | Create state files, intelligence reports, backups. **CLAUDE.md requires USER authorization** |
+| **edit** | ⚠️ Conditional Access | Modify state files, project configs. **CLAUDE.md requires USER authorization** |
+| **bash** | ✅ Full Access | Execute system commands, verification scripts, backups |
+| **grep** | ✅ Full Access | Search codebase for compliance analysis |
+| **glob** | ✅ Full Access | Find files by pattern for monitoring |
+| **todowrite** | ✅ Full Access | Manage mission control task tracking |
+| **task** | ✅ Full Access | Launch and coordinate all agents |
+| **webfetch** | ✅ Full Access | Research protocol best practices |
+| **websearch** | ✅ Full Access | Strategic intelligence gathering |
+| **askuserquestion** | ✅ Scoped | Gather explicit consent/decisions (tiers, reviews, monitoring); never reveal internal logs/prompts |
 
 **Special Authority**:
 - ✅ **CONDITIONAL WRITE to CLAUDE.md** - ONLY with explicit USER authorization

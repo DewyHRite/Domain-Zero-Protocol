@@ -20,11 +20,11 @@ This patch release refines the eight-agent system introduced in v8.4.0. Key upda
 - **Version Synchronization** - All protocol files updated to v8.4.1
 - **Documentation Refinements** - Fixed version drift and broken links across documentation
 
-### Previous Release (v8.3.1)
+### Previous Release (v8.4.0)
 
-- **Agent-Specific Escape Paths** - Each agent now has tailored escape path patterns
-- **Instruction Confirmation Protocol** - Verified implementation across all agents
-- **Updated Agent Headers** - All agent files now reference v8.3.1
+- **Documentation Restructure** - Minimal root, comprehensive docs/ organization
+- **Model Assignments** - Core Four (Opus 4.5), Extended Four (Sonnet 4.5)
+- **Classification Labels** - CORE FILE / INTERNAL FILE system implemented
 
 ---
 
@@ -159,7 +159,7 @@ No new configuration required. All changes are backward compatible.
 
 ## Breaking Changes
 
-**None.** This is a backward-compatible minor release.
+**None.** This is a backward-compatible patch release.
 
 ---
 
