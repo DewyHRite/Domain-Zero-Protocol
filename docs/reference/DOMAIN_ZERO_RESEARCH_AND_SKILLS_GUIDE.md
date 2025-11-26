@@ -1,3 +1,4 @@
+<!--INTERNAL FILE - Domain Zero Protocol v8.2.0 -->
 # Domain Zero – Research Mode & Claude Skills Integration Guide
 
 Version: 1.0 (2025-11-22)

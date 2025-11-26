@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # Agent Tools Reference - Domain Zero Protocol
 
 **Version**: 1.1.0

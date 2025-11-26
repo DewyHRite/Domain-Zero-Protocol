@@ -1,3 +1,4 @@
+<!--CORE FILE - Domain Zero Protocol v6.2.4 -->
 # Tier Transition Guide
 
 **Version:** v6.2.4
