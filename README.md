@@ -1523,18 +1523,18 @@ Domain Zero is now set up in your project.
 
 ## 📝 Version Information
 
-**Version**: 8.4.0
+**Version**: 8.4.1
 **Release Date**: November 25, 2025
 **Major Enhancements**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Extended Domain Supervision, Specialized Agent Skills
 
 **v8.4.1 Key Features**:
-- **Full 8-Agent Integration**: Four new agents - Todo (Database), Maki (Performance), Panda (Build), Inumaki (API)
-- **Extended Domain Supervision**: Gojo coordinates all 8 agents with declarative handoffs
-- **Specialized Agent Skills**: New skills in AGENT_SKILLS_MAP.yaml for each extended agent
-- **Consistent .agent.md Format**: All agents use YAML frontmatter with tool access matrices
+- **Agent File Cleanup**: Removed verbose Gojo Awareness sections for cleaner separation of concerns
+- **JJK Character References**: Added character context to all 8 agent files
+- **Research Mode Expansion**: Updated to support all 8 agents with role-specific research focus
+- **Version Synchronization**: All protocol files updated to v8.4.1
 
 **Version History**:
-- v8.4.1 - MINOR: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Extended Domain Supervision
+- v8.4.1 - PATCH: Agent file cleanup, JJK Character Reference additions, Research Mode updates
 - v8.3.1 - PATCH: Agent-Specific Escape Paths, Instruction Confirmation Protocol, Version Consistency
 - v8.3.0 - MINOR: Subagent Escape Paths, Skills Enhancement, AskUserQuestion Integration
 - v8.1.0 - MINOR: Playwright E2E Testing Infrastructure (Multi-browser testing, tier integration, agent role extensions)

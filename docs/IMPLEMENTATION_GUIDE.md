@@ -237,7 +237,7 @@ Create `.protocol-state/project-state.json`:
 
 ```json
 {
-  "protocol_version": "8.4.0",
+  "protocol_version": "8.4.1",
   "project_metadata": {
     "name": "YOUR_PROJECT_NAME",
     "description": "Your project description",
@@ -247,7 +247,7 @@ Create `.protocol-state/project-state.json`:
   "current_feature_tier": "none",
   "current_state": "STANDBY",
   "active_role": "None",
-  "version": "8.4.0"
+  "version": "8.4.1"
 }
 ```
 

@@ -15,7 +15,13 @@
 > **Current Local Protocol Version**: v8.4.1
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
-This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
+This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations. 
+
+If discrepancies arise between your local protocol files and the canonical source, you MUST update your local files to match the canonical version before proceeding with any development work.
+
+## CRITICAL: 
+
+All files and folder should be full synced verbatim with the canonical source at all times.
 
 ---
 
@@ -258,7 +264,7 @@ All version numbers must remain synchronized:
 1. `protocol.config.yaml` → `versioning.protocol_version`
 2. `CLAUDE.md` → Header (line 1 and line 4)
 3. `.protocol-state/project-state.json` → `protocol_version`
-4. Agent files (yuuji.agent.md, megumi.agent.md, gojo.agent.md, nobara.agent.md) → Headers
+4. Agent files (yuuji.agent.md, megumi.agent.md, gojo.agent.md, nobara.agent.md, todo.agent.md, maki.agent.md, panda.agent.md, inumaki.agent.md) → Headers
 5. `VERSION.md` → All version metadata
 6. `SECURITY.md` → Supported versions table
 7. `CHANGELOG.md` → Version references
@@ -1436,7 +1442,7 @@ See `protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md` for detailed session contin
 - If the scope changes later, the agent restates the new scope and collects a fresh confirmation.
 - Emergency stops or cancellations immediately halt the loop and are documented in the appropriate state file.
 
-**Reference**: `docs/INSTRUCTION_CONFIRMATION_PROTOCOL.md` contains the full policy, examples, and enforcement details. Agents should treat that document as the source of truth when implementing custom behaviors or templates.
+**Reference**: `docs/reference/INSTRUCTION_CONFIRMATION_PROTOCOL.md` contains the full policy, examples, and enforcement details. Agents should treat that document as the source of truth when implementing custom behaviors or templates.
 
 Gojo monitors compliance (especially when passive observation is enabled) and treats missing confirmations as Tier 2 protocol violations.
 

@@ -56,21 +56,6 @@ handoffs:
 
 ---
 
-## 📍 JJK CHARACTER REFERENCE
-
-> **Canon Series**: Jujutsu Kaisen (呪術廻戦)
-> **Character Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Toge_Inumaki
-> **Cursed Technique**: Cursed Speech (words become commands that force compliance)
-> **Domain Expansion**: None (cursed speech too powerful/dangerous for domain)
-
-**Agent Adaptation**: Inumaki's Cursed Speech maps to API design
-- **Cursed Speech** → Declarative API contracts (commands that must be obeyed)
-- **Rice Ball Words** → Safe vocabulary (standardized endpoint patterns)
-- **Voice Strain** → Rate limiting (usage constraints to prevent abuse)
-- **Concise Commands** → RESTful design (minimal, precise communication)
-
----
-
 **Primary Color**: Purple (`#7C3AED`) - Mystery, precision
 **Alternative Color**: Indigo (`#4F46E5`)
 **Visual Identity**: 🍙 Rice Ball (Concise Communication)

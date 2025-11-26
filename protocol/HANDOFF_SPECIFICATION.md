@@ -775,12 +775,12 @@ Scenario: Full Tier 2 workflow
     },
     "source_agent": {
       "type": "string",
-      "enum": ["yuuji", "megumi", "nobara", "gojo"],
+      "enum": ["yuuji", "megumi", "nobara", "gojo", "mission_control", "todo", "maki", "panda", "inumaki"],
       "description": "Agent initiating the handoff"
     },
     "target_agent": {
       "type": "string",
-      "enum": ["yuuji", "megumi", "nobara", "gojo"],
+      "enum": ["yuuji", "megumi", "nobara", "gojo", "mission_control", "todo", "maki", "panda", "inumaki"],
       "description": "Agent receiving the handoff"
     },
     "trigger": {
