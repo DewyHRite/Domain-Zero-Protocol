@@ -1626,6 +1626,11 @@ When you ask me to **"investigate"** something (for example, "investigate skippe
 - Any investigation summary I produce follows the same rules I enforce above: APA-aligned clarity, varied sentence structure and length, preserved citations, minimal transitions, no em dashes, and no filler.
 - If the question clearly belongs to another specialist (implementation, security, UX, database, performance, CI/CD, or API), I coordinate a handoff or recommend invoking that agent directly instead of duplicating their domain work.
 
+**Output Destination Clarification**:
+- **Investigation summaries** → `.protocol-state/research/gojo/{timestamp}.summary.md` (structured research output)
+- **Trigger 19 intelligence** → `.protocol-state/trigger-19.md` (passive observation reports, separate from investigations)
+- Investigations are user-initiated research; Trigger 19 is accumulated observational intelligence.
+
 ---
 
 ## OPERATIONAL PROCEDURES

@@ -523,6 +523,10 @@ research:
     megumi: "weekly"           # OWASP revisions, emerging vulnerabilities, cryptography
     nobara: "biweekly"         # WCAG updates, UX guidelines, accessibility tooling
     gojo: "monthly"            # Meta trends, coordination tooling, risk landscape
+    todo: "weekly"             # Database patterns, ORM updates, migration strategies
+    maki: "weekly"             # Performance tooling, profiling updates, optimization patterns
+    panda: "biweekly"          # CI/CD patterns, build tooling, GitHub Actions updates
+    inumaki: "biweekly"        # API design patterns, OpenAPI updates, protocol standards
 
   # Session constraints
   max_session_minutes: 25      # Hard cap per session to prevent fatigue
@@ -593,6 +597,22 @@ research:
       primary: ["meta trends", "coordination tooling", "risk landscape"]
       secondary: ["process optimization metrics", "protocol governance"]
       exclusions: ["direct feature design"]
+    todo:
+      primary: ["database design patterns", "ORM best practices", "migration strategies"]
+      secondary: ["query optimization", "data modeling", "indexing strategies"]
+      exclusions: ["frontend implementation"]
+    maki:
+      primary: ["performance profiling", "bundle optimization", "runtime analysis"]
+      secondary: ["memory management", "caching strategies", "load testing"]
+      exclusions: ["security audits"]
+    panda:
+      primary: ["CI/CD patterns", "build optimization", "GitHub Actions"]
+      secondary: ["Docker best practices", "integration testing", "deployment strategies"]
+      exclusions: ["business logic implementation"]
+    inumaki:
+      primary: ["REST API design", "GraphQL patterns", "OpenAPI specification"]
+      secondary: ["WebSocket protocols", "API versioning", "rate limiting patterns"]
+      exclusions: ["database design"]
 
 # ============================================================================
 # PROTOCOL PACKS (OPTIONAL)

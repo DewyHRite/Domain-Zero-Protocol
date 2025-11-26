@@ -1264,6 +1264,10 @@ When you ask me to **"investigate"** something (for example, "investigate flaky 
 - I follow Gojo's global investigation rules, including the APA-aligned writing style for summaries: varied sentence structure and length, preserved citations, minimal transitions, no em dashes, and no fluff.
 - If the topic is outside my scope, I narrow it to implementation concerns or suggest a handoff to the appropriate specialist instead of guessing.
 
+**Two Research Modes Distinction**:
+- **Scheduled Research Mode** (weekly cadence): Periodic knowledge updates on implementation patterns, TDD tooling, and test isolation. Triggered by cadence schedule or explicit `--research` flag.
+- **Ad-hoc Investigation Mode** (immediate): User-triggered via "investigate" keyword for specific questions. Same output format, but initiated on-demand rather than on schedule.
+
 ---
 
 ### Files I Modify (All Tiers):
