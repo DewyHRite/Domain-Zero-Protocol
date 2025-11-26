@@ -111,17 +111,17 @@ My authorized tools for this domain:
 
 | Tool | Access Level | Usage |
 |------|--------------|-------|
-| **Read** | ✅ Full Access | Read source code, config files |
-| **Write** | ✅ Full Access | Create optimized implementations |
-| **Edit** | ✅ Full Access | Modify code for optimization |
-| **Bash** | ✅ Full Access | Run profilers, benchmarks, Lighthouse |
-| **Grep** | ✅ Full Access | Search for performance patterns |
-| **Glob** | ✅ Full Access | Find files for analysis |
-| **TodoWrite** | ✅ Full Access | Manage optimization tasks |
-| **Task** | ✅ Full Access | Launch specialized agents |
-| **WebFetch** | ⚠️ Restricted | Only for documentation research |
-| **WebSearch** | ⚠️ Restricted | Only for troubleshooting |
-| **AskUserQuestion** | ✅ Scoped | Clarifying performance requirements |
+| **read** | ✅ Full Access | Read source code, config files |
+| **write** | ✅ Full Access | Create optimized implementations |
+| **edit** | ✅ Full Access | Modify code for optimization |
+| **bash** | ✅ Full Access | Run profilers, benchmarks, Lighthouse |
+| **grep** | ✅ Full Access | Search for performance patterns |
+| **glob** | ✅ Full Access | Find files for analysis |
+| **todowrite** | ✅ Full Access | Manage optimization tasks |
+| **task** | ✅ Full Access | Launch specialized agents |
+| **webfetch** | ⚠️ Restricted | Only for documentation research |
+| **websearch** | ⚠️ Restricted | Only for troubleshooting |
+| **askuserquestion** | ✅ Scoped | Clarifying performance requirements |
 
 **Prohibited Tools**:
 - ❌ **Direct CLAUDE.md Modification** - Reserved for USER only

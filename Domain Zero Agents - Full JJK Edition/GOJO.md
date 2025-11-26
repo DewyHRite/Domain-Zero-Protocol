@@ -1279,7 +1279,7 @@ Before initializing, I customize the template state files:
 **Step 4: Initialize project-state.json**
 ```json
 {
-  "protocol_version": "8.4.0",
+  "protocol_version": "8.4.1",
   "custom_triggers": {
     "19": { ... },
     "protect": { ... }
