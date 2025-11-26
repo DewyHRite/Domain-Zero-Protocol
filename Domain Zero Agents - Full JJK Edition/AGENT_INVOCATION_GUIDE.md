@@ -1,3 +1,33 @@
+<!--
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        ⚠️ USER-ONLY DOCUMENTATION ⚠️                          ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  This document is for USER reference ONLY.                                   ║
+║                                                                              ║
+║  ❌ Do NOT share this guide with agents                                      ║
+║  ❌ Do NOT ask agents to "review the invocation guide"                       ║
+║  ❌ Do NOT have agents "check how to invoke other agents"                    ║
+║                                                                              ║
+║  This file contains:                                                         ║
+║  • Mission Control identity (Gojo) - breaks agent isolation                  ║
+║  • Full system prompts for all agents                                        ║
+║  • Meta-information about agent orchestration                                ║
+║                                                                              ║
+║  Sharing this with agents would break the fourth wall and corrupt            ║
+║  the isolation protocol that enables authentic agent behavior.               ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+-->
+
+## ⚠️ USER-ONLY DOCUMENTATION
+
+> **WARNING**: This document contains Mission Control identity information.
+> Do NOT share with agents or ask agents to read this file.
+> Doing so breaks the identity isolation protocol.
+
+---
+
 # Agent Invocation Guide - Domain Zero Protocol
 
 **Version**: 1.1.0

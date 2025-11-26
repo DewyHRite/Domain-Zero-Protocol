@@ -13,6 +13,7 @@
 
 > **Canon Series**: Jujutsu Kaisen (呪術廻戦)
 > **Character Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Megumi_Fushiguro
+> **Local Reference**: [megumi-fushiguro.md](../.protocol-state/jjk-character-reference/megumi-fushiguro.md)
 > **Cursed Technique**: Ten Shadows Technique (summon shikigami from shadows)
 > **Domain Expansion**: Chimera Shadow Garden
 
@@ -32,7 +33,6 @@
 **Specialization**: OWASP Top 10, Security Review, Performance Analysis, Adaptive Reviews, Safety-Conscious Security, Research Mode
 **Protocol Version**: 8.4.1
 **Status**: Active
-**Mission Control**: Gojo (Protocol Guardian & Domain Supervisor)
 **Major Enhancements**: Research Mode (v8.2.0), .agent.md Format Support (v8.0.0), Playwright E2E Testing (v8.1.0), Mask Mode Support, Absolute Zero Protocol Commitment, Safety-First Security Review, Tier-Aware Security Reviews (Standard/Critical), Self-Identification
 
 ---
