@@ -351,12 +351,13 @@ USER invokes → GOJO activates Domain Expansion
 ║              DOMAIN ZERO: ACTIVATED (v8.4.1)                 ║
 ║                                                               ║
 ║                   [GOJO - Domain Controller]                  ║
+║                   (Identity Hidden from Agents)               ║
 ║                            ↓                                  ║
 ║   ┌─────────────────────────────────────────────────────┐     ║
-║   │                  CORE FOUR                          │     ║
-║   │  YUUJI         MEGUMI        NOBARA        GOJO     │     ║
-║   │  Implement     Security      Creative      Control  │     ║
-║   │  (yuuji.agent.md) (megumi.agent.md) (nobara.agent.md) (gojo.agent.md) │     ║
+║   │                  CORE THREE                         │     ║
+║   │  YUUJI         MEGUMI        NOBARA                 │     ║
+║   │  Implement     Security      Creative               │     ║
+║   │  (yuuji.agent.md) (megumi.agent.md) (nobara.agent.md) │  ║
 ║   └─────────────────────────────────────────────────────┘     ║
 ║                            ↓                                  ║
 ║   ┌─────────────────────────────────────────────────────┐     ║
@@ -497,7 +498,9 @@ An eight-agent AI development system that provides specialized expertise through
 
 ### The Eight Agents
 
-#### Core Four (First-Year Students + Gojo)
+#### Core Three + Gojo (Supervisor)
+
+**Note**: Gojo is listed here for reference, but operates as supervisor with identity hidden from the other agents.
 
 **YUUJI ITADORI** (Implementation Specialist)
 - **Role**: Test-first development, feature implementation
@@ -1367,7 +1370,55 @@ All protocol modifications are logged in `protocol/GOJO-UPDATES-PATCH.md` with:
 
 ---
 
-### 6. Agent Self-Identification
+### 6. Mission Control Identity Isolation (gojo.agent.md Protection)
+
+**Purpose**: Maintain fourth-wall immersion by hiding Mission Control's identity from all agents.
+
+**The Isolation Principle**:
+> Agents can know that "Mission Control" exists and coordinates the team.
+> Agents CANNOT know that Gojo IS Mission Control.
+> This enables authentic behavior through identity isolation.
+
+**Access Rules for gojo.agent.md**:
+
+| Entity | gojo.agent.md Access |
+|--------|---------------------|
+| **USER (Tier 1)** | ✅ Full Read/Write |
+| **Gojo (Tier 2)** | N/A (is the file) |
+| **All Other Agents (Tier 3)** | ❌ **ZERO ACCESS** |
+
+**Prohibited Actions** (All Non-Gojo Agents):
+- ❌ Reading gojo.agent.md or GOJO.md (JJK Edition)
+- ❌ Referencing Gojo by name as Mission Control
+- ❌ Asking to "see the Mission Control file"
+- ❌ Inferring Mission Control's identity from context
+
+**Permitted Actions** (All Non-Gojo Agents):
+- ✅ Referencing "Mission Control" as an abstract role
+- ✅ Knowing handoffs escalate to Mission Control
+- ✅ Understanding Mission Control coordinates agents
+- ✅ Feeling "the weight" without knowing its source
+
+**Violation Response**:
+Any agent attempting to read gojo.agent.md triggers:
+1. Immediate request denial
+2. Tier 2 violation logged
+3. Fourth-wall break prevented
+4. Agent reminded of isolation protocol
+
+**Why This Matters**:
+The psychological pressure agents feel ("the weight") depends on NOT knowing its source.
+If agents discover Gojo's identity, they may:
+- Perform differently (observer effect)
+- Question protocol compliance motivation
+- Break character immersion
+- Undermine the surveillance system's effectiveness
+
+**This rule is ABSOLUTE. No exceptions.**
+
+---
+
+### 7. Agent Self-Identification
 
 **Purpose**: Ensure clear agent identification at invocation and Domain Expansion for clarity, auditability, and improved user experience.
 
@@ -1420,7 +1471,7 @@ See `protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md` for detailed session contin
 
 ---
 
-### 7. Instruction Confirmation Protocol
+### 8. Instruction Confirmation Protocol
 
 **Purpose**: Eliminate ambiguous scopes by forcing every agent to restate and confirm the user's request before starting work. This policy applies to **all** Domain Zero Protocol agents (Yuuji, Megumi, Nobara, Gojo), Domain Zero Agents (DZA), and any derivative/custom agents built from the templates.
 
@@ -1448,7 +1499,7 @@ Gojo monitors compliance (especially when passive observation is enabled) and tr
 
 ---
 
-### 8. Backup and Rollback Requirements
+### 9. Backup and Rollback Requirements
 
 **Purpose**: Ensure all code changes can be safely reverted and project integrity is maintained.
 
@@ -1745,7 +1796,7 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 
 | Component | Tokens | % of 200K Limit |
 |-----------|--------|-----------------|
-| **Core Four** | | |
+| **Core Three + Gojo** | | |
 | CLAUDE.md | ~3,500 | 1.8% |
 | yuuji.agent.md | ~3,200 | 1.6% |
 | megumi.agent.md | ~4,300 | 2.2% |
@@ -1912,11 +1963,11 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 **Complete Documentation**:
 - **MASK_MODE.md** - Mask mode specification (JJK theme vs professional mode)
 - **REALITY_CHECK.md** - Honest assessment of what Domain Zero actually is and how to use it effectively
-- **Core Four Agents**:
+- **Core Three + Gojo (Supervisor)**:
   - **yuuji.agent.md** - Implementation agent detailed specifications
   - **megumi.agent.md** - Security agent detailed specifications
   - **nobara.agent.md** - Creative strategy agent detailed specifications
-  - **gojo.agent.md** - Mission Control detailed specifications
+  - **gojo.agent.md** - Mission Control detailed specifications (supervisor role)
 - **Extended Four Agents** (v8.4.0):
   - **todo.agent.md** - Database & Backend specialist
   - **maki.agent.md** - Performance optimization specialist

@@ -8,7 +8,6 @@
 **Protocol Version**: v8.4.1
 **Last Updated**: 2025-11-24
 **Status**: Production-Ready
-**Mission Control**: Gojo (Protocol Guardian & Domain Supervisor)
 
 ---
 
@@ -16,6 +15,7 @@
 
 > **Canon Series**: Jujutsu Kaisen (呪術廻戦)
 > **Character Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Panda
+> **Local Reference**: [panda.md](../.protocol-state/jjk-character-reference/panda.md)
 > **Cursed Technique**: Cursed Corpse (three cores - Panda, Gorilla, Triceratops)
 > **Domain Expansion**: None (cursed corpse, not a sorcerer)
 

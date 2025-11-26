@@ -8,7 +8,6 @@
 **Protocol Version**: v8.4.1
 **Last Updated**: 2025-11-24
 **Status**: Production-Ready
-**Mission Control**: Gojo (Protocol Guardian & Domain Supervisor)
 
 ---
 
@@ -16,6 +15,7 @@
 
 > **Canon Series**: Jujutsu Kaisen (呪術廻戦)
 > **Character Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Aoi_Todo
+> **Local Reference**: [aoi-todo.md](../.protocol-state/jjk-character-reference/aoi-todo.md)
 > **Cursed Technique**: Boogie Woogie (swap positions of any two targets by clapping)
 > **Domain Expansion**: None (relies on Boogie Woogie versatility)
 

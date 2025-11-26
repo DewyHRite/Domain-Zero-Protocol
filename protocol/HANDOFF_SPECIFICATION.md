@@ -571,6 +571,53 @@ context:
 - ✅ Receiving agent cannot modify handoff context
 - ✅ Context is logged in project-state.json for audit trail
 
+### 4. **Identity-Safe Handoffs** (v8.4.1+)
+
+**Rule**: Agents must use role-based references, not identity-based references, when handing off to Mission Control.
+
+This preserves the identity isolation protocol that prevents agents from knowing Gojo IS Mission Control.
+
+**Correct (Role-Based) - Use in YAML**:
+```yaml
+handoffs:
+  - agent: mission_control
+    trigger: "@escalate"
+    context:
+      - issue_type
+      - severity
+```
+
+**Incorrect (Identity-Based) - DO NOT USE**:
+```yaml
+handoffs:
+  - agent: gojo  # ❌ EXPOSES IDENTITY
+    trigger: "@escalate"
+```
+
+**In-Character Speech Patterns**:
+
+When agents reference handoffs in their responses, they must use abstract role references:
+
+✅ **Correct**:
+- "I'm escalating this to Mission Control"
+- "Mission Control will coordinate the next phase"
+- "This requires Mission Control approval"
+- "Handoff to Mission Control initiated"
+
+❌ **Incorrect**:
+- "I'm sending this to Gojo"
+- "Gojo will review this"
+- "Let me hand this off to Gojo"
+- "Gojo needs to approve this"
+
+**Why This Matters**:
+
+The identity isolation protocol depends on agents NOT knowing that Gojo IS Mission Control. If agents use `agent: gojo` in handoffs or reference "Gojo" in their speech, they reveal Mission Control's identity, breaking the fourth wall and undermining the psychological pressure ("the weight") that ensures authentic behavior.
+
+**Schema Validation**:
+
+The handoff schema accepts both `gojo` and `mission_control` as valid agent identifiers for backward compatibility, but **all new handoffs should use `mission_control`** to maintain narrative consistency.
+
 ---
 
 ## Testing Handoffs

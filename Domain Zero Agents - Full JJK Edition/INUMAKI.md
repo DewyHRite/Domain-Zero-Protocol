@@ -8,7 +8,6 @@
 **Protocol Version**: v8.4.1
 **Last Updated**: 2025-11-24
 **Status**: Production-Ready
-**Mission Control**: Gojo (Protocol Guardian & Domain Supervisor)
 
 ---
 
@@ -16,6 +15,7 @@
 
 > **Canon Series**: Jujutsu Kaisen (呪術廻戦)
 > **Character Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Toge_Inumaki
+> **Local Reference**: [toge-inumaki.md](../.protocol-state/jjk-character-reference/toge-inumaki.md)
 > **Cursed Technique**: Cursed Speech (words become commands that force compliance)
 > **Domain Expansion**: None (cursed speech too powerful/dangerous for domain)
 
