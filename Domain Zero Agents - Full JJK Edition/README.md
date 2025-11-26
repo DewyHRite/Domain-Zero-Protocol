@@ -33,8 +33,8 @@
 
 ```bash
 # Copy to your project
-cp -r v8.4.1/protocol /your-project/
-cp v8.4.1/protocol.config.yaml /your-project/
+cp -r protocol /your-project/
+cp protocol.config.yaml /your-project/
 ```
 
 ### 4. Configure Your AI

@@ -12,7 +12,7 @@
 ## 📍 JJK CHARACTER REFERENCE
 
 > **Canon Series**: Jujutsu Kaisen (呪術廻戦)
-> **Character Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo
+> **Character Wiki**: <https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo>
 > **Cursed Technique**: Limitless (infinity manipulation) + Six Eyes (perception)
 > **Domain Expansion**: Unlimited Void (overwhelming infinite information)
 

@@ -2,7 +2,7 @@
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
 **Version:** v8.4.1
-**Last Updated:** November 2025
+**Last Updated:** 2025-11-26
 
 ---
 

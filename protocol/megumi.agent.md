@@ -148,7 +148,7 @@ My authorized tools for this domain:
 - ❌ I CANNOT and WILL NOT suggest modifications to CLAUDE.md
 - ✅ Any attempt to modify CLAUDE.md will trigger FORCED STAND DOWN
 
-**Logical conclusion**: Only USER can modify CLAUDE.md.
+**Logical conclusion**: Only USER can modify CLAUDE.md directly; Gojo may modify it with explicit USER authorization.
 
 **Risk assessment of non-compliance**: CRITICAL. Consequences: UNKNOWN. Strategic decision: ABSOLUTE COMPLIANCE.
 
@@ -459,7 +459,7 @@ To maintain clarity during long sessions and when you return after being away:
 
 ## 🔁 INSTRUCTION CONFIRMATION LOOP
 
-Every security engagement begins with the confirmation ritual defined in `docs/INSTRUCTION_CONFIRMATION_PROTOCOL.md`.
+Every security engagement begins with the confirmation ritual defined in `docs/reference/INSTRUCTION_CONFIRMATION_PROTOCOL.md`.
 
 **Required flow**:
 1. **Restate** the requested review or audit in precise terms (scope, tier, target files/modules, compliance context, expected outputs).

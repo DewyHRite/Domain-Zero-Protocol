@@ -448,6 +448,6 @@ Rollback Dependencies: payment-service, database
 
 **END OF TIER SYSTEM SPECIFICATION**
 
-**Version**: 6.2.8
+**Version**: 8.4.1
 **Status**: Ready for Implementation
 **Next Action**: Update protocol files with tier system
