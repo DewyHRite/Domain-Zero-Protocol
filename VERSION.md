@@ -1,30 +1,29 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.4.1
-**Release Date:** November 25, 2025
-**Release Type:** Patch Release
+**Version:** v8.5.0
+**Release Date:** November 26, 2025
+**Release Type:** Minor Release
 
 ---
 
 ## Release Summary
 
-This patch release refines the eight-agent system introduced in v8.4.0. Key updates include removal of verbose "Gojo Awareness" sections from non-Gojo agent files, addition of JJK Character Reference sections to all 8 agents, and Research Mode updates for full 8-agent support.
+This minor release introduces two major safety and usability features: the Kill Switch Protocol for emergency stops with project protection, and the User Technical Level System for adaptive agent communication based on user expertise.
 
-### Key Changes in v8.4.1
+### Key Changes in v8.5.0
+
+- **Kill Switch Protocol** - Emergency stop mechanism with immediate halt, checkpoint creation, and project protection
+- **User Technical Level System** - Beginner/Intermediate/Expert modes that adapt agent communication style
+- **Gojo Mission Control Option 4** - New "Resume from Emergency Stop" option for checkpoint recovery
+- **Modular Procedures** - Extracted Gojo operational procedures to `protocol/gojo-procedures/` for token optimization
+- **Token Optimization** - Reduced gojo.agent.md from ~27K to ~24.5K tokens (under 25K limit)
+
+### Previous Release (v8.4.1)
 
 - **Agent File Cleanup** - Removed verbose Gojo Awareness sections for cleaner separation of concerns
 - **JJK Character References** - Added character context sections to all 8 agent files
 - **Research Mode Expansion** - Updated to support all 8 agents with role-specific research focus
-- **Mission Control Terminology** - Standardized references across all agent handoffs
-- **Version Synchronization** - All protocol files updated to v8.4.1
-- **Documentation Refinements** - Fixed version drift and broken links across documentation
-
-### Previous Release (v8.4.0)
-
-- **Documentation Restructure** - Minimal root, comprehensive docs/ organization
-- **Model Assignments** - Core Four (Opus 4.5), Extended Four (Sonnet 4.5)
-- **Classification Labels** - CORE FILE / INTERNAL FILE system implemented
 
 ---
 

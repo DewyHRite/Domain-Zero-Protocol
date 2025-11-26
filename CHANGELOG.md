@@ -9,6 +9,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.5.0] - 2025-11-26
+
+### Added
+
+#### **Kill Switch Protocol** - Emergency stop with project protection
+
+**New Emergency Stop Mechanism:**
+- Instant halt on keywords: STOP, ABORT, CANCEL, EMERGENCY STOP, KILL SWITCH, HALT, SHUTDOWN
+- Automatic checkpoint creation to `.dzp-killswitch/checkpoint.json`
+- Project protection mode: blocks all deletions during emergency
+- Gojo coordinates kill switch activation and recovery
+- New Mission Control Option 4: "Resume from Emergency Stop"
+
+**Configuration:**
+- `protocol.config.yaml` - New `kill_switch:` section with keyword setup, stop behavior, project protection
+- `.dzp-killswitch/` directory - State storage (gitignored, agent-hidden)
+- All 8 agent files updated with Emergency Stop Protocol section
+
+#### **User Technical Level System** - Adaptive agent behavior
+
+**Three User Levels:**
+- **Beginner**: Detailed explanations, simplified terminology, guided autonomy
+- **Intermediate** (default): Balanced explanations, standard terminology
+- **Expert**: Minimal explanations, full jargon, maximum autonomy
+
+**Agent Adaptation:**
+- All 8 agents adapt communication style based on `user.technical_level.current`
+- Gojo prompts for level selection at first invocation if not set
+- Users can change level anytime: "Change my level to [beginner/intermediate/expert]"
+
+**Configuration:**
+- `protocol.config.yaml` - New `user.technical_level:` and `technical_level_presets:` sections
+
+#### **Token Optimization** - Gojo modularization
+
+**Modular Procedures:**
+- Created `protocol/gojo-procedures/OPERATIONAL_PROCEDURES.md`
+- Extracted detailed procedures from gojo.agent.md
+- Reduced gojo.agent.md from ~27K to ~24.5K tokens (under 25K limit)
+
+### Changed
+
+- **protocol.config.yaml** - Added kill_switch, user.technical_level, technical_level_presets sections
+- **All 8 agent files** - Added Emergency Stop Protocol and User Level Adaptation sections
+- **gojo.agent.md** - Added Kill Switch Coordination, Option 4, User Level prompting, modular procedures reference
+- **CLAUDE.md** - Added Kill Switch Protocol and User Technical Level System documentation sections
+
+---
+
 ## [8.4.1] - 2025-11-25
 
 ### Changed

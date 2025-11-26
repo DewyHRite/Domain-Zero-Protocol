@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 8.4.1
+# Version: 8.5.0
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,7 +8,7 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v8.4.1"
+  version: "v8.5.0"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -71,12 +71,240 @@ safety:
     respect_user_override: true     # User can override safety warnings
 
 # ============================================================================
+# KILL SWITCH PROTOCOL (v8.5.0+)
+# ============================================================================
+# Emergency stop mechanism with complete project protection.
+# Kill switch state is stored in .dzp-killswitch/ (hidden from all agents).
+# Agents recognize stop keywords but cannot access kill switch state.
+
+kill_switch:
+  # Master enable (always true in production - safety feature)
+  enabled: true
+
+  # ============================================================
+  # KEYWORD CONFIGURATION
+  # ============================================================
+  keyword_setup:
+    # How keyword is presented to user
+    presentation_mode: "initialization"  # initialization | on_demand
+
+    # Whether to use default keywords OR user-defined
+    use_defaults: true
+
+    # Default keywords (if use_defaults: true)
+    default_keywords:
+      - "STOP"
+      - "ABORT"
+      - "CANCEL"
+      - "EMERGENCY STOP"
+      - "KILL SWITCH"
+      - "HALT"
+      - "SHUTDOWN"
+
+    # User can add custom keywords (appended to defaults)
+    allow_custom_keywords: true
+
+    # Maximum custom keywords allowed
+    max_custom_keywords: 5
+
+    # Case sensitivity for keyword matching
+    case_sensitive: false
+
+  # ============================================================
+  # STOP BEHAVIOR
+  # ============================================================
+  stop_behavior:
+    # Immediate halt (no further operations)
+    immediate_halt: true
+
+    # Create emergency checkpoint before stopping
+    create_checkpoint: true
+
+    # Checkpoint includes partial work
+    include_partial_work: true
+
+    # Checkpoint includes conversation context
+    include_context: true
+
+    # Send user confirmation message
+    notify_user: true
+
+    # Graceful degradation for critical operations
+    graceful_degradation:
+      enabled: true
+      # Critical operations complete atomic step before stopping
+      complete_atomic_operations: true
+      # Maximum time to wait for atomic completion (seconds)
+      atomic_timeout_seconds: 30
+      # Operations considered critical (require graceful stop)
+      critical_operations:
+        - "database_migration"
+        - "file_write"
+        - "git_commit"
+        - "backup_creation"
+
+  # ============================================================
+  # PROJECT PROTECTION (ABSOLUTE)
+  # ============================================================
+  project_protection:
+    # These protections CANNOT be disabled
+
+    # No file/folder deletion during emergency stop
+    block_deletions: true
+
+    # No repository operations during emergency stop
+    block_git_operations: true
+
+    # No database destructive operations during emergency stop
+    block_database_drops: true
+
+    # State files become read-only during emergency stop
+    readonly_state_files: true
+
+    # Backup creation allowed (safety operation)
+    allow_emergency_backup: true
+
+  # ============================================================
+  # STATE STORAGE (AGENT-HIDDEN)
+  # ============================================================
+  state_storage:
+    # Directory for kill switch state (gitignored, agent-hidden)
+    directory: ".dzp-killswitch"
+
+    # Kill switch state file (agents CANNOT access)
+    state_file: ".dzp-killswitch/state.json"
+
+    # Emergency checkpoint file
+    checkpoint_file: ".dzp-killswitch/checkpoint.json"
+
+    # Kill switch log (activation history)
+    log_file: ".dzp-killswitch/activations.log"
+
+    # User's custom keywords (hashed, not plaintext)
+    keywords_file: ".dzp-killswitch/keywords.hash"
+
+  # ============================================================
+  # RESUMPTION
+  # ============================================================
+  resumption:
+    # Allow resume from emergency checkpoint
+    allow_resume: true
+
+    # Require user acknowledgment before resuming
+    require_acknowledgment: true
+
+    # Show summary of stopped work before resuming
+    show_stop_summary: true
+
+    # Options presented to user on resume
+    resume_options:
+      - "continue_from_checkpoint"
+      - "start_fresh"
+      - "review_checkpoint_only"
+
+# ============================================================================
 # USER & PROJECT INFORMATION
 # ============================================================================
 user:
   name: "Dewy"
   contact: "dewy@domain-zero-protocol.dev"
   organization: "Domain Zero Protocol"
+
+  # ============================================================
+  # TECHNICAL LEVEL CONFIGURATION (v8.5.0+)
+  # ============================================================
+  technical_level:
+    # Current level: beginner | intermediate | expert
+    current: "intermediate"
+
+    # How level was determined
+    source: "user_selection"  # user_selection | auto_detected | default
+
+    # Last updated
+    last_updated: null
+
+    # Allow level change mid-session
+    allow_runtime_change: true
+
+  # ============================================================
+  # ADAPTIVE BEHAVIOR SETTINGS
+  # ============================================================
+  adaptive_behavior:
+    # Explanation depth
+    # minimal: Just the facts, assume user knows context
+    # balanced: Some context, key decisions explained
+    # detailed: Full context, step-by-step rationale
+    explanation_depth: "balanced"
+
+    # Autonomy level
+    # guided: Ask for confirmation at each step, explain choices
+    # standard: Proceed with reasonable defaults, confirm major decisions
+    # autonomous: Proceed without confirmation, report results only
+    autonomy_level: "standard"
+
+    # Terminology complexity
+    # simplified: Plain language, avoid jargon, define terms
+    # standard: Common development terms, explain advanced concepts
+    # technical: Full technical terminology, assume knowledge
+    terminology_complexity: "standard"
+
+    # Code example frequency
+    # minimal: Code only when essential
+    # balanced: Code for key concepts
+    # extensive: Code for everything with annotations
+    code_example_frequency: "balanced"
+
+    # Confirmation frequency
+    # always: Confirm before every action
+    # major_only: Confirm before significant changes
+    # minimal: Confirm only for destructive/irreversible actions
+    confirmation_frequency: "major_only"
+
+    # Error explanation detail
+    # concise: Brief error + fix
+    # standard: Error + explanation + fix
+    # educational: Error + why it happened + how to prevent + fix
+    error_explanation: "standard"
+
+# ============================================================
+# LEVEL PRESETS (v8.5.0+)
+# ============================================================
+# Predefined behavior combinations for each level.
+# User can override individual settings after selecting level.
+
+technical_level_presets:
+  beginner:
+    description: "Learning to code, new to AI-assisted development"
+    display_name: "Beginner (Learning)"
+    adaptive_behavior:
+      explanation_depth: "detailed"
+      autonomy_level: "guided"
+      terminology_complexity: "simplified"
+      code_example_frequency: "extensive"
+      confirmation_frequency: "always"
+      error_explanation: "educational"
+
+  intermediate:
+    description: "Vibe coder, comfortable with AI assistance"
+    display_name: "Intermediate (Vibe Coder)"
+    adaptive_behavior:
+      explanation_depth: "balanced"
+      autonomy_level: "standard"
+      terminology_complexity: "standard"
+      code_example_frequency: "balanced"
+      confirmation_frequency: "major_only"
+      error_explanation: "standard"
+
+  expert:
+    description: "Developer before AI, deeply technical"
+    display_name: "Expert (Pre-AI Developer)"
+    adaptive_behavior:
+      explanation_depth: "minimal"
+      autonomy_level: "autonomous"
+      terminology_complexity: "technical"
+      code_example_frequency: "minimal"
+      confirmation_frequency: "minimal"
+      error_explanation: "concise"
 
 project:
   name: "Domain Zero Protocol"
@@ -637,9 +865,9 @@ protocol_packs:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "8.4.1"
-  config_version: "2.4"
-  last_updated: "2025-11-25"
+  protocol_version: "8.5.0"
+  config_version: "2.5"
+  last_updated: "2025-11-26"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

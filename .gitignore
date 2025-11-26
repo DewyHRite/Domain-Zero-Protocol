@@ -2,6 +2,14 @@
 # This file ensures sensitive information stays local and never reaches version control
 
 # ============================================================================
+# KILL SWITCH STATE (v8.5.0+) - AGENT-HIDDEN, NEVER COMMIT
+# ============================================================================
+
+# Kill switch directory - contains emergency stop state, checkpoints, and logs
+# This directory is intentionally hidden from all agents (agent_access: DENIED)
+.dzp-killswitch/
+
+# ============================================================================
 # PRIVATE INTELLIGENCE (NEVER COMMIT)
 # ============================================================================
 

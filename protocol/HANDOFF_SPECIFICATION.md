@@ -1,14 +1,14 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.0 -->
 ---
 title: "Agent Handoff Specification"
 version: "1.1.0"
-protocol_version: "8.4.1"
+protocol_version: "8.5.0"
 last_updated: "2025-11-25"
 status: "Production-Ready"
 ---
 
 # Agent Handoff Specification
-## Domain Zero Protocol v8.4.1
+## Domain Zero Protocol v8.5.0
 
 **Version**: 1.1.0
 **Created**: November 18, 2025
@@ -571,7 +571,7 @@ context:
 - ✅ Receiving agent cannot modify handoff context
 - ✅ Context is logged in project-state.json for audit trail
 
-### 4. **Identity-Safe Handoffs** (v8.4.1+)
+### 4. **Identity-Safe Handoffs** (v8.5.0+)
 
 **Rule**: Agents must use role-based references, not identity-based references, when handing off to Mission Control.
 
@@ -852,7 +852,7 @@ Scenario: Full Tier 2 workflow
 
 ## Version History
 
-- **1.1.0** (2025-11-25): Updated for v8.4.1, Extended Four agents, 8-agent architecture
+- **1.1.0** (2025-11-25): Updated for v8.5.0, Extended Four agents, 8-agent architecture
 - **1.0.0** (2025-11-18): Initial specification for v8.0.0 .agent.md format
 
 ---

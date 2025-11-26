@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.0 -->
 # Domain Zero Protocol - Quick Start Guide
 
 ## Get Up and Running with Domain Zero in 2 Minutes
@@ -54,7 +54,7 @@ cp "Domain Zero Protocol/protocol.config.yaml" your-project/
 ```
 Add to memory: Domain Zero Protocol
 
-I use Domain Zero Protocol v8.4.1 for AI development. Eight-agent system:
+I use Domain Zero Protocol v8.5.0 for AI development. Eight-agent system:
 
 Core Four:
 - YUUJI: Implementation (TDD)
