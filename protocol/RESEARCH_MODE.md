@@ -1,16 +1,16 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 ---
 title: "Research Mode Specification"
 version: "1.0.0"
-protocol_version: "8.4.0"
-last_updated: "2025-11-24"
+protocol_version: "8.4.1"
+last_updated: "2025-11-25"
 status: "Production-Ready"
 ---
 
 # RESEARCH MODE SPECIFICATION
-## Domain Zero Protocol v8.4.0
+## Domain Zero Protocol v8.4.1
 
-**Purpose**: Establish a standardized, auditable, privacy‑respecting workflow that allows each agent (Yuuji, Megumi, Nobara, Gojo) to perform recurring, specialization‑aligned web / literature / standards research, producing structured, citable updates that feed back into project decision-making without contaminating core protocol files.
+**Purpose**: Establish a standardized, auditable, privacy‑respecting workflow that allows each agent (Yuuji, Megumi, Nobara, Gojo, Todo, Maki, Panda, Inumaki) to perform recurring, specialization‑aligned web / literature / standards research, producing structured, citable updates that feed back into project decision-making without contaminating core protocol files.
 
 ---
 ## 1. Scope & Goals
@@ -32,12 +32,16 @@ The `research:` section is now implemented in protocol.config.yaml (v8.3.0+):
 ```yaml
 research:
   enabled: true                 # Master toggle (Gojo enforces if false)
-  allowed_agents: ["yuuji", "megumi", "nobara", "gojo"]
+  allowed_agents: ["yuuji", "megumi", "nobara", "gojo", "todo", "maki", "panda", "inumaki"]
   cadence:
     yuuji: "weekly"            # cron‑like or human readable: daily|weekly|monthly|manual
     megumi: "weekly"
     nobara: "biweekly"
     gojo: "monthly"            # Intelligence synthesis
+    todo: "weekly"             # Database & backend research
+    maki: "weekly"             # Performance optimization research
+    panda: "biweekly"          # Build & CI/CD research
+    inumaki: "weekly"          # API & communication research
   max_session_minutes: 25        # Hard cap per session to prevent fatigue
   source_policy:
     max_sources: 12
@@ -91,6 +95,14 @@ Create (when implemented):
       ...
     gojo/
       ...
+    todo/
+      ...
+    maki/
+      ...
+    panda/
+      ...
+    inumaki/
+      ...
 ```
 **`research-index.json` Schema**:
 ```jsonc
@@ -115,6 +127,26 @@ Create (when implemented):
     "gojo": {
       "last_session": "ISO-8601",
       "synthesis_notes_ref": "2025-11-01T10-00-00Z.summary.md"
+    },
+    "todo": {
+      "last_session": "ISO-8601",
+      "recent_topics": ["PostgreSQL 17 features", "ORM performance patterns"],
+      "open_followups": ["Compare Prisma vs Drizzle benchmarks"]
+    },
+    "maki": {
+      "last_session": "ISO-8601",
+      "recent_topics": ["Core Web Vitals 2025", "React Server Components performance"],
+      "open_followups": ["Evaluate new Lighthouse metrics"]
+    },
+    "panda": {
+      "last_session": "ISO-8601",
+      "recent_topics": ["GitHub Actions optimizations", "Turbopack vs Vite benchmarks"],
+      "open_followups": ["Review Docker layer caching strategies"]
+    },
+    "inumaki": {
+      "last_session": "ISO-8601",
+      "recent_topics": ["OpenAPI 3.1 adoption", "GraphQL federation patterns"],
+      "open_followups": ["Compare REST vs GraphQL performance"]
     }
   }
 }
@@ -212,12 +244,16 @@ Format: `[S#] Title – URL (Accessed YYYY-MM-DD) (Confidence: High|Medium|Low)`
 
 ---
 ## 7. Role-Specific Focus
-| Agent  | Primary Focus | Secondary Axes | Exclusions |
-|--------|---------------|----------------|------------|
-| Yuuji  | Implementation patterns, TDD tooling updates | Build performance, test isolation | Direct protocol edits |
-| Megumi | Emerging vulns, OWASP revisions, cryptography papers | Performance regression security ties | Implementation patches |
-| Nobara | UX guidelines (WCAG, usability heuristics), onboarding flows | Accessibility tooling evolution | Low-quality marketing blogs |
-| Gojo   | Meta trends, coordination tooling, risk landscape | Process optimization metrics | Direct feature design |
+| Agent   | Primary Focus | Secondary Axes | Exclusions |
+|---------|---------------|----------------|------------|
+| Yuuji   | Implementation patterns, TDD tooling updates | Build performance, test isolation | Direct protocol edits |
+| Megumi  | Emerging vulns, OWASP revisions, cryptography papers | Performance regression security ties | Implementation patches |
+| Nobara  | UX guidelines (WCAG, usability heuristics), onboarding flows | Accessibility tooling evolution | Low-quality marketing blogs |
+| Gojo    | Meta trends, coordination tooling, risk landscape | Process optimization metrics | Direct feature design |
+| Todo    | Database patterns, ORM evolution, migration strategies | Query optimization, data modeling | Non-data architecture |
+| Maki    | Performance optimization, profiling tools, bundle analysis | Core Web Vitals, runtime metrics | Feature implementation |
+| Panda   | CI/CD best practices, build tools, Docker optimization | GitHub Actions, testing pipelines | Application logic |
+| Inumaki | API design patterns, OpenAPI/GraphQL evolution, protocols | WebSocket, real-time communication | Frontend implementation |
 
 ---
 ## 8. Privacy & Compliance

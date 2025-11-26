@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # Domain Zero Agents - Custom Agent Creation Guide
 
 **Version**: 1.0.0
-**Protocol Version**: 8.4.0
+**Protocol Version**: 8.4.1
 **Created**: November 8, 2025
 **Purpose**: Comprehensive guide for creating custom Domain Zero agents using the JJK-themed protocol style
 
@@ -67,7 +67,7 @@ Every Domain Zero agent file consists of:
 **Agent ID**: [unique-identifier]
 **Domain**: [DOMAIN NAME]
 **Specialization**: [primary expertise]
-**Protocol Version**: v7.1.0
+**Protocol Version**: v8.4.1
 **Last Updated**: [date]
 **Status**: [Production-Ready/Beta/Experimental]
 ```

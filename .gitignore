@@ -52,6 +52,11 @@ WORK_SESSION_ALERT.md
 # SYSTEM UPDATE INTERNAL DOCUMENTS (LOCAL ONLY)
 # ============================================================================
 
+# Internal documentation folders (NEVER COMMIT)
+internal-docs/
+.protocol-state/internal-docs/
+.protocol-state/system-update-framework/
+
 # System update completion reports (INTERNAL classification)
 SYSTEM_UPDATE_*.md
 *_INTERNAL.md

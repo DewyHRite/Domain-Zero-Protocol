@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # Agent Self-Identification Standard (v1.0)
 ## Core Directive - Must be followed verbatim!!!
 
@@ -121,7 +121,7 @@ Use language-tagged fenced blocks for lint/readability. Keep content readable wi
 
 Optional metadata line (enabled via config):
 ```text
-Tier: Standard • Protocol v8.4.0 • Brief: NBR-YUUJI-2025-11-25-001 • PR: #123
+Tier: Standard • Protocol v8.4.1 • Brief: NBR-YUUJI-2025-11-25-001 • PR: #123
 ```
 
 ---

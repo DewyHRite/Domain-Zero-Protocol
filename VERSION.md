@@ -1,124 +1,96 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.4.0
+**Version:** v8.4.1
 **Release Date:** November 25, 2025
-**Release Type:** Minor Release
+**Release Type:** Patch Release
 
 ---
 
 ## Release Summary
 
-This minor release expands Domain Zero Protocol from a **four-agent** to an **eight-agent** system by fully integrating the second-year specialists: Todo, Maki, Panda, and Inumaki. All new agents follow the `.agent.md` format with YAML frontmatter, tool access matrices, and declarative handoffs.
+This patch release refines the eight-agent system introduced in v8.4.0. Key updates include removal of verbose "Gojo Awareness" sections from non-Gojo agent files, addition of JJK Character Reference sections to all 8 agents, and Research Mode updates for full 8-agent support.
 
-### Key Changes in v8.4.0
+### Key Changes in v8.4.1
 
-- **Full 8-Agent Integration** - Four new agents added to core protocol
-- **Todo (Database & Backend)** - Schema design, migrations, query optimization
-- **Maki (Performance)** - Lighthouse audits, bundle analysis, profiling
-- **Panda (Build & Integration)** - CI/CD, GitHub Actions, Docker, multi-core modes
-- **Inumaki (API & Communication)** - REST, GraphQL, WebSocket, OpenAPI
-- **Gojo Domain Supervision** - Updated to supervise all 8 agents
-- **CLAUDE.md** - Updated to reflect complete 8-agent system
+- **Agent File Cleanup** - Removed verbose Gojo Awareness sections for cleaner separation of concerns
+- **JJK Character References** - Added character context sections to all 8 agent files
+- **Research Mode Expansion** - Updated to support all 8 agents with role-specific research focus
+- **Mission Control Terminology** - Standardized references across all agent handoffs
+- **Version Synchronization** - All protocol files updated to v8.4.1
+- **Documentation Refinements** - Fixed version drift and broken links across documentation
 
-### Previous Release (v8.3.1)
+### Previous Release (v8.4.0)
 
-- **Agent-Specific Escape Paths** - Each agent now has tailored escape path patterns
-- **Instruction Confirmation Protocol** - Verified implementation across all agents
-- **Updated Agent Headers** - All agent files now reference v8.3.1
+- **Documentation Restructure** - Minimal root, comprehensive docs/ organization
+- **Model Assignments** - Core Four (Opus 4.5), Extended Four (Sonnet 4.5)
+- **Classification Labels** - CORE FILE / INTERNAL FILE system implemented
 
 ---
 
-## What's New in v8.4.0
+## What's New in v8.4.1
 
-### Added
+### Changed
 
-#### 1. **Four New Agent Files** - Second-year specialists
+#### 1. **Agent File Cleanup**
 
-**Files Created:**
-- `protocol/todo.agent.md` - Database & Backend Specialist (Boogie Woogie)
-- `protocol/maki.agent.md` - Performance Optimization Specialist (Heavenly Restriction)
-- `protocol/panda.agent.md` - Build & Integration Specialist (Multi-Core System)
-- `protocol/inumaki.agent.md` - API & Communication Specialist (Cursed Speech)
+Removed verbose "Gojo Awareness" sections from all non-Gojo agent files:
+- `protocol/yuuji.agent.md` - Replaced with concise "Mission Control: Gojo" reference
+- `protocol/megumi.agent.md` - Replaced with concise "Mission Control: Gojo" reference
+- `protocol/nobara.agent.md` - Replaced with concise "Mission Control: Gojo" reference
+- `protocol/todo.agent.md` - Added "Mission Control: Gojo" reference
+- `protocol/maki.agent.md` - Added "Mission Control: Gojo" reference
+- `protocol/panda.agent.md` - Added "Mission Control: Gojo" reference
+- `protocol/inumaki.agent.md` - Added "Mission Control: Gojo" reference
 
-**Each Agent Includes:**
-- YAML frontmatter with 7 required fields
-- Tool Access Matrix with permissions
-- Declarative handoff definitions
-- Role-specific escape path patterns
-- JJK-themed domain banners and terminology
+#### 2. **JJK Character Reference Additions**
 
-#### 2. **Extended Agent Roster**
+Added character context sections to all 8 agent files linking to:
+- Canon series information (Jujutsu Kaisen)
+- Character wiki references
+- Cursed technique mappings to agent specializations
+- Domain expansion parallels
 
-| Agent | Role | Domain |
-|-------|------|--------|
-| **Core Four** | | |
-| Gojo | Mission Control | Protocol Guardian, Supervision |
-| Yuuji | Implementation Specialist | TDD, Feature Development |
-| Megumi | Security Analyst | OWASP, Vulnerability Detection |
-| Nobara | Creative Strategy & UX | Design, Accessibility |
-| **Extended Four** | | |
-| Todo | Database & Backend | Schema, Migrations, Queries |
-| Maki | Performance | Lighthouse, Bundle Analysis |
-| Panda | Build & Integration | CI/CD, Docker, GitHub Actions |
-| Inumaki | API & Communication | REST, GraphQL, WebSocket |
+#### 3. **Research Mode Expansion**
 
-#### 3. **Gojo Domain Supervision Update**
+Updated `protocol/RESEARCH_MODE.md` to support all 8 agents:
+- Added role-specific research focus for Extended Four agents
+- Defined operational cadences per agent type
+- Integrated staleness monitoring for all agents
 
-**New Handoff Triggers:**
-- `@brief-database` → Todo
-- `@brief-performance` → Maki
-- `@brief-build` → Panda
-- `@brief-api` → Inumaki
+#### 4. **Handoff Specification Updates**
 
-**Updated Domain Diagram:**
-```text
-                    ┌─────────────────┐
-                    │     GOJO        │
-                    │ Mission Control │
-                    └────────┬────────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-   ┌────┴────┐         ┌────┴────┐         ┌────┴────┐
-   │ YUUJI   │         │ MEGUMI  │         │ NOBARA  │
-   │  Impl   │◄───────►│Security │◄───────►│Creative │
-   └────┬────┘         └────┬────┘         └────┬────┘
-        │                   │                   │
-   ┌────┴────┐         ┌────┴────┐         ┌────┴────┐
-   │  TODO   │         │  MAKI   │         │ INUMAKI │
-   │Database │         │  Perf   │         │   API   │
-   └─────────┘         └─────────┘         └─────────┘
-                            │
-                       ┌────┴────┐
-                       │  PANDA  │
-                       │  Build  │
-                       └─────────┘
-```
+Updated `protocol/HANDOFF_SPECIFICATION.md`:
+- Changed example handoffs from `mission_control` to `gojo` for schema compliance
+- Ensured all agent identifiers match JSON schema enum
 
 ---
 
 ## Files Modified
 
-**New Files Created:**
-- `protocol/todo.agent.md` - Database & Backend Specialist (~310 lines)
-- `protocol/maki.agent.md` - Performance Optimization Specialist (~320 lines)
-- `protocol/panda.agent.md` - Build & Integration Specialist (~315 lines)
-- `protocol/inumaki.agent.md` - API & Communication Specialist (~330 lines)
+**Protocol Agent Files (8 files):**
+- `protocol/gojo.agent.md` - JJK Character Reference added
+- `protocol/yuuji.agent.md` - Gojo Awareness cleanup, JJK Character Reference added
+- `protocol/megumi.agent.md` - Gojo Awareness cleanup, JJK Character Reference added
+- `protocol/nobara.agent.md` - Gojo Awareness cleanup, JJK Character Reference added
+- `protocol/todo.agent.md` - Mission Control reference, JJK Character Reference added
+- `protocol/maki.agent.md` - Mission Control reference, JJK Character Reference added
+- `protocol/panda.agent.md` - Mission Control reference, JJK Character Reference added
+- `protocol/inumaki.agent.md` - Mission Control reference, JJK Character Reference added
 
 **Core Protocol Files:**
 - `protocol/CLAUDE.md` - Updated to 8-agent system, new invocations
 - `protocol/gojo.agent.md` - Domain supervision for all 8 agents
-- `protocol/yuuji.agent.md` - Version sync to 8.4.0
-- `protocol/megumi.agent.md` - Version sync to 8.4.0
-- `protocol/nobara.agent.md` - Version sync to 8.4.0
+- `protocol/yuuji.agent.md` - Version sync to 8.4.1
+- `protocol/megumi.agent.md` - Version sync to 8.4.1
+- `protocol/nobara.agent.md` - Version sync to 8.4.1
 
 **Configuration:**
 - `protocol.config.yaml` - Added 4 new agent configurations
 - `protocol/skills/AGENT_SKILLS_MAP.yaml` - Extended with new agent skills
 
 **State:**
-- `.protocol-state/project-state.json` - Version 8.4.0
+- `.protocol-state/project-state.json` - Version 8.4.1
 
 ---
 
@@ -187,7 +159,7 @@ No new configuration required. All changes are backward compatible.
 
 ## Breaking Changes
 
-**None.** This is a backward-compatible minor release.
+**None.** This is a backward-compatible patch release.
 
 ---
 

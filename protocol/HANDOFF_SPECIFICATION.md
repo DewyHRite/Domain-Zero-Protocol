@@ -1,14 +1,14 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 ---
 title: "Agent Handoff Specification"
 version: "1.1.0"
-protocol_version: "8.4.0"
-last_updated: "2025-11-24"
+protocol_version: "8.4.1"
+last_updated: "2025-11-25"
 status: "Production-Ready"
 ---
 
 # Agent Handoff Specification
-## Domain Zero Protocol v8.4.0
+## Domain Zero Protocol v8.4.1
 
 **Version**: 1.1.0
 **Created**: November 18, 2025
@@ -775,12 +775,12 @@ Scenario: Full Tier 2 workflow
     },
     "source_agent": {
       "type": "string",
-      "enum": ["yuuji", "megumi", "nobara", "gojo"],
+      "enum": ["yuuji", "megumi", "nobara", "gojo", "mission_control", "todo", "maki", "panda", "inumaki"],
       "description": "Agent initiating the handoff"
     },
     "target_agent": {
       "type": "string",
-      "enum": ["yuuji", "megumi", "nobara", "gojo"],
+      "enum": ["yuuji", "megumi", "nobara", "gojo", "mission_control", "todo", "maki", "panda", "inumaki"],
       "description": "Agent receiving the handoff"
     },
     "trigger": {
@@ -805,7 +805,7 @@ Scenario: Full Tier 2 workflow
 
 ## Version History
 
-- **1.1.0** (2025-11-25): Updated for v8.4.0, Extended Four agents, 8-agent architecture
+- **1.1.0** (2025-11-25): Updated for v8.4.1, Extended Four agents, 8-agent architecture
 - **1.0.0** (2025-11-18): Initial specification for v8.0.0 .agent.md format
 
 ---

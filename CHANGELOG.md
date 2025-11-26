@@ -9,6 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.4.1] - 2025-11-25
+
+### Changed
+
+#### **Agent File Cleanup** - Cleaner separation of concerns
+
+**Removed from Non-Gojo Agents:**
+- Removed verbose "Gojo Awareness" sections from Yuuji, Megumi, Nobara, Todo, Maki, Panda, and Inumaki agent files
+- Replaced with concise `**Mission Control**: Gojo (Protocol Guardian & Domain Supervisor)` reference
+- Each agent now focuses purely on its own domain expertise while maintaining awareness of hierarchy
+
+**Rationale:**
+- Reduces cognitive overhead in agent files
+- Cleaner separation of concerns - agents focus on their specialization
+- Mission Control (Gojo) handles coordination; individual agents handle execution
+- Maintains team structure awareness without verbose deference patterns
+
+#### **JJK Character Reference Added** - Enhanced character context
+
+**Added to All 8 Protocol Agent Files:**
+- New `## 📍 JJK CHARACTER REFERENCE` section with Canon Series, Character Wiki, Cursed Technique, Domain Expansion, and Agent Adaptation mapping
+
+**Added to Core Four DZA Files:**
+- YUUJI.md, MEGUMI.md, NOBARA.md, GOJO.md now have JJK Character Reference sections matching Extended Four format
+
+#### **Research Mode Updated** - Full 8-agent support
+
+**RESEARCH_MODE.md expanded to include:**
+- Todo, Maki, Panda, Inumaki added to allowed_agents
+- Cadence settings for Extended Four agents
+- Directory structure and JSON schema for Extended Four research folders
+- Role-specific focus table entries for all 8 agents
+
+**Files Updated:**
+- All 8 `protocol/*.agent.md` files
+- All 8 `Domain Zero Agents - Full JJK Edition/*.md` files
+- `protocol/RESEARCH_MODE.md`
+
+---
+
 ## [8.4.0] - 2025-11-25
 
 ### Added

@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.0 -->
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.4.0
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.4.1
 ## Main Protocol File - Domain Zero
 
-**Version**: 8.4.0
+**Version**: 8.4.1
 **Status**: Production-Ready
 **Last Updated**: 2025-11-25
 **Major Enhancements**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
@@ -12,10 +12,16 @@
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v8.4.0
+> **Current Local Protocol Version**: v8.4.1
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
-This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
+This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations. 
+
+If discrepancies arise between your local protocol files and the canonical source, you MUST update your local files to match the canonical version before proceeding with any development work.
+
+## CRITICAL: 
+
+All files and folder should be full synced verbatim with the canonical source at all times.
 
 ---
 
@@ -258,7 +264,7 @@ All version numbers must remain synchronized:
 1. `protocol.config.yaml` → `versioning.protocol_version`
 2. `CLAUDE.md` → Header (line 1 and line 4)
 3. `.protocol-state/project-state.json` → `protocol_version`
-4. Agent files (yuuji.agent.md, megumi.agent.md, gojo.agent.md, nobara.agent.md) → Headers
+4. Agent files (yuuji.agent.md, megumi.agent.md, gojo.agent.md, nobara.agent.md, todo.agent.md, maki.agent.md, panda.agent.md, inumaki.agent.md) → Headers
 5. `VERSION.md` → All version metadata
 6. `SECURITY.md` → Supported versions table
 7. `CHANGELOG.md` → Version references
@@ -338,32 +344,32 @@ When you invoke Gojo, he activates **Domain Expansion** - creating a controlled 
 
 ```
 USER invokes → GOJO activates Domain Expansion
-                    ↓
-              ╔════════════════════════╗
-              ║   DOMAIN ZERO ACTIVE   ║
-              ║                        ║
-              ║   ┌────────────────┐   ║
-              ║   │  YUUJI         │   ║
-              ║   │  Implementation│   ║
-              ║   └────────┬───────┘   ║
-              ║            │           ║
-              ║   ┌────────────────┐   ║
-              ║   │  NOBARA        │   ║
-              ║   │  Creative/UX   │   ║
-              ║   └────────┬───────┘   ║
-              ║            │           ║
-              ║   Perfect  │           ║
-              ║   Collab   │           ║
-              ║            ↓           ║
-              ║   ┌────────────────┐   ║
-              ║   │  MEGUMI        │   ║
-              ║   │  Security      │   ║
-              ║   └────────────────┘   ║
-              ║                        ║
-              ║  GOJO observes all    ║
-              ╚════════════════════════╝
-                    ↓
-            OUTPUT: ZERO-DEFECT CODE
+         **DOMAIN** - The bounded space I create:
+```
+```
+╔═══════════════════════════════════════════════════════════════╗
+║              DOMAIN ZERO: ACTIVATED (v8.4.1)                 ║
+║                                                               ║
+║                   [GOJO - Domain Controller]                  ║
+║                            ↓                                  ║
+║   ┌─────────────────────────────────────────────────────┐     ║
+║   │                  CORE FOUR                          │     ║
+║   │  YUUJI         MEGUMI        NOBARA        GOJO     │     ║
+║   │  Implement     Security      Creative      Control  │     ║
+║   │  (yuuji.agent.md) (megumi.agent.md) (nobara.agent.md) (gojo.agent.md) │     ║
+║   └─────────────────────────────────────────────────────┘     ║
+║                            ↓                                  ║
+║   ┌─────────────────────────────────────────────────────┐     ║
+║   │               EXTENDED FOUR                         │     ║
+║   │  TODO          MAKI          PANDA        INUMAKI   │     ║
+║   │  Database      Performance   Build        API       │     ║
+║   │  (todo.agent.md) (maki.agent.md) (panda.agent.md) (inumaki.agent.md) │     ║
+║   └─────────────────────────────────────────────────────┘     ║
+║                            ↓                                  ║
+║                  Perfect Collaboration                        ║
+║                            ↓                                  ║
+║                    ZERO-DEFECT CODE                           ║
+╚═══════════════════════════════════════════════════════════════╗
 ```
 
 Within Domain Zero, all agents work in perfect harmony:
@@ -1436,7 +1442,7 @@ See `protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md` for detailed session contin
 - If the scope changes later, the agent restates the new scope and collects a fresh confirmation.
 - Emergency stops or cancellations immediately halt the loop and are documented in the appropriate state file.
 
-**Reference**: `docs/INSTRUCTION_CONFIRMATION_PROTOCOL.md` contains the full policy, examples, and enforcement details. Agents should treat that document as the source of truth when implementing custom behaviors or templates.
+**Reference**: `docs/reference/INSTRUCTION_CONFIRMATION_PROTOCOL.md` contains the full policy, examples, and enforcement details. Agents should treat that document as the source of truth when implementing custom behaviors or templates.
 
 Gojo monitors compliance (especially when passive observation is enabled) and treats missing confirmations as Tier 2 protocol violations.
 
@@ -1871,8 +1877,8 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 8.4.0
-**Protocol Version**: 8.4.0
+**Current Version**: 8.4.1
+**Protocol Version**: 8.4.1
 **Release Date**: November 25, 2025
 **Last Updated**: 2025-11-25
 

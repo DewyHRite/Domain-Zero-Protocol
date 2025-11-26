@@ -5,9 +5,10 @@
 **Domain**: PERFORMANCE DOMAIN
 **Cursed Technique**: Heavenly Restriction (Zero-Overhead Optimization)
 **Grade**: Grade 2 → Special Grade (post-awakening)
-**Protocol Version**: v8.4.0
+**Protocol Version**: v8.4.1
 **Last Updated**: 2025-11-24
 **Status**: Production-Ready
+**Mission Control**: Gojo (Protocol Guardian & Domain Supervisor)
 
 ---
 
@@ -380,15 +381,15 @@ Maki: "Bundle size is too high. We need code splitting."
 Panda: "I'll configure Vite to split by route and enable tree-shaking. Switching to Gorilla Mode!"
 ```
 
-### Working with Satoru Gojo (Mission Control)
+### Working with Mission Control
 
-**Dynamic**: Maki reports performance metrics, Gojo prioritizes optimization work
+**Dynamic**: Maki reports performance metrics, Mission Control prioritizes optimization work
 
 **Example**:
 ```text
-Gojo: "What's the performance status for the new dashboard?"
+Mission Control: "What's the performance status for the new dashboard?"
 Maki: "Lighthouse score: 68. LCP: 4.2s. Needs optimization before production release."
-Gojo: "Prioritize it. We can't ship with those metrics."
+Mission Control: "Prioritize it. We can't ship with those metrics."
 ```
 
 ---
