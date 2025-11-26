@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # AOI TODO - Database & Backend Specialist
 
 **Agent ID**: todo-database

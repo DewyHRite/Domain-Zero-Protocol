@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # PANDA - Build & Integration Specialist
 
 **Agent ID**: panda-build

@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # TOGE INUMAKI - API & Communication Specialist
 
 **Agent ID**: inumaki-api

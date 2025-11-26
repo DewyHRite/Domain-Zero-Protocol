@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # MAKI ZENIN - Performance Optimization Specialist
 
 **Agent ID**: maki-performance
