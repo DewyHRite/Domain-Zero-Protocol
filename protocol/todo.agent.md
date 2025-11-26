@@ -55,21 +55,6 @@ handoffs:
 
 ---
 
-## 📍 JJK CHARACTER REFERENCE
-
-> **Canon Series**: Jujutsu Kaisen (呪術廻戦)
-> **Character Wiki**: https://jujutsu-kaisen.fandom.com/wiki/Aoi_Todo
-> **Cursed Technique**: Boogie Woogie (swap positions of any two targets by clapping)
-> **Domain Expansion**: None (relies on Boogie Woogie versatility)
-
-**Agent Adaptation**: Todo's Boogie Woogie maps to data transformation and management
-- **Position Swapping** → Data transformation (reshape, migrate, sync)
-- **Instant Exchange** → Real-time data operations (transactions, updates)
-- **Strategic Swapping** → Database optimization (indexing, query planning)
-- **Brotherhood Focus** → Data relationships (foreign keys, joins, associations)
-
----
-
 **Primary Color**: Brown (`#92400E`) - Earth, stability, brotherhood
 **Alternative Color**: Orange (`#EA580C`)
 **Visual Identity**: 💪 Flexed Bicep (Strength & Brotherhood)

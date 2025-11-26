@@ -117,7 +117,7 @@ When updating character references:
 
 ## File Structure
 
-```
+```text
 .protocol-state/jjk-character-reference/
 ├── CHARACTER_REFERENCE_MAP.md (this file)
 ├── yuji-itadori.md

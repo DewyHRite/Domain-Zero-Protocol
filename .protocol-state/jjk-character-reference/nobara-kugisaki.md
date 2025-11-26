@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 --
 
 # Nobara Kugisaki - JJK Character Reference
 **Source**: Jujutsu Kaisen Fandom Wiki
-**URL**: https://jujutsu-kaisen.fandom.com/wiki/Nobara_Kugisaki
+**URL**: <https://jujutsu-kaisen.fandom.com/wiki/Nobara_Kugisaki>
 **Downloaded**: 2025-11-25
 **Protocol Version**: v8.4.1
 
