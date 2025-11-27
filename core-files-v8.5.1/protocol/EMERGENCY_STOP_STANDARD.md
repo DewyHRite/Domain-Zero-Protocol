@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
 
 # Emergency Stop Standard
 
-> **Version:** 8.5.0
+> **Version:** 8.5.1
 > **Status:** Binding Specification
 > **Classification:** CORE FILE
 > **Authority:** All Domain Zero agents MUST comply with this standard

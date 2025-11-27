@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
 ---
 title: "Skill Registry"
 version: "1.0.0"
-protocol_version: "8.5.0"
+protocol_version: "8.5.1"
 last_updated: "2025-11-25"
 status: "Production-Ready"
 ---

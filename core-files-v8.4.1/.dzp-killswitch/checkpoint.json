@@ -1,0 +1,12 @@
+{
+  "checkpoint_version": "1.0.0",
+  "created_at": null,
+  "active_agent": null,
+  "task_description": null,
+  "tier": null,
+  "progress": null,
+  "partial_work": null,
+  "conversation_context": null,
+  "stop_reason": null,
+  "resumption_instructions": null
+}
