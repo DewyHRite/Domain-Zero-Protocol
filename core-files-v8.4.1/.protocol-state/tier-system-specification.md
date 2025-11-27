@@ -1,3 +1,5 @@
+## "Adaptive Workflow Complexity - Tier System Specification"
+
 <!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 ---
 title: "Adaptive Workflow Complexity - Tier System Specification"

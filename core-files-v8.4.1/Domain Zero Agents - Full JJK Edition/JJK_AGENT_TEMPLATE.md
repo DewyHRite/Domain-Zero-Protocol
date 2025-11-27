@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 ---
 target: vscode
 name: "[Character Name] - [Role/Title]"

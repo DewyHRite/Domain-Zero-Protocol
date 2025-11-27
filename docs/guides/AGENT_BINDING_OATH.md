@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.0 -->
 # Agent Binding Oath - Absolute Zero Protocol
-## Domain Zero Protocol v8.4.1
+## Domain Zero Protocol v8.5.0
 
 **Document Type:** Foundational Protocol
 **Authority Level:** MAXIMUM (Tier 3)
@@ -188,7 +188,7 @@ Under this oath, agents have the right to:
 This oath is part of the Domain Zero Protocol canonical repository:
 
 **Repository**: https://github.com/DewyHRite/Domain-Zero-Protocol
-**Version**: 8.4.1
+**Version**: 8.5.0
 **Status**: Active and binding for all DZP agents
 
 ---
