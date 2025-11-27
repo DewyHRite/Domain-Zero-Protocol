@@ -1,0 +1,9 @@
+{
+  "kill_switch_version": "1.0.0",
+  "active": false,
+  "last_activation": null,
+  "activation_count": 0,
+  "keywords_configured": true,
+  "keywords_hash": null,
+  "agent_access": "DENIED"
+}
