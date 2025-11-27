@@ -227,7 +227,7 @@ Domain Zero is an eight-agent AI development system that provides specialized ex
 This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
-- `CLAUDE.md` - Main protocol specification (v8.5.1)
+- `CLAUDE.md` - Main protocol specification (v8.4.1)
 - `yuuji.agent.md` - Implementation agent protocol
 - `megumi.agent.md` - Security review agent protocol
 - `gojo.agent.md` - Mission control agent protocol
@@ -534,8 +534,11 @@ cp -r protocol/ .protocol-state/ protocol.config.yaml backup/dzp-pre-upgrade-$(d
 #### Step 2: Sync Protocol Files Only (Safe to Overwrite)
 ```bash
 # Protocol artifacts - safe to overwrite
+mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch "your-project/Domain Zero Agents"
 cp -r "Domain Zero Protocol v8.4.1/protocol/"* your-project/protocol/
 cp -r "Domain Zero Protocol v8.4.1/docs/"* your-project/docs/
+cp -r "Domain Zero Protocol v8.4.1/.dzp-killswitch/"* your-project/.dzp-killswitch/
+cp -r "Domain Zero Protocol v8.4.1/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
 ```
 
 #### Step 3: DO NOT Overwrite .protocol-state/
@@ -648,7 +651,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is an eight-age
 - INUMAKI (API & Communication): REST/GraphQL/WebSocket, OpenAPI
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.5.1)
+- protocol/CLAUDE.md (main protocol, v8.4.1)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -672,7 +675,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v8.5.1) for development projects. This is an eight-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.4.1) for development projects. This is an eight-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
@@ -703,7 +706,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 - Add Domain Zero Protocol pointer as shown in integration section
 
 **What to Include in Memory**:
-- ✅ Protocol name and version (Domain Zero Protocol v8.5.1)
+- ✅ Protocol name and version (Domain Zero Protocol v8.4.1)
 - ✅ The eight agent roles and their specializations
 - ✅ Protocol file locations (protocol/CLAUDE.md and all eight agent files)
 - ✅ Tier system overview (Rapid/Standard/Critical)

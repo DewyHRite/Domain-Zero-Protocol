@@ -534,10 +534,11 @@ cp -r protocol/ .protocol-state/ protocol.config.yaml backup/dzp-pre-upgrade-$(d
 #### Step 2: Sync Protocol Files Only (Safe to Overwrite)
 ```bash
 # Protocol artifacts - safe to overwrite
-mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch
+mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch "your-project/Domain Zero Agents"
 cp -r "Domain Zero Protocol v8.5.1/protocol/"* your-project/protocol/
 cp -r "Domain Zero Protocol v8.5.1/docs/"* your-project/docs/
 cp -r "Domain Zero Protocol v8.5.1/.dzp-killswitch/"* your-project/.dzp-killswitch/
+cp -r "Domain Zero Protocol v8.5.1/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
 ```
 
 #### Step 3: DO NOT Overwrite .protocol-state/

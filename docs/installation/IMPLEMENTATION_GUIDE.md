@@ -53,10 +53,10 @@
 ```bash
 # macOS/Linux
 mkdir -p your-project/protocol your-project/.protocol-state
-cp -r v8.5.1/protocol /your-project/
-cp -r v8.5.1/.protocol-state /your-project/
-cp v8.5.1/protocol.config.yaml /your-project/
-cp v8.5.1/README.md /your-project/DOMAIN_ZERO_README.md
+cp -r v8.5.1/protocol your-project/
+cp -r v8.5.1/.protocol-state your-project/
+cp v8.5.1/protocol.config.yaml your-project/
+cp v8.5.1/README.md your-project/DOMAIN_ZERO_README.md
 
 # Windows PowerShell
 New-Item -ItemType Directory -Force -Path "your-project\protocol", "your-project\.protocol-state"
@@ -85,7 +85,7 @@ cp protocol.config.yaml backup/dzp-pre-upgrade-$(date +%Y%m%d)/
 #### Step 2: Sync Protocol Files ONLY (Safe to Overwrite)
 ```bash
 # These files are protocol artifacts - safe to overwrite
-mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch your-project/.claude/commands
+mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch your-project/.claude/commands "your-project/Domain Zero Agents"
 cp -r v8.5.1/protocol/* your-project/protocol/
 cp -r v8.5.1/docs/* your-project/docs/
 cp -r "v8.5.1/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
