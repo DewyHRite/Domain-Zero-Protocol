@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
 # DEVELOPMENT NOTES
 ## Implementation Log - Yuuji Itadori
 

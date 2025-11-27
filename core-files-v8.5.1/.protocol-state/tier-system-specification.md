@@ -1,9 +1,9 @@
 ## "Adaptive Workflow Complexity - Tier System Specification"
 
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
 ---
 title: "Adaptive Workflow Complexity - Tier System Specification"
-version: "8.4.1"
+version: "8.5.1"
 status: "PRODUCTION-READY"
 date: "2025-11-25"
 ---
@@ -13,7 +13,7 @@ date: "2025-11-25"
 **Enhancement ID**: ENH-001
 **Priority**: CRITICAL
 **Status**: PRODUCTION-READY
-**Version**: 8.4.1
+**Version**: 8.5.1
 **Date**: 2025-11-25
 
 ---
@@ -450,6 +450,6 @@ Rollback Dependencies: payment-service, database
 
 **END OF TIER SYSTEM SPECIFICATION**
 
-**Version**: 8.4.1
+**Version**: 8.5.1
 **Status**: Ready for Implementation
 **Next Action**: Update protocol files with tier system
