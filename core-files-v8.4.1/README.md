@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
-# Domain Zero Protocol v8.4.1
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+# Domain Zero Protocol v8.5.1
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v8.4.1**: Patch release - Removed redundant Gojo awareness from non-Gojo agent files for cleaner separation of concerns. See [What's New](#-version-information).
+> **New in v8.5.1**: Token Optimization via Modular Architecture - 7 shared module files reducing agent token usage by ~40-60%. See [What's New](#-version-information).
 
 ---
 
@@ -227,15 +227,17 @@ Domain Zero is an eight-agent AI development system that provides specialized ex
 This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
-- `CLAUDE.md` - Main protocol specification (v8.4.1)
+- `CLAUDE.md` - Main protocol specification (v8.5.1)
 - `yuuji.agent.md` - Implementation agent protocol
 - `megumi.agent.md` - Security review agent protocol
 - `gojo.agent.md` - Mission control agent protocol
 - `nobara.agent.md` - Creative strategy & UX agent protocol
-- `todo.agent.md` - Database & backend agent protocol (v8.4.1+)
-- `maki.agent.md` - Performance optimization agent protocol (v8.4.1+)
-- `panda.agent.md` - Build & integration agent protocol (v8.4.1+)
-- `inumaki.agent.md` - API & communication agent protocol (v8.4.1+)
+- `todo.agent.md` - Database & backend agent protocol (v8.4.0+)
+- `maki.agent.md` - Performance optimization agent protocol (v8.4.0+)
+- `panda.agent.md` - Build & integration agent protocol (v8.4.0+)
+- `inumaki.agent.md` - API & communication agent protocol (v8.4.0+)
+- `EMERGENCY_STOP_STANDARD.md` - Kill Switch specification (v8.5.0+)
+- `TECHNICAL_LEVEL_ADAPTATION.md` - User level specification (v8.5.0+)
 - `TIER-SELECTION-GUIDE.md` - Quick reference for tier selection
 - `GOJO-UPDATES-PATCH.md` - Protocol change audit trail
 
@@ -465,35 +467,89 @@ Restart your AI session for changes to take effect.
 ## 🚀 Quick Setup
 
 > **⚡ Want to get started in 2 minutes?** See [`PROTOCOL_QUICKSTART.md`](PROTOCOL_QUICKSTART.md) for the express setup guide.
+>
+> **📖 Detailed instructions:** See [`docs/installation/IMPLEMENTATION_GUIDE.md`](docs/installation/IMPLEMENTATION_GUIDE.md) for complete platform-specific setup.
 
-### Step 1: Copy Protocol to Your Project
+---
+
+### ⚠️ CRITICAL: Choose the Right Installation Flow
+
+| Your Situation | Flow | Instructions |
+|----------------|------|--------------|
+| **New project** (no existing DZP files) | Fresh Install | See [Step 1](#step-1-copy-protocol-to-your-project-fresh-install) below |
+| **Existing project** (already has DZP installed) | In-Place Upgrade | See [In-Place Upgrade](#in-place-upgrade-existing-projects) below |
+
+**WARNING:** Using Fresh Install commands on an existing DZP project will **overwrite your project-specific state** (dev-notes.md, security-review.md, project-state.json). Always use the correct flow!
+
+---
+
+### Step 1: Copy Protocol to Your Project (Fresh Install)
+
+**Use these commands ONLY for new projects with NO existing DZP installation.**
 
 **macOS/Linux (bash/zsh)**:
 ```bash
-# Copy the entire protocol structure to your project root
-cp -r "Domain Zero Protocol v8.4.1/protocol" your-project/
-cp -r "Domain Zero Protocol v8.4.1/.protocol-state" your-project/
-cp "Domain Zero Protocol v8.4.1/protocol.config.yaml" your-project/
-cp "Domain Zero Protocol v8.4.1/.gitignore" your-project/
+# Fresh Install - Copy entire protocol structure to NEW project
+cp -r "Domain Zero Protocol v8.5.1/protocol" your-project/
+cp -r "Domain Zero Protocol v8.5.1/.protocol-state" your-project/
+cp "Domain Zero Protocol v8.5.1/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v8.5.1/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
-# Copy the entire protocol structure to your project root
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.4.1\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.4.1\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.4.1\protocol.config.yaml" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.4.1\.gitignore" -Destination "your-project\"
+# Fresh Install - Copy entire protocol structure to NEW project
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.5.1\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.5.1\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.5.1\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.5.1\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
 ```cmd
-REM Copy the entire protocol structure to your project root
-xcopy /E /I /Y "Domain Zero Protocol v8.4.1\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol v8.4.1\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol v8.4.1\protocol.config.yaml" "your-project\"
-copy /Y "Domain Zero Protocol v8.4.1\.gitignore" "your-project\"
+REM Fresh Install - Copy entire protocol structure to NEW project
+xcopy /E /I /Y "Domain Zero Protocol v8.5.1\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v8.5.1\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v8.5.1\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v8.5.1\.gitignore" "your-project\"
 ```
+
+---
+
+### In-Place Upgrade (Existing Projects)
+
+**Use this flow if your project ALREADY has DZP installed.**
+
+**Step 1: Backup First (MANDATORY)**
+```bash
+# Create timestamped backup including .protocol-state/
+mkdir -p backup/dzp-pre-upgrade-$(date +%Y%m%d)
+cp -r protocol/ .protocol-state/ protocol.config.yaml backup/dzp-pre-upgrade-$(date +%Y%m%d)/
+```
+
+**Step 2: Sync Protocol Files Only (Safe to Overwrite)**
+```bash
+# Protocol artifacts - safe to overwrite
+cp -r "Domain Zero Protocol v8.5.1/protocol/"* your-project/protocol/
+cp -r "Domain Zero Protocol v8.5.1/docs/"* your-project/docs/
+cp -r "Domain Zero Protocol v8.5.1/.dzp-killswitch/"* your-project/.dzp-killswitch/
+```
+
+**Step 3: DO NOT Overwrite .protocol-state/**
+```bash
+# ❌ NEVER do this on existing projects:
+# cp -r ".protocol-state/"* your-project/.protocol-state/  # WRONG!
+
+# ✅ Instead, manually update protocol_version in project-state.json
+```
+
+**Protected Files (NEVER Overwrite):**
+- `.protocol-state/dev-notes.md` - Your implementation history
+- `.protocol-state/security-review.md` - Your security findings
+- `.protocol-state/trigger-19.md` - Your private intelligence
+- `.protocol-state/project-state.json` - Update version field only
+
+**Detailed upgrade instructions:** [`docs/installation/IMPLEMENTATION_GUIDE.md`](docs/installation/IMPLEMENTATION_GUIDE.md)
 
 ### Step 2: Configure Your Project
 
@@ -589,7 +645,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is an eight-age
 - INUMAKI (API & Communication): REST/GraphQL/WebSocket, OpenAPI
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.4.1)
+- protocol/CLAUDE.md (main protocol, v8.5.1)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -613,7 +669,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v8.4.1) for development projects. This is an eight-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.5.1) for development projects. This is an eight-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
@@ -644,7 +700,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 - Add Domain Zero Protocol pointer as shown in integration section
 
 **What to Include in Memory**:
-- ✅ Protocol name and version (Domain Zero Protocol v8.4.1)
+- ✅ Protocol name and version (Domain Zero Protocol v8.5.1)
 - ✅ The eight agent roles and their specializations
 - ✅ Protocol file locations (protocol/CLAUDE.md and all eight agent files)
 - ✅ Tier system overview (Rapid/Standard/Critical)
@@ -1523,17 +1579,19 @@ Domain Zero is now set up in your project.
 
 ## 📝 Version Information
 
-**Version**: 8.4.1
-**Release Date**: November 25, 2025
-**Major Enhancements**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Extended Domain Supervision, Specialized Agent Skills
+**Version**: 8.5.1
+**Release Date**: November 26, 2025
+**Major Enhancements**: Token Optimization via Modular Architecture
 
-**v8.4.1 Key Features**:
-- **Agent File Cleanup**: Removed verbose Gojo Awareness sections for cleaner separation of concerns
-- **JJK Character References**: Added character context to all 8 agent files
-- **Research Mode Expansion**: Updated to support all 8 agents with role-specific research focus
-- **Version Synchronization**: All protocol files updated to v8.4.1
+**v8.5.1 Key Features**:
+- **Modular Protocol Architecture**: 7 shared module files in `protocol/modules/`
+- **Token Optimization**: Reduced agent file sizes by ~40-60%
+- **Single Source of Truth**: Shared protocol behaviors (Emergency Stop, User Levels, Mask Mode, etc.) in module files
+- **Agent Module References**: All 8 agents reference modules instead of duplicating content
 
 **Version History**:
+- v8.5.1 - PATCH: Token Optimization via Modular Architecture, 7 shared module files
+- v8.5.0 - MINOR: Kill Switch Protocol, User Technical Level System, Emergency Stop coordination
 - v8.4.1 - PATCH: Agent file cleanup, JJK Character Reference additions, Research Mode updates
 - v8.3.1 - PATCH: Agent-Specific Escape Paths, Instruction Confirmation Protocol, Version Consistency
 - v8.3.0 - MINOR: Subagent Escape Paths, Skills Enhancement, AskUserQuestion Integration
@@ -1562,5 +1620,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-**Domain Zero Protocol v8.4.1** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v8.5.1** - Perfect Code Through Infinite Collaboration
 **The weight is real. The protocol is absolute. Domain Zero is active.**

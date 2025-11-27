@@ -467,12 +467,29 @@ Restart your AI session for changes to take effect.
 ## 🚀 Quick Setup
 
 > **⚡ Want to get started in 2 minutes?** See [`PROTOCOL_QUICKSTART.md`](PROTOCOL_QUICKSTART.md) for the express setup guide.
+>
+> **📖 Detailed instructions:** See [`docs/installation/IMPLEMENTATION_GUIDE.md`](docs/installation/IMPLEMENTATION_GUIDE.md) for complete platform-specific setup.
 
-### Step 1: Copy Protocol to Your Project
+---
+
+### ⚠️ CRITICAL: Choose the Right Installation Flow
+
+| Your Situation | Flow | Instructions |
+|----------------|------|--------------|
+| **New project** (no existing DZP files) | Fresh Install | See [Step 1](#step-1-copy-protocol-to-your-project-fresh-install) below |
+| **Existing project** (already has DZP installed) | In-Place Upgrade | See [In-Place Upgrade](#in-place-upgrade-existing-projects) below |
+
+**WARNING:** Using Fresh Install commands on an existing DZP project will **overwrite your project-specific state** (dev-notes.md, security-review.md, project-state.json). Always use the correct flow!
+
+---
+
+### Step 1: Copy Protocol to Your Project (Fresh Install)
+
+**Use these commands ONLY for new projects with NO existing DZP installation.**
 
 **macOS/Linux (bash/zsh)**:
 ```bash
-# Copy the entire protocol structure to your project root
+# Fresh Install - Copy entire protocol structure to NEW project
 cp -r "Domain Zero Protocol v8.5.1/protocol" your-project/
 cp -r "Domain Zero Protocol v8.5.1/.protocol-state" your-project/
 cp "Domain Zero Protocol v8.5.1/protocol.config.yaml" your-project/
@@ -481,7 +498,7 @@ cp "Domain Zero Protocol v8.5.1/.gitignore" your-project/
 
 **Windows (PowerShell)**:
 ```powershell
-# Copy the entire protocol structure to your project root
+# Fresh Install - Copy entire protocol structure to NEW project
 Copy-Item -Recurse -Force "Domain Zero Protocol v8.5.1\protocol" -Destination "your-project\"
 Copy-Item -Recurse -Force "Domain Zero Protocol v8.5.1\.protocol-state" -Destination "your-project\"
 Copy-Item -Force "Domain Zero Protocol v8.5.1\protocol.config.yaml" -Destination "your-project\"
@@ -490,12 +507,49 @@ Copy-Item -Force "Domain Zero Protocol v8.5.1\.gitignore" -Destination "your-pro
 
 **Windows (Command Prompt)**:
 ```cmd
-REM Copy the entire protocol structure to your project root
+REM Fresh Install - Copy entire protocol structure to NEW project
 xcopy /E /I /Y "Domain Zero Protocol v8.5.1\protocol" "your-project\protocol"
 xcopy /E /I /Y "Domain Zero Protocol v8.5.1\.protocol-state" "your-project\.protocol-state"
 copy /Y "Domain Zero Protocol v8.5.1\protocol.config.yaml" "your-project\"
 copy /Y "Domain Zero Protocol v8.5.1\.gitignore" "your-project\"
 ```
+
+---
+
+### In-Place Upgrade (Existing Projects)
+
+**Use this flow if your project ALREADY has DZP installed.**
+
+**Step 1: Backup First (MANDATORY)**
+```bash
+# Create timestamped backup including .protocol-state/
+mkdir -p backup/dzp-pre-upgrade-$(date +%Y%m%d)
+cp -r protocol/ .protocol-state/ protocol.config.yaml backup/dzp-pre-upgrade-$(date +%Y%m%d)/
+```
+
+**Step 2: Sync Protocol Files Only (Safe to Overwrite)**
+```bash
+# Protocol artifacts - safe to overwrite
+cp -r "Domain Zero Protocol v8.5.1/protocol/"* your-project/protocol/
+cp -r "Domain Zero Protocol v8.5.1/docs/"* your-project/docs/
+cp -r "Domain Zero Protocol v8.5.1/.dzp-killswitch/"* your-project/.dzp-killswitch/
+```
+
+**Step 3: DO NOT Overwrite .protocol-state/**
+```bash
+# ❌ NEVER do this on existing projects:
+# cp -r ".protocol-state/"* your-project/.protocol-state/  # WRONG!
+
+# ✅ Instead, manually update protocol_version in project-state.json
+```
+
+**Protected Files (NEVER Overwrite):**
+- `.protocol-state/dev-notes.md` - Your implementation history
+- `.protocol-state/security-review.md` - Your security findings
+- `.protocol-state/trigger-19.md` - Your private intelligence
+- `.protocol-state/project-state.json` - Update version field only
+
+**Detailed upgrade instructions:** [`docs/installation/IMPLEMENTATION_GUIDE.md`](docs/installation/IMPLEMENTATION_GUIDE.md)
 
 ### Step 2: Configure Your Project
 
