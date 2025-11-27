@@ -1,5 +1,5 @@
 # Decision Reasoning Template - Absolute Zero Protocol
-## Domain Zero Protocol v7.0.0
+## Domain Zero Protocol v8.5.1
 
 **Document Type:** Operational Framework
 **Authority Level:** Tier 2 (Standard for all significant decisions)
