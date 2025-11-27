@@ -591,7 +591,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is an eight-age
 - INUMAKI (API & Communication): REST/GraphQL/WebSocket, OpenAPI
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.5.0)
+- protocol/CLAUDE.md (main protocol, v8.5.1)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -615,7 +615,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v8.5.0) for development projects. This is an eight-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.5.1) for development projects. This is an eight-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
@@ -646,7 +646,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 - Add Domain Zero Protocol pointer as shown in integration section
 
 **What to Include in Memory**:
-- ✅ Protocol name and version (Domain Zero Protocol v8.5.0)
+- ✅ Protocol name and version (Domain Zero Protocol v8.5.1)
 - ✅ The eight agent roles and their specializations
 - ✅ Protocol file locations (protocol/CLAUDE.md and all eight agent files)
 - ✅ Tier system overview (Rapid/Standard/Critical)

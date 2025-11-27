@@ -626,7 +626,7 @@ The authoritative version of this file resides in the **Domain Zero Protocol Can
 
 ### Version Tracking
 For consistency across protocol instances:
-- **Protocol Version**: v8.4.1
+- **Protocol Version**: v8.5.1
 - **Last Canonical Sync**: [check protocol.config.yaml]
 - **Verification**: Run `./scripts/verify-protocol.(sh|ps1)` to check alignment
 
