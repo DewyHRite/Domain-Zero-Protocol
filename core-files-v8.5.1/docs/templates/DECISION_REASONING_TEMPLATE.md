@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
 # Decision Reasoning Template - Absolute Zero Protocol
 ## Domain Zero Protocol v8.5.1
 
@@ -5,7 +6,7 @@
 **Authority Level:** Tier 2 (Standard for all significant decisions)
 **Enforcement:** Required for all non-trivial recommendations
 **Version:** 1.0
-**Last Updated:** November 7, 2025
+**Last Updated:** November 27, 2025
 
 ---
 

@@ -237,7 +237,7 @@ Create `.protocol-state/project-state.json`:
 
 ```json
 {
-  "protocol_version": "8.5.0",
+  "protocol_version": "8.5.1",
   "project_metadata": {
     "name": "YOUR_PROJECT_NAME",
     "description": "Your project description",
@@ -247,7 +247,7 @@ Create `.protocol-state/project-state.json`:
   "current_feature_tier": "none",
   "current_state": "STANDBY",
   "active_role": "None",
-  "version": "8.5.0"
+  "version": "8.5.1"
 }
 ```
 
@@ -704,7 +704,7 @@ Read protocol.config.yaml and tell me:
 
 **Solutions**:
 1. Verify you're using v8.5.1 files
-2. Check `protocol.config.yaml` → `protocol_version` is "8.5.0" (not "8.2.0")
+2. Check `protocol.config.yaml` → `protocol_version` is "8.5.1" (not earlier versions)
 3. Re-upload all protocol files
 4. Clear conversation and start fresh
 
