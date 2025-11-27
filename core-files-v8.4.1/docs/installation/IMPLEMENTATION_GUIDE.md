@@ -175,7 +175,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is an eight-age
 
 **Protocol Location**: `/path/to/your-project/protocol/`
 
-**When I say** "Read protocol/[AGENT].md", always read the file first to follow the protocol.
+**When I say** "Read protocol/[AGENT].agent.md", always read the file first to follow the protocol.
 
 **Main Protocol**: protocol/CLAUDE.md
 **Configuration**: protocol.config.yaml
