@@ -1156,6 +1156,7 @@ Within Domain Zero, the goal is always **ZERO**:
 
 ### Advanced Topics
 
+- **[docs/TOKEN_EFFICIENCY_RECOMMENDATIONS.md](docs/TOKEN_EFFICIENCY_RECOMMENDATIONS.md)** - Token efficiency guidelines & modular architecture
 - **.protocol-state/tier-system-specification.md** - Technical tier system spec
 - **protocol/GOJO-UPDATES-PATCH.md** - Protocol change history and audit trail
 - **protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md** - Self-identification banner specification

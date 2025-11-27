@@ -1140,6 +1140,8 @@ Task prompt: "Implement user authentication feature"
 
 ## Using Skills for Token Efficiency
 
+> **Complete Guide:** See **[TOKEN_EFFICIENCY_RECOMMENDATIONS.md](../TOKEN_EFFICIENCY_RECOMMENDATIONS.md)** for comprehensive token efficiency guidelines including modular architecture, delegation patterns, and day-to-day usage recommendations.
+
 ### Why Skills Matter
 
 Skills save tokens by:
