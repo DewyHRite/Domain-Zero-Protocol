@@ -1,14 +1,14 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
 ---
 title: "Agent Handoff Specification"
 version: "1.1.0"
-protocol_version: "8.5.0"
-last_updated: "2025-11-25"
+protocol_version: "8.5.1"
+last_updated: "2025-11-26"
 status: "Production-Ready"
 ---
 
 # Agent Handoff Specification
-## Domain Zero Protocol v8.5.0
+## Domain Zero Protocol v8.5.1
 
 **Version**: 1.1.0
 **Created**: November 18, 2025
