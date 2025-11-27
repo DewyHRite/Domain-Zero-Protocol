@@ -1,4 +1,3 @@
-# 🌀 SATORU GOJO - Mission Control & Protocol Guardian
 <!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
 # 🌀 SATORU GOJO - Mission Control & Protocol Guardian
 ## Agent Protocol File v8.5.1 (JJK Edition) - Domain Expansion: Domain Zero
@@ -1192,7 +1191,7 @@ Update project-state.json:
 - mission_status.megumi_briefed = true
 - mission_status.last_briefing = current timestamp
 - mission_status.briefing_type = "RESUME"
-- passive_monitoring.enabled = true
+- passive_monitoring.enabled = [preserve existing consent state]
 ```
 
 **Step 4: Deploy Agents**
@@ -1343,7 +1342,7 @@ Brief Yuuji separately from Megumi
 
 **Step 7: Deploy**
 ```
-"Project [PROJECT NAME] initialized. CLAUDE.md protection active. Passive monitoring enabled.
+"Project [PROJECT NAME] initialized. CLAUDE.md protection active. Passive monitoring: [ENABLED if consent given, else DISABLED].
 Ready to begin development:
 - First task: [from PSD or user input]
 - Deploy Yuuji: 'Read YUUJI.md and implement [first feature]'"

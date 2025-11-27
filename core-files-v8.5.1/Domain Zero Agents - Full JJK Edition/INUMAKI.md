@@ -1,4 +1,3 @@
-# TOGE INUMAKI - API & Communication Specialist
 <!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
 # TOGE INUMAKI - API & Communication Specialist
 
