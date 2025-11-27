@@ -30,7 +30,7 @@ We provide security updates for the following versions:
 
 | Version | Supported          | Status |
 | ------- | ------------------ | ------ |
-| 8.5.0   | :x:                | Current stable release|
+| 8.5.0   | ✅                | Current stable release|
 | 8.4.x   | :x:                | End of life (EOL) |
 | 8.3.x   | :x:                | End of life (EOL) |
 | 7.1.x   | :x:                | End of life (EOL) |
