@@ -31,10 +31,10 @@ We provide security updates for the following versions:
 | Version | Supported          | Status |
 | ------- | ------------------ | ------ |
 | 8.5.0   | :white_check_mark: | Current stable release |
-| 8.4.x   | :white_check_mark: | Previous stable release (still supported) |
-| 8.3.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
-| 7.1.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
-| 7.0.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
+| 8.4.x   | :white_check_mark: | End of life (EOL)  |
+| 8.3.x   | :white_check_mark: | End of life (EOL)  |
+| 7.1.x   | :white_check_mark: | End of life (EOL)  |
+| 7.0.x   | :white_check_mark: | End of life (EOL)  |
 | 6.x     | :x:                | End of life (EOL) |
 | < 6.0   | :x:                | End of life (EOL) |
 
