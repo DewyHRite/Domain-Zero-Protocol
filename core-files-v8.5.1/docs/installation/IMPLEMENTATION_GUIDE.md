@@ -29,28 +29,110 @@
 - Downloaded the v8.5.1 release package
 - Access to Claude.ai, Claude Code, GitHub Copilot, or another AI assistant
 
-### Basic Setup
+---
 
-1. **Copy protocol files to your project**:
-   ```bash
-   cp -r v8.5.1/protocol /your-project/
-   cp v8.5.1/protocol.config.yaml /your-project/
-   cp v8.5.1/README.md /your-project/DOMAIN_ZERO_README.md
-   ```
+### CRITICAL: Fresh Install vs In-Place Upgrade
 
-2. **Configure your AI assistant** (see platform-specific instructions below)
+**Before proceeding, determine your installation type:**
 
-3. **Test with first agent**:
+| Scenario | Installation Type | Instructions |
+|----------|------------------|--------------|
+| New project (no existing DZP) | **Fresh Install** | Use [Fresh Install Flow](#fresh-install-flow-new-projects) |
+| Existing project with DZP already installed | **In-Place Upgrade** | Use [In-Place Upgrade Flow](#in-place-upgrade-flow-existing-projects) |
+
+**WARNING:** Using Fresh Install commands on an existing DZP project will overwrite your project-specific state (dev-notes.md, security-review.md, project-state.json). Always use the correct flow for your situation.
+
+---
+
+### Fresh Install Flow (New Projects)
+
+**Use this flow ONLY if:**
+- Your project has NO existing `protocol/` directory
+- Your project has NO existing `.protocol-state/` directory
+
+```bash
+# macOS/Linux
+mkdir -p your-project/protocol your-project/.protocol-state
+cp -r v8.5.1/protocol your-project/
+cp -r v8.5.1/.protocol-state your-project/
+cp v8.5.1/protocol.config.yaml your-project/
+cp v8.5.1/README.md your-project/DOMAIN_ZERO_README.md
+
+# Windows PowerShell
+New-Item -ItemType Directory -Force -Path "your-project\protocol", "your-project\.protocol-state"
+Copy-Item -Recurse v8.5.1\protocol -Destination your-project\
+Copy-Item -Recurse v8.5.1\.protocol-state -Destination your-project\
+Copy-Item v8.5.1\protocol.config.yaml -Destination your-project\
+```
+
+After copying, customize `.protocol-state/project-state.json` with your project metadata.
+
+---
+
+### In-Place Upgrade Flow (Existing Projects)
+
+**Use this flow if you already have DZP installed in your project.**
+
+#### Step 1: Backup (MANDATORY)
+```bash
+# Create timestamped backup of ALL existing files including .protocol-state/
+mkdir -p backup/dzp-pre-upgrade-$(date +%Y%m%d)
+cp -r protocol/ backup/dzp-pre-upgrade-$(date +%Y%m%d)/
+cp -r .protocol-state/ backup/dzp-pre-upgrade-$(date +%Y%m%d)/
+cp protocol.config.yaml backup/dzp-pre-upgrade-$(date +%Y%m%d)/
+```
+
+#### Step 2: Sync Protocol Files ONLY (Safe to Overwrite)
+```bash
+# These files are protocol artifacts - safe to overwrite
+mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch your-project/.claude/commands "your-project/Domain Zero Agents"
+cp -r v8.5.1/protocol/* your-project/protocol/
+cp -r v8.5.1/docs/* your-project/docs/
+cp -r "v8.5.1/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
+cp -r v8.5.1/.claude/commands/* your-project/.claude/commands/
+cp -r v8.5.1/.dzp-killswitch/* your-project/.dzp-killswitch/
+```
+
+#### Step 3: DO NOT Copy .protocol-state/ Wholesale
+```bash
+# ✗ NEVER DO THIS on existing projects:
+# cp -r v8.5.1/.protocol-state/* your-project/.protocol-state/  # WRONG!
+
+# ✓ Instead, manually update protocol_version in project-state.json:
+# Open .protocol-state/project-state.json and update "protocol_version": "8.5.1"
+```
+
+#### Step 4: Verify Your Project State
+```bash
+# Confirm your project-specific files are intact:
+cat .protocol-state/dev-notes.md        # Should have YOUR project's implementation history
+cat .protocol-state/security-review.md  # Should have YOUR project's security findings
+cat .protocol-state/project-state.json  # Should have YOUR project metadata
+```
+
+**Protected Files (NEVER Overwritten):**
+- `.protocol-state/dev-notes.md` - Your implementation history
+- `.protocol-state/security-review.md` - Your security findings
+- `.protocol-state/trigger-19.md` - Your private intelligence
+- `.protocol-state/project-state.json` - Your project metadata (update version only)
+
+---
+
+### Basic Setup (After Installation)
+
+1. **Configure your AI assistant** (see platform-specific instructions below)
+
+2. **Test with first agent**:
    ```
    "Read protocol/yuuji.agent.md and say hello"
    ```
 
-4. **Review configuration**:
+3. **Review configuration**:
    - Edit `protocol.config.yaml` for your project
    - Adjust tier workflow (rapid/standard/critical)
    - Enable/disable features as needed
 
-5. **Start using agents**:
+4. **Start using agents**:
    ```
    "Read protocol/yuuji.agent.md and implement user authentication"
    ```
@@ -95,7 +177,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is an eight-age
 
 **Protocol Location**: `/path/to/your-project/protocol/`
 
-**When I say** "Read protocol/[AGENT].md", always read the file first to follow the protocol.
+**When I say** "Read protocol/[AGENT].agent.md", always read the file first to follow the protocol.
 
 **Main Protocol**: protocol/CLAUDE.md
 **Configuration**: protocol.config.yaml
