@@ -1,0 +1,243 @@
+{
+  "_metadata": {
+    "document_type": "INTERNAL DOCUMENT",
+    "classification": "INTERNAL",
+    "description": "Centralized Version Registry - Tracks all version identifiers across Domain Zero",
+    "created": "2025-11-25T00:00:00Z",
+    "last_updated": "2025-11-26T21:40:00Z",
+    "framework_version": "1.0.0"
+  },
+  "current_protocol_version": "8.5.0",
+  "target_protocol_version": "8.5.1",
+  "version_format": "MAJOR.MINOR.PATCH",
+  "active_update": {
+    "update_id": "UPDATE-2025-11-26-003",
+    "branch": "v8.5.1-token-optimization",
+    "status": "PLANNING",
+    "description": "Token Optimization - Modular Protocol Architecture"
+  },
+  "completed_update": {
+    "update_id": "UPDATE-2025-11-26-002",
+    "branch": "v8.5.0-user-levels-kill-switch",
+    "status": "COMPLETED",
+    "commit": "15fd13d",
+    "violation_flag": true,
+    "violation_type": "UNDOCUMENTED_WORK",
+    "remediation_status": "COMPLETED"
+  },
+  "registered_files": [
+    {
+      "file_path": "protocol/CLAUDE.md",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "header metadata",
+        "canonical_repository section",
+        "version information section"
+      ],
+      "last_verified": "2025-11-25T17:00:00Z",
+      "classification": "CORE"
+    },
+    {
+      "file_path": "protocol/gojo.agent.md",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "header metadata"
+      ],
+      "last_verified": "2025-11-25T17:00:00Z",
+      "classification": "CORE"
+    },
+    {
+      "file_path": "protocol/yuuji.agent.md",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "header metadata"
+      ],
+      "last_verified": "2025-11-25T17:00:00Z",
+      "classification": "CORE"
+    },
+    {
+      "file_path": "protocol/megumi.agent.md",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "header metadata"
+      ],
+      "last_verified": "2025-11-25T17:00:00Z",
+      "classification": "CORE"
+    },
+    {
+      "file_path": "protocol/nobara.agent.md",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "header metadata"
+      ],
+      "last_verified": "2025-11-25T17:00:00Z",
+      "classification": "CORE"
+    },
+    {
+      "file_path": "protocol/todo.agent.md",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "header metadata"
+      ],
+      "last_verified": "2025-11-25T17:00:00Z",
+      "classification": "CORE",
+      "added_in": "8.4.0"
+    },
+    {
+      "file_path": "protocol/maki.agent.md",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "header metadata"
+      ],
+      "last_verified": "2025-11-25T17:00:00Z",
+      "classification": "CORE",
+      "added_in": "8.4.0"
+    },
+    {
+      "file_path": "protocol/panda.agent.md",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "header metadata"
+      ],
+      "last_verified": "2025-11-25T17:00:00Z",
+      "classification": "CORE",
+      "added_in": "8.4.0"
+    },
+    {
+      "file_path": "protocol/inumaki.agent.md",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "header metadata"
+      ],
+      "last_verified": "2025-11-25T17:00:00Z",
+      "classification": "CORE",
+      "added_in": "8.4.0"
+    },
+    {
+      "file_path": "protocol.config.yaml",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "canonical_repository.version"
+      ],
+      "last_verified": "2025-11-25T17:00:00Z",
+      "classification": "CORE"
+    },
+    {
+      "file_path": "VERSION.md",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "title",
+        "release information"
+      ],
+      "last_verified": "2025-11-25T18:00:00Z",
+      "classification": "CORE"
+    },
+    {
+      "file_path": "CHANGELOG.md",
+      "current_version": "8.4.0",
+      "version_pattern": "\\[v?[0-9]+\\.[0-9]+\\.[0-9]+\\]",
+      "version_locations": [
+        "version headers"
+      ],
+      "last_verified": "2025-11-25T18:00:00Z",
+      "classification": "CORE"
+    },
+    {
+      "file_path": ".protocol-state/project-state.json",
+      "current_version": "8.4.0",
+      "version_pattern": "[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "protocol_version field"
+      ],
+      "last_verified": "2025-11-25T17:00:00Z",
+      "classification": "INTERNAL"
+    },
+    {
+      "file_path": "README.md",
+      "current_version": "8.4.0",
+      "version_pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+",
+      "version_locations": [
+        "version badge",
+        "installation section"
+      ],
+      "last_verified": "2025-11-25T18:00:00Z",
+      "classification": "CORE"
+    }
+  ],
+  "version_checklist_template": {
+    "pre_update_sweep": [
+      "Verify all registered files exist",
+      "Record current versions from each file",
+      "Identify files requiring version update",
+      "Generate backup manifest"
+    ],
+    "post_update_sweep": [
+      "Verify all version numbers updated correctly",
+      "Check version format compliance",
+      "Validate cross-file version consistency",
+      "Update registry with new versions"
+    ]
+  },
+  "verification_log": [
+    {
+      "timestamp": "2025-11-25T17:00:00Z",
+      "update_id": "UPDATE-2025-11-25-007",
+      "action": "Version bump 8.3.1 → 8.4.0",
+      "files_updated": 12,
+      "files_added": 4,
+      "result": "SUCCESS"
+    },
+    {
+      "timestamp": "2025-11-25T18:00:00Z",
+      "update_id": "UPDATE-2025-11-25-008",
+      "action": "Release documentation update",
+      "files_updated": 3,
+      "files_added": 0,
+      "result": "SUCCESS"
+    },
+    {
+      "timestamp": "2025-11-26T12:30:00Z",
+      "update_id": "UPDATE-2025-11-26-001",
+      "action": "Investigation Mode + HTML fixes (v8.4.1)",
+      "files_updated": 12,
+      "files_added": 0,
+      "result": "SUCCESS"
+    },
+    {
+      "timestamp": "2025-11-26T18:45:00Z",
+      "update_id": "UPDATE-2025-11-26-002",
+      "action": "v8.5.0 User Levels + Kill Switch (COMPLETED)",
+      "files_updated": 32,
+      "files_added": 7,
+      "result": "SUCCESS",
+      "commit": "15fd13d",
+      "violation": {
+        "type": "UNDOCUMENTED_WORK",
+        "severity": "HIGH",
+        "detected_at": "2025-11-26T18:00:00Z",
+        "remediation_started": "2025-11-26T18:05:00Z",
+        "remediation_completed": "2025-11-26T21:30:00Z"
+      }
+    },
+    {
+      "timestamp": "2025-11-26T21:40:00Z",
+      "update_id": "UPDATE-2025-11-26-003",
+      "action": "v8.5.1 Token Optimization - Modular Architecture (PLANNING)",
+      "files_updated": 0,
+      "files_added": 0,
+      "result": "PLANNING",
+      "notes": "Investigation complete, plan documented, awaiting implementation approval"
+    }
+  ]
+}
