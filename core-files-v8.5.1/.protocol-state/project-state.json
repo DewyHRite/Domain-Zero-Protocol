@@ -1,5 +1,5 @@
 {
-  "protocol_version": "8.4.1",
+  "protocol_version": "8.5.1",
   "custom_triggers": {
     "19": {
       "function": "Trigger 19",

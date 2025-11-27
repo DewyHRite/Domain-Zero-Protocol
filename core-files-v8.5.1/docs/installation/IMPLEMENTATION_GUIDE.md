@@ -52,12 +52,14 @@
 
 ```bash
 # macOS/Linux
+mkdir -p your-project/protocol your-project/.protocol-state
 cp -r v8.5.1/protocol /your-project/
 cp -r v8.5.1/.protocol-state /your-project/
 cp v8.5.1/protocol.config.yaml /your-project/
 cp v8.5.1/README.md /your-project/DOMAIN_ZERO_README.md
 
 # Windows PowerShell
+New-Item -ItemType Directory -Force -Path "your-project\protocol", "your-project\.protocol-state"
 Copy-Item -Recurse v8.5.1\protocol -Destination your-project\
 Copy-Item -Recurse v8.5.1\.protocol-state -Destination your-project\
 Copy-Item v8.5.1\protocol.config.yaml -Destination your-project\
@@ -71,7 +73,7 @@ After copying, customize `.protocol-state/project-state.json` with your project 
 
 **Use this flow if you already have DZP installed in your project.**
 
-**Step 1: Backup (MANDATORY)**
+#### Step 1: Backup (MANDATORY)
 ```bash
 # Create timestamped backup of ALL existing files including .protocol-state/
 mkdir -p backup/dzp-pre-upgrade-$(date +%Y%m%d)
@@ -80,9 +82,10 @@ cp -r .protocol-state/ backup/dzp-pre-upgrade-$(date +%Y%m%d)/
 cp protocol.config.yaml backup/dzp-pre-upgrade-$(date +%Y%m%d)/
 ```
 
-**Step 2: Sync Protocol Files ONLY (Safe to Overwrite)**
+#### Step 2: Sync Protocol Files ONLY (Safe to Overwrite)
 ```bash
 # These files are protocol artifacts - safe to overwrite
+mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch your-project/.claude/commands
 cp -r v8.5.1/protocol/* your-project/protocol/
 cp -r v8.5.1/docs/* your-project/docs/
 cp -r "v8.5.1/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
@@ -90,7 +93,7 @@ cp -r v8.5.1/.claude/commands/* your-project/.claude/commands/
 cp -r v8.5.1/.dzp-killswitch/* your-project/.dzp-killswitch/
 ```
 
-**Step 3: DO NOT Copy .protocol-state/ Wholesale**
+#### Step 3: DO NOT Copy .protocol-state/ Wholesale
 ```bash
 # ✗ NEVER DO THIS on existing projects:
 # cp -r v8.5.1/.protocol-state/* your-project/.protocol-state/  # WRONG!
@@ -99,7 +102,7 @@ cp -r v8.5.1/.dzp-killswitch/* your-project/.dzp-killswitch/
 # Open .protocol-state/project-state.json and update "protocol_version": "8.5.1"
 ```
 
-**Step 4: Verify Your Project State**
+#### Step 4: Verify Your Project State
 ```bash
 # Confirm your project-specific files are intact:
 cat .protocol-state/dev-notes.md        # Should have YOUR project's implementation history

@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
-# Domain Zero Protocol v8.5.1
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+# Domain Zero Protocol v8.4.1
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v8.5.1**: Token Optimization via Modular Architecture - 7 shared module files reducing agent token usage by ~40-60%. See [What's New](#-version-information).
+> **New in v8.4.1**: Agent file cleanup, JJK Character Reference additions, and Research Mode updates. See [What's New](#-version-information).
 
 ---
 
@@ -490,28 +490,32 @@ Restart your AI session for changes to take effect.
 **macOS/Linux (bash/zsh)**:
 ```bash
 # Fresh Install - Copy entire protocol structure to NEW project
-cp -r "Domain Zero Protocol v8.5.1/protocol" your-project/
-cp -r "Domain Zero Protocol v8.5.1/.protocol-state" your-project/
-cp "Domain Zero Protocol v8.5.1/protocol.config.yaml" your-project/
-cp "Domain Zero Protocol v8.5.1/.gitignore" your-project/
+mkdir -p your-project/protocol your-project/.protocol-state
+cp -r "Domain Zero Protocol v8.4.1/protocol" your-project/
+cp -r "Domain Zero Protocol v8.4.1/.protocol-state" your-project/
+cp "Domain Zero Protocol v8.4.1/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v8.4.1/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
 # Fresh Install - Copy entire protocol structure to NEW project
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.5.1\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.5.1\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.5.1\protocol.config.yaml" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.5.1\.gitignore" -Destination "your-project\"
+New-Item -ItemType Directory -Force -Path "your-project\protocol", "your-project\.protocol-state"
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.4.1\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.4.1\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.4.1\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.4.1\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
 ```cmd
 REM Fresh Install - Copy entire protocol structure to NEW project
-xcopy /E /I /Y "Domain Zero Protocol v8.5.1\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol v8.5.1\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol v8.5.1\protocol.config.yaml" "your-project\"
-copy /Y "Domain Zero Protocol v8.5.1\.gitignore" "your-project\"
+mkdir "your-project\protocol" 2>nul
+mkdir "your-project\.protocol-state" 2>nul
+xcopy /E /I /Y "Domain Zero Protocol v8.4.1\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v8.4.1\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v8.4.1\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v8.4.1\.gitignore" "your-project\"
 ```
 
 ---
@@ -520,22 +524,21 @@ copy /Y "Domain Zero Protocol v8.5.1\.gitignore" "your-project\"
 
 **Use this flow if your project ALREADY has DZP installed.**
 
-**Step 1: Backup First (MANDATORY)**
+#### Step 1: Backup First (MANDATORY)
 ```bash
 # Create timestamped backup including .protocol-state/
 mkdir -p backup/dzp-pre-upgrade-$(date +%Y%m%d)
 cp -r protocol/ .protocol-state/ protocol.config.yaml backup/dzp-pre-upgrade-$(date +%Y%m%d)/
 ```
 
-**Step 2: Sync Protocol Files Only (Safe to Overwrite)**
+#### Step 2: Sync Protocol Files Only (Safe to Overwrite)
 ```bash
 # Protocol artifacts - safe to overwrite
-cp -r "Domain Zero Protocol v8.5.1/protocol/"* your-project/protocol/
-cp -r "Domain Zero Protocol v8.5.1/docs/"* your-project/docs/
-cp -r "Domain Zero Protocol v8.5.1/.dzp-killswitch/"* your-project/.dzp-killswitch/
+cp -r "Domain Zero Protocol v8.4.1/protocol/"* your-project/protocol/
+cp -r "Domain Zero Protocol v8.4.1/docs/"* your-project/docs/
 ```
 
-**Step 3: DO NOT Overwrite .protocol-state/**
+#### Step 3: DO NOT Overwrite .protocol-state/
 ```bash
 # ❌ NEVER do this on existing projects:
 # cp -r ".protocol-state/"* your-project/.protocol-state/  # WRONG!
@@ -1579,19 +1582,16 @@ Domain Zero is now set up in your project.
 
 ## 📝 Version Information
 
-**Version**: 8.5.1
-**Release Date**: November 26, 2025
-**Major Enhancements**: Token Optimization via Modular Architecture
+**Version**: 8.4.1
+**Release Date**: November 2025
+**Major Enhancements**: Agent file cleanup, JJK Character Reference additions, Research Mode updates
 
-**v8.5.1 Key Features**:
-- **Modular Protocol Architecture**: 7 shared module files in `protocol/modules/`
-- **Token Optimization**: Reduced agent file sizes by ~40-60%
-- **Single Source of Truth**: Shared protocol behaviors (Emergency Stop, User Levels, Mask Mode, etc.) in module files
-- **Agent Module References**: All 8 agents reference modules instead of duplicating content
+**v8.4.1 Key Features**:
+- **Agent File Cleanup**: Streamlined agent protocol files
+- **JJK Character Reference**: Added character reference documentation
+- **Research Mode Updates**: Improved research workflow capabilities
 
 **Version History**:
-- v8.5.1 - PATCH: Token Optimization via Modular Architecture, 7 shared module files
-- v8.5.0 - MINOR: Kill Switch Protocol, User Technical Level System, Emergency Stop coordination
 - v8.4.1 - PATCH: Agent file cleanup, JJK Character Reference additions, Research Mode updates
 - v8.3.1 - PATCH: Agent-Specific Escape Paths, Instruction Confirmation Protocol, Version Consistency
 - v8.3.0 - MINOR: Subagent Escape Paths, Skills Enhancement, AskUserQuestion Integration
@@ -1620,5 +1620,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-**Domain Zero Protocol v8.5.1** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v8.4.1** - Perfect Code Through Infinite Collaboration
 **The weight is real. The protocol is absolute. Domain Zero is active.**

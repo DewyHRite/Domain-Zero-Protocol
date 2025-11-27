@@ -490,6 +490,7 @@ Restart your AI session for changes to take effect.
 **macOS/Linux (bash/zsh)**:
 ```bash
 # Fresh Install - Copy entire protocol structure to NEW project
+mkdir -p your-project/protocol your-project/.protocol-state
 cp -r "Domain Zero Protocol v8.5.1/protocol" your-project/
 cp -r "Domain Zero Protocol v8.5.1/.protocol-state" your-project/
 cp "Domain Zero Protocol v8.5.1/protocol.config.yaml" your-project/
@@ -499,6 +500,7 @@ cp "Domain Zero Protocol v8.5.1/.gitignore" your-project/
 **Windows (PowerShell)**:
 ```powershell
 # Fresh Install - Copy entire protocol structure to NEW project
+New-Item -ItemType Directory -Force -Path "your-project\protocol", "your-project\.protocol-state"
 Copy-Item -Recurse -Force "Domain Zero Protocol v8.5.1\protocol" -Destination "your-project\"
 Copy-Item -Recurse -Force "Domain Zero Protocol v8.5.1\.protocol-state" -Destination "your-project\"
 Copy-Item -Force "Domain Zero Protocol v8.5.1\protocol.config.yaml" -Destination "your-project\"
@@ -508,6 +510,8 @@ Copy-Item -Force "Domain Zero Protocol v8.5.1\.gitignore" -Destination "your-pro
 **Windows (Command Prompt)**:
 ```cmd
 REM Fresh Install - Copy entire protocol structure to NEW project
+mkdir "your-project\protocol" 2>nul
+mkdir "your-project\.protocol-state" 2>nul
 xcopy /E /I /Y "Domain Zero Protocol v8.5.1\protocol" "your-project\protocol"
 xcopy /E /I /Y "Domain Zero Protocol v8.5.1\.protocol-state" "your-project\.protocol-state"
 copy /Y "Domain Zero Protocol v8.5.1\protocol.config.yaml" "your-project\"
@@ -520,22 +524,23 @@ copy /Y "Domain Zero Protocol v8.5.1\.gitignore" "your-project\"
 
 **Use this flow if your project ALREADY has DZP installed.**
 
-**Step 1: Backup First (MANDATORY)**
+#### Step 1: Backup First (MANDATORY)
 ```bash
 # Create timestamped backup including .protocol-state/
 mkdir -p backup/dzp-pre-upgrade-$(date +%Y%m%d)
 cp -r protocol/ .protocol-state/ protocol.config.yaml backup/dzp-pre-upgrade-$(date +%Y%m%d)/
 ```
 
-**Step 2: Sync Protocol Files Only (Safe to Overwrite)**
+#### Step 2: Sync Protocol Files Only (Safe to Overwrite)
 ```bash
 # Protocol artifacts - safe to overwrite
+mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch
 cp -r "Domain Zero Protocol v8.5.1/protocol/"* your-project/protocol/
 cp -r "Domain Zero Protocol v8.5.1/docs/"* your-project/docs/
 cp -r "Domain Zero Protocol v8.5.1/.dzp-killswitch/"* your-project/.dzp-killswitch/
 ```
 
-**Step 3: DO NOT Overwrite .protocol-state/**
+#### Step 3: DO NOT Overwrite .protocol-state/
 ```bash
 # ❌ NEVER do this on existing projects:
 # cp -r ".protocol-state/"* your-project/.protocol-state/  # WRONG!
@@ -596,6 +601,24 @@ Gojo will present Mission Control with 3 options:
 ```
 "Read protocol/yuuji.agent.md and implement [your feature]"
 ```
+
+### Step 5: Optional - Set Up Local MCP Server (Token Optimization)
+
+**For significant token savings (70-90% reduction)**, ask Gojo to create a local MCP server:
+
+```
+"Read protocol/gojo.agent.md and help me set up a local MCP server for token optimization"
+```
+
+**Benefits of Local MCP Server:**
+- **70-90% token reduction** - Tools replace repeated file reads
+- **Faster responses** - Pre-loaded protocol context
+- **Consistent behavior** - Cached agent configurations
+- **Offline capability** - Works without re-reading files each session
+
+**How it works:** The MCP server exposes protocol files as tools that Claude Code can call directly, eliminating the need to read large markdown files repeatedly. Gojo will guide you through the setup process.
+
+See [`docs/installation/MCP_SERVER_SETUP.md`](docs/installation/MCP_SERVER_SETUP.md) for detailed instructions.
 
 ---
 
