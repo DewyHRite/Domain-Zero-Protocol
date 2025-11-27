@@ -1,4 +1,4 @@
-<!--INTERNAL FILE - Domain Zero Protocol v8.2.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
 # Domain Zero – Research Mode & Claude Skills Integration Guide
 
 Version: 1.0 (2025-11-22)
@@ -24,7 +24,7 @@ Configuration check:
   - Per-agent dirs: `.protocol-state/research/{agent}`
   - Filenames: `{timestamp}.summary.md` (tracked), `{timestamp}.raw.log` (gitignored)
 
-Conclusion: The folder structure is correctly scaffolded by the protocol, but no agent research sessions have been run yet in v8.2.0. Hence, the per-agent directories are empty. This is expected until you invoke Research Mode.
+Conclusion: The folder structure is correctly scaffolded by the protocol, but no agent research sessions have been run yet in v8.5.1. Hence, the per-agent directories are empty. This is expected until you invoke Research Mode.
 
 How to use (examples):
 
@@ -41,20 +41,20 @@ Acceptance criteria for “in use”:
 
 ---
 
-## 2) Protocol and Agents Alignment Review (v8.2.0)
+## 2) Protocol and Agents Alignment Review (v8.5.1)
 
 Files reviewed: `protocol/CLAUDE.md`, `protocol/yuuji.agent.md`, `protocol/megumi.agent.md`, `protocol/gojo.agent.md`, `protocol/nobara.agent.md`, and `protocol.config.yaml`.
 
 Findings:
 
-- Versioning: All reviewed files declare or align to protocol v8.2.0.
+- Versioning: All reviewed files declare or align to protocol v8.5.1.
 - .agent.md frontmatter: Present with `target`, `name`, `description`, `argument-hint`, `model`, `tools`, and `handoffs`.
 - Tool Access Matrix: Present in each agent file and consistent with role boundaries.
-- CLAUDE.md protection: Acknowledged across agents as read-only; Gojo conditional write only with USER authorization.
+- CLAUDE.md protection: Acknowledged across agents as read-only; Gojo conditional-write only with USER authorization.
 - Self-identification and Mask Mode: Present and configurable via `protocol.config.yaml`.
 - Dual Workflow (Tier 2/3): Documented; Megumi reviews prompted after Yuuji implementation.
 
-Result: Protocol and agents are aligned to v8.2.0, and ready for Research Mode + Skills integration without structural changes.
+Result: Protocol and agents are aligned to v8.5.1, and ready for Research Mode + Skills integration without structural changes.
 
 ---
 
@@ -63,7 +63,7 @@ Result: Protocol and agents are aligned to v8.2.0, and ready for Research Mode +
 Design features that enable reuse:
 
 - `.agent.md` format with YAML frontmatter → portable, declarative capabilities
-- Environment targeting (`target: vscode|github`) → predictable behavior per platform
+- Environment targeting (`target: vscode|GitHub`) → predictable behavior per platform
 - Tool Access Matrix → clear, enforceable permissions
 - Declarative handoffs → simple inter-agent orchestration without tight coupling
 - Mask Mode → optional theming decoupled from core behaviors
@@ -93,7 +93,7 @@ Key concepts:
 
 Installation notes (Claude Code):
 
-```
+```bash
 /plugin marketplace add anthropics/skills
 /plugin install document-skills@anthropic-agent-skills
 /plugin install example-skills@anthropic-agent-skills
@@ -127,6 +127,7 @@ Megumi (Security & Performance)
 
 - Example skills: `webapp-testing` (for e2e verification harnesses)
 - Custom skills to create: `owasp-checklist`, `threat-modeling`, `jwt-audit`, `secrets-review`, `dependency-audit` (can be paired with MCP integrations for CVE databases)
+  - **Note:** All security findings must be documented in `.protocol-state/security-review.md` using SEC-ID format (e.g., SEC-001) with P0/P1/P2/P3 severity levels and OWASP Top 10 category mappings.
 
 Nobara (Creative Strategy & UX)
 
@@ -142,13 +143,13 @@ Gojo (Mission Control & Protocol Guardian)
 
 ## 6) Action Plan (step-by-step)
 
-Phase A — Activate Research Mode cadence (now)
+### Phase A — Activate Research Mode cadence (initial setup)
 
-1. Run one research session per agent this week using the prompts in §1.
+1. Run one research session per agent using the prompts in §1.
 2. Verify outputs: one `{timestamp}.summary.md` per agent folder; `research-index.json` updated.
 3. Log topics and cadence in `research-index.json` (Yuuji/Megumi weekly; Nobara biweekly; Gojo monthly).
 
-Phase B — Establish Skills as a capability layer (this week)
+### Phase B — Establish Skills as a capability layer (after Phase A)
 
 1. In Claude Code, install example/document skills (see commands above).
 2. Create a private repo (e.g., `org/claude-skills`) and add a `SKILL_REGISTRY.md` capturing:
@@ -158,13 +159,13 @@ Phase B — Establish Skills as a capability layer (this week)
    - `tdd-checklist` (Yuuji): Pre-commit TDD prompts and acceptance criteria.
 4. Reference upstream examples from `anthropics/skills` in each custom skill’s README.
 
-Phase C — Wire Research + Skills into daily flow (next 1–2 weeks)
+### Phase C — Wire Research + Skills into daily flow (ongoing)
 
 1. For Tier 2/3 features, attach recommended skills in Yuuji’s initial brief and Megumi’s review notes.
 2. Include links to any produced `.summary.md` research in PR descriptions.
 3. Gojo to include skills + research status in weekly “Trigger 19” intelligence report.
 
-Phase D — Governance & Security (ongoing)
+### Phase D — Governance & Security (continuous)
 
 1. Treat all code-executing skills as privileged; review via SAST/SCA.
 2. Pin skill revisions; track in `SKILL_REGISTRY.md` with owners and review intervals.

@@ -37,7 +37,7 @@ The Domain Zero Protocol MCP Server provides optimized access to protocol files,
 
 ## Directory Structure
 
-```
+```text
 project-root/
 ├── .mcp.json                          # MCP server configuration
 ├── protocol.config.yaml               # Protocol settings
@@ -49,7 +49,7 @@ project-root/
 │   └── gojo.agent.md
 └── .protocol-state/                   # State directory
     ├── mcp/
-    │   ├── utech_dzp_server.py        # MCP server source (637 lines)
+    │   ├── dzp_server.py        # MCP server source (637 lines)
     │   └── __pycache__/               # Compiled Python
     ├── project-state.json             # Central state file
     ├── dev-notes.md                   # Development notes
@@ -62,7 +62,7 @@ project-root/
 
 ## Server Architecture
 
-**File**: `.protocol-state/mcp/utech_dzp_server.py`
+**File**: `.protocol-state/mcp/dzp_server.py`
 
 | Component | Description |
 |-----------|-------------|
@@ -72,8 +72,8 @@ project-root/
 
 ### Initialization Flow
 
-```
-Claude Code starts → reads .mcp.json → spawns `python utech_dzp_server.py`
+```text
+Claude Code starts → reads .mcp.json → spawns `python dzp_server.py`
                                                 ↓
                                         Server registers 13 tools
                                                 ↓
@@ -140,7 +140,7 @@ The MCP server exposes 13 tools across 4 categories:
 | `dzp_search_protocol("query")` | ~100 tokens (matching lines only) |
 | `dzp_update_state("field")` | ~50 tokens (atomic update) |
 
-**Savings per operation: 70-90% token reduction**
+### Savings: 70-90% token reduction per operation
 
 ---
 
@@ -166,15 +166,15 @@ mkdir -p .protocol-state/mcp
 
 ### Step 3: Copy Server File
 
-Copy `utech_dzp_server.py` to `.protocol-state/mcp/`:
+Copy `dzp_server.py` to `.protocol-state/mcp/`:
 
 ```bash
-cp /path/to/utech_dzp_server.py .protocol-state/mcp/
+cp /path/to/dzp_server.py .protocol-state/mcp/
 ```
 
 ### Step 4: Configure Server Paths
 
-Edit `.protocol-state/mcp/utech_dzp_server.py` and update the path constants:
+Edit `.protocol-state/mcp/dzp_server.py` and update the path constants:
 
 ```python
 # Update these paths to match your installation
@@ -196,7 +196,7 @@ Create `.mcp.json` in your project root:
   "mcpServers": {
     "dzp": {
       "command": "python",
-      "args": [".protocol-state/mcp/utech_dzp_server.py"],
+      "args": [".protocol-state/mcp/dzp_server.py"],
       "cwd": "${workspaceFolder}"
     }
   }
@@ -215,7 +215,7 @@ Ensure MCP is enabled in Claude Code:
 
 Add these tools to your Claude Code allow list for seamless operation:
 
-```
+```text
 dzp_read_protocol
 dzp_search_protocol
 dzp_list_files
@@ -274,8 +274,8 @@ dzp_update_state("mission_status.yuuji_briefed", "true")
 **Solutions**:
 1. Check Python is in PATH: `python --version`
 2. Verify MCP package installed: `pip show mcp`
-3. Check server file exists: `ls .protocol-state/mcp/utech_dzp_server.py`
-4. Test server manually: `python .protocol-state/mcp/utech_dzp_server.py`
+3. Check server file exists: `ls .protocol-state/mcp/dzp_server.py`
+4. Test server manually: `python .protocol-state/mcp/dzp_server.py`
 
 ### Tools Not Found
 
@@ -313,7 +313,7 @@ dzp_update_state("mission_status.yuuji_briefed", "true")
 
 ### Reading Agent Info
 
-```
+```text
 User: "What can Yuuji do?"
 
 Claude Code calls: dzp_agent_info("yuuji")
@@ -329,7 +329,7 @@ Response: {
 
 ### Searching Protocol
 
-```
+```text
 User: "Find all references to OWASP"
 
 Claude Code calls: dzp_search_protocol("OWASP")
@@ -345,7 +345,7 @@ Response: {
 
 ### Updating State
 
-```
+```text
 User: "Mark feature as complete"
 
 Claude Code calls: dzp_update_state("current_state", "COMPLETE")
@@ -366,4 +366,4 @@ Response: {
 
 ---
 
-**END OF MCP_SERVER_SETUP.md**
+*End of MCP_SERVER_SETUP.md*

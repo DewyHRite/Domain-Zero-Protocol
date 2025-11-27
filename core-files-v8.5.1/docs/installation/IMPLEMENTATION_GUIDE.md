@@ -29,7 +29,7 @@
 - Downloaded the v8.5.1 release package
 - Access to Claude.ai, Claude Code, GitHub Copilot, or another AI assistant
 
-**Basic Setup**:
+### Basic Setup
 
 1. **Copy protocol files to your project**:
    ```bash
@@ -261,7 +261,7 @@ Create `.protocol-state/project-state.json`:
 
 3. Gojo should initialize and offer Mission Control options
 
-**Pro Tips for Claude Code**:
+### Pro Tips for Claude Code
 - Use **@file** mentions to reference specific files: `@protocol/yuuji.agent.md`
 - Claude Code can read, write, and edit files directly
 - Full MCP (Model Context Protocol) support for tool integration
@@ -366,7 +366,7 @@ def login(username: str, password: str):
     ...
 ```
 
-**Limitations**:
+### Limitations
 - GitHub Copilot doesn't have persistent state management
 - No automatic handoff between agents
 - Manual security review prompting required
@@ -580,7 +580,7 @@ Read protocol/yuuji.agent.md and say hello
 Hey! I'm Yuuji Itadori, your Implementation Specialist...
 ```
 
-**If Mask Mode is OFF**:
+### If Mask Mode is OFF
 ```
 Implementation Specialist - Active
 
