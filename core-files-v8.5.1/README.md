@@ -239,7 +239,7 @@ This distribution includes everything you need to deploy Domain Zero:
 - `EMERGENCY_STOP_STANDARD.md` - Kill Switch specification (v8.5.0+)
 - `TECHNICAL_LEVEL_ADAPTATION.md` - User level specification (v8.5.0+)
 - `TIER-SELECTION-GUIDE.md` - Quick reference for tier selection
-- `GOJO-UPDATES-PATCH.md` - Protocol change audit trail
+- `../CHANGELOG.md` - Protocol change audit trail
 
 **State Templates** (`.protocol-state/`):
 - `project-state.json` - Project configuration template
@@ -974,8 +974,7 @@ your-project/
 │   ├── megumi.agent.md                    # Security agent
 │   ├── nobara.agent.md                    # Creative strategy & UX agent
 │   ├── gojo.agent.md                      # Mission control
-│   ├── TIER-SELECTION-GUIDE.md     # Quick tier reference
-│   └── GOJO-UPDATES-PATCH.md       # Protocol change log
+│   └── TIER-SELECTION-GUIDE.md     # Quick tier reference
 │
 ├── .protocol-state/                 # State management (gitignored by default)
 │   ├── project-state.json           # Project configuration
@@ -1156,8 +1155,9 @@ Within Domain Zero, the goal is always **ZERO**:
 
 ### Advanced Topics
 
+- **[docs/TOKEN_EFFICIENCY_RECOMMENDATIONS.md](docs/TOKEN_EFFICIENCY_RECOMMENDATIONS.md)** - Token efficiency guidelines & modular architecture
 - **.protocol-state/tier-system-specification.md** - Technical tier system spec
-- **protocol/GOJO-UPDATES-PATCH.md** - Protocol change history and audit trail
+- **CHANGELOG.md** - Protocol change history and audit trail
 - **protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md** - Self-identification banner specification
 - **protocol/CANONICAL_SOURCE_ADOPTION.md** - Canonical source adoption strategy
 

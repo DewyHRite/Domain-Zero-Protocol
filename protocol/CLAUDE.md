@@ -2125,9 +2125,62 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 
 ---
 
+## 💡 TOKEN EFFICIENCY & MODULAR ARCHITECTURE (v8.5.1)
+
+### Optimize Context Usage While Preserving Protocol Behavior
+
+Domain Zero Protocol uses a modular architecture to minimize token consumption while maintaining full protocol functionality.
+
+### Core Architecture Principles
+
+**Shared Modules**: Cross-cutting concerns (Emergency Stop, User Levels, Mask Mode, Safety, Escape Paths) are centralized in `protocol/modules/*.md` and referenced from agent files rather than duplicated.
+
+**Hybrid Agent Model**:
+- **Core Four (True Subagents)**: `yuuji`, `megumi`, `nobara`, `gojo` - registered as distinct subagent types
+- **Extended Four (Delegated Roles)**: `todo`, `maki`, `panda`, `inumaki` - invocation patterns on existing subagents
+
+### Day-to-Day Usage Patterns
+
+**DO**:
+- Read agent files once per feature/work chunk (not every message)
+- Reference protocol by name: "Follow Domain Zero v8.5.1 using Yuuji"
+- Formulate specific tasks: "Implement password reset in `src/auth/reset.py`"
+- Use appropriate tier: Tier 1 for prototypes, Tier 2 for production, Tier 3 for critical only
+
+**DON'T**:
+- Re-read entire protocol on every request
+- Give vague instructions: "Improve the auth system"
+- Re-explain tier system in every message
+- Duplicate large text blocks across files
+
+### Extended Agent Delegation Pattern
+
+When invoking Extended Four agents (Todo, Maki, Panda, Inumaki), use short delegation prompts:
+
+```text
+Act as the {Agent} delegated agent.
+Follow `protocol/{agent}.agent.md` for responsibilities.
+Focus on [specific task]. Reference shared modules by name only.
+```
+
+### Installation & Upgrade Token Awareness
+
+- **Fresh Install**: Copy full `core-files-vX.Y.Z/` structure
+- **Upgrade**: NEVER overwrite project-specific `.protocol-state` files
+- **Merge Only**: `project-state.json` - update version fields only
+
+### Reference
+
+For complete token efficiency guidelines including checklists for protocol authors, MCP server recommendations, and future improvements, see:
+
+📄 **`docs/TOKEN_EFFICIENCY_RECOMMENDATIONS.md`** - Complete token efficiency guide
+
+---
+
 ## ADDITIONAL RESOURCES
 
 **Complete Documentation**:
+- **TOKEN_EFFICIENCY_RECOMMENDATIONS.md** - Complete guide to token-efficient protocol usage
 - **MASK_MODE.md** - Mask mode specification (JJK theme vs professional mode)
 - **REALITY_CHECK.md** - Honest assessment of what Domain Zero actually is and how to use it effectively
 - **Core Three + Gojo (Supervisor)**:
