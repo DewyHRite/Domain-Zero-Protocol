@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
 # Domain Zero Protocol - Token Efficiency Recommendations
 
 > **Classification:** CORE FILE
-> **Version:** 8.5.1
+> **Version:** 8.4.1
 > **Last Updated:** 2025-11-27
 > **Purpose:** Formal guidelines for maintaining token efficiency while preserving full protocol behavior
 
