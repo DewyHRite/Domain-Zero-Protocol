@@ -568,5 +568,5 @@ Runs only critical checks (dependencies, files, config, yaml)
 ---
 
 **Last Updated:** November 25, 2025
-**Protocol Version:** v8.5.0
+**Protocol Version:** v8.5.1
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol
