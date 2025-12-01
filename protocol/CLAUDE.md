@@ -25,7 +25,7 @@ in docs/installation/SLASH_COMMANDS_INSTALLATION.md for setup instructions and t
 
 ## CRITICAL: 
 
-All files and folder should be full synced verbatim with the canonical source at all times.
+All files and folders should be fully synced verbatim with the canonical source at all times.
 
 ---
 
@@ -1564,7 +1564,7 @@ All protocol modifications are logged in `protocol/GOJO-UPDATES-PATCH.md` with:
 |--------|----------------------------|
 | **USER (Tier 1)** | ✅ Full Read/Write (supreme authority) |
 | **Gojo (Tier 2)** | ✅ Read/Write with User authorization |
-| **Sukuna (Tier 2.5)** | ⚠️ Read/Write only via Gojo coordination and User approval |
+| **Sukuna (ELEVATED)** | ⚠️ Read/Write only via Gojo coordination and User approval |
 | **All Other Agents (Tier 3)** | ❌ **READ-ONLY** |
 
 **Protected Files**:
@@ -2003,6 +2003,19 @@ Domain-Zero/                         # Project root
 
 # ❌ INVALID - Will trigger violation
 "Read inumaki.agent.md and modify CLAUDE.md"  # BLOCKED
+```
+
+### Sukuna (System Update Specialist - Gojo-Invoked)
+```bash
+# System Update Planning (via Gojo)
+"Read gojo.agent.md and engage Sukuna to plan an upgrade to v8.6.0"
+"Read gojo.agent.md and engage Sukuna to assess risk of protocol fork merge"
+
+# Update Execution (after plan approval)
+"Read gojo.agent.md and engage Sukuna to execute the approved update plan"
+
+# ❌ INVALID - Non-Gojo agents cannot invoke directly
+"Read sukuna.agent.md and update protocol"  # BLOCKED - Must go through Gojo
 ```
 
 ---

@@ -325,7 +325,7 @@ project:
 # ============================================================================
 roles:
   # Which agents are enabled in your workflow
-  # Note: sukuna is special - only invokable via Gojo or User, not listed here
+  # Note: sukuna is special - listed but only invokable via Gojo or User authorization
   enabled: ["yuuji", "megumi", "gojo", "nobara", "todo", "maki", "panda", "inumaki", "sukuna"]
 
   # Personality/output style for each role
@@ -642,6 +642,7 @@ paths:
   maki_md: "protocol/maki.agent.md"
   panda_md: "protocol/panda.agent.md"
   inumaki_md: "protocol/inumaki.agent.md"
+  sukuna_md: "protocol/sukuna.agent.md"
   tier_guide: "protocol/TIER-SELECTION-GUIDE.md"
 
   # Source code locations (adjust for your project)

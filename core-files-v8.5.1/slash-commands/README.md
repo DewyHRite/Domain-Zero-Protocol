@@ -25,7 +25,7 @@ cp -r slash-commands/* .claude/commands/
 | `/maki` | Maki Zenin | Performance Specialist - Profiling and optimization |
 | `/panda` | Panda | Build Specialist - CI/CD and Docker |
 | `/inumaki` | Toge Inumaki | API Specialist - REST/GraphQL design |
-| `/system-update` | Maintenance | Version control and file management |
+| `/sukuna` | Ryomen Sukuna | System Update Adversary - Protocol updates via Gojo |
 
 ## Usage
 

@@ -18,10 +18,7 @@ This patch release formalizes the Sukuna System Update Adversary as a Gojo-invok
 - **JJK Character Reference** - Full Sukuna character reference added to `.protocol-state/jjk-character-reference/`
 - **Slash Command Rename** - `/system-update` renamed to `/sukuna` with JJK character integration
 - **Work Session Management** - Enhanced enforcement across all agents
-- **Token Optimization via Modular Architecture** - Extracted shared protocol sections (~1,755 lines) into 7 reusable module files
-- **Module Reference System** - All 8 agents now reference shared modules in `protocol/modules/` instead of duplicating content
-- **Agent Token Reduction** - Reduced agent file sizes by ~40-60% while preserving all functionality
-- **Standardized Protocol Behaviors** - Emergency Stop, User Level Adaptation, Mask Mode, Binding Oath, and more as single-source-of-truth modules
+- **Gojo Template Extraction** - Extracted OUTPUT TEMPLATES to `.protocol-state/gojo-templates/OUTPUT_TEMPLATES.md` (~9% size reduction)
 
 ### Previous Release (v8.5.0)
 
