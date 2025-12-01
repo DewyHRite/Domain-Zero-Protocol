@@ -325,7 +325,8 @@ project:
 # ============================================================================
 roles:
   # Which agents are enabled in your workflow
-  enabled: ["yuuji", "megumi", "gojo", "nobara", "todo", "maki", "panda", "inumaki"]
+  # Note: sukuna is special - listed but only invokable via Gojo or User authorization
+  enabled: ["yuuji", "megumi", "gojo", "nobara", "todo", "maki", "panda", "inumaki", "sukuna"]
 
   # Personality/output style for each role
   output_style:
@@ -337,6 +338,7 @@ roles:
     maki: "direct"           # Options: direct, efficient, blunt
     panda: "friendly"        # Options: friendly, cheerful, reliable
     inumaki: "concise"       # Options: concise, precise, minimal
+    sukuna: "adversarial"    # Options: adversarial, sardonic, critical
 
   # Optional: Role name aliases (for customization)
   # aliases:
@@ -382,6 +384,7 @@ mask_mode:
     maki: "Performance Specialist"
     panda: "Build Specialist"
     inumaki: "API Specialist"
+    sukuna: "System Update Specialist"
 
   # Terminology overrides (MASK OFF mode)
   unmasked_terminology:
@@ -533,6 +536,11 @@ self_identification:
       domain_name: "COMMUNICATION DOMAIN"
       subtitle: "Cursed Speech, Declarative API Contracts"
       professional_banner: "API Specialist - Active"
+    sukuna:
+      emoji: "👹"
+      domain_name: "SYSTEM UPDATE DOMAIN"
+      subtitle: "Adversarial Precision, Collaborative Safety"
+      professional_banner: "System Update Specialist - Active"
   privacy:
     passive_observer_announcements: opt_in_only  # Respect privacy settings
 
@@ -634,6 +642,7 @@ paths:
   maki_md: "protocol/maki.agent.md"
   panda_md: "protocol/panda.agent.md"
   inumaki_md: "protocol/inumaki.agent.md"
+  sukuna_md: "protocol/sukuna.agent.md"
   tier_guide: "protocol/TIER-SELECTION-GUIDE.md"
 
   # Source code locations (adjust for your project)
@@ -866,8 +875,8 @@ protocol_packs:
 # ============================================================================
 versioning:
   protocol_version: "8.5.1"
-  config_version: "2.5"
-  last_updated: "2025-11-26"
+  config_version: "2.6"
+  last_updated: "2025-12-01"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

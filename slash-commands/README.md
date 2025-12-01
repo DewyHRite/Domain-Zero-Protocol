@@ -25,7 +25,7 @@ cp -r slash-commands/* .claude/commands/
 | `/maki` | Maki Zenin | Performance Specialist - Profiling and optimization |
 | `/panda` | Panda | Build Specialist - CI/CD and Docker |
 | `/inumaki` | Toge Inumaki | API Specialist - REST/GraphQL design |
-| `/system-update` | Maintenance | Version control and file management |
+| `/sukuna` | Ryomen Sukuna | System Update Adversary - Protocol updates via Gojo |
 
 ## Usage
 
@@ -53,6 +53,11 @@ cp -r slash-commands/* .claude/commands/
 
 # API design
 /inumaki design REST endpoints for user CRUD
+
+# System update (via Gojo -> Sukuna)
+/gojo engage sukuna to plan v8.6.0 upgrade
+# (blocked) Do not invoke directly:
+# /sukuna update protocol   # Must go through Gojo
 ```
 
 ## Notes
