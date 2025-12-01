@@ -53,6 +53,11 @@ cp -r slash-commands/* .claude/commands/
 
 # API design
 /inumaki design REST endpoints for user CRUD
+
+# System update (via Gojo -> Sukuna)
+/gojo engage sukuna to plan v8.6.0 upgrade
+# (blocked) Do not invoke directly:
+# /sukuna update protocol   # Must go through Gojo
 ```
 
 ## Notes
