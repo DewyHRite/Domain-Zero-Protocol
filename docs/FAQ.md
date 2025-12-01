@@ -2,7 +2,7 @@
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
 **Version:** v8.5.1
-**Last Updated:** 2025-11-26
+**Last Updated:** 2025-12-01
 
 ---
 
@@ -23,7 +23,7 @@
 
 ### What is Domain Zero Protocol?
 
-Domain Zero is an eight-agent AI development framework that provides specialized expertise through distinct AI personalities:
+Domain Zero is a nine-agent AI development framework that provides specialized expertise through distinct AI personalities:
 
 **Core Four Agents:**
 - **YUUJI** - Implementation Specialist (test-first development)
@@ -36,6 +36,9 @@ Domain Zero is an eight-agent AI development framework that provides specialized
 - **MAKI** - Performance Optimization Specialist (profiling, optimization)
 - **PANDA** - Build & Integration Specialist (CI/CD, build systems)
 - **INUMAKI** - API & Communication Specialist (REST, GraphQL, WebSockets)
+
+**Special Agent (v8.5.1+):**
+- **SUKUNA** - System Update Agent (adversarial-but-aligned, Gojo-invoked only)
 
 The protocol uses a three-tier workflow system (Rapid/Standard/Critical) to balance speed and rigor.
 
@@ -177,11 +180,13 @@ Is this production code?
 - **GOJO**: Can modify with your explicit authorization ✅
 - **YUUJI, MEGUMI, NOBARA**: READ-ONLY access ❌
 
-**Other protocol files (YUUJI.md, MEGUMI.md, etc.):**
-- All agents have READ-ONLY access
-- Only you can modify
+**Agent Files (.agent.md) - Cross-Agent Edit Restrictions (v8.5.1+):**
+- **YOU** (user): Full access ✅
+- **GOJO**: Full access (with authorization) ✅
+- **SUKUNA**: Via Gojo with explicit authorization ✅
+- **All other agents**: READ-ONLY access ❌
 
-**Why?** Prevents agents from accidentally changing their own behavior.
+**Why?** Prevents agents from accidentally changing their own or other agents' behavior.
 
 ---
 
@@ -213,6 +218,40 @@ Read protocol/MEGUMI.md - review the authentication changes in auth.py
 4. **Escalate:** Call Gojo for second opinion: `"Read protocol/GOJO.md - assess this implementation"`
 
 **Protocol Requirement:** YOU must approve all code before it's considered complete.
+
+---
+
+### What is Sukuna and how do I invoke it?
+
+**Sukuna** is the System Update Agent (v8.5.1+), designed for protocol updates and improvements.
+
+**Key Characteristics:**
+- **Adversarial-but-aligned**: Questions assumptions, finds edge cases
+- **Gojo-invoked only**: Cannot be called directly by users
+- **Stress-tests changes**: Before protocol modifications are applied
+
+**Invocation (via Gojo only):**
+```
+Read protocol/gojo.agent.md and engage Sukuna for [update task]
+```
+
+**Why Gojo-mediated?** Ensures proper authorization and oversight for protocol changes.
+
+---
+
+### What are Cross-Agent Edit Restrictions?
+
+**v8.5.1 Feature:** Non-Gojo agents now have READ-ONLY access to all `.agent.md` files.
+
+**Access Levels:**
+| Entity | CLAUDE.md | .agent.md files |
+|--------|-----------|-----------------|
+| User | Full | Full |
+| Gojo | With auth | Full |
+| Sukuna | None | Via Gojo |
+| Other agents | None | READ-ONLY |
+
+**Purpose:** Prevents agents from modifying their own behavior definitions.
 
 ---
 
@@ -567,6 +606,6 @@ Runs only critical checks (dependencies, files, config, yaml)
 
 ---
 
-**Last Updated:** November 25, 2025
-**Protocol Version:** v8.5.0
+**Last Updated:** December 1, 2025
+**Protocol Version:** v8.5.1
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol

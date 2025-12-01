@@ -3,7 +3,7 @@
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
 **Version**: 8.5.1
-**Last Updated**: November 2025
+**Last Updated**: December 2025
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
 
 ---
@@ -156,7 +156,7 @@ cat .protocol-state/project-state.json  # Should have YOUR project metadata
 ```markdown
 # Domain Zero Protocol Custom Instructions
 
-I use the Domain Zero Protocol for AI-assisted development. This is an eight-agent system:
+I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent system:
 
 **Core Four Agents**:
 - **Yuuji Itadori** (protocol/yuuji.agent.md): Implementation Specialist - Test-first development, feature implementation
@@ -169,6 +169,9 @@ I use the Domain Zero Protocol for AI-assisted development. This is an eight-age
 - **Maki Zenin** (protocol/maki.agent.md): Performance Optimization Specialist - Profiling, bundle analysis, zero-overhead
 - **Panda** (protocol/panda.agent.md): Build & Integration Specialist - CI/CD, GitHub Actions, Docker
 - **Toge Inumaki** (protocol/inumaki.agent.md): API & Communication Specialist - REST, GraphQL, WebSocket design
+
+**Special Agent (v8.5.1+)**:
+- **Ryomen Sukuna** (protocol/sukuna.agent.md): System Update Agent - Protocol updates, adversarial analysis (Gojo-invoked only)
 
 **Three-Tier Workflow**:
 - **Tier 1 (Rapid)**: Fast prototyping, no tests

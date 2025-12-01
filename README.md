@@ -4,7 +4,7 @@
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v8.5.1**: Token Optimization via Modular Architecture - 7 shared module files reducing agent token usage by ~40-60%. See [What's New](#-version-information).
+> **New in v8.5.1**: Sukuna System Update Agent, Cross-Agent Edit Restrictions, and Token Optimization via Modular Architecture. See [What's New](#-version-information).
 
 ---
 
@@ -192,7 +192,7 @@ claude
 
 ---
 
-Domain Zero is an eight-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with test-first development, comprehensive security review, creative strategy, and adaptive workflow complexity.
+Domain Zero is a nine-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with test-first development, comprehensive security review, creative strategy, and adaptive workflow complexity.
 
 ---
 
@@ -236,6 +236,7 @@ This distribution includes everything you need to deploy Domain Zero:
 - `maki.agent.md` - Performance optimization agent protocol (v8.4.0+)
 - `panda.agent.md` - Build & integration agent protocol (v8.4.0+)
 - `inumaki.agent.md` - API & communication agent protocol (v8.4.0+)
+- `sukuna.agent.md` - System update agent protocol (v8.5.1+, Gojo-invoked only)
 - `EMERGENCY_STOP_STANDARD.md` - Kill Switch specification (v8.5.0+)
 - `TECHNICAL_LEVEL_ADAPTATION.md` - User level specification (v8.5.0+)
 - `TIER-SELECTION-GUIDE.md` - Quick reference for tier selection
@@ -318,9 +319,9 @@ _Note: Domain Zero works standalone without these tools, but integration enhance
 
 ## 🌀 What is Domain Zero?
 
-Domain Zero creates a **controlled collaboration space** where eight specialized AI agents work together to deliver production-ready code with zero defects.
+Domain Zero creates a **controlled collaboration space** where nine specialized AI agents work together to deliver production-ready code with zero defects.
 
-### The Eight Agents
+### The Nine Agents
 
 **Core Four:**
 
@@ -373,6 +374,14 @@ Domain Zero creates a **controlled collaboration space** where eight specialized
 - GraphQL schemas
 - WebSocket protocols
 - OpenAPI specifications (Cursed Speech)
+
+**Special Agent (v8.5.1+):**
+
+**👹 RYOMEN SUKUNA** - System Update Agent
+- Protocol update stress-testing
+- Adversarial-but-aligned analysis
+- Edge case identification
+- Gojo-invoked only (cannot be called directly)
 
 ---
 
@@ -658,7 +667,7 @@ Many AI assistants now support memory features that allow them to remember impor
 ```
 You: "Add to memory: Domain Zero Protocol
 
-I use the Domain Zero Protocol for AI-assisted development. This is an eight-agent system:
+I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent system:
 - YUUJI (Implementation Specialist): Test-first development, feature implementation
 - MEGUMI (Security Analyst): OWASP Top 10 security reviews
 - NOBARA (Creative Strategy & UX): User experience design, product vision
@@ -667,6 +676,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is an eight-age
 - MAKI (Performance): Audits, profiling, zero-overhead optimization
 - PANDA (Build & Integration): CI/CD, builds, environments
 - INUMAKI (API & Communication): REST/GraphQL/WebSocket, OpenAPI
+- SUKUNA (System Update): Protocol updates, adversarial analysis (Gojo-invoked only)
 
 The protocol files are located in my project at:
 - protocol/CLAUDE.md (main protocol, v8.5.1)
@@ -693,7 +703,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v8.5.1) for development projects. This is an eight-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.5.1) for development projects. This is a nine-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
@@ -702,8 +712,9 @@ I use the Domain Zero Protocol (v8.5.1) for development projects. This is an eig
 - MAKI: Performance optimization specialist
 - PANDA: Build & integration specialist
 - INUMAKI: API & communication specialist
+- SUKUNA: System update agent (Gojo-invoked only)
 
-When working on my projects, refer to protocol files at protocol/CLAUDE.md and all eight agent files (yuuji, megumi, nobara, gojo, todo, maki, panda, inumaki). The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
+When working on my projects, refer to protocol files at protocol/CLAUDE.md and all nine agent files (yuuji, megumi, nobara, gojo, todo, maki, panda, inumaki). The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
 
 Key features:
 - Use skills for common operations (saves tokens)
@@ -1604,17 +1615,19 @@ Domain Zero is now set up in your project.
 ## 📝 Version Information
 
 **Version**: 8.5.1
-**Release Date**: November 26, 2025
-**Major Enhancements**: Token Optimization via Modular Architecture
+**Release Date**: December 1, 2025
+**Major Enhancements**: Sukuna System Update Agent, Cross-Agent Edit Restrictions, Token Optimization
 
 **v8.5.1 Key Features**:
+- **Sukuna System Update Agent**: Adversarial-but-aligned 9th agent for protocol updates (Gojo-invoked only)
+- **Cross-Agent Edit Restrictions**: Non-Gojo agents have READ-ONLY access to all `.agent.md` files
 - **Modular Protocol Architecture**: 7 shared module files in `protocol/modules/`
 - **Token Optimization**: Reduced agent file sizes by ~40-60%
 - **Single Source of Truth**: Shared protocol behaviors (Emergency Stop, User Levels, Mask Mode, etc.) in module files
-- **Agent Module References**: All 8 agents reference modules instead of duplicating content
+- **Agent Module References**: All 9 agents reference modules instead of duplicating content
 
 **Version History**:
-- v8.5.1 - PATCH: Token Optimization via Modular Architecture, 7 shared module files
+- v8.5.1 - PATCH: Sukuna System Update Agent, Cross-Agent Edit Restrictions, Token Optimization via Modular Architecture
 - v8.5.0 - MINOR: Kill Switch Protocol, User Technical Level System, Emergency Stop coordination
 - v8.4.1 - PATCH: Agent file cleanup, JJK Character Reference additions, Research Mode updates
 - v8.3.1 - PATCH: Agent-Specific Escape Paths, Instruction Confirmation Protocol, Version Consistency

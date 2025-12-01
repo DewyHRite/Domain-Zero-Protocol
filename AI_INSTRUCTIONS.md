@@ -1,7 +1,7 @@
 <!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 8.5.1 | **Last Updated**: 2025-11-26
+**Version**: 8.5.1 | **Last Updated**: 2025-12-01
 
 > **This is a redirect file.** The canonical protocol is maintained in [`protocol/CLAUDE.md`](protocol/CLAUDE.md).
 
@@ -11,12 +11,13 @@
 
 **Primary Instructions**: Read [`protocol/CLAUDE.md`](protocol/CLAUDE.md)
 
-This project uses the **Domain Zero Protocol** - an 8-agent AI development framework with:
+This project uses the **Domain Zero Protocol** - a 9-agent AI development framework with:
 - Security-first approach (OWASP Top 10 reviews)
 - Test-driven development enforcement
 - Three-tier workflow complexity (Rapid/Standard/Critical)
 - Kill Switch emergency stop with project protection
 - Modular architecture for token optimization
+- Cross-agent edit restrictions (agent file protection)
 
 ---
 
@@ -80,6 +81,7 @@ If slash commands are installed (see `docs/installation/SLASH_COMMANDS_INSTALLAT
 | `/maki` | Performance | Optimization, infrastructure |
 | `/panda` | QA | Testing strategy, coverage |
 | `/inumaki` | Documentation | Technical writing |
+| `/sukuna` | System Update | Protocol updates (via Gojo only) |
 
 ---
 
@@ -100,6 +102,7 @@ All protocol specifications are in the `protocol/` directory:
 - [`protocol/maki.agent.md`](protocol/maki.agent.md) - Performance Specialist
 - [`protocol/panda.agent.md`](protocol/panda.agent.md) - QA Engineer
 - [`protocol/inumaki.agent.md`](protocol/inumaki.agent.md) - Documentation Specialist
+- [`protocol/sukuna.agent.md`](protocol/sukuna.agent.md) - System Update Agent (Gojo-invoked only)
 
 ### Quick Reference
 - [`protocol/TIER-SELECTION-GUIDE.md`](protocol/TIER-SELECTION-GUIDE.md) - Workflow tier selection
@@ -134,6 +137,19 @@ Shared protocol modules reduce token usage by ~40-60%:
 Toggle between JJK-themed and professional presentation:
 - `mask_mode: false` - JJK character personalities (default)
 - `mask_mode: true` - Professional agent names
+
+### Sukuna System Update Agent (v8.5.1+)
+Adversarial-but-aligned agent for protocol updates:
+- **Gojo-invoked only** - cannot be called directly by users
+- Stress-tests proposed changes before implementation
+- Questions assumptions, finds edge cases
+- Invocation: `Read protocol/gojo.agent.md and engage Sukuna for [update task]`
+
+### Cross-Agent Edit Restrictions (v8.5.1+)
+Non-Gojo agents have **READ-ONLY** access to all `.agent.md` files:
+- Prevents agents from modifying their own behavior
+- User and Gojo retain full edit permissions
+- Sukuna operates via Gojo with explicit authorization
 
 ---
 

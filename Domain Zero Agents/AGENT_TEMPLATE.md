@@ -3,7 +3,7 @@
 **Agent ID**: [unique-agent-id]
 **Domain**: [DOMAIN NAME]
 **Specialization**: [Primary area of expertise]
-**Protocol Version**: v8.4.1
+**Protocol Version**: v8.5.1
 **Last Updated**: [YYYY-MM-DD]
 **Status**: [Production-Ready/Beta/Experimental]
 **Major Enhancements**: [Key capabilities]
@@ -13,7 +13,7 @@
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v8.4.1
+> **Current Local Protocol Version**: v8.5.1
 > **Agent Binding Oath**: See [AGENT_BINDING_OATH.md](../AGENT_BINDING_OATH.md) – commitment to safety, transparency, and user authority
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
