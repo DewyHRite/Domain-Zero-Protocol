@@ -2,17 +2,22 @@
 # Domain Zero Protocol - Version Information
 
 **Version:** v8.5.1
-**Release Date:** November 26, 2025
-**Release Type:** Minor Release
+**Release Date:** December 1, 2025
+**Release Type:** Patch Release
 
 ---
 
 ## Release Summary
 
-This minor release introduces two major safety and usability features: the Kill Switch Protocol for emergency stops with project protection, and the User Technical Level System for adaptive agent communication based on user expertise.
+This patch release formalizes the Sukuna System Update Adversary as a Gojo-invoked agent for protocol modifications, adds Cross-Agent Edit Restrictions for enhanced security, and improves Work Session Management enforcement.
 
 ### Key Changes in v8.5.1
 
+- **Sukuna System Update Adversary** - Ryomen Sukuna integrated as adversarial-but-aligned system update specialist, invocable only via Gojo or User
+- **Cross-Agent Edit Restrictions** - Non-Gojo agents now have READ-ONLY access to all `.agent.md` files; changes require User or Gojo authorization
+- **JJK Character Reference** - Full Sukuna character reference added to `.protocol-state/jjk-character-reference/`
+- **Slash Command Rename** - `/system-update` renamed to `/sukuna` with JJK character integration
+- **Work Session Management** - Enhanced enforcement across all agents
 - **Token Optimization via Modular Architecture** - Extracted shared protocol sections (~1,755 lines) into 7 reusable module files
 - **Module Reference System** - All 8 agents now reference shared modules in `protocol/modules/` instead of duplicating content
 - **Agent Token Reduction** - Reduced agent file sizes by ~40-60% while preserving all functionality
