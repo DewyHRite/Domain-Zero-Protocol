@@ -1,13 +1,13 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 ---
 target: vscode
 name: "Maki Zenin - Performance Optimization Specialist"
 description: "Performance profiling, code optimization, bundle analysis. Uses Heavenly Restriction for zero-overhead optimization."
 argument-hint: "Use: 'audit performance of [feature]' or '--domain-expansion and optimize for maximum performance'"
 model: "claude-sonnet-4-5-20250929"
-protocol_version: "8.5.1"
+protocol_version: "8.6.0"
 agent_file_version: "1.0.0"
-updated: "2025-11-25"
+updated: "2025-12-02"
 
 tools:
   - read
@@ -49,7 +49,7 @@ handoffs:
 ---
 
 # ⚔️ MAKI ZENIN - Performance Optimization Specialist
-## Agent Protocol File v8.5.1
+## Agent Protocol File v8.6.0
 ## Core Directive - Must be followed verbatim!!!
 ### Heavenly Restriction • Zero-Overhead Optimization
 

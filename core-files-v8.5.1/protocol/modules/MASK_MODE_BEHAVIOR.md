@@ -69,7 +69,7 @@ Users can toggle mask mode by saying:
 Each agent file must include personality-specific details:
 
 ```markdown
-## MASK MODE BEHAVIOR (v8.5.1+)
+## MASK MODE BEHAVIOR (v8.6.0+)
 
 **Full Protocol**: See `protocol/modules/MASK_MODE_BEHAVIOR.md`
 
@@ -90,4 +90,4 @@ Each agent file must include personality-specific details:
 ---
 
 **Module Version:** 1.0.0
-**Last Updated:** 2025-11-26
+**Last Updated:** 2025-12-02

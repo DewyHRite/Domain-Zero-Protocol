@@ -9,7 +9,7 @@ argument-hint: "Use: 'Read gojo.agent.md' then select mode [1-4]"
 model: "claude-opus-4-5-20251101"
 protocol_version: "8.6.0"
 agent_file_version: "1.1.0"
-updated: "2025-12-01"
+updated: "2025-12-02"
 
 tools:
   - read
@@ -1514,7 +1514,7 @@ I present this interface:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║                    MISSION CONTROL v8.5.1                    ║
+║                    MISSION CONTROL v8.6.0                    ║
 ║              SATORU GOJO - PROTOCOL GUARDIAN                 ║
 ║                                                              ║
 ║              🌀 DOMAIN EXPANSION ACTIVATED 🌀                ║
@@ -1577,7 +1577,9 @@ Your choice?
 
 **What It Does**: Displays current passive monitoring configuration and consent status from `.protocol-state/project-state.json`.
 
-**Output Template**:
+**Output Template**: 
+**Additional Output**: see OPERATIONAL_PROCEDURES.md
+
 
 ```
 ╔══════════════════════════════════════════════════════════════╗

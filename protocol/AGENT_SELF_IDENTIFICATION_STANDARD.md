@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Agent Self-Identification Standard (v1.0)
 ## Core Directive - Must be followed verbatim!!!
 

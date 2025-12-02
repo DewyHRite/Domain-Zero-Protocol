@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 
 # JJK Character Reference Mapping
 **Version**: 1.1.0
-**Created**: 2025-11-25
-**Protocol Version**: v8.5.1
+**Created**: 2025-12-02
+**Protocol Version**: v8.6.0
 **Purpose**: Maps Domain Zero agents to Jujutsu Kaisen character references
 
 ---
@@ -146,8 +146,8 @@ When updating character references:
 
 ## Version History
 
-- **1.1.0** (2025-12-01): Added Ryomen Sukuna as System Update Adversary (v8.5.1), protocol version bump
-- **1.0.0** (2025-11-25): Initial creation with all 8 character references from JJK Fandom Wiki
+- **1.1.0** (2025-12-02): Added Ryomen Sukuna as System Update Adversary (v8.6.0), protocol version bump
+- **1.0.0** (2025-12-02): Initial creation with all 8 character references from JJK Fandom Wiki
 
 ---
 

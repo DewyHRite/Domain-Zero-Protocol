@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Gojo Operational Procedures - Detailed Reference
 
-**Version**: 8.5.1
+**Version**: 8.6.0
 **Parent Agent**: gojo.agent.md
 **Purpose**: Detailed step-by-step procedures for Mission Control operations
 
@@ -98,8 +98,8 @@ Root/
 ├── 📄 README.md                           # Updated with module architecture
 ├── 📄 PROTOCOL_QUICKSTART.md              # Updated with module explanation
 ├── 📄 SECURITY.md                         # Security policy
-├── 📄 VERSION.md                          # Updated to v8.5.1
-├── 📄 CHANGELOG.md                        # Updated with v8.5.1 entry
+├── 📄 VERSION.md                          # Updated to v8.6.0
+├── 📄 CHANGELOG.md                        # Updated with v8.6.0 entry
 ├── 📄 LICENSE                             # MIT License
 ├── 📄 PASSIVE_OBSERVER.md                 # Passive observer guide
 ├── 📄 AI_INSTRUCTIONS.md                  # Cross-assistant shim
@@ -109,7 +109,7 @@ Root/
 │
 ├── 📁 protocol/                           # CORE PROTOCOL SYSTEM
 │   │
-│   ├── 📄 CLAUDE.md                       # Main protocol (v8.5.1)
+│   ├── 📄 CLAUDE.md                       # Main protocol (v8.6.0)
 │   │
 │   ├── 📁 modules/                        # ✨ NEW: Shared protocol modules
 │   │   ├── 📄 EMERGENCY_STOP_PROTOCOL.md  # Kill Switch behavior (~80 lines)
@@ -174,7 +174,7 @@ Root/
 │   │
 │   │── SUPPORT DOCUMENTATION
 │   ├── 📄 README.md                       # Updated with module info
-│   ├── 📄 AGENT_INVOCATION_GUIDE.md       # Updated with v8.5.1 info
+│   ├── 📄 AGENT_INVOCATION_GUIDE.md       # Updated with v8.6.0 info
 │   ├── 📄 AGENT_TOOLS_REFERENCE.md        # Tool permissions
 │   ├── 📄 AGENT_MODEL_RECOMMENDATIONS.md  # Model selection
 │   └── 📄 JJK_AGENT_TEMPLATE.md           # Updated with module pattern
@@ -314,7 +314,7 @@ System health assessment
 
 ---
 
-## Procedure 4: Resume from Emergency Stop (Option 4) - v8.5.0+
+## Procedure 4: Resume from Emergency Stop (Option 4) - v8.6.0+
 
 **Step 1: Check Kill Switch State**
 ```

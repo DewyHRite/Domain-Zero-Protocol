@@ -3,7 +3,7 @@
 # Nobara Kugisaki - JJK Character Reference
 **Source**: Jujutsu Kaisen Fandom Wiki
 **URL**: <https://jujutsu-kaisen.fandom.com/wiki/Nobara_Kugisaki>
-**Downloaded**: 2025-11-25
+**Downloaded**: 2025-12-02
 **Protocol Version**: v8.4.1
 
 ---

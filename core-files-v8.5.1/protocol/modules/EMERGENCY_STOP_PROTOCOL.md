@@ -120,7 +120,7 @@ Emergency checkpoints are stored in `.dzp-killswitch/checkpoint.json`:
 Each agent file must include a domain-specific addendum:
 
 ```markdown
-## EMERGENCY STOP PROTOCOL (v8.5.1+)
+## EMERGENCY STOP PROTOCOL (v8.6.0+)
 
 **Full Protocol**: See `protocol/modules/EMERGENCY_STOP_PROTOCOL.md`
 
@@ -136,4 +136,4 @@ Each agent file must include a domain-specific addendum:
 ---
 
 **Module Version:** 1.0.0
-**Last Updated:** 2025-11-26
+**Last Updated:** 2025-12-02

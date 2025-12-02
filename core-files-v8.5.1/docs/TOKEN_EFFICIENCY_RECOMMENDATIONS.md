@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Domain Zero Protocol - Token Efficiency Recommendations
 
 > **Classification:** CORE FILE
-> **Version:** 8.5.1
+> **Version:** 8.6.0
 > **Last Updated:** 2025-11-27
 > **Purpose:** Formal guidelines for maintaining token efficiency while preserving full protocol behavior
 
@@ -125,7 +125,7 @@ When an Extended agent is needed, prefer this pattern:
   - Long-lived sessions (Claude Code, IDE plugins): Let the environment maintain context; just say for example:
     - `"Read protocol/yuuji.agent.md and implement [feature]"` once per feature or per logical work chunk.
   - Short sessions: Reference protocol by name and version instead of inlining the entire file:
-    - "Follow Domain Zero Protocol v8.5.1 (already loaded) and use Yuuji for implementation."
+    - "Follow Domain Zero Protocol v8.6.0 (already loaded) and use Yuuji for implementation."
 
 ### 4.2 Be Specific with Tasks
 

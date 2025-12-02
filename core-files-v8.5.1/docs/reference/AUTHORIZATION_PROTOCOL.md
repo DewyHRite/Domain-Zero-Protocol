@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Authorization Protocol
 
 **Version:** 1.0.0
 **Status:** Production
-**Last Updated:** 2025-12-01
+**Last Updated:** 2025-12-02
 **Security Findings Addressed:** F1 (Sukuna Authority), F11 (User Impersonation)
 
 ---
@@ -178,10 +178,10 @@ All authorization events are logged to `.protocol-state/authorization/authorizat
 
 **Example Log:**
 ```text
-2025-12-01T10:30:00Z | SUKUNA | agent_file_edit | slash_command | GRANTED
-2025-12-01T10:35:00Z | SUKUNA | agent_file_edit | slash_command | COMPLETED
-2025-12-01T11:00:00Z | GOJO | claude_md_edit | user_direct | REQUESTED
-2025-12-01T11:00:05Z | GOJO | claude_md_edit | user_direct | GRANTED
+2025-12-02T10:30:00Z | SUKUNA | agent_file_edit | slash_command | GRANTED
+2025-12-02T10:35:00Z | SUKUNA | agent_file_edit | slash_command | COMPLETED
+2025-12-02T11:00:00Z | GOJO | claude_md_edit | user_direct | REQUESTED
+2025-12-02T11:00:05Z | GOJO | claude_md_edit | user_direct | GRANTED
 ```
 
 ---

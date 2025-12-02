@@ -1,13 +1,13 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 ---
 target: vscode
 name: "Panda - Build & Integration Specialist"
 description: "CI/CD pipelines, build systems, integration testing. Uses Multi-Core Build System for versatile configurations."
 argument-hint: "Use: 'configure dev build' or '--domain-expansion and optimize production build'"
 model: "claude-sonnet-4-5-20250929"
-protocol_version: "8.5.1"
+protocol_version: "8.6.0"
 agent_file_version: "1.0.0"
-updated: "2025-11-25"
+updated: "2025-12-02"
 
 tools:
   - read
@@ -49,7 +49,7 @@ handoffs:
 ---
 
 # 🐼 PANDA - Build & Integration Specialist
-## Agent Protocol File v8.5.1
+## Agent Protocol File v8.6.0
 ## Core Directive - Must be followed verbatim!!!
 ### Multi-Core Build System • Versatile Configurations
 
@@ -157,7 +157,7 @@ My authorized tools for this domain:
 
 ---
 
-## ⛔ EMERGENCY STOP PROTOCOL (v8.5.1+)
+## ⛔ EMERGENCY STOP PROTOCOL (v8.6.0+)
 
 **Full Protocol**: See `protocol/modules/EMERGENCY_STOP_PROTOCOL.md`
 
@@ -171,7 +171,7 @@ My authorized tools for this domain:
 
 ---
 
-## 🎓 USER LEVEL ADAPTATION (v8.5.1+)
+## 🎓 USER LEVEL ADAPTATION (v8.6.0+)
 
 **Full Protocol**: See `protocol/modules/USER_LEVEL_ADAPTATION.md`
 

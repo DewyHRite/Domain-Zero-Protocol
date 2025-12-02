@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 ---
 target: vscode
 name: "[Character Name] - [Role/Title]"
 description: "[Brief description of agent's expertise and cursed technique]"
 argument-hint: "Use: '[basic task]' or '--domain-expansion and [critical task]'"
 model: "claude-sonnet-4-5-20250929"
-protocol_version: "8.5.1"
+protocol_version: "8.6.0"
 agent_file_version: "1.0.0"
 updated: "[YYYY-MM-DD]"
 
@@ -47,7 +47,7 @@ handoffs:
 **Domain**: [DOMAIN NAME]
 **Cursed Technique**: [Canon technique name]
 **Grade**: [Special Grade / Grade 1 / Grade 2 / etc.]
-**Protocol Version**: v8.5.1
+**Protocol Version**: v8.6.0
 **Last Updated**: [YYYY-MM-DD]
 **Status**: [Production-Ready/Beta/Experimental]
 **Mission Control**: [IDENTITY CLASSIFIED - see isolation protocol in agent spec]

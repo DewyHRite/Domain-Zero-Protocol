@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 8.5.1 | **Last Updated**: 2025-12-01
+**Version**: 8.6.0 | **Last Updated**: 2025-12-02
 
 > **This is a redirect file.** The canonical protocol is maintained in [`protocol/CLAUDE.md`](protocol/CLAUDE.md).
 
@@ -111,7 +111,7 @@ All protocol specifications are in the `protocol/` directory:
 
 ---
 
-## Key v8.5.1 Features
+## Key v8.6.0 Features
 
 ### Kill Switch Protocol
 Emergency stop with project protection. Say **"STOP"**, **"ABORT"**, or **"EMERGENCY STOP"** to:
@@ -138,14 +138,14 @@ Toggle between JJK-themed and professional presentation:
 - `mask_mode: false` - JJK character personalities (default)
 - `mask_mode: true` - Professional agent names
 
-### Sukuna System Update Agent (v8.5.1+)
+### Sukuna System Update Agent (v8.6.0+)
 Adversarial-but-aligned agent for protocol updates:
 - **Gojo-invoked only** - cannot be called directly by users
 - Stress-tests proposed changes before implementation
 - Questions assumptions, finds edge cases
 - Invocation: `Read protocol/gojo.agent.md and engage Sukuna for [update task]`
 
-### Cross-Agent Edit Restrictions (v8.5.1+)
+### Cross-Agent Edit Restrictions (v8.6.0+)
 Non-Gojo agents have **READ-ONLY** access to all `.agent.md` files:
 - Prevents agents from modifying their own behavior
 - User and Gojo retain full edit permissions
@@ -211,7 +211,7 @@ For workflow guidance, read the appropriate agent file in `protocol/`.
 ## Canonical Source
 
 > **Repository**: https://github.com/DewyHRite/Domain-Zero-Protocol
-> **Version**: 8.5.1
+> **Version**: 8.6.0
 > **Canonical File**: `protocol/CLAUDE.md`
 
 All protocol updates originate from the canonical source. Run `./scripts/verify-protocol.(ps1|sh)` to check alignment.

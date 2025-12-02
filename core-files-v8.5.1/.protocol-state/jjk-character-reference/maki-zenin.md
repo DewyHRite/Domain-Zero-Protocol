@@ -3,7 +3,7 @@
 # Maki Zenin - JJK Character Reference
 **Source**: Jujutsu Kaisen Fandom Wiki
 **URL**: <https://jujutsu-kaisen.fandom.com/wiki/Maki_Zenin>
-**Downloaded**: 2025-11-25
+**Downloaded**: 2025-12-02
 **Protocol Version**: v8.4.1
 
 ---

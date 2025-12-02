@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Domain Zero Agents - Full JJK Edition
 
 **Version**: 1.0.0
@@ -503,7 +503,7 @@ Created a new JJK agent? Share it!
 
 ## 🔄 Protocol Version Compatibility
 
-**Current Protocol Version**: v8.5.1
+**Current Protocol Version**: v8.6.0
 
 ### v8.0.0+ Updates (.agent.md Format)
 

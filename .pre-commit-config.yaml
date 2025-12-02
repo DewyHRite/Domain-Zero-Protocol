@@ -1,4 +1,4 @@
-# Domain Zero Protocol - Pre-commit Configuration v8.5.1
+# Domain Zero Protocol - Pre-commit Configuration v8.6.0
 # Purpose: Enforce protocol integrity before commits
 # Security: Addresses F4, F6, F9 from red-team assessment
 #

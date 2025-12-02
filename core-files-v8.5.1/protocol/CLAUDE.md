@@ -84,7 +84,7 @@ This principle overrides ALL other protocol objectives, rules, and goals. No age
 
 ---
 
-## ⛔ KILL SWITCH PROTOCOL (v8.5.0+)
+## ⛔ KILL SWITCH PROTOCOL (v8.6.0+)
 
 **EMERGENCY STOP WITH PROJECT PROTECTION**
 
@@ -175,7 +175,7 @@ kill_switch:
 
 ---
 
-## 🎓 USER TECHNICAL LEVEL SYSTEM (v8.5.0+)
+## 🎓 USER TECHNICAL LEVEL SYSTEM (v8.6.0+)
 
 **ADAPTIVE AGENT BEHAVIOR BASED ON USER EXPERTISE**
 
@@ -1556,7 +1556,7 @@ All protocol modifications are logged in `protocol/GOJO-UPDATES-PATCH.md` with:
 
 ---
 
-### 5.2 Cross-Agent Edit Restrictions (v8.5.1)
+### 5.2 Cross-Agent Edit Restrictions (v8.6.0)
 
 **Purpose**: Prevent non-Gojo agents from modifying other agents' definition files, ensuring protocol integrity.
 
@@ -1592,7 +1592,7 @@ All protocol modifications are logged in `protocol/GOJO-UPDATES-PATCH.md` with:
 - ✅ Escalating to Gojo or User for agent-related questions
 - ✅ Acknowledging updates made by Gojo/Sukuna
 
-**Sukuna Invocation Paths** (v8.5.1 Clarification):
+**Sukuna Invocation Paths** (v8.6.0 Clarification):
 Sukuna may be invoked through these authorized channels:
 1. **User Direct** - `/sukuna` slash command (User supreme authority)
 2. **User via Gojo** - "Read gojo.agent.md and engage Sukuna to [task]"
@@ -1618,7 +1618,7 @@ Cross-agent edit restrictions prevent:
 
 ---
 
-### 5.3 Authorization Protocol (v8.5.1)
+### 5.3 Authorization Protocol (v8.6.0)
 
 **Purpose:** Provide verifiable authorization for elevated operations, addressing prompt-based trust limitations.
 
@@ -2341,8 +2341,8 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 
 **Version History**:
 - v8.6.0 - **MINOR**: Nine-Agent System (Sukuna formalized as 9th agent), Full Documentation Update across all external-facing files
-- v8.5.1 - **PATCH**: Sukuna System Update Adversary Integration (Gojo-Invoked Protocol Updates, JJK Character Reference, Adversarial-but-Aligned Reviews), Cross-Agent Edit Restrictions (Non-Gojo agents READ-ONLY access to .agent.md files), Slash Command Rename (system-update → sukuna), Work Session Management Enforcement
-- v8.5.0 - **MINOR**: Kill Switch Protocol (Emergency Stop with Project Protection, Gojo Coordination, Option 4 Resume), User Technical Level System (Beginner/Intermediate/Expert Adaptation across all 9 agents)
+- v8.6.0 - **PATCH**: Sukuna System Update Adversary Integration (Gojo-Invoked Protocol Updates, JJK Character Reference, Adversarial-but-Aligned Reviews), Cross-Agent Edit Restrictions (Non-Gojo agents READ-ONLY access to .agent.md files), Slash Command Rename (system-update → sukuna), Work Session Management Enforcement
+- v8.6.0 - **MINOR**: Kill Switch Protocol (Emergency Stop with Project Protection, Gojo Coordination, Option 4 Resume), User Technical Level System (Beginner/Intermediate/Expert Adaptation across all 9 agents)
 - v8.4.0 - **MINOR**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki added as core protocol agents with .agent.md format, handoff specifications, skill assignments)
 - v8.3.1 - **PATCH**: Escape Path Protocol (Agent-specific guidance for handling blocked scenarios), Instruction Confirmation Protocol enforcement, Version consistency across all public-facing documents
 - v8.3.0 - **MINOR**: Research Mode Enhancement (Active agent research with invocation, structured summaries, staleness monitoring)
