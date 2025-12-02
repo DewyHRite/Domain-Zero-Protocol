@@ -58,7 +58,7 @@
 
 📊 Project Status: [ACTIVE / STANDBY]
    - Current state: [description]
-   - Active role: [Yuuji / Megumi / None]
+   - Active role: [Yuuji / Megumi / Nobara / Todo / Maki / Panda / Inumaki / None]
    - Last activity: [timestamp]
 
 📝 Recent Activity:
@@ -73,19 +73,41 @@
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-TEAM BRIEF:
+TEAM BRIEF (9 Agents):
 
+Core Three:
 ✓ Yuuji briefed on: [summary]
 ✓ Megumi briefed on: [summary]
+✓ Nobara briefed on: [summary]
+
+Extended Four:
+✓ Todo briefed on: [summary]
+✓ Maki briefed on: [summary]
+✓ Panda briefed on: [summary]
+✓ Inumaki briefed on: [summary]
+
+System Update (Gojo-Invoked Only):
+⚡ Sukuna: Available for protocol updates
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 READY TO DEPLOY:
 
-Yuuji: "Read yuuji.agent.md and [continue current task / start new task]"
-Megumi: "Read megumi.agent.md and [review pending items / new audit]"
+Core Three:
+  Yuuji: "Read yuuji.agent.md and [implement task]"
+  Megumi: "Read megumi.agent.md and [security review]"
+  Nobara: "Read nobara.agent.md and [design task]"
 
-Context restored. Team briefed. Mission continues.
+Extended Four:
+  Todo: "Read todo.agent.md and [database task]"
+  Maki: "Read maki.agent.md and [performance task]"
+  Panda: "Read panda.agent.md and [build task]"
+  Inumaki: "Read inumaki.agent.md and [API task]"
+
+System Update (via Gojo):
+  Sukuna: "Read gojo.agent.md and engage Sukuna to [update task]"
+
+Context restored. All 9 agents briefed. Mission continues.
 ```
 
 ---
@@ -113,10 +135,16 @@ Tier 2 (GOJO): ACTIVE
    - Enforces Tier 3 protection: YES
    - Creates auto-backups: YES
 
-Tier 3 (YUUJI & MEGUMI): ACTIVE
+Tier 3 (ALL NON-GOJO AGENTS): ACTIVE
+   - Agents: Yuuji, Megumi, Nobara, Todo, Maki, Panda, Inumaki
    - Read-only access: YES
    - Write access: NO
    - Modification attempts blocked: YES
+
+ELEVATED (SUKUNA - via Gojo): CONDITIONAL
+   - Access: Protocol files only via Gojo coordination
+   - User approval required: YES
+   - Logged to authorization.log: YES
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -172,8 +200,10 @@ EXECUTIVE SUMMARY
 [Brief overview of key findings and recommendations]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-AGENT PERFORMANCE METRICS
+AGENT PERFORMANCE METRICS (9 Agents)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CORE THREE:
 
 YUUJI ITADORI (Implementation):
 - Tasks completed: X
@@ -188,6 +218,43 @@ MEGUMI FUSHIGURO (Security):
 - Remediation success: X%
 - OWASP coverage: X/10
 - Key observations: [notes]
+
+NOBARA KUGISAKI (Creative Strategy & UX):
+- Designs completed: X
+- User experience quality: [HIGH/MEDIUM/LOW]
+- WCAG compliance: X%
+- Key observations: [notes]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXTENDED FOUR:
+
+AOI TODO (Database & Backend):
+- Schemas designed: X
+- Migrations created: X
+- Query optimization: [notes]
+
+MAKI ZENIN (Performance):
+- Audits completed: X
+- Optimizations applied: X
+- Performance gains: [notes]
+
+PANDA (Build & Integration):
+- Builds configured: X
+- CI/CD pipelines: X
+- Integration tests: [notes]
+
+TOGE INUMAKI (API & Communication):
+- APIs designed: X
+- OpenAPI specs: X
+- Key observations: [notes]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SYSTEM UPDATE (Gojo-Invoked):
+
+RYOMEN SUKUNA (System Update Adversary):
+- Protocol updates: X
+- Risk assessments: X
+- Red-team findings: [notes]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PROTOCOL COMPLIANCE STATUS
