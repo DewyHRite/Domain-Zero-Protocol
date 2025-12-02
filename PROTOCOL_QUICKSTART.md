@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Domain Zero Protocol - Quick Start Guide
 
 ## Get Up and Running with Domain Zero in 2 Minutes
@@ -54,7 +54,7 @@ cp "Domain Zero Protocol/protocol.config.yaml" your-project/
 ```
 Add to memory: Domain Zero Protocol
 
-I use Domain Zero Protocol v8.5.1 for AI development. Eight-agent system:
+I use Domain Zero Protocol v8.6.0 for AI development. Nine-agent system:
 
 Core Four:
 - YUUJI: Implementation (TDD)
@@ -68,7 +68,10 @@ Extended Four:
 - PANDA: Build & integration
 - INUMAKI: API & communication
 
-Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md, protocol/inumaki.agent.md
+Special Agent:
+- SUKUNA: System update adversary (Gojo-invoked only)
+
+Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md, protocol/inumaki.agent.md, protocol/sukuna.agent.md
 Tiers: Rapid/Standard/Critical
 Always read protocol files when I reference them.
 Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
@@ -77,8 +80,8 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 **ChatGPT (Custom Instructions)**:
 Add to Settings → Personalization → Custom Instructions:
 ```
-I use Domain Zero Protocol v8.5.1 (eight-agent AI dev framework).
-Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md, protocol/inumaki.agent.md.
+I use Domain Zero Protocol v8.6.0 (nine-agent AI dev framework).
+Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md, protocol/inumaki.agent.md, protocol/sukuna.agent.md.
 Always read protocol files first.
 ```
 
@@ -133,7 +136,7 @@ Read protocol/yuuji.agent.md --tier critical and implement OAuth2 authentication
 ## You're Done! 🎉
 
 **What You Just Set Up**:
-- ✅ Four AI agents (Yuuji, Megumi, Nobara, Gojo) ready to work
+- ✅ Nine AI agents (Yuuji, Megumi, Nobara, Gojo, Todo, Maki, Panda, Inumaki, Sukuna) ready to work
 - ✅ Three-tier workflow system (Rapid/Standard/Critical)
 - ✅ Test-first development (TDD) by default
 - ✅ OWASP Top 10 security review
@@ -469,6 +472,6 @@ You'll know Domain Zero is working when:
 
 ---
 
-**Domain Zero Protocol v8.5.1** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v8.6.0** - Perfect Code Through Infinite Collaboration
 
 *The weight is real. The protocol is absolute. Domain Zero is active.*

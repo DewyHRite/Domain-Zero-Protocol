@@ -1,0 +1,57 @@
+{
+  "_metadata": {
+    "document_type": "INTERNAL DOCUMENT",
+    "classification": "INTERNAL",
+    "description": "Backup Manifest - Tracks all backup operations and rollback capabilities",
+    "created": "{{INSTALL_DATE}}",
+    "last_updated": "{{INSTALL_DATE}}",
+    "framework_version": "1.2.0",
+    "template": true
+  },
+  "backup_directory": ".protocol-state/backups",
+  "backup_naming_convention": "{filename}_{timestamp}.backup",
+  "timestamp_format": "YYYY-MM-DD_HH-MM-SS",
+  "active_backups": [],
+  "backup_procedures": {
+    "before_modification": [
+      "1. Identify all files targeted for modification",
+      "2. Create timestamped backup for each file",
+      "3. Verify backup integrity through content comparison",
+      "4. Document backup location in this manifest",
+      "5. Record expected rollback procedure"
+    ],
+    "rollback_execution": [
+      "1. Halt all current operations",
+      "2. Locate backup files from manifest",
+      "3. Verify backup file integrity",
+      "4. Restore original files from backups",
+      "5. Verify restoration success",
+      "6. Update manifest with rollback record"
+    ]
+  },
+  "backup_history": [],
+  "rollback_history": [],
+  "integrity_checks": {
+    "method": "content_comparison",
+    "last_check": null,
+    "check_interval_hours": 24
+  },
+  "template": {
+    "backup_entry": {
+      "id": "BACKUP-{timestamp}",
+      "created": "{timestamp}",
+      "update_id": "UPDATE-{date}-{seq}",
+      "files": [
+        {
+          "original_path": "{path}",
+          "backup_path": "{backup_path}",
+          "checksum": "{hash}",
+          "size_bytes": 0,
+          "verified": false
+        }
+      ],
+      "rollback_verified": false,
+      "status": "ACTIVE"
+    }
+  }
+}
