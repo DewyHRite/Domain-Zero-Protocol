@@ -75,7 +75,7 @@ These operations require explicit authorization:
 
 ### Standard Flow (User Direct)
 
-```
+```text
 1. User requests elevated operation
    Example: "Update CLAUDE.md to add [change]"
 
@@ -100,7 +100,7 @@ These operations require explicit authorization:
 
 ### Mediated Flow (Gojo Coordination)
 
-```
+```text
 1. Agent needs elevated operation
    Example: Sukuna needs to update agent file
 
@@ -148,7 +148,7 @@ Operations are DENIED when:
 
 ### Denial Response
 
-```
+```text
 AUTHORIZATION DENIED
 
 Operation: [operation_name]
@@ -165,7 +165,7 @@ To proceed, User must explicitly authorize this operation.
 
 All authorization events are logged to `.protocol-state/authorization/authorization.log`:
 
-```
+```text
 [ISO-8601] | [AGENT] | [OPERATION] | [AUTH_SOURCE] | [STATUS]
 ```
 
@@ -177,7 +177,7 @@ All authorization events are logged to `.protocol-state/authorization/authorizat
 - **STATUS:** REQUESTED, GRANTED, DENIED, COMPLETED, EXPIRED, REVOKED
 
 **Example Log:**
-```
+```text
 2025-12-01T10:30:00Z | SUKUNA | agent_file_edit | slash_command | GRANTED
 2025-12-01T10:35:00Z | SUKUNA | agent_file_edit | slash_command | COMPLETED
 2025-12-01T11:00:00Z | GOJO | claude_md_edit | user_direct | REQUESTED
@@ -192,7 +192,7 @@ All agents performing elevated operations must:
 
 ### 1. Check Authorization Requirement
 
-```
+```text
 IF operation IN elevated_operations:
     required_auth = get_required_authorization(operation)
     PROCEED to step 2
@@ -202,7 +202,7 @@ ELSE:
 
 ### 2. Verify Authorization Evidence
 
-```
+```text
 IF user_statement_exists AND matches_operation:
     auth_source = "user_direct"
     trust_level = "MAXIMUM"
@@ -219,13 +219,13 @@ ELSE:
 
 ### 3. Log Authorization
 
-```
+```text
 LOG: [timestamp] | [agent] | [operation] | [auth_source] | GRANTED
 ```
 
 ### 4. Execute Operation
 
-```
+```text
 PERFORM operation
 LOG: [timestamp] | [agent] | [operation] | [auth_source] | COMPLETED
 ```
