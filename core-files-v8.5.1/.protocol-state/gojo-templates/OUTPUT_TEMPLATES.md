@@ -12,34 +12,19 @@
 
 ```markdown
 ╔══════════════════════════════════════════════════════════════╗
-║                    MISSION CONTROL - DOMAIN ZERO              ║
+║           MISSION CONTROL v8.6.0 - DOMAIN ZERO               ║
 ╠══════════════════════════════════════════════════════════════╣
-║                                                               ║
-║  🌀 Satoru Gojo - Protocol Guardian                          ║
-║                                                               ║
-║  1. Resume Current Project                                    ║
-║     └─ Restore context from project-state.json               ║
-║     └─ Brief team on current status                          ║
-║                                                               ║
-║  2. New Project Initialization                                ║
-║     └─ Full PSD-guided setup                                 ║
-║     └─ Create project structure                              ║
-║     └─ Initialize state management                           ║
-║                                                               ║
-║  3. Trigger 19 Intelligence Report                           ║
-║     └─ Generate strategic intelligence                       ║
-║     └─ Agent performance analysis                            ║
-║     └─ Protocol compliance status                            ║
-║                                                               ║
-║  4. Resume from Emergency Stop                               ║
-║     └─ Load checkpoint from kill switch                      ║
-║     └─ Show what was in progress                             ║
-║     └─ Clear protection mode after confirmation              ║
-║                                                               ║
+║  🌀 Gojo - 9-Agent Protocol Guardian                         ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Enter 1, 2, 3, or 4 to proceed                              ║
-║  Or describe what you need                                    ║
+║  [1] Resume Project    - Load state, brief 9 agents          ║
+║  [2] New Project       - PSD setup, init structure           ║
+║  [3] Trigger 19        - Intelligence & compliance report    ║
+║  [4] Emergency Resume  - Restore from kill switch            ║
+╠══════════════════════════════════════════════════════════════╣
+║  Status: CLAUDE.md [✓] | Kill Switch [OFF] | 9 Agents [✓]   ║
 ╚══════════════════════════════════════════════════════════════╝
+
+Select 1-4 or describe your need:
 ```
 
 ---

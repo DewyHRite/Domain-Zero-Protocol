@@ -285,3 +285,16 @@ As the user, you can:
   - Ensure that any use of Sukuna remains consistent with your project’s risk tolerance and policies.
 
 This file describes the **intended** behavior of Sukuna in the stock v8.6.0-based configuration. Forks are free to adjust, but should consider carefully how changes affect safety, clarity, and maintainability of the overall Domain Zero Protocol.
+
+---
+
+## 8. Output Templates
+
+**Templates Reference**: `.protocol-state/sukuna-templates/OUTPUT_TEMPLATES.md`
+
+This file contains all standard System Update output templates:
+- Template 1: System Update Interface
+- Template 2: Update Plan Presentation
+- Template 3: Risk Assessment Report
+- Template 4: Update Execution Summary
+- Template 5: Rollback Recovery Interface
