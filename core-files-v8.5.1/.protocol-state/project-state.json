@@ -1,5 +1,5 @@
 {
-  "protocol_version": "8.5.1",
+  "protocol_version": "8.6.0",
   "custom_triggers": {
     "19": {
       "function": "Trigger 19",
@@ -72,6 +72,39 @@
     "last_backup": null,
     "total_updates": 1,
     "total_rollbacks": 0
+  },
+  "mask_mode": {
+    "enabled": true,
+    "theme": "jjk",
+    "last_toggled": null,
+    "toggle_count": 0,
+    "notes": "Mask Mode controls agent presentation style. true = JJK theme (default), false = professional mode. Toggle with 'Toggle mask mode' command."
+  },
+  "user_technical_level": {
+    "current": "intermediate",
+    "default": "intermediate",
+    "allow_runtime_change": true,
+    "last_changed": null,
+    "notes": "User's declared technical expertise level. Affects all agent communication style, explanation depth, and autonomy. Options: beginner, intermediate, expert."
+  },
+  "work_session_management": {
+    "enabled": true,
+    "session_start": null,
+    "total_session_minutes": 0,
+    "alerts_issued": 0,
+    "last_alert": null,
+    "thresholds": {
+      "warning_hours": 4,
+      "critical_hours": 6,
+      "late_night_start": 22,
+      "break_interval_minutes": 90
+    },
+    "user_responses": {
+      "breaks_taken": 0,
+      "alerts_acknowledged": 0,
+      "alerts_dismissed": 0
+    },
+    "notes": "Work session monitoring enforced by Gojo. Alerts at 4+ hours continuous work, late night (after 22:00), and extended sessions (6+ hours). User can configure thresholds in protocol.config.yaml."
   },
   "tier_usage_statistics": {
     "tier_1_rapid": {

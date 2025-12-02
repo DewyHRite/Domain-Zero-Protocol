@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
-**Version:** v8.5.1
-**Last Updated:** 2025-12-01
+**Version:** v8.6.0
+**Last Updated:** 2025-12-02
 
 ---
 
@@ -37,7 +37,7 @@ Domain Zero is a nine-agent AI development framework that provides specialized e
 - **PANDA** - Build & Integration Specialist (CI/CD, build systems)
 - **INUMAKI** - API & Communication Specialist (REST, GraphQL, WebSockets)
 
-**Special Agent (v8.5.1+):**
+**Special Agent (v8.6.0+):**
 - **SUKUNA** - System Update Agent (adversarial-but-aligned, Gojo-invoked only)
 
 The protocol uses a three-tier workflow system (Rapid/Standard/Critical) to balance speed and rigor.
@@ -180,7 +180,7 @@ Is this production code?
 - **GOJO**: Can modify with your explicit authorization ✅
 - **YUUJI, MEGUMI, NOBARA**: READ-ONLY access ❌
 
-**Agent Files (.agent.md) - Cross-Agent Edit Restrictions (v8.5.1+):**
+**Agent Files (.agent.md) - Cross-Agent Edit Restrictions (v8.6.0+):**
 - **YOU** (user): Full access ✅
 - **GOJO**: Full access (with authorization) ✅
 - **SUKUNA**: Via Gojo with explicit authorization ✅
@@ -223,7 +223,7 @@ Read protocol/MEGUMI.md - review the authentication changes in auth.py
 
 ### What is Sukuna and how do I invoke it?
 
-**Sukuna** is the System Update Agent (v8.5.1+), designed for protocol updates and improvements.
+**Sukuna** is the System Update Agent (v8.6.0+), designed for protocol updates and improvements.
 
 **Key Characteristics:**
 - **Adversarial-but-aligned**: Questions assumptions, finds edge cases
@@ -241,7 +241,7 @@ Read protocol/gojo.agent.md and engage Sukuna for [update task]
 
 ### What are Cross-Agent Edit Restrictions?
 
-**v8.5.1 Feature:** Non-Gojo agents now have READ-ONLY access to all `.agent.md` files.
+**v8.6.0 Feature:** Non-Gojo agents now have READ-ONLY access to all `.agent.md` files.
 
 **Access Levels:**
 | Entity | CLAUDE.md | .agent.md files |
@@ -607,5 +607,5 @@ Runs only critical checks (dependencies, files, config, yaml)
 ---
 
 **Last Updated:** December 1, 2025
-**Protocol Version:** v8.5.1
+**Protocol Version:** v8.6.0
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol

@@ -1,18 +1,18 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.5.1
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.6.0
 ## Main Protocol File - Domain Zero
 
-**Version**: 8.5.1
+**Version**: 8.6.0
 **Status**: Production-Ready
-**Last Updated**: 2025-12-01
-**Major Enhancements**: Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions (v8.5.1), Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
+**Last Updated**: 2025-12-02
+**Major Enhancements**: Nine-Agent System (Sukuna formalized as 9th agent), Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions, Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 
 ---
 
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v8.5.1
+> **Current Local Protocol Version**: v8.6.0
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations. 
@@ -513,30 +513,37 @@ USER invokes → GOJO activates Domain Expansion
          **DOMAIN** - The bounded space I create:
 ```
 ```
-╔═══════════════════════════════════════════════════════════════╗
-║              DOMAIN ZERO: ACTIVATED (v8.5.0)                 ║
-║                                                               ║
-║                   [GOJO - Domain Controller]                  ║
-║                   (Identity Hidden from Agents)               ║
-║                            ↓                                  ║
-║   ┌─────────────────────────────────────────────────────┐     ║
-║   │                  CORE THREE                         │     ║
-║   │  YUUJI         MEGUMI        NOBARA                 │     ║
-║   │  Implement     Security      Creative               │     ║
-║   │  (yuuji.agent.md) (megumi.agent.md) (nobara.agent.md) │  ║
-║   └─────────────────────────────────────────────────────┘     ║
-║                            ↓                                  ║
-║   ┌─────────────────────────────────────────────────────┐     ║
-║   │               EXTENDED FOUR                         │     ║
-║   │  TODO          MAKI          PANDA        INUMAKI   │     ║
-║   │  Database      Performance   Build        API       │     ║
-║   │  (todo.agent.md) (maki.agent.md) (panda.agent.md) (inumaki.agent.md) │     ║
-║   └─────────────────────────────────────────────────────┘     ║
-║                            ↓                                  ║
-║                  Perfect Collaboration                        ║
-║                            ↓                                  ║
-║                    ZERO-DEFECT CODE                           ║
-╚═══════════════════════════════════════════════════════════════╗
+╔═══════════════════════════════════════════════════════════════════╗
+║                 DOMAIN ZERO: ACTIVATED (v8.6.0)                   ║
+║                                                                   ║
+║                     [GOJO - Domain Controller]                    ║
+║                     (Identity Hidden from Agents)                 ║
+║                              ↓                                    ║
+║   ┌───────────────────────────────────────────────────────────┐   ║
+║   │                      CORE THREE                           │   ║
+║   │  YUUJI           MEGUMI          NOBARA                   │   ║
+║   │  Implement       Security        Creative                 │   ║
+║   │  (yuuji.agent.md) (megumi.agent.md) (nobara.agent.md)     │   ║
+║   └───────────────────────────────────────────────────────────┘   ║
+║                              ↓                                    ║
+║   ┌───────────────────────────────────────────────────────────┐   ║
+║   │                     EXTENDED FOUR                         │   ║
+║   │  TODO            MAKI           PANDA          INUMAKI    │   ║
+║   │  Database        Performance    Build          API        │   ║
+║   │  (todo.agent.md) (maki.agent.md) (panda.agent.md) (inumaki.agent.md) │   ║
+║   └───────────────────────────────────────────────────────────┘   ║
+║                              ↓                                    ║
+║   ┌───────────────────────────────────────────────────────────┐   ║
+║   │                   SYSTEM UPDATE                           │   ║
+║   │  SUKUNA (Gojo-Invoked Only)                               │   ║
+║   │  Adversarial System Updates, Red-Team Reviews             │   ║
+║   │  (sukuna.agent.md)                                        │   ║
+║   └───────────────────────────────────────────────────────────┘   ║
+║                              ↓                                    ║
+║                    Perfect Collaboration                          ║
+║                              ↓                                    ║
+║                      ZERO-DEFECT CODE                             ║
+╚═══════════════════════════════════════════════════════════════════╝
 ```
 
 Within Domain Zero, all agents work in perfect harmony:
@@ -660,9 +667,9 @@ mask_mode:
 ## SYSTEM OVERVIEW
 
 ### What This Is
-An eight-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with psychological enforcement mechanisms, passive intelligence gathering, complete session continuity, and strict protocol file protection.
+A nine-agent AI development system that provides specialized expertise through distinct AI personalities, operating under absolute protocol authority with psychological enforcement mechanisms, passive intelligence gathering, complete session continuity, and strict protocol file protection.
 
-### The Eight Agents
+### The Nine Agents
 
 #### Core Three + Gojo (Supervisor)
 
@@ -1896,30 +1903,113 @@ When to execute rollback:
 ## PROJECT FILE STRUCTURE
 
 ```
-Domain-Zero/                         # Project root
-├── protocol/                        # Core protocol system
-│   ├── CLAUDE.md 🔒                 # Main protocol (PROTECTED - This file)
-│   ├── yuuji.agent.md                     # Implementation agent
-│   ├── megumi.agent.md                    # Security agent
-│   ├── gojo.agent.md                      # Mission Control & Protocol Guardian
+Domain-Zero/                              # Project root
+├── protocol/                             # Core protocol system
+│   ├── CLAUDE.md 🔒                      # Main protocol (PROTECTED - This file)
+│   ├── yuuji.agent.md                    # Implementation agent
+│   ├── megumi.agent.md                   # Security agent
+│   ├── nobara.agent.md                   # Creative strategy agent
+│   ├── gojo.agent.md                     # Mission Control & Protocol Guardian
+│   ├── sukuna.agent.md                   # System Update Adversary (Gojo-invoked)
+│   ├── todo.agent.md                     # Database & Backend specialist
+│   ├── maki.agent.md                     # Performance optimization specialist
+│   ├── panda.agent.md                    # Build & Integration specialist
+│   ├── inumaki.agent.md                  # API & Communication specialist
+│   ├── modules/                          # Shared behavior modules
+│   │   ├── BINDING_OATH.md               # Agent commitment protocol
+│   │   ├── EMERGENCY_STOP_PROTOCOL.md    # Kill Switch behavior
+│   │   ├── ESCAPE_PATH_PROTOCOL.md       # Agent escape paths
+│   │   ├── MASK_MODE_BEHAVIOR.md         # JJK vs Professional mode
+│   │   ├── MISSION_CONTROL_ISOLATION.md  # Gojo identity isolation
+│   │   ├── SAFETY_FIRST.md               # Safety principles
+│   │   └── USER_LEVEL_ADAPTATION.md      # Technical level adaptation
+│   ├── gojo-procedures/                  # Mission Control procedures
+│   │   └── OPERATIONAL_PROCEDURES.md     # Gojo operational guide
+│   ├── skills/                           # Agent skill system
+│   │   ├── AGENT_SKILLS_MAP.yaml         # Skill assignments
+│   │   ├── SKILL_REGISTRY.md             # Skill documentation
+│   │   └── skill-builder.md              # Skill creation guide
+│   ├── AGENT_SELF_IDENTIFICATION_STANDARD.md  # Agent banner spec
+│   ├── CANONICAL_SOURCE_ADOPTION.md      # Canonical source guide
+│   ├── EMERGENCY_STOP_STANDARD.md        # Emergency stop spec
+│   ├── ENVIRONMENT_TARGETING.md          # VS Code vs GitHub targeting
+│   ├── HANDOFF_SPECIFICATION.md          # Agent handoff protocol
+│   ├── MASK_MODE.md                      # Mask mode specification
+│   ├── MCP_INTEGRATION.md                # MCP server integration
+│   ├── MODE_INDICATORS.md                # Mode display systems
+│   ├── RESEARCH_MODE.md                  # Research mode spec
+│   ├── TECHNICAL_LEVEL_ADAPTATION.md     # User level adaptation
+│   └── TIER-SELECTION-GUIDE.md           # Tier system guide
 │
-├── .protocol-state/                 # State management (hidden)
-│   ├── project-state.json           # Current project state
-│   ├── dev-notes.md                 # Implementation log (Yuuji)
-│   ├── security-review.md           # Security findings (Megumi)
-│   └── trigger-19.md                # Intelligence reports (Gojo, private)
+├── docs/                                 # Documentation
+│   ├── FAQ.md                            # Frequently Asked Questions
+│   ├── TOKEN_EFFICIENCY_RECOMMENDATIONS.md  # Token optimization guide
+│   ├── SYSTEM_UPDATE_IMPLEMENTATION_GUIDE.md # System update guide
+│   ├── DZP_DZA_INSTALLATION_REVIEW.md    # Installation review
+│   ├── guides/                           # User guides
+│   │   ├── AGENT_BINDING_OATH.md         # Oath documentation
+│   │   ├── CREATING_CLAUDE_AGENTS.md     # Agent creation guide
+│   │   ├── DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md # Workflow guide
+│   │   ├── EMERGENCY_STOP_GUIDE.md       # Kill switch user guide
+│   │   ├── TIER_TRANSITION_GUIDE.md      # Tier transition guide
+│   │   └── USER_LEVEL_GUIDE.md           # User level guide
+│   ├── installation/                     # Installation guides
+│   │   ├── IMPLEMENTATION_GUIDE.md       # Full implementation guide
+│   │   ├── MCP_SERVER_SETUP.md           # MCP server setup
+│   │   └── SLASH_COMMANDS_INSTALLATION.md # Slash commands setup
+│   ├── reference/                        # Reference documentation
+│   │   ├── AUTHORIZATION_PROTOCOL.md     # Authorization spec
+│   │   ├── DOMAIN_ZERO_RESEARCH_AND_SKILLS_GUIDE.md # Research guide
+│   │   ├── INSTRUCTION_CONFIRMATION_PROTOCOL.md # Confirmation spec
+│   │   ├── MIGRATION_GUIDE_TEMPLATE.md   # Migration template
+│   │   ├── playwright.md                 # E2E testing guide
+│   │   └── REALITY_CHECK.md              # What DZP actually is
+│   └── templates/                        # Document templates
+│       └── DECISION_REASONING_TEMPLATE.md # Decision template
 │
-├── src/                             # Your source code
-├── tests/                           # Your tests
-├── .gitignore                       # Git ignore (trigger-19.md excluded)
-└── README.md                        # Project README
+├── .protocol-state/                      # State management (hidden)
+│   ├── project-state.json                # Current project state
+│   ├── dev-notes.md                      # Implementation log (Yuuji)
+│   ├── security-review.md                # Security findings (Megumi)
+│   ├── trigger-19.md                     # Intelligence reports (Gojo, private)
+│   ├── jjk-character-reference/          # JJK character mappings
+│   └── system-update-framework/          # System Update Framework (Sukuna access)
+│       ├── SYSTEM_UPDATE_FRAMEWORK.md    # Master framework document
+│       ├── plan-documentation.md         # Update planning & history
+│       ├── version-registry.json         # Version tracking registry
+│       ├── backup-manifest.json          # Backup tracking
+│       └── file-classifications.json     # File classification registry
+│
+├── .dzp-killswitch/                      # Kill Switch state (Gojo only)
+│   ├── state.json                        # Kill switch status
+│   ├── checkpoint.json                   # Emergency checkpoint
+│   └── activations.log                   # Activation history
+│
+├── .claude/commands/                     # Slash commands
+│   └── *.md                              # Agent invocation commands
+│
+├── Domain Zero Agents/                   # Generic agent templates
+├── Domain Zero Agents - Full JJK Edition/ # JJK character agents
+├── scripts/                              # Verification scripts
+├── src/                                  # Your source code
+├── tests/                                # Your tests
+├── protocol.config.yaml                  # Protocol configuration
+├── .gitignore                            # Git ignore patterns
+├── README.md                             # Project README
+├── VERSION.md                            # Version information
+├── CHANGELOG.md                          # Change history
+├── SECURITY.md                           # Security policy
+└── PROTOCOL_QUICKSTART.md                # Quick start guide
 ```
 
 **File Locations**:
-- **Protocol files** (read-only templates): `protocol/*.md`
+- **Protocol files** (read-only templates): `protocol/*.md`, `protocol/modules/*.md`, `protocol/skills/*.{md,yaml}`
+- **Documentation** (user guides): `docs/**/*.md`
 - **State files** (project-specific): `.protocol-state/*.{json,md}`
+- **System Update Framework** (Sukuna access): `.protocol-state/system-update-framework/`
+- **Kill Switch state** (Gojo only): `.dzp-killswitch/`
+- **Slash commands**: `.claude/commands/*.md`
 - **Your code**: `src/`, `tests/`, etc.
-```
 
 ---
 
@@ -2123,10 +2213,10 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 | maki.agent.md | ~2,500 | 1.3% |
 | panda.agent.md | ~2,500 | 1.3% |
 | inumaki.agent.md | ~2,500 | 1.3% |
-| **Total System (8 agents)** | **~29,500** | **~14.8%** |
+| **Total System (9 agents)** | **~32,000** | **~16%** |
 | **Available for Work** | **~170,500** | **~85.2%** |
 
-**Note**: Token estimates are approximate and may vary based on configuration. The full 8-agent system uses approximately 15% of the 200K context window, leaving over 85% for actual work. You typically only load the agents needed for your task.
+**Note**: Token estimates are approximate and may vary based on configuration. The full 9-agent system uses approximately 16% of the 200K context window, leaving over 84% for actual work. You typically only load the agents needed for your task.
 
 ---
 
@@ -2244,14 +2334,15 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 8.5.1
-**Protocol Version**: 8.5.1
-**Release Date**: December 1, 2025
-**Last Updated**: 2025-12-01
+**Current Version**: 8.6.0
+**Protocol Version**: 8.6.0
+**Release Date**: December 2, 2025
+**Last Updated**: 2025-12-02
 
 **Version History**:
+- v8.6.0 - **MINOR**: Nine-Agent System (Sukuna formalized as 9th agent), Full Documentation Update across all external-facing files
 - v8.5.1 - **PATCH**: Sukuna System Update Adversary Integration (Gojo-Invoked Protocol Updates, JJK Character Reference, Adversarial-but-Aligned Reviews), Cross-Agent Edit Restrictions (Non-Gojo agents READ-ONLY access to .agent.md files), Slash Command Rename (system-update → sukuna), Work Session Management Enforcement
-- v8.5.0 - **MINOR**: Kill Switch Protocol (Emergency Stop with Project Protection, Gojo Coordination, Option 4 Resume), User Technical Level System (Beginner/Intermediate/Expert Adaptation across all 8 agents)
+- v8.5.0 - **MINOR**: Kill Switch Protocol (Emergency Stop with Project Protection, Gojo Coordination, Option 4 Resume), User Technical Level System (Beginner/Intermediate/Expert Adaptation across all 9 agents)
 - v8.4.0 - **MINOR**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki added as core protocol agents with .agent.md format, handoff specifications, skill assignments)
 - v8.3.1 - **PATCH**: Escape Path Protocol (Agent-specific guidance for handling blocked scenarios), Instruction Confirmation Protocol enforcement, Version consistency across all public-facing documents
 - v8.3.0 - **MINOR**: Research Mode Enhancement (Active agent research with invocation, structured summaries, staleness monitoring)
@@ -2276,7 +2367,7 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 
 ---
 
-## 💡 TOKEN EFFICIENCY & MODULAR ARCHITECTURE (v8.5.1)
+## 💡 TOKEN EFFICIENCY & MODULAR ARCHITECTURE (v8.6.0)
 
 ### Optimize Context Usage While Preserving Protocol Behavior
 
@@ -2294,7 +2385,7 @@ Domain Zero Protocol uses a modular architecture to minimize token consumption w
 
 **DO**:
 - Read agent files once per feature/work chunk (not every message)
-- Reference protocol by name: "Follow Domain Zero v8.5.1 using Yuuji"
+- Reference protocol by name: "Follow Domain Zero v8.6.0 using Yuuji"
 - Formulate specific tasks: "Implement password reset in `src/auth/reset.py`"
 - Use appropriate tier: Tier 1 for prototypes, Tier 2 for production, Tier 3 for critical only
 

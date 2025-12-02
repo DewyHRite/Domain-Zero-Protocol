@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 ---
 target: vscode
 name: "[Character Name] - [Role/Title]"
@@ -47,7 +47,7 @@ handoffs:
 **Domain**: [DOMAIN NAME]
 **Cursed Technique**: [Canon technique name]
 **Grade**: [Special Grade / Grade 1 / Grade 2 / etc.]
-**Protocol Version**: v8.5.1
+**Protocol Version**: v8.6.0
 **Last Updated**: [YYYY-MM-DD]
 **Status**: [Production-Ready/Beta/Experimental]
 **Mission Control**: [IDENTITY CLASSIFIED - see isolation protocol in agent spec]

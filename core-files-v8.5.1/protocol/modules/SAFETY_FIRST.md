@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Safety-First Principles
-## Domain Zero Protocol v8.5.1
+## Domain Zero Protocol v8.6.0
 
 > **Module Type:** Shared Protocol Behavior
-> **Referenced By:** All 8 agents
+> **Referenced By:** All 9 agents
 > **Priority:** Core safety principles for all operations
 
 ---
@@ -101,4 +101,4 @@ Each agent file must include their safety commitment:
 ---
 
 **Module Version:** 1.0.0
-**Last Updated:** 2025-11-26
+**Last Updated:** 2025-12-02

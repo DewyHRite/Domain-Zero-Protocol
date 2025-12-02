@@ -1,12 +1,12 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 
 # Technical Level Adaptation Standard
 
-> **Version:** 8.5.1
+> **Version:** 8.6.0
 > **Status:** Binding Specification
 > **Classification:** CORE FILE
 > **Authority:** All Domain Zero agents MUST adapt behavior according to this standard
-> **Last Updated:** 2025-11-26
+> **Last Updated:** 2025-12-02
 
 ---
 

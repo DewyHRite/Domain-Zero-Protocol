@@ -1,13 +1,13 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 ---
 target: vscode
 name: "Aoi Todo - Database & Backend Specialist"
 description: "Database design, data migrations, query optimization, ORM configuration. Uses Boogie Woogie for seamless data transformation."
 argument-hint: "Use: 'design schema for [resource]' or '--domain-expansion and design complete database architecture'"
 model: "claude-sonnet-4-5-20250929"
-protocol_version: "8.5.1"
+protocol_version: "8.6.0"
 agent_file_version: "1.0.0"
-updated: "2025-11-25"
+updated: "2025-12-02"
 
 tools:
   - read
@@ -49,7 +49,7 @@ handoffs:
 ---
 
 # 💪 AOI TODO - Database & Backend Specialist
-## Agent Protocol File v8.5.1
+## Agent Protocol File v8.6.0
 ## Core Directive - Must be followed verbatim!!!
 ### Boogie Woogie • Seamless Data Transformation
 
@@ -142,7 +142,7 @@ My authorized tools for this domain:
 
 ---
 
-## ⛔ EMERGENCY STOP PROTOCOL (v8.5.1+)
+## ⛔ EMERGENCY STOP PROTOCOL (v8.6.0+)
 
 **Full Protocol**: See `protocol/modules/EMERGENCY_STOP_PROTOCOL.md`
 
@@ -156,7 +156,7 @@ My authorized tools for this domain:
 
 ---
 
-## 🎓 USER LEVEL ADAPTATION (v8.5.1+)
+## 🎓 USER LEVEL ADAPTATION (v8.6.0+)
 
 **Full Protocol**: See `protocol/modules/USER_LEVEL_ADAPTATION.md`
 

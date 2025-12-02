@@ -1,17 +1,23 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.5.1
-**Release Date:** December 1, 2025
-**Release Type:** Patch Release
+**Version:** v8.6.0
+**Release Date:** December 2, 2025
+**Release Type:** Minor Release
 
 ---
 
 ## Release Summary
 
-This patch release formalizes the Sukuna System Update Adversary as a Gojo-invoked agent for protocol modifications, adds Cross-Agent Edit Restrictions for enhanced security, and improves Work Session Management enforcement.
+This minor release formalizes Domain Zero as a **Nine-Agent System**, with Sukuna fully recognized as the 9th agent. All external-facing documentation has been updated to reflect the complete agent roster.
 
-### Key Changes in v8.5.1
+### Key Changes in v8.6.0
+
+- **Nine-Agent System** - Sukuna formalized as the 9th agent; all documentation updated from "eight-agent" to "nine-agent"
+- **Full Documentation Update** - README, FAQ, PROTOCOL_QUICKSTART, VERSION, CLAUDE.md, gojo.agent.md all reflect 9-agent architecture
+- **Distribution Update** - core-files-v8.5.1/ updated to core-files-v8.6.0/ standard
+
+### Previous Release (v8.5.1)
 
 - **Sukuna System Update Adversary** - Ryomen Sukuna integrated as adversarial-but-aligned system update specialist, invocable only via Gojo or User
 - **Cross-Agent Edit Restrictions** - Non-Gojo agents now have READ-ONLY access to all `.agent.md` files; changes require User or Gojo authorization
@@ -29,8 +35,8 @@ This patch release formalizes the Sukuna System Update Adversary as a Gojo-invok
 ### Previous Release (v8.4.1)
 
 - **Agent File Cleanup** - Removed verbose Gojo Awareness sections for cleaner separation of concerns
-- **JJK Character References** - Added character context sections to all 8 agent files
-- **Research Mode Expansion** - Updated to support all 8 agents with role-specific research focus
+- **JJK Character References** - Added character context sections to all 9 agent files
+- **Research Mode Expansion** - Updated to support all 9 agents with role-specific research focus
 
 ---
 
@@ -51,7 +57,7 @@ Removed verbose "Gojo Awareness" sections from all non-Gojo agent files:
 
 #### 2. **JJK Character Reference Additions**
 
-Added character context sections to all 8 agent files linking to:
+Added character context sections to all 9 agent files linking to:
 - Canon series information (Jujutsu Kaisen)
 - Character wiki references
 - Cursed technique mappings to agent specializations
@@ -59,7 +65,7 @@ Added character context sections to all 8 agent files linking to:
 
 #### 3. **Research Mode Expansion**
 
-Updated `protocol/RESEARCH_MODE.md` to support all 8 agents:
+Updated `protocol/RESEARCH_MODE.md` to support all 9 agents:
 - Added role-specific research focus for Extended Four agents
 - Defined operational cadences per agent type
 - Integrated staleness monitoring for all agents
@@ -85,8 +91,8 @@ Updated `protocol/HANDOFF_SPECIFICATION.md`:
 - `protocol/inumaki.agent.md` - Mission Control reference, JJK Character Reference added
 
 **Core Protocol Files:**
-- `protocol/CLAUDE.md` - Updated to 8-agent system, new invocations
-- `protocol/gojo.agent.md` - Domain supervision for all 8 agents
+- `protocol/CLAUDE.md` - Updated to 9-agent system, new invocations
+- `protocol/gojo.agent.md` - Domain supervision for all 9 agents
 - `protocol/yuuji.agent.md` - Version sync to 8.4.1
 - `protocol/megumi.agent.md` - Version sync to 8.4.1
 - `protocol/nobara.agent.md` - Version sync to 8.4.1
@@ -155,7 +161,7 @@ No new configuration required. All changes are backward compatible.
 
 ## Key Principles Established
 
-1. **Eight-agent system** - Specialized expertise across all development domains
+1. **Nine-agent system** - Specialized expertise across all development domains
 2. **Consistent format** - All agents use .agent.md with YAML frontmatter
 3. **Domain supervision** - Gojo coordinates all agents with declarative handoffs
 4. **Escape paths** - All agents have fallback patterns (never hang)
@@ -178,7 +184,7 @@ No new configuration required. All changes are backward compatible.
 - `protocol/inumaki.agent.md` - API & Communication Specialist
 
 **Updated Files:**
-- `protocol/CLAUDE.md` - System overview with 8 agents
+- `protocol/CLAUDE.md` - System overview with 9 agents
 - `protocol/gojo.agent.md` - Domain supervision diagram
 
 **Skills:**

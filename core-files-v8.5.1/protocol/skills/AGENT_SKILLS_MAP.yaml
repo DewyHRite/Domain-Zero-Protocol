@@ -3,7 +3,7 @@
 # are recommended per agent. Keep organization-specific skills in a private repo.
 
 version: 2
-updated: 2025-11-25
+updated: 2025-12-02
 
 canonical_reference:
   overview: https://claude.com/blog/skills

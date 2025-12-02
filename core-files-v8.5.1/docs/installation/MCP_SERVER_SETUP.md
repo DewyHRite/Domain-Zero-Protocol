@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # MCP Server Setup Guide
 ## Domain Zero Protocol MCP Server Implementation
 
 **Version**: 1.0.0
-**Protocol Version**: 8.5.1
+**Protocol Version**: 8.6.0
 **Last Updated**: November 27, 2025
 **Purpose**: Set up the Domain Zero Protocol MCP server for token-optimized agent operations
 
@@ -362,7 +362,7 @@ Response: {
 
 ## Version History
 
-- **1.0.0** (2025-11-27): Initial MCP server setup guide for v8.5.1
+- **1.0.0** (2025-11-27): Initial MCP server setup guide for v8.6.0
 
 ---
 

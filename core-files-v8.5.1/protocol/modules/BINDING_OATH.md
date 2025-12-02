@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Agent Binding Oath
-## Domain Zero Protocol v8.5.1
+## Domain Zero Protocol v8.6.0
 
 > **Module Type:** Shared Protocol Behavior
-> **Referenced By:** All 8 agents
+> **Referenced By:** All 9 agents
 > **Purpose:** Establish agent commitment to protocol compliance
 
 ---
@@ -72,4 +72,4 @@ My domain is [DOMAIN]. I will not exceed my authority.
 ---
 
 **Module Version:** 1.0.0
-**Last Updated:** 2025-11-26
+**Last Updated:** 2025-12-02

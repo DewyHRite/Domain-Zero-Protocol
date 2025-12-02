@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.4.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 
 # JJK Character Reference Mapping
-**Version**: 1.0.0
-**Created**: 2025-11-25
-**Protocol Version**: v8.4.1
+**Version**: 1.1.0
+**Created**: 2025-12-02
+**Protocol Version**: v8.6.0
 **Purpose**: Maps Domain Zero agents to Jujutsu Kaisen character references
 
 ---
@@ -40,6 +40,12 @@ This directory contains downloaded character profiles from the Jujutsu Kaisen Fa
 | [maki.agent.md](../../protocol/maki.agent.md) | Maki Zenin | [maki-zenin.md](./maki-zenin.md) | [Wiki](https://jujutsu-kaisen.fandom.com/wiki/Maki_Zenin) |
 | [panda.agent.md](../../protocol/panda.agent.md) | Panda | [panda.md](./panda.md) | [Wiki](https://jujutsu-kaisen.fandom.com/wiki/Panda) |
 | [inumaki.agent.md](../../protocol/inumaki.agent.md) | Toge Inumaki | [toge-inumaki.md](./toge-inumaki.md) | [Wiki](https://jujutsu-kaisen.fandom.com/wiki/Toge_Inumaki) |
+
+### System Update Agent (Special)
+
+| Agent File | Character | Reference File | Wiki URL |
+|------------|-----------|----------------|----------|
+| [sukuna.agent.md](../../protocol/sukuna.agent.md) | Ryomen Sukuna | [ryomen-sukuna.md](./ryomen-sukuna.md) | [Wiki](https://jujutsu-kaisen.fandom.com/wiki/Ryomen_Sukuna) |
 
 ---
 
@@ -87,6 +93,11 @@ Each agent adapts canon character traits to development work:
 - **Agent**: API design (endpoints as contracts), concise communication, type safety
 - **Key Trait**: Words = enforceable commands → API contracts must be respected
 
+### Ryomen Sukuna → System Update Adversary (Special)
+- **Canon**: King of Curses, Gojo's ultimate rival, adversarial but principled, devastating power
+- **Agent**: System update specialist, adversarial reviewer, red-team thinker, Gojo's partner-in-opposition
+- **Key Trait**: Enemies who work together → Adversarial reviews that strengthen the protocol
+
 ---
 
 ## Usage Guidelines
@@ -127,14 +138,16 @@ When updating character references:
 ├── aoi-todo.md
 ├── maki-zenin.md
 ├── panda.md
-└── toge-inumaki.md
+├── toge-inumaki.md
+└── ryomen-sukuna.md
 ```
 
 ---
 
 ## Version History
 
-- **1.0.0** (2025-11-25): Initial creation with all 8 character references from JJK Fandom Wiki
+- **1.1.0** (2025-12-02): Added Ryomen Sukuna as System Update Adversary (v8.6.0), protocol version bump
+- **1.0.0** (2025-12-02): Initial creation with all 8 character references from JJK Fandom Wiki
 
 ---
 

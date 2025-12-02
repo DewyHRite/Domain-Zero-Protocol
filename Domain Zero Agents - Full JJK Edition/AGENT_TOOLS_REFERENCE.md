@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Agent Tools Reference - Domain Zero Protocol
 
 **Version**: 1.1.0
 **Created**: November 9, 2025
-**Updated**: November 25, 2025 (v8.5.1 compatibility)
+**Updated**: November 25, 2025 (v8.6.0 compatibility)
 **Purpose**: Define which tools each agent can use and operational boundaries
 
 ---

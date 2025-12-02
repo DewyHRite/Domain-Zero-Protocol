@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 ---
 title: "MCP Integration Guide"
 version: "1.0.0"
-protocol_version: "8.5.1"
-last_updated: "2025-11-26"
+protocol_version: "8.6.0"
+last_updated: "2025-12-02"
 status: "Production-Ready"
 ---
 
@@ -349,7 +349,7 @@ User: "Megumi, review authentication implementation"
 
 Megumi:
 1. Reviews src/auth/jwt.ts
-2. Identifies jsonwebtoken@8.5.1 dependency
+2. Identifies jsonwebtoken@8.6.0 dependency
 3. Calls search_code("jsonwebtoken vulnerability", "advisories/github-advisory-database")
 4. Finds known CVE in this version
 5. Adds SEC-001: Upgrade jsonwebtoken to 9.0.0

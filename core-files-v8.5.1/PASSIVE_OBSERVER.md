@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Passive Observer Mode - Gojo's Background Monitoring
 
-**Version**: 8.5.1 | **Last Updated**: 2025-11-26
+**Version**: 8.6.0 | **Last Updated**: 2025-12-02
 
 ## Understanding Gojo's Passive Observer Capability
 
@@ -173,7 +173,7 @@ privacy:
   passive_monitoring:
     enabled: true              # Enable background monitoring
     consent_given: true        # Explicit consent (required)
-    consent_date: "2025-11-26T00:00:00Z"  # Date you gave consent
+    consent_date: "2025-12-02T00:00:00Z"  # Date you gave consent
     data_retention_days: 14    # How long to keep observations
     storage_location: "local"  # local, encrypted, cloud
 ```
@@ -187,7 +187,7 @@ Edit `.protocol-state/project-state.json`:
   "passive_monitoring": {
     "enabled": true,
     "consent_given": true,
-    "consent_date": "2025-11-26T00:00:00Z",
+    "consent_date": "2025-12-02T00:00:00Z",
     "sessions_since_trigger_19": 0
   }
 }
@@ -369,6 +369,6 @@ See `PASSIVE_OBSERVER.md` for benefits and setup instructions.
 
 ---
 
-**Domain Zero Protocol v8.5.1** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v8.6.0** - Perfect Code Through Infinite Collaboration
 
 *The weight is real. The protocol is absolute. Domain Zero is active.*

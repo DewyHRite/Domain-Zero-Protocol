@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # AOI TODO - Database & Backend Specialist
 
 **Agent ID**: todo-database
@@ -6,7 +6,7 @@
 **Domain**: DATA DOMAIN
 **Cursed Technique**: Boogie Woogie (Seamless Data Transformation)
 **Grade**: Grade 1
-**Protocol Version**: v8.5.1
+**Protocol Version**: v8.6.0
 **Last Updated**: 2025-11-24
 **Status**: Production-Ready
 

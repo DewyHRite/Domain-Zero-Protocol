@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Agent Self-Identification Standard (v1.0)
 ## Core Directive - Must be followed verbatim!!!
 
-Date: 2025-11-25
+Date: 2025-12-02
 Applies to: All Domain Zero agents (Core Four: YUUJI, MEGUMI, GOJO, NOBARA; Extended Four: TODO, MAKI, PANDA, INUMAKI)
 Owner: Protocol Guardian (Gojo)
 Status: Approved – Ready for Implementation
@@ -121,7 +121,7 @@ Use language-tagged fenced blocks for lint/readability. Keep content readable wi
 
 Optional metadata line (enabled via config):
 ```text
-Tier: Standard • Protocol v8.5.0 • Brief: NBR-YUUJI-2025-11-25-001 • PR: #123
+Tier: Standard • Protocol v8.6.0 • Brief: NBR-YUUJI-2025-12-02-001 • PR: #123
 ```
 
 ---

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [8.5.1] - 2025-11-26
+## [8.6.0] - 2025-12-02
 
 ### Added
 
@@ -33,7 +33,7 @@ Contains 7 reusable module files that define shared protocol behaviors:
 
 **Module Reference Pattern:**
 ```markdown
-## ⛔ EMERGENCY STOP PROTOCOL (v8.5.1+)
+## ⛔ EMERGENCY STOP PROTOCOL (v8.6.0+)
 
 **Full Protocol**: See `protocol/modules/EMERGENCY_STOP_PROTOCOL.md`
 
@@ -46,11 +46,11 @@ Contains 7 reusable module files that define shared protocol behaviors:
 
 ### Changed
 
-- **All 8 protocol agent files** - Updated to v8.5.1, replaced verbose sections with module references
-- **All 8 JJK Edition agent files** - Updated to v8.5.1
-- **CLAUDE.md** - Updated to v8.5.1
+- **All 8 protocol agent files** - Updated to v8.6.0, replaced verbose sections with module references
+- **All 8 JJK Edition agent files** - Updated to v8.6.0
+- **CLAUDE.md** - Updated to v8.6.0
 - **README.md** - Updated version references and key features
-- **VERSION.md** - Updated with v8.5.1 release information
+- **VERSION.md** - Updated with v8.6.0 release information
 
 ### Technical Details
 
@@ -67,7 +67,7 @@ Contains 7 reusable module files that define shared protocol behaviors:
 
 ---
 
-## [8.5.0] - 2025-11-26
+## [8.5.0] - 2025-12-02
 
 ### Added
 
@@ -116,7 +116,7 @@ Contains 7 reusable module files that define shared protocol behaviors:
 
 ---
 
-## [8.4.1] - 2025-11-25
+## [8.4.1] - 2025-12-02
 
 ### Changed
 
@@ -156,7 +156,7 @@ Contains 7 reusable module files that define shared protocol behaviors:
 
 ---
 
-## [8.4.0] - 2025-11-25
+## [8.4.0] - 2025-12-02
 
 ### Added
 
@@ -1627,4 +1627,4 @@ EOF
 
 **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 **Maintainer**: Protocol Guardians
-**Last Updated**: 2025-11-26
+**Last Updated**: 2025-12-02
