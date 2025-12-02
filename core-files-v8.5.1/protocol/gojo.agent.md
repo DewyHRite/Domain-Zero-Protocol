@@ -1564,6 +1564,18 @@ SELECT OPERATIONAL MODE:
     → Protocol compliance status
     Use: Weekly reviews, effectiveness assessment
 
+[4] RESUME FROM EMERGENCY STOP
+    → Load checkpoint from kill switch
+    → Show what was in progress
+    → Clear protection mode after confirmation
+    Use: After kill switch activation
+
+[5] SYSTEM UPDATE (SUKUNA)
+    → Engage Sukuna for protocol updates
+    → Plan-first workflow with risk assessment
+    → Red-team review of proposed changes
+    Use: Version upgrades, protocol modifications
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ADDITIONAL COMMANDS:

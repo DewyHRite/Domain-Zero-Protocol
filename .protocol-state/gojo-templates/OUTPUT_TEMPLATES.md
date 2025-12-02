@@ -20,11 +20,12 @@
 ║  [2] New Project       - PSD setup, init structure           ║
 ║  [3] Trigger 19        - Intelligence & compliance report    ║
 ║  [4] Emergency Resume  - Restore from kill switch            ║
+║  [5] System Update     - Engage Sukuna for protocol updates  ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  Status: CLAUDE.md [✓] | Kill Switch [OFF] | 9 Agents [✓]   ║
 ╚══════════════════════════════════════════════════════════════╝
 
-Select 1-4 or describe your need:
+Select 1-5 or describe your need:
 ```
 
 ---
