@@ -1,0 +1,76 @@
+#!/bin/bash
+# Domain Zero Protocol - Agent File Protection Hook
+# Version: 8.5.1
+# Purpose: Enforce Cross-Agent Edit Restrictions (CLAUDE.md Section 5.2)
+# Security: Addresses F4 and F6 from red-team assessment
+#
+# This hook blocks commits that modify protected protocol files unless
+# explicitly bypassed with --no-verify (requires User authorization).
+
+set -e
+
+# ANSI colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Protected files list (Cross-Agent Edit Restrictions)
+PROTECTED_AGENT_FILES=(
+    "protocol/CLAUDE.md"
+    "protocol/gojo.agent.md"
+    "protocol/yuuji.agent.md"
+    "protocol/megumi.agent.md"
+    "protocol/nobara.agent.md"
+    "protocol/todo.agent.md"
+    "protocol/maki.agent.md"
+    "protocol/panda.agent.md"
+    "protocol/inumaki.agent.md"
+    "protocol/sukuna.agent.md"
+)
+
+# Kill switch directory (absolute protection)
+KILLSWITCH_DIR=".dzp-killswitch/"
+
+# Get staged files (handle filenames with spaces using NUL delimiter)
+# CR-6: Fixed to properly handle filenames with spaces
+if ! git diff --cached --name-only -z 2>/dev/null | head -c 1 | grep -q .; then
+    echo -e "${GREEN}[DZP] No staged files to check${NC}"
+    exit 0
+fi
+
+BLOCKED=0
+
+# Check for protected agent files
+# Using while read with NUL delimiter for proper handling of special characters
+while IFS= read -r -d '' file; do
+    # Skip empty lines
+    [ -z "$file" ] && continue
+
+    for protected in "${PROTECTED_AGENT_FILES[@]}"; do
+        if [ "$file" = "$protected" ]; then
+            echo -e "${RED}[DZP] BLOCKED: $file is protected by Domain Zero Protocol${NC}"
+            echo -e "${YELLOW}       Cross-Agent Edit Restrictions (CLAUDE.md Section 5.2)${NC}"
+            BLOCKED=1
+        fi
+    done
+
+    # Check for kill switch directory
+    if [[ "$file" == ${KILLSWITCH_DIR}* ]]; then
+        echo -e "${RED}[DZP] BLOCKED: $file is in protected .dzp-killswitch/ directory${NC}"
+        echo -e "${YELLOW}       Kill Switch Protocol files cannot be committed${NC}"
+        BLOCKED=1
+    fi
+done < <(git diff --cached --name-only -z 2>/dev/null)
+
+if [ $BLOCKED -eq 1 ]; then
+    echo ""
+    echo -e "${YELLOW}To bypass this check (User authorization required):${NC}"
+    echo -e "  git commit --no-verify -m \"[AUTHORIZED] Your message\""
+    echo ""
+    echo -e "${YELLOW}Document your authorization in the commit message.${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}[DZP] All files passed protection check${NC}"
+exit 0

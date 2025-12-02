@@ -9,6 +9,14 @@
 .protocol-state/trigger-19.md
 
 # ============================================================================
+# AUTHORIZATION PROTOCOL (v8.5.1+) - NEVER COMMIT
+# ============================================================================
+
+# Session state and authorization logs (security-sensitive, local only)
+.protocol-state/authorization/session-state.json
+.protocol-state/authorization/authorization.log
+
+# ============================================================================
 # RESEARCH MODE RAW NOTES (v7.2.0+) - NEVER COMMIT
 # ============================================================================
 
