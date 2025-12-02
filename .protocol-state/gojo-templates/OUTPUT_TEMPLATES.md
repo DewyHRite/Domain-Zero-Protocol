@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 
 # Gojo Mission Control - Output Templates
 
-**Version**: 8.5.1
-**Last Updated**: 2025-12-01
+**Version**: 8.6.0
+**Last Updated**: 2025-12-02
 **Purpose**: Centralized output templates for Gojo Mission Control responses
 
 ---
