@@ -1,0 +1,92 @@
+# Domain Zero Protocol - Pre-commit Configuration v8.5.1
+# Purpose: Enforce protocol integrity before commits
+# Security: Addresses F4, F6, F9 from red-team assessment
+#
+# Installation:
+#   pip install pre-commit
+#   pre-commit install
+#
+# Manual run:
+#   pre-commit run --all-files
+
+repos:
+  # ============================================================================
+  # LOCAL HOOKS (Domain Zero Protocol Enforcement)
+  # ============================================================================
+  - repo: local
+    hooks:
+      # Agent File Protection (F4: Cross-Agent Edit Restrictions)
+      - id: dzp-agent-protection
+        name: Domain Zero Agent File Protection
+        entry: bash scripts/hooks/pre-commit
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [commit]
+        description: "Blocks commits modifying protected .agent.md files"
+
+      # Version Consistency Check (F9: Manual Sync Required)
+      - id: dzp-version-check
+        name: Domain Zero Version Consistency
+        entry: pwsh -ExecutionPolicy Bypass -Command "& './scripts/verify-protocol.ps1' -CheckOnly; if ($LASTEXITCODE -ne 0) { exit 1 }"
+        language: system
+        pass_filenames: false
+        types: [markdown, yaml]
+        stages: [commit]
+        description: "Validates version numbers are synchronized across files"
+        # This hook warns but doesn't block - version drift is caught in PR review
+
+      # Kill Switch Integrity (F6: Kill Switch Enforcement)
+      - id: dzp-killswitch-block
+        name: Kill Switch File Block
+        entry: bash -c 'if git diff --cached --name-only | grep -q "^\.dzp-killswitch/"; then echo "[DZP] Kill switch files cannot be committed"; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [commit]
+        description: "Blocks any commits to .dzp-killswitch/ directory"
+
+  # ============================================================================
+  # STANDARD HOOKS (Optional but Recommended)
+  # ============================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # Prevent large files from being committed
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+        
+      # Ensure files end with newline
+      - id: end-of-file-fixer
+        exclude: '\.dzp-killswitch/.*'
+        
+      # Trim trailing whitespace
+      - id: trailing-whitespace
+        exclude: '\.dzp-killswitch/.*'
+        
+      # Check YAML syntax
+      - id: check-yaml
+        exclude: '\.dzp-killswitch/.*'
+        
+      # Check JSON syntax
+      - id: check-json
+        exclude: '\.dzp-killswitch/.*'
+        
+      # Prevent commits to main/master
+      - id: no-commit-to-branch
+        args: ['--branch', 'main', '--branch', 'master', '--branch', 'main-v8.3.1']
+
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
+default_stages: [commit]
+fail_fast: false
+
+# Exclude patterns
+exclude: |
+  (?x)^(
+    \.protocol-state/backups/.*|
+    core-files-v8\.\d+\.\d+/.*|
+    node_modules/.*|
+    \.git/.*
+  )$

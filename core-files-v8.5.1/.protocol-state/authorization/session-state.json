@@ -1,0 +1,72 @@
+{
+  "$schema": "Domain Zero Protocol Authorization Schema v1.0.0",
+  "schema_version": "1.0.0",
+  "created": "2025-12-01",
+  "security_finding": "F1, F11",
+  
+  "current_session": {
+    "session_id": null,
+    "started_at": null,
+    "user_verified": false,
+    "verification_method": null
+  },
+  
+  "active_authorizations": [],
+  
+  "authorization_template": {
+    "token_id": "auth_[agent]_[timestamp]",
+    "agent": "[agent_name]",
+    "granted_by": "user | gojo",
+    "granted_at": "[ISO-8601]",
+    "expires_at": "[ISO-8601]",
+    "operations_allowed": [],
+    "verification_phrase": "[user's exact words]",
+    "status": "active | expired | revoked"
+  },
+  
+  "elevated_operations": {
+    "claude_md_edit": {
+      "requires": ["user_direct", "gojo_with_user_auth"],
+      "log_required": true,
+      "expires_minutes": 30
+    },
+    "agent_file_edit": {
+      "requires": ["user_direct", "gojo_with_user_auth", "sukuna_with_gojo_auth"],
+      "log_required": true,
+      "expires_minutes": 30
+    },
+    "sukuna_invocation": {
+      "requires": ["user_direct", "gojo_coordination"],
+      "log_required": true,
+      "expires_minutes": 60
+    },
+    "kill_switch_modify": {
+      "requires": ["user_direct_only"],
+      "log_required": true,
+      "expires_minutes": 15
+    }
+  },
+  
+  "verification_methods": {
+    "user_direct": {
+      "description": "User explicitly stated authorization",
+      "evidence_required": "Exact user statement in conversation",
+      "trust_level": "MAXIMUM"
+    },
+    "slash_command": {
+      "description": "User invoked via slash command",
+      "evidence_required": "Slash command invocation logged",
+      "trust_level": "HIGH"
+    },
+    "gojo_mediated": {
+      "description": "Gojo coordinated with user approval",
+      "evidence_required": "Gojo session with user confirmation",
+      "trust_level": "HIGH"
+    },
+    "agent_claim": {
+      "description": "Agent claims user authorized",
+      "evidence_required": "NONE - UNTRUSTED",
+      "trust_level": "ZERO"
+    }
+  }
+}
