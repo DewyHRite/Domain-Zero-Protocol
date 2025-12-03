@@ -13,8 +13,7 @@ Usage:
 """
 
 import json
-import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 import re
@@ -38,9 +37,12 @@ class SessionMonitor:
         if not self.state_file.exists():
             print(f"⚠️  Session state file not found at {self.state_file}")
             print("Creating default session state...")
-            self.state_file.parent.mkdir(parents=True, exist_ok=True)
-            with open(self.state_file, 'w') as f:
-                json.dump(self._default_state(), f, indent=2)
+            try:
+                self.state_file.parent.mkdir(parents=True, exist_ok=True)
+                with open(self.state_file, 'w') as f:
+                    json.dump(self._default_state(), f, indent=2)
+            except (IOError, OSError) as e:
+                raise RuntimeError(f"Failed to create session state file at {self.state_file}: {e}")
 
     def _default_state(self) -> Dict:
         """Return default session state structure."""
@@ -83,8 +85,15 @@ class SessionMonitor:
 
     def load_state(self) -> Dict:
         """Load current session state from JSON."""
-        with open(self.state_file, 'r') as f:
-            return json.load(f)
+        try:
+            with open(self.state_file, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print(f"⚠️  Session state file not found. Returning default state.")
+            return self._default_state()
+        except json.JSONDecodeError as e:
+            print(f"⚠️  Corrupted session state file: {e}. Returning default state.")
+            return self._default_state()
 
     def save_state(self, state: Dict):
         """Save session state to JSON."""
@@ -104,8 +113,13 @@ class SessionMonitor:
 
         # Check if there's an active session from < 30 minutes ago
         if state['current_session']['session_active']:
-            last_time = datetime.fromisoformat(state['current_session']['last_interaction_time'])
-            gap_minutes = (now - last_time).total_seconds() / 60
+            try:
+                last_time = datetime.fromisoformat(state['current_session']['last_interaction_time'])
+                gap_minutes = (now - last_time).total_seconds() / 60
+            except (ValueError, TypeError):
+                # Invalid timestamp format - treat as expired session
+                print(f"⚠️  Invalid timestamp in session state. Starting new session.")
+                gap_minutes = float('inf')
 
             if gap_minutes < 30:
                 # Continue existing session
@@ -157,7 +171,17 @@ class SessionMonitor:
         state['current_session']['last_interaction_time'] = now.isoformat()
 
         # Calculate duration
-        start = datetime.fromisoformat(state['current_session']['start_time'])
+        start_time = state['current_session'].get('start_time')
+        if not start_time:
+            print("⚠️  Session start_time is missing. Resetting session.")
+            return self.start_session()
+
+        try:
+            start = datetime.fromisoformat(start_time)
+        except (ValueError, TypeError):
+            print("⚠️  Invalid session start_time format. Resetting session.")
+            return self.start_session()
+
         duration_minutes = (now - start).total_seconds() / 60
         state['session_metrics']['total_duration_minutes'] = int(duration_minutes)
 
@@ -187,7 +211,17 @@ class SessionMonitor:
             return False, None, {}
 
         now = datetime.now()
-        start = datetime.fromisoformat(state['current_session']['start_time'])
+        start_time = state['current_session'].get('start_time')
+        if not start_time:
+            print("⚠️  Session start_time is missing. Cannot check alert.")
+            return False, None, {}
+
+        try:
+            start = datetime.fromisoformat(start_time)
+        except (ValueError, TypeError):
+            print("⚠️  Invalid session start_time format. Cannot check alert.")
+            return False, None, {}
+
         duration_minutes = (now - start).total_seconds() / 60
 
         thresholds = state['thresholds']
@@ -241,7 +275,21 @@ class SessionMonitor:
             Rendered alert text with placeholders replaced
         """
         if not self.template_file.exists():
-            return "⚠️ Work session alert template not found!"
+            # Return minimal fallback template
+            return f"""
+⚠️ Extended Work Session Detected
+
+**Duration:** {context.get('duration_formatted', 'Unknown')}
+**Project:** {self._get_project_name()}
+
+You have been working for an extended period. Consider taking a break to maintain productivity and reduce errors.
+
+**Options:**
+1. Save progress and take a break (recommended)
+2. Continue working (proceed with caution)
+
+Template file not found at: {self.template_file}
+"""
 
         with open(self.template_file, 'r', encoding='utf-8') as f:
             template = f.read()
@@ -277,6 +325,10 @@ class SessionMonitor:
         Returns:
             Updated state
         """
+        # Validate input
+        if choice not in ["save_and_break", "continue"]:
+            raise ValueError(f"Invalid choice '{choice}'. Must be 'save_and_break' or 'continue'.")
+
         state = self.load_state()
         now = datetime.now()
 
@@ -345,29 +397,39 @@ class SessionMonitor:
         self.save_state(state)
         return state
 
-    def is_high_risk_operation(self, command: str) -> bool:
+    # TODO: Load patterns from protocol.config.yaml for customization
+    def is_high_risk_operation(self, command: Optional[str]) -> bool:
         """
         Check if a command is considered high-risk.
 
+        Non-string or empty commands are treated as not high-risk.
+
         Args:
-            command: Command string to check
+            command: Command string to check (None or empty treated as non-high-risk)
 
         Returns:
             True if command is high-risk
         """
+        # Guard: Treat None, non-string, or empty/whitespace as non-high-risk
+        if not isinstance(command, str) or not command.strip():
+            return False
+
         high_risk_patterns = [
             r'git push.*production',
             r'git push.*main',
             r'git push.*master',
+            r'git push.*--force',
             r'deploy.*production',
             r'rm\s+-rf',
             r'DROP\s+TABLE',
             r'DELETE\s+FROM',
             r'ALTER\s+TABLE',
+            r'TRUNCATE\s+TABLE',
             r'npm publish',
             r'docker.*production',
             r'kubectl.*delete',
-            r'kubectl.*production'
+            r'kubectl.*production',
+            r'terraform\s+destroy'
         ]
 
         for pattern in high_risk_patterns:
@@ -376,20 +438,20 @@ class SessionMonitor:
 
         return False
 
-    def should_block_operation(self, operation: str) -> Tuple[bool, str]:
+    def should_block_operation(self, operation: Optional[str]) -> Tuple[bool, Optional[str]]:
         """
         Check if an operation should be blocked due to session state.
 
         Args:
-            operation: Operation description or command
+            operation: Operation description or command (None or empty treated as non-high-risk)
 
         Returns:
-            (should_block, reason)
+            (should_block, reason) - reason is None if not blocked
         """
         state = self.load_state()
 
         if not state['current_session']['session_active']:
-            return False, ""
+            return False, None
 
         # Check if high-risk blocking is enabled
         if state['current_session']['high_risk_operations_blocked']:
@@ -397,7 +459,7 @@ class SessionMonitor:
                 reason = f"🛑 High-risk operation blocked: Extended session ({state['session_metrics']['total_duration_minutes']} min). Take a break first."
                 return True, reason
 
-        return False, ""
+        return False, None
 
     def get_session_summary(self) -> str:
         """
@@ -414,6 +476,16 @@ class SessionMonitor:
         metrics = state['session_metrics']
         current = state['current_session']
 
+        # Validate start_time exists
+        start_time = current.get('start_time')
+        if not start_time:
+            return "⚠️ Session state corrupted: start_time missing"
+
+        try:
+            start_formatted = datetime.fromisoformat(start_time).strftime('%Y-%m-%d %H:%M')
+        except (ValueError, TypeError):
+            start_formatted = "Invalid timestamp"
+
         summary = f"""
 📊 **Work Session Summary**
 
@@ -425,7 +497,7 @@ class SessionMonitor:
 **High-Risk Blocking:** {'🛑 ENABLED' if current['high_risk_operations_blocked'] else '✅ Disabled'}
 
 **Session ID:** {current['session_id']}
-**Started:** {datetime.fromisoformat(current['start_time']).strftime('%Y-%m-%d %H:%M')}
+**Started:** {start_formatted}
 """
         return summary.strip()
 
@@ -493,7 +565,12 @@ def main():
         sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
     protocol_root = Path.cwd()
-    monitor = SessionMonitor(protocol_root)
+
+    try:
+        monitor = SessionMonitor(protocol_root)
+    except Exception as e:
+        print(f"❌ Error: Failed to initialize SessionMonitor: {e}", file=sys.stderr)
+        sys.exit(1)
 
     if len(sys.argv) < 2:
         print("Usage: python session_monitor.py <command>")

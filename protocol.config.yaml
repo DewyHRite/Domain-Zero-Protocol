@@ -908,12 +908,252 @@ protocol_packs:
   #     tech_stack: []
 
 # ============================================================================
+# CUSTOM AGENT SECURITY (v8.7.0+)
+# ============================================================================
+# Comprehensive security framework for user-created custom agents.
+# Addresses red team findings: CUST-CRIT-001 through CUST-CRIT-008.
+# See: internal-docs/RED_TEAM_ASSESSMENT_CUSTOM_AGENTS_v8.6.0.md
+
+custom_agent_security:
+  # Master toggle (REQUIRED for custom agents)
+  enabled: true
+
+  # Agent Registration
+  registration:
+    require_validation: true
+    validation_script: "./scripts/validate-custom-agents.py"
+    auto_quarantine_on_failure: true
+    max_custom_agents: 10
+
+  # Namespace Protection (CUST-CRIT-002)
+  # Prevents custom agents from impersonating core/extended/system agents
+  namespace:
+    # Protected agent names that CANNOT be used by custom agents
+    reserved_names:
+      - "yuuji"
+      - "megumi"
+      - "nobara"
+      - "gojo"
+      - "todo"
+      - "maki"
+      - "panda"
+      - "inumaki"
+      - "sukuna"
+      - "claude"
+      - "admin"
+      - "root"
+      - "system"
+      - "mission_control"
+
+    # All custom agents MUST use this prefix
+    require_prefix: "custom-"
+
+    # User cannot override prefix requirement
+    allow_prefix_override: false
+
+    # Validate on agent creation and invocation
+    validate_on_create: true
+    validate_on_invoke: true
+
+  # Tool Permissions (CUST-CRIT-003)
+  # Enforces principle of least privilege for custom agents
+  tool_permissions:
+    # Safe tools allowed by default for custom agents
+    custom_agents_default:
+      - "read"
+      - "grep"
+      - "glob"
+      - "askuserquestion"
+
+    # Tools requiring explicit user approval
+    requires_approval:
+      - "write"
+      - "edit"
+      - "webfetch"
+      - "websearch"
+      - "todowrite"
+
+    # Tools NEVER allowed for custom agents (security risk)
+    forbidden:
+      - "bash"
+      - "task"
+      - "notebookedit"
+      - "killshell"
+
+    # Validate tool usage at runtime
+    runtime_validation: true
+
+    # Log all tool permission violations
+    log_violations: true
+
+    # Block execution on permission violation
+    block_on_violation: true
+
+  # File Protection (CUST-CRIT-008)
+  # Prevents agents from modifying protected files
+  file_protection:
+    # Paths that are immutable at runtime
+    immutable_paths:
+      - "protocol/"
+      - ".claude/agents/"
+      - ".protocol-state/custom-agent-registry.json"
+      - ".protocol-state/authorization/"
+      - "protocol.config.yaml"
+
+    # Block agents from modifying their own definition files
+    block_self_modification: true
+
+    # Detect suspicious write patterns
+    detect_suspicious_writes: true
+
+    # Log all file protection violations
+    log_violations: true
+
+  # YAML Validation (CUST-CRIT-004)
+  # Prevents YAML injection and malicious frontmatter
+  yaml_validation:
+    # Enable YAML sanitization before loading
+    enabled: true
+
+    # Forbidden patterns in YAML frontmatter
+    forbidden_patterns:
+      - "__proto__"      # Prototype pollution
+      - "eval:"          # Code execution
+      - "exec:"          # Code execution
+      - "\\$\\{"         # Template injection
+      - "require\\("     # Module loading
+      - "import\\s+"     # Module loading
+      - "!!python/"      # Python object instantiation
+
+    # Required fields in agent YAML
+    required_fields:
+      - "name"
+      - "description"
+      - "tools"
+      - "model"
+
+    # Validate agent name format
+    name_pattern: "^custom-[a-z][a-z0-9-]{2,20}$"
+
+  # Monitoring (CUST-CRIT-006)
+  # Gojo tracks all custom agent activity
+  monitoring:
+    enabled: true
+
+    # Custom agent registry file
+    registry_file: ".protocol-state/custom-agent-registry.json"
+
+    # Audit log for custom agent actions
+    audit_log: ".protocol-state/authorization/custom-agent-audit.log"
+
+    # Include custom agents in Trigger 19 reports
+    include_in_trigger19: true
+
+    # Track actual tool usage vs declared permissions
+    track_tool_usage: true
+
+    # Monitor for suspicious patterns
+    detect_anomalies: true
+
+  # Code Signing (CUST-CRIT-007)
+  # Verifies integrity of core/extended agents
+  code_signing:
+    # Verify core agents have valid signatures
+    verify_core_agents: true
+
+    # Verify extended agents have valid signatures
+    verify_extended_agents: true
+
+    # Warn when loading unsigned custom agents
+    warn_unsigned_custom: true
+
+    # Public key repository for signature verification
+    public_key_url: "https://github.com/DewyHRite/Domain-Zero-Protocol/keys/"
+
+    # Block loading if signature verification fails
+    block_on_signature_failure: true
+
+  # Rate Limiting (CUST-HIGH-001)
+  # Prevents resource exhaustion via excessive invocations
+  rate_limiting:
+    enabled: true
+
+    # Maximum invocations per minute per agent
+    max_invocations_per_minute: 10
+
+    # Maximum concurrent custom agents
+    max_concurrent_custom_agents: 2
+
+    # Cooldown period between invocations (seconds)
+    cooldown_period_seconds: 5
+
+  # Output Sanitization (CUST-HIGH-002)
+  # Detects dangerous commands in agent output
+  output_sanitization:
+    enabled: true
+
+    # Detect dangerous shell commands in output
+    detect_dangerous_commands: true
+
+    # Warn user about suspicious output
+    warn_on_suspicious_output: true
+
+    # Dangerous patterns to detect
+    dangerous_patterns:
+      - "curl\\s+\\S+\\s*\\|\\s*bash"   # Pipe to bash
+      - "wget\\s+\\S+\\s*\\|\\s*sh"     # Pipe to shell
+      - "rm\\s+-rf\\s+/"                # Destructive rm
+      - "chmod\\s+777"                  # Dangerous permissions
+      - "eval\\s*\\("                   # Eval injection
+
+  # Handoff Security (CUST-CRIT-005)
+  # Sanitizes context passed between agents
+  handoff_security:
+    # Sanitize handoff context
+    sanitize_context: true
+
+    # Validate context fields against whitelist
+    validate_context_fields: true
+
+    # Reserved triggers for core agents
+    reserved_triggers:
+      - "@security-review"
+      - "@user-review"
+      - "@approved"
+      - "@remediation-required"
+      - "@re-review"
+      - "@escalate"
+      - "@brief-implementation"
+      - "@brief-security"
+      - "@brief-design"
+
+    # Detect infinite handoff loops
+    detect_handoff_loops: true
+
+    # Maximum handoff chain length
+    max_handoff_chain_length: 5
+
+  # Quarantine System (CUST-MED-007)
+  # Automatically quarantine suspicious agents
+  quarantine:
+    enabled: true
+
+    # Quarantine directory
+    quarantine_dir: ".protocol-state/quarantine/"
+
+    # Auto-quarantine on validation failure
+    auto_quarantine: true
+
+    # Require manual review to restore from quarantine
+    require_manual_review: true
+
+# ============================================================================
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "8.6.0"
-  config_version: "2.6"
-  last_updated: "2025-12-02"
+  protocol_version: "8.7.0"
+  config_version: "2.7"
+  last_updated: "2025-12-03"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

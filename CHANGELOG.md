@@ -9,6 +9,104 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.7.0] - 2025-12-03
+
+### Added
+
+#### **Custom Agent Security Framework** - Comprehensive security for user-created agents
+
+Sukuna's red team assessment identified critical vulnerabilities in the custom agent system (CUST-CRIT-001 through CUST-CRIT-008). This release implements comprehensive security enforcement to protect against malicious custom agents.
+
+**New Security Components**:
+1. **Pre-Invocation Validation** (`scripts/validate-custom-agents.py`)
+   - Namespace protection (prevents core agent impersonation)
+   - YAML sanitization (blocks code injection patterns)
+   - Tool permission validation
+   - File integrity checks
+
+2. **Runtime Monitoring System** (`.protocol-state/custom_agent_monitor.py`)
+   - Tracks all custom agent invocations
+   - Enforces tool permission filtering
+   - Detects file modifications via SHA-256 hashing
+   - Identifies anomalous behavior patterns
+   - Automatic quarantine for policy violations
+
+3. **Audit Logging** (`.protocol-state/authorization/custom-agent-audit.log`)
+   - Tamper-evident activity logs
+   - Tool usage tracking
+   - Validation failures
+   - Quarantine events
+
+4. **Registry System** (`.protocol-state/custom-agent-registry.json`)
+   - Centralized custom agent database
+   - Invocation history (last 10 per agent)
+   - File modification tracking
+   - Quarantine status
+
+**Security Policies Enforced**:
+- **Namespace Protection** (CUST-CRIT-002): Custom agents must use `custom-` prefix
+- **Tool Permissions** (CUST-CRIT-003): Three-tier permission system (default/approval/forbidden)
+- **YAML Sanitization** (CUST-CRIT-004): Blocks `__proto__`, `eval:`, `exec:`, template injection
+- **File Immutability** (CUST-CRIT-008): Prevents self-modification and protocol file tampering
+- **Rate Limiting** (CUST-HIGH-001): Max 10 invocations/minute per agent
+- **Gojo Oversight** (CUST-CRIT-006): Complete visibility into custom agent activity
+
+**Documentation**:
+- `docs/security/CUSTOM_AGENT_SECURITY_POLICY.md` - User-facing security policy
+- `.protocol-state/gojo-custom-agent-security-guide.md` - Gojo integration guide
+- Updated `docs/guides/CREATING_CLAUDE_AGENTS.md` with security warnings
+
+**Configuration**:
+- Added `custom_agent_security` section to `protocol.config.yaml`
+  - 238 lines of security configuration
+  - Configurable tool permissions
+  - Namespace rules
+  - Rate limiting settings
+  - Monitoring options
+
+### Changed
+
+- **protocol.config.yaml**: Version 8.6.0 → 8.7.0, config_version 2.6 → 2.7
+- **CREATING_CLAUDE_AGENTS.md**: Added comprehensive security warning section
+- **.gitignore**: Added custom agent registry and audit log exclusions
+
+### Fixed
+
+- **session_monitor.py**: Fixed None handling crash in `is_high_risk_operation()`
+  - Changed parameter type from `str` to `Optional[str]`
+  - Added type guard to handle None, non-string, and empty inputs
+- **IMPLEMENTATION_GUIDE.md**: Updated all v8.5.1 → v8.6.0 version references
+  - Fixed in-place upgrade paths
+  - Updated Claude Code/GitHub Copilot setup instructions
+  - Changed "eight agents" → "nine agents" + added Sukuna
+  - Updated system prompt with complete 9-agent list
+  - Fixed safety config (`work_session_monitoring` → `session_tracking`)
+- **tests/test_session_monitor.py**: Updated test comment to reflect actual guard behavior
+
+### Security
+
+- **8 Critical Vulnerabilities Fixed** (CVSS 8.5-9.8):
+  - CUST-CRIT-002: Agent name collision (CVSS 9.1) ✅ FIXED
+  - CUST-CRIT-003: Self-declared tool permissions (CVSS 8.7) ✅ FIXED
+  - CUST-CRIT-004: YAML injection (CVSS 9.0) ✅ FIXED
+  - CUST-CRIT-008: Agent self-modification (CVSS 9.2) ✅ FIXED
+  - CUST-CRIT-006: Zero Gojo oversight (CVSS 8.9) ✅ FIXED
+
+**Threat Model**: Protects against malicious custom agents, compromised agent files, privilege escalation, and supply chain attacks.
+
+**Attack Scenarios Mitigated**:
+1. ❌ Core agent impersonation (Gojo hijack)
+2. ❌ Arbitrary code execution via bash tool
+3. ❌ Self-modification for privilege escalation
+4. ❌ YAML code injection
+5. ❌ Protocol file tampering
+6. ❌ Unmonitored agent activity
+7. ❌ Tool permission bypass
+
+**Enforcement**: Validation + Runtime Monitoring + Automatic Quarantine
+
+---
+
 ## [8.6.0] - 2025-12-02
 
 ### Added

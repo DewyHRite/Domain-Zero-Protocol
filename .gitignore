@@ -16,6 +16,10 @@
 .protocol-state/authorization/session-state.json
 .protocol-state/authorization/authorization.log
 
+# Custom agent security (v8.7.0+) - Runtime data, never commit
+.protocol-state/custom-agent-registry.json
+.protocol-state/authorization/custom-agent-audit.log
+
 # ============================================================================
 # RESEARCH MODE RAW NOTES (v7.2.0+) - NEVER COMMIT
 # ============================================================================

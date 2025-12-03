@@ -1,0 +1,16 @@
+{
+  "custom-example-agent": {
+    "agent_name": "custom-example-agent",
+    "agent_file_path": ".claude/agents/custom-example-agent.agent.md",
+    "first_seen": "2025-12-03T00:00:00",
+    "last_invoked": "2025-12-03T00:00:00",
+    "total_invocations": 0,
+    "tools_used": {},
+    "validation_failures": 0,
+    "quarantined": false,
+    "quarantine_reason": null,
+    "file_hash": null,
+    "hash_changed_count": 0,
+    "invocation_history": []
+  }
+}

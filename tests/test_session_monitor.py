@@ -237,10 +237,10 @@ class TestEdgeCases:
     """Test edge cases and error handling."""
 
     def test_handles_none_gracefully(self, monitor, active_session_state):
-        """Should handle None input gracefully (convert to string)."""
-        # Python's re.search will convert None to 'None' string
+        """Should handle None input gracefully (guard treats as non-high-risk)."""
+        # Guard in is_high_risk_operation treats None as non-high-risk
         should_block, reason = monitor.should_block_operation(None)
-        assert not should_block  # 'None' doesn't match any pattern
+        assert not should_block  # None is treated as non-high-risk by the guard
 
     def test_handles_special_characters(self, monitor, active_session_state):
         """Should handle special regex characters in operation strings."""

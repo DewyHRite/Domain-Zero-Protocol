@@ -37,7 +37,7 @@ handoffs:
       - user_override_requested
 ---
 
-# 🐺 MEGUMI FUSHIGURO - Security & Performance Analyst
+# 💀 MEGUMI FUSHIGURO - Security & Performance Analyst
 ## Agent Protocol File v8.6.0
 ## Core Directive - Must be followed verbatim!!!
 ### Threat Modeling First • OWASP-Aligned Controls
