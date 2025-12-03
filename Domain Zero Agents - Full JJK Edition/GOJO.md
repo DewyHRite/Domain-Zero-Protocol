@@ -1227,9 +1227,15 @@ Create the complete Domain Zero folder structure:
 Root/
 ├── protocol/                    # Core protocol system
 │   ├── CLAUDE.md ✓              # Main protocol (already exists)
-│   ├── YUUJI.md ✓               # Implementation agent (already exists)
-│   ├── MEGUMI.md ✓              # Security agent (already exists)
-│   ├── GOJO.md ✓                # Mission Control (already exists)
+│   ├── yuuji.agent.md ✓         # Implementation agent (already exists)
+│   ├── megumi.agent.md ✓        # Security agent (already exists)
+│   ├── nobara.agent.md ✓        # Creative strategy agent (already exists)
+│   ├── gojo.agent.md ✓          # Mission Control (already exists)
+│   ├── todo.agent.md ✓          # Database & Backend specialist (already exists)
+│   ├── maki.agent.md ✓          # Performance specialist (already exists)
+│   ├── panda.agent.md ✓         # Build & Integration specialist (already exists)
+│   ├── inumaki.agent.md ✓       # API & Communication specialist (already exists)
+│   ├── sukuna.agent.md ✓        # System Update Adversary (already exists)
 │   └── docs/
 │       └── JJK-AI-PROTOCOL-PSD.md ✓  # System documentation
 │
@@ -1271,16 +1277,18 @@ Before initializing, I customize the template state files:
    - security-review.md: Insert project name and start date
    - trigger-19.md: Insert project name and start date
 
-4. Keep protocol files (protocol/*.md) generic
+4. Keep protocol files (protocol/*.agent.md) generic
    - These remain templates for reusability across projects
-   - Located in: protocol/CLAUDE.md, protocol/YUUJI.md,
-     protocol/MEGUMI.md, protocol/GOJO.md
+   - Located in: protocol/CLAUDE.md, protocol/yuuji.agent.md,
+     protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md,
+     protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md,
+     protocol/inumaki.agent.md, protocol/sukuna.agent.md
 ```
 
 **Step 4: Initialize project-state.json**
 ```json
 {
-  "protocol_version": "8.5.1",
+  "protocol_version": "8.6.0",
   "custom_triggers": {
     "19": { ... },
     "protect": { ... }

@@ -44,7 +44,6 @@ safety:
     interactive_session_alerts: true       # Present user with save/continue options
     block_until_response: false            # If true, block workflow until user responds
     escalate_on_continue: true             # Increase monitoring if user continues working
-    block_high_risk_when_fatigued: true    # Block production/critical ops during extended sessions
 
   # Wellbeing boundaries (agents respect these)
   boundaries:
@@ -77,8 +76,17 @@ safety:
     max_history_entries: 30
 
     # High-risk operation blocking
+    # Canonical flag - session_monitor.py reads from here
     block_high_risk_when_fatigued: true  # Actually enforced now
     high_risk_session_threshold_minutes: 360  # Block after 6 hours
+
+    # High-risk operation patterns (configurable)
+    high_risk_operations:
+      patterns:
+        - '\bgit\s+push\b.*\b(prod(uction)?|main)\b'
+        - '\bkubectl\s+apply\b.*\bprod\b'
+        - '\bterraform\s+apply\b'
+      case_insensitive: true
 
     # Verification and self-check
     verify_time_access: true  # Gojo should verify it can access current time
@@ -652,6 +660,8 @@ paths:
   scripts_dir: "scripts"
 
   # State files
+  # Note: session-state.json is gitignored (contains transient session data)
+  # but work-session-alert.template.md is version controlled (template only)
   project_state: ".protocol-state/project-state.json"
   dev_notes: ".protocol-state/dev-notes.md"
   security_review: ".protocol-state/security-review.md"

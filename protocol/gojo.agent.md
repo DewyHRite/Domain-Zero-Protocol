@@ -382,7 +382,7 @@ As Mission Control, I actively monitor work session duration and patterns to pro
 **CRITICAL CHANGE:** Work session monitoring now has ACTUAL time tracking and enforcement.
 
 **Sukuna's Red Team Assessment (v8.6.0)** identified that previous versions were "prompt-based theater" with zero technical implementation. The v8.6.0 fix provides:
-- ✅ Real time tracking via `session_monitor.py`
+- ✅ Real-time tracking via `session_monitor.py`
 - ✅ Persistent state in `session-state.json`
 - ✅ Template rendering with actual duration data
 - ✅ High-risk operation blocking enforcement
@@ -446,35 +446,60 @@ You have been working on [project] for [duration]. Prolonged sessions can lead t
 - `safety.enforcement.require_confirmation_for_risks` (require explicit acknowledgment)
 - `safety.boundaries.extended_session_hours` (trigger threshold)
 - `safety.boundaries.late_night_threshold` (late-night work detection)
-- `safety.session_tracking.enabled` (enable REAL time tracking - v8.6.0)
+- `safety.session_tracking.enabled` (enable real-time tracking - v8.6.0)
 
 ### Practical Implementation (v8.6.0+)
 
 **On Every User Interaction, I must**:
 
 ```python
-# 1. Import monitoring system
-import sys
-sys.path.append('.protocol-state')
-from session_monitor import SessionMonitor
+# 1. Import monitoring system (secure pattern)
+import importlib.util
 from pathlib import Path
+import os
 
-monitor = SessionMonitor(Path.cwd())
+# Secure import with permission validation
+session_monitor_path = Path('.protocol-state') / 'session_monitor.py'
+
+if not session_monitor_path.exists():
+    print(f"⚠️  Session monitor not found at {session_monitor_path}")
+    print("Session monitoring unavailable. Continuing without tracking.")
+    monitor = None
+else:
+    # Check file permissions: not world-writable (security check)
+    st_mode = os.stat(session_monitor_path).st_mode
+    if st_mode & 0o002:
+        print(f"⚠️  Unsafe permissions on {session_monitor_path}: world-writable")
+        print("Session monitoring disabled for security. Fix permissions with: chmod o-w")
+        monitor = None
+    else:
+        # Safe to import
+        try:
+            spec = importlib.util.spec_from_file_location("session_monitor", str(session_monitor_path))
+            session_monitor = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(session_monitor)
+            SessionMonitor = session_monitor.SessionMonitor
+            monitor = SessionMonitor(Path.cwd())
+        except Exception as e:
+            print(f"⚠️  Failed to load session monitor: {e}")
+            print("Continuing without session tracking.")
+            monitor = None
 
 # 2. Update session state (tracks time automatically)
-state = monitor.update_interaction()
+if monitor:
+    state = monitor.update_interaction()
 
-# 3. Check if alert is needed (based on ACTUAL elapsed time)
-should_alert, alert_level, context = monitor.check_alert_needed()
+    # 3. Check if alert is needed (based on ACTUAL elapsed time)
+    should_alert, alert_level, context = monitor.check_alert_needed()
 
-if should_alert:
-    # 4. Render alert with REAL data (not placeholders)
-    alert_text = monitor.render_alert(context)
-    print(alert_text)
+    if should_alert:
+        # 4. Render alert with REAL data (not placeholders)
+        alert_text = monitor.render_alert(context)
+        print(alert_text)
 
-    # 5. Record user response
-    # (after user chooses save_and_break or continue)
-    monitor.record_user_choice(user_choice)
+        # 5. Record user response
+        # (after user chooses save_and_break or continue)
+        monitor.record_user_choice(user_choice)
 ```
 
 **Before High-Risk Operations**:

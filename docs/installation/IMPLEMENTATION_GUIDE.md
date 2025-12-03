@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
-**Version**: 8.5.1
+**Version**: 8.6.0
 **Last Updated**: December 2025
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
 
@@ -26,7 +26,7 @@
 ## Quick Start (5 Minutes)
 
 **Prerequisites**:
-- Downloaded the v8.5.1 release package
+- Downloaded the v8.6.0 release package
 - Access to Claude.ai, Claude Code, GitHub Copilot, or another AI assistant
 
 ---
@@ -53,16 +53,16 @@
 ```bash
 # macOS/Linux
 mkdir -p your-project/protocol your-project/.protocol-state
-cp -r v8.5.1/protocol your-project/
-cp -r v8.5.1/.protocol-state your-project/
-cp v8.5.1/protocol.config.yaml your-project/
-cp v8.5.1/README.md your-project/DOMAIN_ZERO_README.md
+cp -r v8.6.0/protocol your-project/
+cp -r v8.6.0/.protocol-state your-project/
+cp v8.6.0/protocol.config.yaml your-project/
+cp v8.6.0/README.md your-project/DOMAIN_ZERO_README.md
 
 # Windows PowerShell
 New-Item -ItemType Directory -Force -Path "your-project\protocol", "your-project\.protocol-state"
-Copy-Item -Recurse v8.5.1\protocol -Destination your-project\
-Copy-Item -Recurse v8.5.1\.protocol-state -Destination your-project\
-Copy-Item v8.5.1\protocol.config.yaml -Destination your-project\
+Copy-Item -Recurse v8.6.0\protocol -Destination your-project\
+Copy-Item -Recurse v8.6.0\.protocol-state -Destination your-project\
+Copy-Item v8.6.0\protocol.config.yaml -Destination your-project\
 ```
 
 After copying, customize `.protocol-state/project-state.json` with your project metadata.
@@ -1372,7 +1372,7 @@ Copy and paste this prompt to save Domain Zero Protocol to Claude's memory:
 ```
 Add to memory: Domain Zero Protocol
 
-I use the Domain Zero Protocol for AI-assisted development. This is an nine-agent system:
+I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent system:
 
 **Core Four:**
 - YUUJI (Implementation Specialist): Test-first development, feature implementation
@@ -1387,7 +1387,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is an nine-agen
 - INUMAKI (API & Communication): REST, GraphQL, WebSocket design
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.5.1)
+- protocol/CLAUDE.md (main protocol, v8.6.0)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -1443,7 +1443,7 @@ Add to your global or project-level custom instructions:
 ```
 - Add to memory: Domain Zero Protocol
 
-I use the Domain Zero Protocol for AI-assisted development. This is an nine-agent system:
+I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent system:
 
 **Core Four:**
 - YUUJI (Implementation Specialist): Test-first development, feature implementation
@@ -1458,7 +1458,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is an nine-agen
 - INUMAKI (API & Communication): REST, GraphQL, WebSocket design
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.5.1)
+- protocol/CLAUDE.md (main protocol, v8.6.0)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -1469,7 +1469,7 @@ The protocol uses a three-tier workflow system:
 - Tier 2 (Standard): Production features with TDD + security review [DEFAULT]
 - Tier 3 (Critical): Enhanced testing + multi-model security review for auth/payments/sensitive data
 
-When I say 'Read protocol/[AGENT].md', always read the file first to follow the protocol.
+When I say 'Read protocol/[AGENT].agent.md', always read the file first to follow the protocol.
 The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
 ```
 

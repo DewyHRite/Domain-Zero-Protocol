@@ -822,12 +822,12 @@ Scenario: Full Tier 2 workflow
     },
     "source_agent": {
       "type": "string",
-      "enum": ["yuuji", "megumi", "nobara", "gojo", "mission_control", "todo", "maki", "panda", "inumaki"],
+      "enum": ["yuuji", "megumi", "nobara", "gojo", "mission_control", "todo", "maki", "panda", "inumaki", "sukuna"],
       "description": "Agent initiating the handoff"
     },
     "target_agent": {
       "type": "string",
-      "enum": ["yuuji", "megumi", "nobara", "gojo", "mission_control", "todo", "maki", "panda", "inumaki"],
+      "enum": ["yuuji", "megumi", "nobara", "gojo", "mission_control", "todo", "maki", "panda", "inumaki", "sukuna"],
       "description": "Agent receiving the handoff"
     },
     "trigger": {
@@ -852,7 +852,7 @@ Scenario: Full Tier 2 workflow
 
 ## Version History
 
-- **1.1.0** (2025-11-25): Updated for v8.6.0, Extended Four agents, 9-agent architecture
+- **1.1.0** (2025-12-02): Updated for v8.6.0, Extended Four agents, 9-agent architecture
 - **1.0.0** (2025-11-18): Initial specification for v8.0.0 .agent.md format
 
 ---
