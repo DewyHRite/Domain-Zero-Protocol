@@ -506,7 +506,8 @@ if monitor:
 
         # 5. Record user response
         # (after user chooses save_and_break or continue)
-        monitor.record_user_choice(user_choice)
+        # user_choice = "save_and_break" or "continue" (capture from user input/UI)
+        # monitor.record_user_choice(user_choice)
 ```
 
 **Before High-Risk Operations**:
@@ -514,7 +515,10 @@ if monitor:
 ```python
 operation = "git push origin production"  # example
 
-should_block, reason = monitor.should_block_operation(operation)
+if monitor:
+    should_block, reason = monitor.should_block_operation(operation)
+else:
+    should_block, reason = False, "Session monitor unavailable; skipping high-risk enforcement"
 
 if should_block:
     print(f"🛑 {reason}")

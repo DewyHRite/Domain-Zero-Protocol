@@ -9,7 +9,6 @@ Exit Codes:
   0 - All validations passed
   1 - Validation failed (details in stderr)
   2 - Configuration error
-  3 - File not found or access error
 
 Usage:
   python validate-custom-agents.py <agent_file_path>

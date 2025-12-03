@@ -7,18 +7,14 @@ Comprehensive test suite for custom agent security monitoring and enforcement.
 """
 
 import pytest
-import json
-import tempfile
-import shutil
 from pathlib import Path
 from datetime import datetime, timedelta
 import sys
-import os
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / ".protocol-state"))
 
-from custom_agent_monitor import CustomAgentMonitor, AgentRegistryEntry, AgentInvocation
+from custom_agent_monitor import CustomAgentMonitor, AgentRegistryEntry
 
 
 @pytest.fixture
@@ -228,7 +224,7 @@ class TestAgentRegistration:
         """Should create new registry entry for first invocation."""
         agent_path = temp_protocol_root / ".claude" / "agents" / "custom-test.agent.md"
 
-        invocation = monitor.register_invocation(
+        monitor.register_invocation(
             agent_name='custom-test',
             agent_file_path=agent_path,
             invoked_by='user',

@@ -7,18 +7,15 @@ Comprehensive test suite for custom agent definition validation.
 """
 
 import pytest
-import tempfile
 from pathlib import Path
 import sys
-import os
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from validate_custom_agents import (
     CustomAgentValidator,
-    ConfigLoader,
-    ValidationResult
+    ConfigLoader
 )
 
 
