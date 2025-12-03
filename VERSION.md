@@ -18,11 +18,11 @@ This minor release introduces a **Custom Agent Security Framework**, addressing 
 - **Comprehensive Test Coverage** - 60+ test cases for session monitoring, 110+ tests total for security features
 - **Agent Banner Compliance** - Fixed emoji consistency and added missing banner for Sukuna (protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md compliance)
 
-### Previous Release (v8.7.0)
+### Previous Release (v8.6.0)
 
 - **Nine-Agent System** - Sukuna formalized as the 9th agent; all documentation updated from "eight-agent" to "nine-agent"
 - **Full Documentation Update** - README, FAQ, PROTOCOL_QUICKSTART, VERSION, CLAUDE.md, gojo.agent.md all reflect 9-agent architecture
-- **Distribution Update** - core-files-v8.5.1/ updated to core-files-v8.7.0/ standard
+- **Distribution Update** - core-files-v8.5.1/ updated to core-files-v8.6.0/ standard
 
 ### Previous Release (v8.5.1)
 

@@ -317,6 +317,7 @@ custom_agent_security:
     enabled: true
     max_invocations_per_minute: 10
     max_concurrent_custom_agents: 2
+    cooldown_period_seconds: 5
 ```
 
 ---

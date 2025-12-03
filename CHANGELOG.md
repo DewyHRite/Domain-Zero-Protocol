@@ -11,10 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [8.7.0] - 2025-12-03
 
-> **📌 Release Note**: This release includes **both v8.7.0 and v8.7.0** changes.
-> v8.7.0 (Nine-Agent System Formalization) was completed on 2025-12-02.
-> v8.7.0 (Custom Agent Security Framework) builds directly on v8.7.0.
-> Both versions are being released together in this PR for streamlined deployment.
+> **📌 Release Note**: This release bundles two milestones:
+> Nine-Agent System Formalization (completed 2025-12-02) and the Custom Agent Security Framework (completed 2025-12-03).
+> Both are published together here for streamlined deployment.
 
 ### Added
 
@@ -151,6 +150,37 @@ Addressed all code review feedback from automated PR review:
   - File extension validation
   - Validation result reporting
 
+#### **Nine-Agent System Formalization** - Sukuna recognized as 9th agent
+
+**Full Documentation Update:**
+- All external-facing documentation updated from "eight-agent" to "nine-agent" system
+- Sukuna (System Update Adversary) formalized in version history
+- Complete architecture diagram updated to reflect 9 agents
+
+**Key Changes**:
+- **VERSION.md** - Updated to reflect Nine-Agent System (Core Three + Gojo + Extended Four + Sukuna)
+- **README.md** - All agent count references updated to "nine-agent"
+- **PROTOCOL_QUICKSTART.md** - Quick start guide updated to 9-agent system
+- **protocol/CLAUDE.md** - Main protocol file updated to reflect 9-agent architecture
+- **protocol/gojo.agent.md** - Domain diagram updated to show all 9 agents
+- **docs/FAQ.md** - FAQ updated with 9-agent references
+- **AI_INSTRUCTIONS.md** - System overview updated
+
+**Sukuna's Role Clarified**:
+- System Update Adversary (Gojo-Invoked Only)
+- Adversarial-but-aligned reviews for protocol updates
+- Only Gojo or User may invoke Sukuna
+- Relationship to Gojo: Enemies by design, allies by purpose
+
+### Changed
+
+- **protocol.config.yaml**: Version 8.7.0 → 8.7.0, config_version 2.6 → 2.7
+- **CREATING_CLAUDE_AGENTS.md**: Added comprehensive security warning section
+- **.gitignore**: Added custom agent registry and audit log exclusions
+- All references to "eight-agent system" replaced with "nine-agent system"
+- Architecture documentation updated to explicitly include Sukuna as 9th agent
+- Version consistency enforced across all CORE files
+
 ### Security
 
 - **11 Critical/High Vulnerabilities Fixed** (CVSS 8.5-9.8):
@@ -185,40 +215,6 @@ Addressed all code review feedback from automated PR review:
 10. ❌ Rate limit bypass via process restart
 
 **Enforcement**: Pre-Invocation Validation + Runtime Monitoring + Path Validation + Regex Sanitization + Automatic Quarantine
-
----
-
-## [8.7.0] - 2025-12-02
-
-### Added
-
-#### **Nine-Agent System Formalization** - Sukuna recognized as 9th agent
-
-**Full Documentation Update:**
-- All external-facing documentation updated from "eight-agent" to "nine-agent" system
-- Sukuna (System Update Adversary) formalized in version history
-- Complete architecture diagram updated to reflect 9 agents
-
-**Key Changes**:
-- **VERSION.md** - Updated to reflect Nine-Agent System (Core Three + Gojo + Extended Four + Sukuna)
-- **README.md** - All agent count references updated to "nine-agent"
-- **PROTOCOL_QUICKSTART.md** - Quick start guide updated to 9-agent system
-- **protocol/CLAUDE.md** - Main protocol file updated to reflect 9-agent architecture
-- **protocol/gojo.agent.md** - Domain diagram updated to show all 9 agents
-- **docs/FAQ.md** - FAQ updated with 9-agent references
-- **AI_INSTRUCTIONS.md** - System overview updated
-
-**Sukuna's Role Clarified**:
-- System Update Adversary (Gojo-Invoked Only)
-- Adversarial-but-aligned reviews for protocol updates
-- Only Gojo or User may invoke Sukuna
-- Relationship to Gojo: Enemies by design, allies by purpose
-
-### Changed
-
-- All references to "eight-agent system" replaced with "nine-agent system"
-- Architecture documentation updated to explicitly include Sukuna as 9th agent
-- Version consistency enforced across all CORE files
 
 ---
 
@@ -1840,4 +1836,4 @@ EOF
 
 **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 **Maintainer**: Protocol Guardians
-**Last Updated**: 2025-12-02
+**Last Updated**: 2025-12-03

@@ -2168,7 +2168,7 @@ Domain-Zero/                              # Project root
 ### Sukuna (System Update Specialist - Gojo-Invoked)
 ```bash
 # System Update Planning (via Gojo)
-"Read gojo.agent.md and engage Sukuna to plan an upgrade to v8.7.0"
+"Read gojo.agent.md and engage Sukuna to plan an upgrade to v[X.Y.Z]"
 "Read gojo.agent.md and engage Sukuna to assess risk of protocol fork merge"
 
 # Update Execution (after plan approval)
