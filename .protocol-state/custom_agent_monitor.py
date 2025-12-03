@@ -48,6 +48,7 @@ class AgentRegistryEntry:
     last_invoked: str  # ISO 8601 timestamp
     total_invocations: int = 0
     tools_used: Dict[str, int] = field(default_factory=dict)  # tool_name: usage_count
+    tools_denied: Dict[str, int] = field(default_factory=dict)  # tool_name: denial_count (for anomaly detection)
     validation_failures: int = 0
     quarantined: bool = False
     quarantine_reason: Optional[str] = None
@@ -166,13 +167,26 @@ class CustomAgentMonitor:
             self.audit_logger.error(f"HASH_ERROR | {file_path}: {e}")
             return None
 
-    def validate_rate_limit(self, agent_name: str, max_per_minute: int = 10) -> Tuple[bool, Optional[str]]:
+    def validate_rate_limit(
+        self,
+        agent_name: str,
+        max_per_minute: int = 10,
+        max_concurrent: int = 2,
+        cooldown_seconds: int = 5
+    ) -> Tuple[bool, Optional[str]]:
         """
         Check if agent has exceeded rate limit (persisted to registry).
+
+        Enforces three policies:
+        1. Per-minute invocation cap (default: 10/min)
+        2. Cooldown period between invocations (default: 5 seconds)
+        3. Global concurrent invocation limit (default: 2 concurrent)
 
         Args:
             agent_name: Name of custom agent
             max_per_minute: Maximum invocations per minute
+            max_concurrent: Maximum concurrent custom agents (global limit)
+            cooldown_seconds: Minimum seconds between invocations for this agent
 
         Returns:
             (is_valid, error_message) - error_message is None if valid
@@ -180,34 +194,75 @@ class CustomAgentMonitor:
         now = datetime.now()
         registry = self.load_registry()
 
-        # Load timestamps from registry if agent exists
-        timestamps = []
-        if agent_name in registry:
-            # Convert ISO timestamps to datetime objects
-            timestamps = [
-                datetime.fromisoformat(ts)
-                for ts in registry[agent_name].rate_limit_timestamps
-            ]
+        # Load timestamps from registry if agent exists, or create minimal entry
+        if agent_name not in registry:
+            # Create minimal registry entry for rate limiting tracking
+            # Full entry will be created in register_invocation
+            registry[agent_name] = AgentRegistryEntry(
+                agent_name=agent_name,
+                agent_file_path="<pending>",  # Will be updated in register_invocation
+                first_seen=now.isoformat(),
+                last_invoked=now.isoformat(),
+                total_invocations=0,
+                rate_limit_timestamps=[]
+            )
 
-        # Remove timestamps older than 1 minute
+        entry = registry[agent_name]
+
+        # Convert ISO timestamps to datetime objects
+        timestamps = [
+            datetime.fromisoformat(ts)
+            for ts in entry.rate_limit_timestamps
+        ]
+
+        # Remove timestamps older than 1 minute (sliding window)
         cutoff = datetime.fromtimestamp(now.timestamp() - 60)
         timestamps = [ts for ts in timestamps if ts > cutoff]
 
-        # Check if rate limit exceeded
+        # POLICY 1: Check per-minute invocation limit
         if len(timestamps) >= max_per_minute:
             self.audit_logger.warning(
                 f"RATE_LIMIT_EXCEEDED | {agent_name} | {len(timestamps)} invocations in last minute"
             )
             return False, f"Rate limit exceeded: {len(timestamps)}/{max_per_minute} invocations per minute"
 
-        # Record this invocation
+        # POLICY 2: Check cooldown period (last invocation must be > cooldown_seconds ago)
+        if timestamps:
+            last_invocation = max(timestamps)
+            time_since_last = (now - last_invocation).total_seconds()
+            if time_since_last < cooldown_seconds:
+                self.audit_logger.warning(
+                    f"COOLDOWN_VIOLATION | {agent_name} | {time_since_last:.1f}s since last invocation (min: {cooldown_seconds}s)"
+                )
+                return False, f"Cooldown violation: {time_since_last:.1f}s since last invocation (minimum: {cooldown_seconds}s)"
+
+        # POLICY 3: Check global concurrent invocation limit
+        # Count how many custom agents have invocations in the last 60 seconds
+        active_agents = 0
+        for other_agent_name, other_entry in registry.items():
+            if other_agent_name == agent_name:
+                continue  # Don't count ourselves
+
+            other_timestamps = [
+                datetime.fromisoformat(ts)
+                for ts in other_entry.rate_limit_timestamps
+            ]
+            recent_other = [ts for ts in other_timestamps if ts > cutoff]
+            if recent_other:
+                active_agents += 1
+
+        if active_agents >= max_concurrent:
+            self.audit_logger.warning(
+                f"CONCURRENCY_EXCEEDED | {agent_name} | {active_agents} custom agents active (max: {max_concurrent})"
+            )
+            return False, f"Concurrency limit exceeded: {active_agents} custom agents active (maximum: {max_concurrent})"
+
+        # All policies passed - record this invocation
         timestamps.append(now)
 
-        # Persist timestamps back to registry
-        if agent_name in registry:
-            registry[agent_name].rate_limit_timestamps = [ts.isoformat() for ts in timestamps]
-            self.save_registry(registry)
-        # If agent not in registry yet, timestamps will be saved during register_invocation
+        # Persist timestamps back to registry (ALWAYS, even for new agents)
+        entry.rate_limit_timestamps = [ts.isoformat() for ts in timestamps]
+        self.save_registry(registry)
 
         return True, None
 
@@ -342,6 +397,10 @@ class CustomAgentMonitor:
             for tool in granted:
                 entry.tools_used[tool] = entry.tools_used.get(tool, 0) + 1
 
+            # Track denied tools (for anomaly detection)
+            for tool in denied:
+                entry.tools_denied[tool] = entry.tools_denied.get(tool, 0) + 1
+
             # Track validation failures
             if not validation_passed:
                 entry.validation_failures += 1
@@ -359,6 +418,7 @@ class CustomAgentMonitor:
                 last_invoked=now,
                 total_invocations=1,
                 tools_used={tool: 1 for tool in granted},
+                tools_denied={tool: 1 for tool in denied},
                 validation_failures=0 if validation_passed else 1,
                 file_hash=file_hash,
                 invocation_history=[invocation.to_dict()]
@@ -500,13 +560,13 @@ class CustomAgentMonitor:
                 f"Suspicious file modification pattern: {entry.hash_changed_count} changes"
             )
 
-        # Check for unusual tool usage patterns
+        # Check for unusual tool usage patterns (check denied attempts)
         forbidden_tools = ['bash', 'task', 'notebookedit', 'killshell']
         for tool in forbidden_tools:
-            if tool in entry.tools_used:
+            if tool in entry.tools_denied:
                 anomalies.append(
                     f"Attempted to use forbidden tool '{tool}' "
-                    f"({entry.tools_used[tool]} times)"
+                    f"({entry.tools_denied[tool]} times)"
                 )
 
         # Check for rapid invocations

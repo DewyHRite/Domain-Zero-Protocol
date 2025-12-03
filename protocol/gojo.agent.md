@@ -480,17 +480,47 @@ else:
         print("Session monitoring disabled for security. Fix ownership with: chown $(whoami) .protocol-state/session_monitor.py")
         monitor = None
     else:
-        # Safe to import
-        try:
-            spec = importlib.util.spec_from_file_location("session_monitor", str(session_monitor_path))
-            session_monitor = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(session_monitor)
-            SessionMonitor = session_monitor.SessionMonitor
-            monitor = SessionMonitor(Path.cwd())
-        except Exception as e:
-            print(f"⚠️  Failed to load session monitor: {e}")
-            print("Continuing without session tracking.")
+        # Additional integrity checks before dynamic import
+        file_size = session_monitor_path.stat().st_size
+
+        # Validate file size is reasonable (10KB - 1MB range)
+        if file_size < 10_000 or file_size > 1_000_000:
+            print(f"⚠️  Suspicious file size for {session_monitor_path}: {file_size} bytes")
+            print("Session monitoring disabled for security. Expected size: 10KB - 1MB")
             monitor = None
+        else:
+            # Safe to import with symbol verification
+            try:
+                spec = importlib.util.spec_from_file_location("session_monitor", str(session_monitor_path))
+                if spec is None or spec.loader is None:
+                    raise ImportError(f"Failed to create import spec for {session_monitor_path}")
+
+                session_monitor = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(session_monitor)
+
+                # Verify expected symbols exist (defense against file tampering)
+                if not hasattr(session_monitor, 'SessionMonitor'):
+                    raise AttributeError("SessionMonitor class not found in module")
+
+                SessionMonitor = session_monitor.SessionMonitor
+
+                # Verify SessionMonitor has expected methods
+                required_methods = ['update_interaction', 'check_alert_needed', 'should_block_operation']
+                missing_methods = [m for m in required_methods if not hasattr(SessionMonitor, m)]
+                if missing_methods:
+                    raise AttributeError(f"SessionMonitor missing required methods: {', '.join(missing_methods)}")
+
+                # All checks passed - instantiate monitor
+                monitor = SessionMonitor(Path.cwd())
+
+            except (ImportError, AttributeError, TypeError) as e:
+                print(f"⚠️  Session monitor failed integrity check: {e}")
+                print("Session monitoring disabled for security.")
+                monitor = None
+            except Exception as e:
+                print(f"⚠️  Failed to load session monitor: {e}")
+                print("Continuing without session tracking.")
+                monitor = None
 
 # 2. Update session state (tracks time automatically)
 if monitor:

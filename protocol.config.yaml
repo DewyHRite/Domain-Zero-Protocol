@@ -81,11 +81,38 @@ safety:
     high_risk_session_threshold_minutes: 360  # Block after 6 hours
 
     # High-risk operation patterns (configurable)
+    # NOTE: These patterns override session_monitor.py defaults when present.
+    # Keep this list comprehensive to match test coverage expectations.
     high_risk_operations:
       patterns:
-        - '\bgit\s+push\b.*\b(prod(uction)?|main)\b'
-        - '\bkubectl\s+apply\b.*\bprod\b'
-        - '\bterraform\s+apply\b'
+        # Git operations
+        - 'git push.*production'
+        - 'git push.*main'
+        - 'git push.*master'
+        - 'git push.*--force'
+
+        # Deployment operations
+        - 'deploy.*production'
+
+        # Destructive file operations
+        - 'rm\s+-rf'
+
+        # Destructive SQL operations
+        - 'DROP\s+TABLE'
+        - 'DELETE\s+FROM'
+        - 'ALTER\s+TABLE'
+        - 'TRUNCATE\s+TABLE'
+
+        # Package publishing
+        - 'npm publish'
+
+        # Container/orchestration operations
+        - 'docker.*production'
+        - 'kubectl.*delete'
+        - 'kubectl.*production'
+
+        # Infrastructure operations
+        - 'terraform\s+destroy'
       case_insensitive: true
 
     # Verification and self-check
