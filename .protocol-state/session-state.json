@@ -1,0 +1,38 @@
+{
+  "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.6.0)",
+  "_description": "This file tracks active work session metrics for safety monitoring. Updated by Gojo on each interaction.",
+  "_schema_version": "1.0.0",
+  "current_session": {
+    "session_id": "session_20251202_204315",
+    "session_active": true,
+    "start_time": "2025-12-02T20:43:15.415400",
+    "last_interaction_time": "2025-12-02T20:43:15.415400",
+    "last_alert_time": null,
+    "alert_count": 0,
+    "escalation_level": 0,
+    "user_last_choice": null,
+    "break_acknowledged": false,
+    "high_risk_operations_blocked": false
+  },
+  "session_metrics": {
+    "total_duration_minutes": 0,
+    "continuous_work_minutes": 0,
+    "break_timestamps": [],
+    "total_breaks": 0,
+    "alerts_issued": 0,
+    "alerts_ignored": 0,
+    "continues_chosen": 0,
+    "breaks_chosen": 0
+  },
+  "thresholds": {
+    "initial_alert_minutes": 240,
+    "escalated_alert_minutes": 45,
+    "critical_session_minutes": 360,
+    "max_continuous_minutes": 480,
+    "late_night_hour": 22,
+    "minimum_break_minutes": 15
+  },
+  "session_history": [],
+  "last_updated": "2025-12-02T20:43:15.415400",
+  "protocol_version": "8.6.0"
+}

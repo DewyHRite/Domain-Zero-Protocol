@@ -852,7 +852,7 @@ Scenario: Full Tier 2 workflow
 
 ## Version History
 
-- **1.1.0** (2025-11-25): Updated for v8.5.0, Extended Four agents, 8-agent architecture
+- **1.1.0** (2025-11-25): Updated for v8.6.0, Extended Four agents, 9-agent architecture
 - **1.0.0** (2025-11-18): Initial specification for v8.0.0 .agent.md format
 
 ---

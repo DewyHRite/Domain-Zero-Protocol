@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.6.0] - 2025-12-02
+
+### Added
+
+#### **Nine-Agent System Formalization** - Sukuna recognized as 9th agent
+
+**Full Documentation Update:**
+- All external-facing documentation updated from "eight-agent" to "nine-agent" system
+- Sukuna (System Update Adversary) formalized in version history
+- Complete architecture diagram updated to reflect 9 agents
+
+**Key Changes**:
+- **VERSION.md** - Updated to reflect Nine-Agent System (Core Three + Gojo + Extended Four + Sukuna)
+- **README.md** - All agent count references updated to "nine-agent"
+- **PROTOCOL_QUICKSTART.md** - Quick start guide updated to 9-agent system
+- **protocol/CLAUDE.md** - Main protocol file updated to reflect 9-agent architecture
+- **protocol/gojo.agent.md** - Domain diagram updated to show all 9 agents
+- **docs/FAQ.md** - FAQ updated with 9-agent references
+- **AI_INSTRUCTIONS.md** - System overview updated
+
+**Sukuna's Role Clarified**:
+- System Update Adversary (Gojo-Invoked Only)
+- Adversarial-but-aligned reviews for protocol updates
+- Only Gojo or User may invoke Sukuna
+- Relationship to Gojo: Enemies by design, allies by purpose
+
+### Changed
+
+- All references to "eight-agent system" replaced with "nine-agent system"
+- Architecture documentation updated to explicitly include Sukuna as 9th agent
+- Version consistency enforced across all CORE files
+
+---
+
 ## [8.5.1] - 2025-11-26
 
 ### Added

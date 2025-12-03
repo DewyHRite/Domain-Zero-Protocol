@@ -57,6 +57,33 @@ safety:
     escalated_alert_interval_minutes: 45   # Alert interval after "continue" choice
     critical_session_hours: 6              # Hours after which session is critical
 
+  # v8.6.0: REAL Session Tracking Implementation
+  # Sukuna's red team assessment identified that work session monitoring was
+  # prompt-based theater with zero enforcement. This implementation provides
+  # ACTUAL time tracking, state persistence, and alert enforcement.
+  session_tracking:
+    enabled: true  # Master enable for session monitoring system
+
+    # State file location
+    state_file: ".protocol-state/session-state.json"
+
+    # Session continuation threshold (minutes)
+    # If gap between interactions < this value, session continues
+    # If gap >= this value, session ends and new one starts
+    session_continuation_threshold_minutes: 30
+
+    # Auto-archive sessions to history
+    auto_archive_on_end: true
+    max_history_entries: 30
+
+    # High-risk operation blocking
+    block_high_risk_when_fatigued: true  # Actually enforced now
+    high_risk_session_threshold_minutes: 360  # Block after 6 hours
+
+    # Verification and self-check
+    verify_time_access: true  # Gojo should verify it can access current time
+    log_all_alerts: true  # Log every alert issued (for Trigger 19)
+
   # Ethical design constraints (for Nobara)
   ethical_design:
     forbid_dark_patterns: true      # No manipulative UX patterns

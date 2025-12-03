@@ -1372,7 +1372,7 @@ Copy and paste this prompt to save Domain Zero Protocol to Claude's memory:
 ```
 Add to memory: Domain Zero Protocol
 
-I use the Domain Zero Protocol for AI-assisted development. This is an eight-agent system:
+I use the Domain Zero Protocol for AI-assisted development. This is an nine-agent system:
 
 **Core Four:**
 - YUUJI (Implementation Specialist): Test-first development, feature implementation
@@ -1412,7 +1412,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
 Add to "What would you like ChatGPT to know about you?":
 
 ```
-I use the Domain Zero Protocol (v8.5.1) for development projects. This is an eight-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.6.0) for development projects. This is a nine-agent AI development framework with specialized roles:
 
 **Core Four:**
 - YUUJI: Implementation with test-first development
@@ -1443,7 +1443,7 @@ Add to your global or project-level custom instructions:
 ```
 - Add to memory: Domain Zero Protocol
 
-I use the Domain Zero Protocol for AI-assisted development. This is an eight-agent system:
+I use the Domain Zero Protocol for AI-assisted development. This is an nine-agent system:
 
 **Core Four:**
 - YUUJI (Implementation Specialist): Test-first development, feature implementation
