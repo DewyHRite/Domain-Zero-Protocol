@@ -205,7 +205,7 @@ class TestShouldBlockOperation:
         assert "400 min" in reason or "400" in reason
 
     def test_blocking_reason_has_emoji(self, monitor, active_session_state):
-        """Blocking reason should include stop emoji for visibility."""
+        """Blocking reason should include 🛑 emoji (stop sign) for visibility."""
         should_block, reason = monitor.should_block_operation('DROP TABLE users')
         assert should_block
         assert "🛑" in reason

@@ -54,6 +54,7 @@ class AgentRegistryEntry:
     file_hash: Optional[str] = None  # Current file hash
     hash_changed_count: int = 0  # How many times file hash changed
     invocation_history: List[Dict] = field(default_factory=list)  # Last N invocations
+    rate_limit_timestamps: List[str] = field(default_factory=list)  # ISO timestamps for rate limiting
 
     def to_dict(self) -> Dict:
         """Convert to dictionary for JSON serialization."""
@@ -79,9 +80,6 @@ class CustomAgentMonitor:
 
         # Set up audit logging
         self._setup_audit_logging()
-
-        # Rate limiting tracking (in-memory)
-        self._invocation_timestamps: Dict[str, List[datetime]] = {}
 
     def _setup_audit_logging(self):
         """Configure audit logging with tamper-evident formatting."""
@@ -170,7 +168,7 @@ class CustomAgentMonitor:
 
     def validate_rate_limit(self, agent_name: str, max_per_minute: int = 10) -> Tuple[bool, Optional[str]]:
         """
-        Check if agent has exceeded rate limit.
+        Check if agent has exceeded rate limit (persisted to registry).
 
         Args:
             agent_name: Name of custom agent
@@ -180,17 +178,20 @@ class CustomAgentMonitor:
             (is_valid, error_message) - error_message is None if valid
         """
         now = datetime.now()
+        registry = self.load_registry()
 
-        # Get recent invocations for this agent
-        if agent_name not in self._invocation_timestamps:
-            self._invocation_timestamps[agent_name] = []
-
-        timestamps = self._invocation_timestamps[agent_name]
+        # Load timestamps from registry if agent exists
+        timestamps = []
+        if agent_name in registry:
+            # Convert ISO timestamps to datetime objects
+            timestamps = [
+                datetime.fromisoformat(ts)
+                for ts in registry[agent_name].rate_limit_timestamps
+            ]
 
         # Remove timestamps older than 1 minute
         cutoff = datetime.fromtimestamp(now.timestamp() - 60)
         timestamps = [ts for ts in timestamps if ts > cutoff]
-        self._invocation_timestamps[agent_name] = timestamps
 
         # Check if rate limit exceeded
         if len(timestamps) >= max_per_minute:
@@ -201,6 +202,13 @@ class CustomAgentMonitor:
 
         # Record this invocation
         timestamps.append(now)
+
+        # Persist timestamps back to registry
+        if agent_name in registry:
+            registry[agent_name].rate_limit_timestamps = [ts.isoformat() for ts in timestamps]
+            self.save_registry(registry)
+        # If agent not in registry yet, timestamps will be saved during register_invocation
+
         return True, None
 
     def validate_tool_permissions(

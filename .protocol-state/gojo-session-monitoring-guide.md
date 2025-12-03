@@ -18,7 +18,7 @@
 - ❌ Zero enforcement capability
 
 **After (v8.6.0 - Sukuna's Fix):**
-- ✅ Real time tracking via `session_monitor.py`
+- ✅ Real-time tracking via `session_monitor.py`
 - ✅ Persistent state in `session-state.json`
 - ✅ Template rendering with actual data
 - ✅ Actual alert triggers based on time

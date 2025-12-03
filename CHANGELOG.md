@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [8.7.0] - 2025-12-03
 
+> **📌 Release Note**: This release includes **both v8.6.0 and v8.7.0** changes.
+> v8.6.0 (Nine-Agent System Formalization) was completed on 2025-12-02.
+> v8.7.0 (Custom Agent Security Framework) builds directly on v8.6.0.
+> Both versions are being released together in this PR for streamlined deployment.
+
 ### Added
 
 #### **Custom Agent Security Framework** - Comprehensive security for user-created agents
@@ -72,27 +77,100 @@ Sukuna's red team assessment identified critical vulnerabilities in the custom a
 
 ### Fixed
 
-- **session_monitor.py**: Fixed None handling crash in `is_high_risk_operation()`
-  - Changed parameter type from `str` to `Optional[str]`
-  - Added type guard to handle None, non-string, and empty inputs
-- **IMPLEMENTATION_GUIDE.md**: Updated all v8.5.1 → v8.6.0 version references
-  - Fixed in-place upgrade paths
-  - Updated Claude Code/GitHub Copilot setup instructions
-  - Changed "eight agents" → "nine agents" + added Sukuna
-  - Updated system prompt with complete 9-agent list
-  - Fixed safety config (`work_session_monitoring` → `session_tracking`)
-- **tests/test_session_monitor.py**: Updated test comment to reflect actual guard behavior
+#### **CodeRabbit + GitHub Copilot Review Fixes** (PR #59)
+
+Addressed all code review feedback from automated PR review:
+
+1. **session_monitor.py**: Fixed type inconsistency in `should_block_operation()`
+   - Changed return type from `Tuple[bool, Optional[str]]` → `Tuple[bool, str]`
+   - Changed all `return False, None` → `return False, ""`
+   - Ensures consistent string semantics (tests expected empty string, not None)
+
+2. **session_monitor.py**: Fixed infinite loop bug in `update_interaction()`
+   - Added retry counter with max retries (default: 1)
+   - Added proper error handling with `RuntimeError` exceptions
+   - Prevents infinite recursion via circuit breaker pattern
+   - Protects against session state corruption
+
+3. **session_monitor.py**: Added regex pattern validation (ReDoS prevention)
+   - Added `_load_high_risk_patterns()` method with validation
+   - Added `_is_safe_regex()` validator checking for catastrophic backtracking
+   - Pre-compiles and caches validated patterns at initialization
+   - Falls back to safe defaults if config unavailable
+   - **Security**: Prevents ReDoS attacks via malicious config patterns
+
+4. **validate-custom-agents.py**: Added path traversal validation
+   - Added path resolution and validation before file access
+   - Checks that resolved path is within `.claude/agents/` directory
+   - Returns error if path traversal detected
+   - **Security**: Prevents malicious agents from accessing arbitrary files
+
+5. **custom_agent_monitor.py**: Persisted rate limit timestamps
+   - Added `rate_limit_timestamps` field to `AgentRegistryEntry` dataclass
+   - Modified `validate_rate_limit()` to load/save timestamps from registry JSON
+   - Removed in-memory `_invocation_timestamps` dict
+   - **Security**: Enforces rate limiting across process restarts
+
+6. **tests/test_session_monitor.py**: Fixed spelling error in docstring
+   - Changed "stop emoji" → "🛑 emoji (stop sign)" for clarity
+
+7. **session_monitor.py**: Fixed None handling crash in `is_high_risk_operation()`
+   - Changed parameter type from `str` to `Optional[str]`
+   - Added type guard to handle None, non-string, and empty inputs
+
+8. **IMPLEMENTATION_GUIDE.md**: Updated all v8.5.1 → v8.6.0 version references
+   - Fixed in-place upgrade paths
+   - Updated Claude Code/GitHub Copilot setup instructions
+   - Changed "eight agents" → "nine agents" + added Sukuna
+   - Updated system prompt with complete 9-agent list
+   - Fixed safety config (`work_session_monitoring` → `session_tracking`)
+
+9. **tests/test_session_monitor.py**: Updated test comment to reflect actual guard behavior
+
+#### **New Test Coverage**
+
+- **tests/test_custom_agent_monitor.py** (60+ test cases)
+  - Registry operations
+  - Rate limiting with persistence
+  - Tool permissions validation
+  - Agent registration and invocation tracking
+  - File integrity monitoring
+  - Quarantine functionality
+  - Anomaly detection
+  - Invocation history
+  - Audit logging
+
+- **tests/test_validate_custom_agents.py** (50+ test cases)
+  - Configuration loading
+  - File size validation
+  - Agent name validation
+  - YAML structure validation
+  - YAML content security validation
+  - Tool permissions validation
+  - Path traversal protection
+  - File extension validation
+  - Validation result reporting
 
 ### Security
 
-- **8 Critical Vulnerabilities Fixed** (CVSS 8.5-9.8):
+- **11 Critical/High Vulnerabilities Fixed** (CVSS 8.5-9.8):
+
+**Custom Agent Security (Initial Implementation)**:
   - CUST-CRIT-002: Agent name collision (CVSS 9.1) ✅ FIXED
   - CUST-CRIT-003: Self-declared tool permissions (CVSS 8.7) ✅ FIXED
   - CUST-CRIT-004: YAML injection (CVSS 9.0) ✅ FIXED
   - CUST-CRIT-008: Agent self-modification (CVSS 9.2) ✅ FIXED
   - CUST-CRIT-006: Zero Gojo oversight (CVSS 8.9) ✅ FIXED
 
-**Threat Model**: Protects against malicious custom agents, compromised agent files, privilege escalation, and supply chain attacks.
+**Code Review Security Fixes**:
+  - Path Traversal Vulnerability: Agent file path validation (CRITICAL) ✅ FIXED
+  - Regex Injection (ReDoS): High-risk pattern validation (CRITICAL) ✅ FIXED
+  - Rate Limit Bypass: Timestamp persistence across restarts (HIGH) ✅ FIXED
+  - Infinite Loop Bug: Circuit breaker in update_interaction (HIGH) ✅ FIXED
+  - Type Safety: Consistent return types in should_block_operation (MEDIUM) ✅ FIXED
+  - None Handling: Type guard in is_high_risk_operation (MEDIUM) ✅ FIXED
+
+**Threat Model**: Protects against malicious custom agents, compromised agent files, privilege escalation, supply chain attacks, path traversal, ReDoS attacks, and rate limit bypass.
 
 **Attack Scenarios Mitigated**:
 1. ❌ Core agent impersonation (Gojo hijack)
@@ -102,8 +180,11 @@ Sukuna's red team assessment identified critical vulnerabilities in the custom a
 5. ❌ Protocol file tampering
 6. ❌ Unmonitored agent activity
 7. ❌ Tool permission bypass
+8. ❌ Path traversal to arbitrary files
+9. ❌ ReDoS attacks via malicious regex patterns
+10. ❌ Rate limit bypass via process restart
 
-**Enforcement**: Validation + Runtime Monitoring + Automatic Quarantine
+**Enforcement**: Pre-Invocation Validation + Runtime Monitoring + Path Validation + Regex Sanitization + Automatic Quarantine
 
 ---
 

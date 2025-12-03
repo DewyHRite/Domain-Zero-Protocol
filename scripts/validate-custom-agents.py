@@ -140,6 +140,25 @@ class CustomAgentValidator:
             result.add_error(f"Agent file must have .agent.md extension, got: {agent_path.name}")
             return result
 
+        # Path traversal protection: validate that resolved path is within expected directory
+        try:
+            resolved_path = agent_path.resolve()
+            # Expected base directory: .claude/agents/ relative to current working directory
+            expected_base = (Path.cwd() / ".claude" / "agents").resolve()
+
+            # Check if resolved path is a subdirectory of expected base
+            try:
+                resolved_path.relative_to(expected_base)
+            except ValueError:
+                result.add_error(
+                    f"Path traversal detected: Agent file must be in .claude/agents/ directory. "
+                    f"Got: {agent_path} (resolves to: {resolved_path})"
+                )
+                return result
+        except Exception as e:
+            result.add_error(f"Failed to validate agent file path: {e}")
+            return result
+
         # Read file content
         try:
             with open(agent_path, 'r', encoding='utf-8') as f:

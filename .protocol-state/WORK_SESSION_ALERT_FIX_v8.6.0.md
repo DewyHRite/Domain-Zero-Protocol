@@ -10,7 +10,7 @@
 
 **BEFORE (v8.5.1):** Work session monitoring was **prompt-based theater** with zero technical implementation.
 
-**AFTER (v8.6.0):** Work session monitoring is a **fully functional system** with real time tracking, state persistence, and enforcement.
+**AFTER (v8.6.0):** Work session monitoring is a **fully functional system** with real-time tracking, state persistence, and enforcement.
 
 ---
 
@@ -172,7 +172,7 @@ if should_alert:
 
 **Changes:**
 - ✅ Version v8.5.1 → v8.6.0
-- ✅ Footer updated: "with REAL time tracking"
+- ✅ Footer updated: "with real-time tracking"
 - ✅ All placeholders verified functional
 
 ---

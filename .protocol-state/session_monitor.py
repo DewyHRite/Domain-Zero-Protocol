@@ -15,7 +15,7 @@ Usage:
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 import re
 
 
@@ -30,7 +30,125 @@ class SessionMonitor:
         self.template_file = self.protocol_root / ".protocol-state" / "work-session-alert.template.md"
         self.config_file = self.protocol_root / "protocol.config.yaml"
 
+        # Load and validate high-risk operation patterns
+        self._high_risk_patterns = self._load_high_risk_patterns()
+
         self._ensure_state_file()
+
+    def _load_high_risk_patterns(self) -> List[re.Pattern]:
+        """
+        Load and validate high-risk operation patterns from config file.
+
+        Returns:
+            List of compiled regex patterns (falls back to defaults if config unavailable)
+        """
+        # Default fallback patterns (safe, pre-validated)
+        default_patterns = [
+            r'git push.*production',
+            r'git push.*main',
+            r'git push.*master',
+            r'git push.*--force',
+            r'deploy.*production',
+            r'rm\s+-rf',
+            r'DROP\s+TABLE',
+            r'DELETE\s+FROM',
+            r'ALTER\s+TABLE',
+            r'TRUNCATE\s+TABLE',
+            r'npm publish',
+            r'docker.*production',
+            r'kubectl.*delete',
+            r'kubectl.*production',
+            r'terraform\s+destroy'
+        ]
+
+        # Try to load patterns from config file
+        if self.config_file.exists():
+            try:
+                import yaml
+                with open(self.config_file, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f)
+
+                # Extract patterns from config
+                safety_config = config.get('safety', {})
+                session_tracking = safety_config.get('session_tracking', {})
+                high_risk_ops = session_tracking.get('high_risk_operations', {})
+                configured_patterns = high_risk_ops.get('patterns', [])
+
+                if configured_patterns:
+                    # Validate each pattern
+                    validated_patterns = []
+                    for pattern_str in configured_patterns:
+                        if self._is_safe_regex(pattern_str):
+                            validated_patterns.append(pattern_str)
+                        else:
+                            print(f"⚠️  Skipping unsafe regex pattern: {pattern_str}")
+
+                    if validated_patterns:
+                        # Compile validated patterns
+                        return [re.compile(p, re.IGNORECASE) for p in validated_patterns]
+
+            except Exception as e:
+                print(f"⚠️  Failed to load high-risk patterns from config: {e}")
+                print("    Falling back to default patterns")
+
+        # Fall back to defaults if config unavailable or empty
+        return [re.compile(p, re.IGNORECASE) for p in default_patterns]
+
+    def _is_safe_regex(self, pattern: str, max_length: int = 200, timeout_seconds: float = 0.1) -> bool:
+        """
+        Validate that a regex pattern is safe (not a ReDoS attack).
+
+        Args:
+            pattern: Regex pattern string to validate
+            max_length: Maximum allowed pattern length
+            timeout_seconds: Maximum time allowed for pattern compilation/test
+
+        Returns:
+            True if pattern is safe, False otherwise
+        """
+        # Length check (excessive length is suspicious)
+        if len(pattern) > max_length:
+            return False
+
+        # Check for catastrophic backtracking patterns
+        dangerous_constructs = [
+            r'(\w+\*)+',  # Nested quantifiers
+            r'(\w+)+\w+', # Overlapping quantifiers
+            r'(\w*)*',    # Nested star quantifiers
+            r'(\w+)+$',   # Greedy quantifier before anchor
+        ]
+
+        for dangerous in dangerous_constructs:
+            if re.search(dangerous, pattern):
+                return False
+
+        # Try to compile the pattern with a timeout
+        try:
+            import signal
+
+            def timeout_handler(signum, frame):
+                raise TimeoutError("Regex compilation timeout")
+
+            # Set timeout (Unix only - Windows will skip this check)
+            if hasattr(signal, 'SIGALRM'):
+                signal.signal(signal.SIGALRM, timeout_handler)
+                signal.setitimer(signal.ITIMER_REAL, timeout_seconds)
+
+            # Attempt to compile
+            compiled = re.compile(pattern, re.IGNORECASE)
+
+            # Test against a worst-case string
+            test_string = 'a' * 100 + 'b'
+            compiled.search(test_string)
+
+            # Cancel timeout
+            if hasattr(signal, 'SIGALRM'):
+                signal.alarm(0)
+
+            return True
+
+        except (re.error, TimeoutError, Exception):
+            return False
 
     def _ensure_state_file(self):
         """Ensure session state file exists with proper schema."""
@@ -154,18 +272,31 @@ class SessionMonitor:
         self.save_state(state)
         return state
 
-    def update_interaction(self) -> Dict:
+    def update_interaction(self, _retry_count: int = 0, _max_retries: int = 1) -> Dict:
         """
         Record a new interaction in the current session.
 
+        Args:
+            _retry_count: Internal retry counter (do not set manually)
+            _max_retries: Maximum retries for session reset (default: 1)
+
         Returns:
             Updated state with interaction timestamp
+
+        Raises:
+            RuntimeError: If session cannot be started/reset after max retries
         """
+        if _retry_count > _max_retries:
+            raise RuntimeError("Exceeded maximum retries to reset session. Session state may be corrupted.")
+
         state = self.load_state()
 
         if not state['current_session']['session_active']:
             # Auto-start session if not active
-            return self.start_session()
+            try:
+                return self.start_session()
+            except Exception as e:
+                raise RuntimeError(f"Failed to start session: {e}")
 
         now = datetime.now()
         state['current_session']['last_interaction_time'] = now.isoformat()
@@ -174,13 +305,19 @@ class SessionMonitor:
         start_time = state['current_session'].get('start_time')
         if not start_time:
             print("⚠️  Session start_time is missing. Resetting session.")
-            return self.start_session()
+            try:
+                return self.update_interaction(_retry_count=_retry_count + 1, _max_retries=_max_retries)
+            except Exception as e:
+                raise RuntimeError(f"Failed to reset session (missing start_time): {e}")
 
         try:
             start = datetime.fromisoformat(start_time)
         except (ValueError, TypeError):
             print("⚠️  Invalid session start_time format. Resetting session.")
-            return self.start_session()
+            try:
+                return self.update_interaction(_retry_count=_retry_count + 1, _max_retries=_max_retries)
+            except Exception as e:
+                raise RuntimeError(f"Failed to reset session (invalid start_time format): {e}")
 
         duration_minutes = (now - start).total_seconds() / 60
         state['session_metrics']['total_duration_minutes'] = int(duration_minutes)
@@ -397,7 +534,6 @@ Template file not found at: {self.template_file}
         self.save_state(state)
         return state
 
-    # TODO: Load patterns from protocol.config.yaml for customization
     def is_high_risk_operation(self, command: Optional[str]) -> bool:
         """
         Check if a command is considered high-risk.
@@ -414,31 +550,14 @@ Template file not found at: {self.template_file}
         if not isinstance(command, str) or not command.strip():
             return False
 
-        high_risk_patterns = [
-            r'git push.*production',
-            r'git push.*main',
-            r'git push.*master',
-            r'git push.*--force',
-            r'deploy.*production',
-            r'rm\s+-rf',
-            r'DROP\s+TABLE',
-            r'DELETE\s+FROM',
-            r'ALTER\s+TABLE',
-            r'TRUNCATE\s+TABLE',
-            r'npm publish',
-            r'docker.*production',
-            r'kubectl.*delete',
-            r'kubectl.*production',
-            r'terraform\s+destroy'
-        ]
-
-        for pattern in high_risk_patterns:
-            if re.search(pattern, command, re.IGNORECASE):
+        # Use pre-compiled, validated patterns from config
+        for pattern in self._high_risk_patterns:
+            if pattern.search(command):
                 return True
 
         return False
 
-    def should_block_operation(self, operation: Optional[str]) -> Tuple[bool, Optional[str]]:
+    def should_block_operation(self, operation: Optional[str]) -> Tuple[bool, str]:
         """
         Check if an operation should be blocked due to session state.
 
@@ -446,12 +565,12 @@ Template file not found at: {self.template_file}
             operation: Operation description or command (None or empty treated as non-high-risk)
 
         Returns:
-            (should_block, reason) - reason is None if not blocked
+            (should_block, reason) - reason is empty string if not blocked
         """
         state = self.load_state()
 
         if not state['current_session']['session_active']:
-            return False, None
+            return False, ""
 
         # Check if high-risk blocking is enabled
         if state['current_session']['high_risk_operations_blocked']:
@@ -459,7 +578,7 @@ Template file not found at: {self.template_file}
                 reason = f"🛑 High-risk operation blocked: Extended session ({state['session_metrics']['total_duration_minutes']} min). Take a break first."
                 return True, reason
 
-        return False, None
+        return False, ""
 
     def get_session_summary(self) -> str:
         """
