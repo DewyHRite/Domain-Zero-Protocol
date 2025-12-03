@@ -386,7 +386,7 @@ Format:
 
 ## References
 
-- **Red Team Assessment**: `internal-docs/RED_TEAM_ASSESSMENT_CUSTOM_AGENTS_v8.6.0.md`
+- **Red Team Assessment**: `internal-docs/RED_TEAM_ASSESSMENT_CUSTOM_AGENTS_v8.7.0.md`
 - **Gojo Integration Guide**: `.protocol-state/gojo-custom-agent-security-guide.md`
 - **Validation Script**: `scripts/validate-custom-agents.py`
 - **Monitor Module**: `.protocol-state/custom_agent_monitor.py`

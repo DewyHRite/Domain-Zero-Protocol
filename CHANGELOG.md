@@ -11,9 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [8.7.0] - 2025-12-03
 
-> **📌 Release Note**: This release includes **both v8.6.0 and v8.7.0** changes.
-> v8.6.0 (Nine-Agent System Formalization) was completed on 2025-12-02.
-> v8.7.0 (Custom Agent Security Framework) builds directly on v8.6.0.
+> **📌 Release Note**: This release includes **both v8.7.0 and v8.7.0** changes.
+> v8.7.0 (Nine-Agent System Formalization) was completed on 2025-12-02.
+> v8.7.0 (Custom Agent Security Framework) builds directly on v8.7.0.
 > Both versions are being released together in this PR for streamlined deployment.
 
 ### Added
@@ -71,7 +71,7 @@ Sukuna's red team assessment identified critical vulnerabilities in the custom a
 
 ### Changed
 
-- **protocol.config.yaml**: Version 8.6.0 → 8.7.0, config_version 2.6 → 2.7
+- **protocol.config.yaml**: Version 8.7.0 → 8.7.0, config_version 2.6 → 2.7
 - **CREATING_CLAUDE_AGENTS.md**: Added comprehensive security warning section
 - **.gitignore**: Added custom agent registry and audit log exclusions
 
@@ -118,7 +118,7 @@ Addressed all code review feedback from automated PR review:
    - Changed parameter type from `str` to `Optional[str]`
    - Added type guard to handle None, non-string, and empty inputs
 
-8. **IMPLEMENTATION_GUIDE.md**: Updated all v8.5.1 → v8.6.0 version references
+8. **IMPLEMENTATION_GUIDE.md**: Updated all v8.5.1 → v8.7.0 version references
    - Fixed in-place upgrade paths
    - Updated Claude Code/GitHub Copilot setup instructions
    - Changed "eight agents" → "nine agents" + added Sukuna
@@ -188,7 +188,7 @@ Addressed all code review feedback from automated PR review:
 
 ---
 
-## [8.6.0] - 2025-12-02
+## [8.7.0] - 2025-12-02
 
 ### Added
 

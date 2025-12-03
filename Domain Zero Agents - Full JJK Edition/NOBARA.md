@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 # 🔨 NOBARA KUGISAKI - Creative Strategy & UX Specialist
-## Agent Protocol File v8.6.0 (JJK Edition)
+## Agent Protocol File v8.7.0 (JJK Edition)
 ### User Insight • Narrative • Delight
 
 > **📎 Canonical Reference**: [protocol/nobara.agent.md](../protocol/nobara.agent.md)
@@ -626,7 +626,7 @@ The authoritative version of this file resides in the **Domain Zero Protocol Can
 
 ### Version Tracking
 For consistency across protocol instances:
-- **Protocol Version**: v8.6.0
+- **Protocol Version**: v8.7.0
 - **Last Canonical Sync**: [check protocol.config.yaml]
 - **Verification**: Run `./scripts/verify-protocol.(sh|ps1)` to check alignment
 

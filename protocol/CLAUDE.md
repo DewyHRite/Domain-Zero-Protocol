@@ -1,18 +1,18 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.6.0
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.7.0
 ## Main Protocol File - Domain Zero
 
-**Version**: 8.6.0
+**Version**: 8.7.0
 **Status**: Production-Ready
-**Last Updated**: 2025-12-02
-**Major Enhancements**: Nine-Agent System (Sukuna formalized as 9th agent), Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions, Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
+**Last Updated**: 2025-12-03
+**Major Enhancements**: v8.7.0 Custom Agent Security Framework; v8.7.0 Nine-Agent System (Sukuna formalized as 9th agent); Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions, Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 
 ---
 
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v8.6.0
+> **Current Local Protocol Version**: v8.7.0
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations. 
@@ -514,7 +514,7 @@ USER invokes → GOJO activates Domain Expansion
 ```
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
-║                 DOMAIN ZERO: ACTIVATED (v8.6.0)                   ║
+║                 DOMAIN ZERO: ACTIVATED (v8.7.0)                   ║
 ║                                                                   ║
 ║                     [GOJO - Domain Controller]                    ║
 ║                     (Identity Hidden from Agents)                 ║
@@ -2168,7 +2168,7 @@ Domain-Zero/                              # Project root
 ### Sukuna (System Update Specialist - Gojo-Invoked)
 ```bash
 # System Update Planning (via Gojo)
-"Read gojo.agent.md and engage Sukuna to plan an upgrade to v8.6.0"
+"Read gojo.agent.md and engage Sukuna to plan an upgrade to v8.7.0"
 "Read gojo.agent.md and engage Sukuna to assess risk of protocol fork merge"
 
 # Update Execution (after plan approval)
@@ -2334,13 +2334,14 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 8.6.0
-**Protocol Version**: 8.6.0
-**Release Date**: December 2, 2025
-**Last Updated**: 2025-12-02
+**Current Version**: 8.7.0
+**Protocol Version**: 8.7.0
+**Release Date**: December 3, 2025
+**Last Updated**: 2025-12-03
 
 **Version History**:
-- v8.6.0 - **MINOR**: Nine-Agent System (Sukuna formalized as 9th agent), Full Documentation Update across all external-facing files
+- v8.7.0 - **MINOR**: Custom Agent Security Framework (Pre-invocation validation, Runtime monitoring, Audit logging, 8 critical vulnerabilities fixed)
+- v8.7.0 - **MINOR**: Nine-Agent System (Sukuna formalized as 9th agent), Full Documentation Update across all external-facing files
 - v8.5.1 - **PATCH**: Sukuna System Update Adversary Integration (Gojo-Invoked Protocol Updates, JJK Character Reference, Adversarial-but-Aligned Reviews), Cross-Agent Edit Restrictions (Non-Gojo agents READ-ONLY access to .agent.md files), Slash Command Rename (system-update → sukuna), Work Session Management Enforcement
 - v8.5.0 - **MINOR**: Kill Switch Protocol (Emergency Stop with Project Protection, Gojo Coordination, Option 4 Resume), User Technical Level System (Beginner/Intermediate/Expert Adaptation across all 9 agents)
 - v8.4.0 - **MINOR**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki added as core protocol agents with .agent.md format, handoff specifications, skill assignments)
@@ -2367,7 +2368,7 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 
 ---
 
-## 💡 TOKEN EFFICIENCY & MODULAR ARCHITECTURE (v8.6.0)
+## 💡 TOKEN EFFICIENCY & MODULAR ARCHITECTURE (v8.7.0)
 
 ### Optimize Context Usage While Preserving Protocol Behavior
 
@@ -2385,7 +2386,7 @@ Domain Zero Protocol uses a modular architecture to minimize token consumption w
 
 **DO**:
 - Read agent files once per feature/work chunk (not every message)
-- Reference protocol by name: "Follow Domain Zero v8.6.0 using Yuuji"
+- Reference protocol by name: "Follow Domain Zero v8.7.0 using Yuuji"
 - Formulate specific tasks: "Implement password reset in `src/auth/reset.py`"
 - Use appropriate tier: Tier 1 for prototypes, Tier 2 for production, Tier 3 for critical only
 

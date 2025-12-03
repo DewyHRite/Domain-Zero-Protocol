@@ -56,7 +56,7 @@ safety:
     escalated_alert_interval_minutes: 45   # Alert interval after "continue" choice
     critical_session_hours: 6              # Hours after which session is critical
 
-  # v8.6.0: REAL Session Tracking Implementation
+  # v8.7.0: REAL Session Tracking Implementation
   # Sukuna's red team assessment identified that work session monitoring was
   # prompt-based theater with zero enforcement. This implementation provides
   # ACTUAL time tracking, state persistence, and alert enforcement.
@@ -120,7 +120,7 @@ safety:
     log_all_alerts: true  # Log every alert issued (for Trigger 19)
 
   # --------------------------------------------------------------------------
-  # MIGRATION NOTICE: Breaking change in session tracking configuration (v8.6.0)
+  # MIGRATION NOTICE: Breaking change in session tracking configuration (v8.7.0)
   # --------------------------------------------------------------------------
   # The previous key `work_session_monitoring` has been REPLACED by `session_tracking`.
   # If you have customized `work_session_monitoring` in older versions, migrate your
@@ -134,7 +134,7 @@ safety:
   #   work_session_monitoring.high_risk_threshold    -> session_tracking.high_risk_session_threshold_minutes
   #
   # The old `work_session_monitoring` key is DEPRECATED and will be IGNORED.
-  # See CHANGELOG.md v8.6.0 for full migration details.
+  # See CHANGELOG.md v8.7.0 for full migration details.
   # --------------------------------------------------------------------------
 
   # Ethical design constraints (for Nobara)
@@ -957,7 +957,7 @@ protocol_packs:
 # ============================================================================
 # Comprehensive security framework for user-created custom agents.
 # Addresses red team findings: CUST-CRIT-001 through CUST-CRIT-008.
-# See: internal-docs/RED_TEAM_ASSESSMENT_CUSTOM_AGENTS_v8.6.0.md
+# See: internal-docs/RED_TEAM_ASSESSMENT_CUSTOM_AGENTS_v8.7.0.md
 
 custom_agent_security:
   # Master toggle (REQUIRED for custom agents)

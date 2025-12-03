@@ -1,14 +1,14 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 ---
 title: "Agent Handoff Specification"
 version: "1.1.0"
-protocol_version: "8.6.0"
+protocol_version: "8.7.0"
 last_updated: "2025-12-02"
 status: "Production-Ready"
 ---
 
 # Agent Handoff Specification
-## Domain Zero Protocol v8.6.0
+## Domain Zero Protocol v8.7.0
 
 **Version**: 1.1.0
 **Created**: November 18, 2025
@@ -852,7 +852,7 @@ Scenario: Full Tier 2 workflow
 
 ## Version History
 
-- **1.1.0** (2025-12-02): Updated for v8.6.0, Extended Four agents, 9-agent architecture
+- **1.1.0** (2025-12-02): Updated for v8.7.0, Extended Four agents, 9-agent architecture
 - **1.0.0** (2025-11-18): Initial specification for v8.0.0 .agent.md format
 
 ---

@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 
 # Sukuna System Update - Output Templates
 
-**Version**: 8.6.0
+**Version**: 8.7.0
 **Last Updated**: 2025-12-02
 **Purpose**: Centralized output templates for Sukuna System Update responses
 
@@ -12,7 +12,7 @@
 
 ```markdown
 ╔══════════════════════════════════════════════════════════════╗
-║         SYSTEM UPDATE v8.6.0 - MALEVOLENT SHRINE             ║
+║         SYSTEM UPDATE v8.7.0 - MALEVOLENT SHRINE             ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  👹 Sukuna - Adversarial Protocol Specialist                 ║
 ╠══════════════════════════════════════════════════════════════╣

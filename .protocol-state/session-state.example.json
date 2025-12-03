@@ -1,5 +1,5 @@
 {
-  "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.6.0)",
+  "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.7.0)",
   "_description": "This file tracks active work session metrics for safety monitoring. Updated by Gojo on each interaction.",
   "_usage": "This is a TEMPLATE file. The actual session-state.json will be created automatically by session_monitor.py if it doesn't exist.",
   "_schema_version": "1.0.0",
@@ -35,5 +35,5 @@
   },
   "session_history": [],
   "last_updated": null,
-  "protocol_version": "8.6.0"
+  "protocol_version": "8.7.0"
 }

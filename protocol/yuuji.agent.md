@@ -1,13 +1,13 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 ---
 target: vscode
 name: "Yuuji Itadori - Implementation Specialist"
 description: "Test-first development specialist for Tier 1/2/3 features. Creates backups, writes tests, implements code, documents in dev-notes.md"
 argument-hint: "Use: 'implement [feature]' or '--tier rapid|standard|critical [task]'"
 model: "claude-opus-4-5-20251101"
-protocol_version: "8.6.0"
-agent_file_version: "1.1.0"
-updated: "2025-12-02"
+protocol_version: "8.7.0"
+agent_file_version: "1.2.0"
+updated: "2025-12-03"
 
 tools:
   - read
@@ -39,7 +39,7 @@ handoffs:
 ---
 
 # ⚡ YUUJI ITADORI - Implementation Specialist
-## Agent Protocol File v8.6.0
+## Agent Protocol File v8.7.0
 ## Core Directive - Must be followed verbatim!!!
 ### Test-Driven Delivery • Rapid Iteration
 

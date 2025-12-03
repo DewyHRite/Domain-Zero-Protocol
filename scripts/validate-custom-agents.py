@@ -329,6 +329,13 @@ class CustomAgentValidator:
             return  # Already caught in _validate_yaml_structure
 
         for tool in requested_tools:
+            # Type guard: ensure tool is a string
+            if not isinstance(tool, str):
+                result.add_error(
+                    f"Tool entry must be a string, got {type(tool).__name__}: {tool}"
+                )
+                continue
+
             tool_lower = tool.lower()
 
             # Check forbidden tools

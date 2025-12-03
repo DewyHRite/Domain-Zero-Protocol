@@ -115,13 +115,22 @@ class TestRateLimiting:
         agent_name = 'custom-test'
         max_per_minute = 3
 
+        # Disable cooldown for this test to focus on per-minute limit
         # First 3 should succeed
         for i in range(max_per_minute):
-            is_valid, error = monitor.validate_rate_limit(agent_name, max_per_minute)
+            is_valid, error = monitor.validate_rate_limit(
+                agent_name,
+                max_per_minute=max_per_minute,
+                cooldown_seconds=0  # Disable cooldown
+            )
             assert is_valid, f"Invocation {i+1} should be allowed"
 
-        # 4th should fail
-        is_valid, error = monitor.validate_rate_limit(agent_name, max_per_minute)
+        # 4th should fail due to rate limit
+        is_valid, error = monitor.validate_rate_limit(
+            agent_name,
+            max_per_minute=max_per_minute,
+            cooldown_seconds=0  # Disable cooldown
+        )
         assert not is_valid
         assert "Rate limit exceeded" in error
 
@@ -129,14 +138,14 @@ class TestRateLimiting:
         """Rate limits should persist across monitor instances."""
         agent_name = 'custom-test'
 
-        # First instance - use up rate limit
+        # First instance - use up rate limit (disable cooldown to focus on per-minute limit)
         monitor1 = CustomAgentMonitor(temp_protocol_root)
         for _ in range(5):
-            monitor1.validate_rate_limit(agent_name, max_per_minute=5)
+            monitor1.validate_rate_limit(agent_name, max_per_minute=5, cooldown_seconds=0)
 
         # Second instance - should still be rate limited
         monitor2 = CustomAgentMonitor(temp_protocol_root)
-        is_valid, error = monitor2.validate_rate_limit(agent_name, max_per_minute=5)
+        is_valid, error = monitor2.validate_rate_limit(agent_name, max_per_minute=5, cooldown_seconds=0)
         assert not is_valid
         assert "Rate limit exceeded" in error
 
@@ -146,7 +155,8 @@ class TestRateLimiting:
 
         # Create registry entry with old timestamps
         old_time = (datetime.now() - timedelta(minutes=2)).isoformat()
-        recent_time = datetime.now().isoformat()
+        # Make recent_time old enough to pass cooldown (10 seconds ago)
+        recent_time = (datetime.now() - timedelta(seconds=10)).isoformat()
 
         entry = AgentRegistryEntry(
             agent_name=agent_name,
@@ -159,8 +169,9 @@ class TestRateLimiting:
         monitor.save_registry({agent_name: entry})
 
         # Validate rate limit - should only count recent timestamp
+        # Old timestamps should be cleared, and recent_time passes cooldown
         is_valid, error = monitor.validate_rate_limit(agent_name, max_per_minute=5)
-        assert is_valid  # Only 1 recent timestamp, so should allow
+        assert is_valid  # Only 1 recent timestamp (10s ago), so should allow
 
 
 class TestToolPermissions:
@@ -354,29 +365,43 @@ class TestQuarantine:
             agent_file_path='/path/to/agent.md',
             first_seen='2025-01-01T00:00:00',
             last_invoked='2025-01-01T00:00:00',
-            quarantined=True
+            quarantined=True,
+            quarantine_reason='Test quarantine reason'
         )
         monitor.save_registry({'custom-bad': entry})
 
-        assert monitor.is_quarantined('custom-bad') is True
-        assert monitor.is_quarantined('custom-good') is False
+        # is_quarantined returns (bool, Optional[str]) tuple
+        is_quarantined, reason = monitor.is_quarantined('custom-bad')
+        assert is_quarantined is True
+        assert reason == 'Test quarantine reason'
+
+        is_quarantined, reason = monitor.is_quarantined('custom-good')
+        assert is_quarantined is False
+        assert reason is None
 
 
 class TestAnomalyDetection:
     """Test anomaly detection functionality."""
 
-    def test_detects_rate_limit_anomaly(self, monitor):
-        """Should detect rate limit violations as anomalies."""
+    def test_detects_high_invocation_anomaly(self, monitor):
+        """Should detect high invocation count as an anomaly."""
         agent_name = 'custom-test'
 
-        # Exceed rate limit
-        for _ in range(15):
-            monitor.validate_rate_limit(agent_name, max_per_minute=10)
+        # Create registry entry with high invocation count
+        entry = AgentRegistryEntry(
+            agent_name=agent_name,
+            agent_file_path='/path/to/agent.md',
+            first_seen='2025-01-01T00:00:00',
+            last_invoked='2025-01-01T00:00:00',
+            total_invocations=150  # Exceeds threshold of 100
+        )
+        monitor.save_registry({agent_name: entry})
 
-        anomalies = monitor.detect_anomalies()
+        anomalies = monitor.detect_anomalies(agent_name)
 
-        # Should have anomaly for this agent
+        # Should have anomaly for high invocation count
         assert len(anomalies) > 0
+        assert any('invocation count' in a.lower() for a in anomalies)
 
     def test_detects_validation_failure_anomaly(self, monitor, temp_protocol_root, sample_config):
         """Should detect multiple validation failures."""
@@ -393,7 +418,7 @@ class TestAnomalyDetection:
                 config=sample_config
             )
 
-        anomalies = monitor.detect_anomalies()
+        anomalies = monitor.detect_anomalies('custom-test')
         assert len(anomalies) > 0
 
         # Check for validation failure anomaly
