@@ -92,6 +92,24 @@ safety:
     verify_time_access: true  # Gojo should verify it can access current time
     log_all_alerts: true  # Log every alert issued (for Trigger 19)
 
+  # --------------------------------------------------------------------------
+  # MIGRATION NOTICE: Breaking change in session tracking configuration (v8.6.0)
+  # --------------------------------------------------------------------------
+  # The previous key `work_session_monitoring` has been REPLACED by `session_tracking`.
+  # If you have customized `work_session_monitoring` in older versions, migrate your
+  # settings to the new `session_tracking` structure above.
+  #
+  # Migration mapping:
+  #   work_session_monitoring.enabled                -> session_tracking.enabled
+  #   work_session_monitoring.state_file             -> session_tracking.state_file
+  #   work_session_monitoring.session_threshold      -> session_tracking.session_continuation_threshold_minutes
+  #   work_session_monitoring.high_risk_block        -> session_tracking.block_high_risk_when_fatigued
+  #   work_session_monitoring.high_risk_threshold    -> session_tracking.high_risk_session_threshold_minutes
+  #
+  # The old `work_session_monitoring` key is DEPRECATED and will be IGNORED.
+  # See CHANGELOG.md v8.6.0 for full migration details.
+  # --------------------------------------------------------------------------
+
   # Ethical design constraints (for Nobara)
   ethical_design:
     forbid_dark_patterns: true      # No manipulative UX patterns

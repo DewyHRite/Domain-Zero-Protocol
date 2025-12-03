@@ -466,11 +466,18 @@ if not session_monitor_path.exists():
     print("Session monitoring unavailable. Continuing without tracking.")
     monitor = None
 else:
-    # Check file permissions: not world-writable (security check)
-    st_mode = os.stat(session_monitor_path).st_mode
-    if st_mode & 0o002:
-        print(f"⚠️  Unsafe permissions on {session_monitor_path}: world-writable")
-        print("Session monitoring disabled for security. Fix permissions with: chmod o-w")
+    # Check file permissions: not group/other/world-writable and verify ownership (security check)
+    stat_info = os.stat(session_monitor_path)
+    st_mode = stat_info.st_mode
+    st_uid = stat_info.st_uid
+
+    if st_mode & 0o022:  # group-writable or other-writable
+        print(f"⚠️  Unsafe permissions on {session_monitor_path}: group/other/world-writable")
+        print("Session monitoring disabled for security. Fix permissions with: chmod go-w")
+        monitor = None
+    elif st_uid != os.getuid():  # wrong ownership
+        print(f"⚠️  Unsafe ownership on {session_monitor_path}: owned by UID {st_uid}, expected {os.getuid()}")
+        print("Session monitoring disabled for security. Fix ownership with: chown $(whoami) .protocol-state/session_monitor.py")
         monitor = None
     else:
         # Safe to import

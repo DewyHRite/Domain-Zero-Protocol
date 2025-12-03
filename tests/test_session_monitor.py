@@ -12,10 +12,8 @@ Purpose: Address CR-CRIT-003 (CodeRabbit review - missing test coverage)
 """
 
 import pytest
-import json
-import tempfile
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 import sys
 
 # Add .protocol-state to path for import
