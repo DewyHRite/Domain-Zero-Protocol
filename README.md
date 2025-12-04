@@ -4,7 +4,7 @@
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v8.7.0**: Custom Agent Security Framework (8 critical vulnerabilities fixed, pre-invocation validation, runtime monitoring, audit logging). See [What's New](#-version-information).
+> **New in v8.7.0**: Custom Agent Security Framework (8 critical vulnerabilities fixed, pre-invocation validation, runtime monitoring, audit logging), Option 5: DZP Integrity Check with Sukuna, Gojo enforces DZP while Sukuna maintains the DZP. See [What's New](#-version-information).
 
 ---
 
