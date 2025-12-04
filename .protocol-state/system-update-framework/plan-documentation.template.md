@@ -1,8 +1,8 @@
-[INTERNAL DOCUMENT]
+[CORE DOCUMENT]
 
 # Domain Zero: Plan Documentation Log
 
-> **Classification:** INTERNAL DOCUMENT
+> **Classification:** CORE DOCUMENT
 > **Created:** {{INSTALL_DATE}}
 > **Framework Version:** 1.2.0
 > **Last Updated:** {{INSTALL_DATE}}

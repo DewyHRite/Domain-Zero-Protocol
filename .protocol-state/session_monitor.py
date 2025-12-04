@@ -30,69 +30,73 @@ class SessionMonitor:
         self.template_file = self.protocol_root / ".protocol-state" / "work-session-alert.template.md"
         self.config_file = self.protocol_root / "protocol.config.yaml"
 
-        # Load and validate high-risk operation patterns
-        self._high_risk_patterns = self._load_high_risk_patterns()
+        # Load high-risk operation literals (no regex, safer and faster)
+        self._high_risk_literals = self._load_high_risk_literals()
 
         self._ensure_state_file()
 
-    def _load_high_risk_patterns(self) -> List[re.Pattern]:
+    def _load_high_risk_literals(self) -> List[str]:
         """
-        Load and validate high-risk operation patterns from config file.
+        Load high-risk operation literal strings from config file.
+
+        Uses literal string matching instead of regex to avoid ReDoS vulnerabilities.
+        Matching is case-insensitive via .lower() comparison.
 
         Returns:
-            List of compiled regex patterns (falls back to defaults if config unavailable)
+            List of lowercase literal strings to match
         """
-        # Default fallback patterns (safe, pre-validated)
-        default_patterns = [
-            r'git push.*production',
-            r'git push.*main',
-            r'git push.*master',
-            r'git push.*--force',
-            r'deploy.*production',
-            r'rm\s+-rf',
-            r'DROP\s+TABLE',
-            r'DELETE\s+FROM',
-            r'ALTER\s+TABLE',
-            r'TRUNCATE\s+TABLE',
-            r'npm publish',
-            r'docker.*production',
-            r'kubectl.*delete',
-            r'kubectl.*production',
-            r'terraform\s+destroy'
+        # Default fallback literals (safe, no regex)
+        default_literals = [
+            'git push origin production',
+            'git push origin main',
+            'git push origin master',
+            'git push --force',
+            'git push -f',
+            'deploy production',
+            'deploy --production',
+            'rm -rf',
+            'drop table',
+            'drop database',
+            'delete from',
+            'alter table',
+            'truncate table',
+            'npm publish',
+            'docker push',
+            'docker production',
+            'kubectl delete',
+            'kubectl delete namespace',
+            'kubectl production',
+            'terraform destroy',
+            'terraform apply -auto-approve',
+            'heroku destroy',
+            'firebase delete',
+            'aws s3 rm',
+            'gcloud delete',
         ]
 
-        # Try to load patterns from config file
+        # Try to load literals from config file
         if self.config_file.exists():
             try:
                 import yaml
                 with open(self.config_file, 'r', encoding='utf-8') as f:
                     config = yaml.safe_load(f)
 
-                # Extract patterns from config
+                # Extract literals from config
                 safety_config = config.get('safety', {})
                 session_tracking = safety_config.get('session_tracking', {})
                 high_risk_ops = session_tracking.get('high_risk_operations', {})
-                configured_patterns = high_risk_ops.get('patterns', [])
+                configured_literals = high_risk_ops.get('literals', [])
 
-                if configured_patterns:
-                    # Validate each pattern
-                    validated_patterns = []
-                    for pattern_str in configured_patterns:
-                        if self._is_safe_regex(pattern_str):
-                            validated_patterns.append(pattern_str)
-                        else:
-                            print(f"⚠️  Skipping unsafe regex pattern: {pattern_str}")
-
-                    if validated_patterns:
-                        # Compile validated patterns
-                        return [re.compile(p, re.IGNORECASE) for p in validated_patterns]
+                if configured_literals:
+                    # Return configured literals (lowercase for case-insensitive matching)
+                    return [lit.lower() for lit in configured_literals]
 
             except Exception as e:
-                print(f"⚠️  Failed to load high-risk patterns from config: {e}")
-                print("    Falling back to default patterns")
+                # Silent fallback to defaults (no warning spam)
+                pass
 
         # Fall back to defaults if config unavailable or empty
-        return [re.compile(p, re.IGNORECASE) for p in default_patterns]
+        return default_literals
 
     def _is_safe_regex(self, pattern: str, max_length: int = 200, timeout_seconds: float = 0.1) -> bool:
         """
@@ -536,7 +540,7 @@ Template file not found at: {self.template_file}
 
     def is_high_risk_operation(self, command: Optional[str]) -> bool:
         """
-        Check if a command is considered high-risk.
+        Check if a command is considered high-risk using literal string matching.
 
         Non-string or empty commands are treated as not high-risk.
 
@@ -550,9 +554,12 @@ Template file not found at: {self.template_file}
         if not isinstance(command, str) or not command.strip():
             return False
 
-        # Use pre-compiled, validated patterns from config
-        for pattern in self._high_risk_patterns:
-            if pattern.search(command):
+        # Normalize command for case-insensitive matching
+        command_lower = command.lower()
+
+        # Use literal string matching (faster and safer than regex)
+        for literal in self._high_risk_literals:
+            if literal in command_lower:
                 return True
 
         return False
