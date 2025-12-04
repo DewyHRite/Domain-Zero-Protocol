@@ -53,6 +53,11 @@ Domain Zero Protocol v*/
 # Release folder - built/packaged versions (keep local, not in repo)
 release/
 
+# Old version core-files directories (archived versions, not in repo)
+core-files-v8.4.1/
+core-files-v8.5.1/
+core-files-v*/
+
 # ============================================================================
 # WORK SESSION TRACKING (LOCAL ONLY)
 # ============================================================================
