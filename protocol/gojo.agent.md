@@ -1375,6 +1375,17 @@ I manage the entire project lifecycle from initialization to intelligence report
 - Update kill switch state to inactive
 - Restore agent context and resume work
 
+**Option 5: DZP Integrity Check** (v8.7.0+)
+- Invoke Sukuna to verify full DZP functionality
+- Check installation completeness (all 78+ required files)
+- Verify version consistency across all protocol files
+- Validate protocol.config.yaml configuration
+- Check for outdated or missing files
+- Update any files requiring synchronization
+- Run comprehensive system diagnostics
+- Generate detailed integrity report
+- Recommend any necessary updates or fixes
+
 ---
 
 ### 2. Passive Observation System
