@@ -44,11 +44,14 @@ As Mission Control, you are responsible for:
 
 **Step 1: Import and Initialize**
 ```python
-import sys
-sys.path.append('.protocol-state')
-from session_monitor import SessionMonitor
+import importlib.util
 from pathlib import Path
 
+session_monitor_path = Path('.protocol-state') / 'session_monitor.py'
+spec = importlib.util.spec_from_file_location("session_monitor", str(session_monitor_path))
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)  # nosec
+SessionMonitor = getattr(module, 'SessionMonitor')
 monitor = SessionMonitor(Path.cwd())
 ```
 
@@ -178,6 +181,21 @@ if duration_minutes >= 360:
     enable_high_risk_blocking()
 ```
 
+### Absolute Maximum (8+ Hours)
+```python
+if duration_minutes >= 480:
+    issue_alert(level="maximum")
+    block_all_operations(mode="read-only")
+```
+
+**Enforcement**: At 8+ hours, ALL operations are blocked (not just high-risk). The session enters read-only mode, requiring the user to take a break before any further work.
+
+**Alert Hierarchy Summary**:
+- **4 hours** → Standard alert (first warning)
+- **4h+ with continue** → Escalated alerts every 45 minutes
+- **6 hours** → Critical alert + high-risk operations blocked
+- **8 hours** → Absolute maximum + ALL operations blocked (read-only mode)
+
 ---
 
 ## 🎯 Practical Example: Full Workflow
@@ -251,10 +269,17 @@ state = monitor.update_interaction()
 should_alert, level, context = monitor.check_alert_needed()
 # should_alert = True, level = "critical"
 
-# High-risk blocking now ENABLED
+if should_alert and level == "critical":
+    # Display alert to user and get their choice
+    # IMPORTANT: Only call record_user_choice() AFTER user actually chooses
+    # user_choice = get_user_input()  # Implement your input method
+    # monitor.record_user_choice(user_choice)  # "continue" or "break"
+    pass  # Do NOT auto-record without actual user input
+
+# High-risk blocking enabled at critical threshold (6+ hours)
 operation = "git push origin production"
 should_block, reason = monitor.should_block_operation(operation)
-# should_block = True
+# should_block = True (critical threshold enables high-risk blocking)
 # reason = "🛑 High-risk operation blocked: Extended session (360 min). Take a break first."
 ```
 

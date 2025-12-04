@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Domain Zero Protocol - Work Session Monitoring System
-Version: 8.6.0
+Version: 8.7.0
 Purpose: Actual implementation of work session tracking and safety alerts
 
 This module provides REAL enforcement of work session monitoring, replacing
@@ -16,7 +16,6 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-import re
 
 
 class SessionMonitor:
@@ -30,125 +29,73 @@ class SessionMonitor:
         self.template_file = self.protocol_root / ".protocol-state" / "work-session-alert.template.md"
         self.config_file = self.protocol_root / "protocol.config.yaml"
 
-        # Load and validate high-risk operation patterns
-        self._high_risk_patterns = self._load_high_risk_patterns()
+        # Load high-risk operation literals (no regex, safer and faster)
+        self._high_risk_literals = self._load_high_risk_literals()
 
         self._ensure_state_file()
 
-    def _load_high_risk_patterns(self) -> List[re.Pattern]:
+    def _load_high_risk_literals(self) -> List[str]:
         """
-        Load and validate high-risk operation patterns from config file.
+        Load high-risk operation literal strings from config file.
+
+        Uses literal string matching instead of regex to avoid ReDoS vulnerabilities.
+        Matching is case-insensitive via .lower() comparison.
 
         Returns:
-            List of compiled regex patterns (falls back to defaults if config unavailable)
+            List of lowercase literal strings to match
         """
-        # Default fallback patterns (safe, pre-validated)
-        default_patterns = [
-            r'git push.*production',
-            r'git push.*main',
-            r'git push.*master',
-            r'git push.*--force',
-            r'deploy.*production',
-            r'rm\s+-rf',
-            r'DROP\s+TABLE',
-            r'DELETE\s+FROM',
-            r'ALTER\s+TABLE',
-            r'TRUNCATE\s+TABLE',
-            r'npm publish',
-            r'docker.*production',
-            r'kubectl.*delete',
-            r'kubectl.*production',
-            r'terraform\s+destroy'
+        # Default fallback literals (safe, no regex)
+        default_literals = [
+            'git push origin production',
+            'git push origin main',
+            'git push origin master',
+            'git push --force',
+            'git push -f',
+            'deploy production',
+            'deploy --production',
+            'rm -rf',
+            'drop table',
+            'drop database',
+            'delete from',
+            'alter table',
+            'truncate table',
+            'npm publish',
+            'docker push',
+            'docker production',
+            'kubectl delete',
+            'kubectl delete namespace',
+            'kubectl production',
+            'terraform destroy',
+            'terraform apply -auto-approve',
+            'heroku destroy',
+            'firebase delete',
+            'aws s3 rm',
+            'gcloud delete',
         ]
 
-        # Try to load patterns from config file
+        # Try to load literals from config file
         if self.config_file.exists():
             try:
                 import yaml
                 with open(self.config_file, 'r', encoding='utf-8') as f:
                     config = yaml.safe_load(f)
 
-                # Extract patterns from config
+                # Extract literals from config
                 safety_config = config.get('safety', {})
                 session_tracking = safety_config.get('session_tracking', {})
                 high_risk_ops = session_tracking.get('high_risk_operations', {})
-                configured_patterns = high_risk_ops.get('patterns', [])
+                configured_literals = high_risk_ops.get('literals', [])
 
-                if configured_patterns:
-                    # Validate each pattern
-                    validated_patterns = []
-                    for pattern_str in configured_patterns:
-                        if self._is_safe_regex(pattern_str):
-                            validated_patterns.append(pattern_str)
-                        else:
-                            print(f"⚠️  Skipping unsafe regex pattern: {pattern_str}")
-
-                    if validated_patterns:
-                        # Compile validated patterns
-                        return [re.compile(p, re.IGNORECASE) for p in validated_patterns]
+                if configured_literals:
+                    # Return configured literals (lowercase for case-insensitive matching)
+                    return [lit.lower() for lit in configured_literals]
 
             except Exception as e:
-                print(f"⚠️  Failed to load high-risk patterns from config: {e}")
-                print("    Falling back to default patterns")
+                # Silent fallback to defaults (no warning spam)
+                pass
 
         # Fall back to defaults if config unavailable or empty
-        return [re.compile(p, re.IGNORECASE) for p in default_patterns]
-
-    def _is_safe_regex(self, pattern: str, max_length: int = 200, timeout_seconds: float = 0.1) -> bool:
-        """
-        Validate that a regex pattern is safe (not a ReDoS attack).
-
-        Args:
-            pattern: Regex pattern string to validate
-            max_length: Maximum allowed pattern length
-            timeout_seconds: Maximum time allowed for pattern compilation/test
-
-        Returns:
-            True if pattern is safe, False otherwise
-        """
-        # Length check (excessive length is suspicious)
-        if len(pattern) > max_length:
-            return False
-
-        # Check for catastrophic backtracking patterns
-        dangerous_constructs = [
-            r'(\w+\*)+',  # Nested quantifiers
-            r'(\w+)+\w+', # Overlapping quantifiers
-            r'(\w*)*',    # Nested star quantifiers
-            r'(\w+)+$',   # Greedy quantifier before anchor
-        ]
-
-        for dangerous in dangerous_constructs:
-            if re.search(dangerous, pattern):
-                return False
-
-        # Try to compile the pattern with a timeout
-        try:
-            import signal
-
-            def timeout_handler(signum, frame):
-                raise TimeoutError("Regex compilation timeout")
-
-            # Set timeout (Unix only - Windows will skip this check)
-            if hasattr(signal, 'SIGALRM'):
-                signal.signal(signal.SIGALRM, timeout_handler)
-                signal.setitimer(signal.ITIMER_REAL, timeout_seconds)
-
-            # Attempt to compile
-            compiled = re.compile(pattern, re.IGNORECASE)
-
-            # Test against a worst-case string
-            test_string = 'a' * 100 + 'b'
-            compiled.search(test_string)
-
-            # Cancel timeout
-            if hasattr(signal, 'SIGALRM'):
-                signal.alarm(0)
-
-            return True
-
-        except (re.error, TimeoutError, Exception):
-            return False
+        return default_literals
 
     def _ensure_state_file(self):
         """Ensure session state file exists with proper schema."""
@@ -389,6 +336,12 @@ class SessionMonitor:
             alert_needed = True
             alert_level = "critical"
 
+        # Check if maximum continuous work threshold reached (8+ hours)
+        # This is the absolute maximum - enforce stricter read-only mode
+        if duration_minutes >= thresholds['max_continuous_minutes']:
+            alert_needed = True
+            alert_level = "maximum"  # Highest severity level
+
         # Build alert context
         context = {
             "duration_minutes": int(duration_minutes),
@@ -536,7 +489,7 @@ Template file not found at: {self.template_file}
 
     def is_high_risk_operation(self, command: Optional[str]) -> bool:
         """
-        Check if a command is considered high-risk.
+        Check if a command is considered high-risk using literal string matching.
 
         Non-string or empty commands are treated as not high-risk.
 
@@ -550,9 +503,12 @@ Template file not found at: {self.template_file}
         if not isinstance(command, str) or not command.strip():
             return False
 
-        # Use pre-compiled, validated patterns from config
-        for pattern in self._high_risk_patterns:
-            if pattern.search(command):
+        # Normalize command for case-insensitive matching
+        command_lower = command.lower()
+
+        # Use literal string matching (faster and safer than regex)
+        for literal in self._high_risk_literals:
+            if literal in command_lower:
                 return True
 
         return False
@@ -572,10 +528,18 @@ Template file not found at: {self.template_file}
         if not state['current_session']['session_active']:
             return False, ""
 
-        # Check if high-risk blocking is enabled
+        duration_minutes = state['session_metrics']['total_duration_minutes']
+        thresholds = state['thresholds']
+
+        # Check if 8-hour maximum continuous work threshold reached - BLOCK ALL OPERATIONS
+        if duration_minutes >= thresholds['max_continuous_minutes']:
+            reason = f"🛑 MAXIMUM WORK LIMIT REACHED: {duration_minutes} minutes ({duration_minutes // 60}+ hours). You MUST take a break. Session is now read-only."
+            return True, reason
+
+        # Check if 6-hour critical threshold reached - block high-risk operations only
         if state['current_session']['high_risk_operations_blocked']:
             if self.is_high_risk_operation(operation):
-                reason = f"🛑 High-risk operation blocked: Extended session ({state['session_metrics']['total_duration_minutes']} min). Take a break first."
+                reason = f"🛑 High-risk operation blocked: Extended session ({duration_minutes} min). Take a break first."
                 return True, reason
 
         return False, ""
@@ -693,7 +657,7 @@ def main():
 
     if len(sys.argv) < 2:
         print("Usage: python session_monitor.py <command>")
-        print("Commands: start, update, check, summary, end, break, test")
+        print("Commands: start, update, check, summary, status (alias for summary), end, break, test")
         sys.exit(1)
 
     command = sys.argv[1].lower()
@@ -710,7 +674,8 @@ def main():
             print(monitor.render_alert(context))
         else:
             print("✅ No alert needed")
-    elif command == "summary":
+    elif command == "summary" or command == "status":
+        # 'status' is an alias for 'summary' (industry standard expectation)
         print(monitor.get_session_summary())
     elif command == "end":
         monitor.end_session()

@@ -865,7 +865,7 @@ This critical implementation is ready for your review, then enhanced security au
 [Detailed response with code examples, explanations, best practices]
 
 ### Code Example
-```[language]
+```text
 [Clear, working code example]
 ```
 

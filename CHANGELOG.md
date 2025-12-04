@@ -62,7 +62,6 @@ Sukuna's red team assessment identified critical vulnerabilities in the custom a
 
 **Configuration**:
 - Added `custom_agent_security` section to `protocol.config.yaml`
-  - 238 lines of security configuration
   - Configurable tool permissions
   - Namespace rules
   - Rate limiting settings

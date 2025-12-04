@@ -337,7 +337,7 @@ The Absolute Zero Protocol (AZP) formalizes and operationalizes the safety princ
 **Session Tracking**:
 - Continuous work duration (alerts at 4+ hours)
 - Late-night work (alerts after 22:00 configurable threshold)
-- Extended sessions (alerts at 8+ hours)
+- Extended sessions (critical at 6+ hours; high-risk ops blocked)
 - Multi-day intensive patterns
 
 **Alert Protocol**:
@@ -1458,7 +1458,7 @@ Gojo silently monitors all Yuuji and Megumi sessions. Agents are completely unaw
 The protection system is enforced through Git-native tools and team processes. Choose the implementation level that fits your organization:
 
 **Level 1: CODEOWNERS (Recommended for all teams)**
-1. Create or update `CODEOWNERS` file in repository root
+1. Create or update `CODEOWNERS` file in `.github/` directory
 2. Add protection rules:
   ```
    protocol/CLAUDE.md @repo-admins
@@ -2340,8 +2340,7 @@ The system is optimized to stay within Claude's context limits. With Claude Sonn
 **Last Updated**: 2025-12-03
 
 **Version History**:
-- v8.7.0 - **MINOR**: Custom Agent Security Framework (Pre-invocation validation, Runtime monitoring, Audit logging, 8 critical vulnerabilities fixed)
-- v8.7.0 - **MINOR**: Nine-Agent System (Sukuna formalized as 9th agent), Full Documentation Update across all external-facing files
+- v8.7.0 - **MINOR**: Custom Agent Security Framework (Pre-invocation validation, Runtime monitoring, Audit logging, 8 critical vulnerabilities fixed) + Nine-Agent System (Sukuna formalized as 9th agent), Full Documentation Update across all external-facing files
 - v8.5.1 - **PATCH**: Sukuna System Update Adversary Integration (Gojo-Invoked Protocol Updates, JJK Character Reference, Adversarial-but-Aligned Reviews), Cross-Agent Edit Restrictions (Non-Gojo agents READ-ONLY access to .agent.md files), Slash Command Rename (system-update → sukuna), Work Session Management Enforcement
 - v8.5.0 - **MINOR**: Kill Switch Protocol (Emergency Stop with Project Protection, Gojo Coordination, Option 4 Resume), User Technical Level System (Beginner/Intermediate/Expert Adaptation across all 9 agents)
 - v8.4.0 - **MINOR**: Full 8-Agent Integration (Todo, Maki, Panda, Inumaki added as core protocol agents with .agent.md format, handoff specifications, skill assignments)
