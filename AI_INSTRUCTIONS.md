@@ -344,7 +344,7 @@ python scripts/sync-templates.py
 ```
 
 **Expected Output**:
-```
+```text
 ✅ Synced: .protocol-state/custom-agent-registry.example.json → ...
 ✅ Synced: .protocol-state/system-update-framework/backup-manifest.template.json → ...
 ✅ Synced: .protocol-state/system-update-framework/file-classifications.template.json → ...
@@ -870,7 +870,7 @@ cp core-files-v8.7.0/protocol/megumi.agent.md protocol/
 ❌ protocol/modules/BINDING_OATH.md
 ```
 
-#### Solution
+#### Solution for Issue 2
 
 ```bash
 mkdir -p protocol/modules
@@ -884,19 +884,21 @@ cp core-files-v8.7.0/protocol/modules/* protocol/modules/
 ❌ .protocol-state/work-session-alert.template.md
 ```
 
-#### Solution
+#### Solution for Issue 3
 
 ```bash
 cp core-files-v8.7.0/.protocol-state/session_monitor.py .protocol-state/
 cp core-files-v8.7.0/.protocol-state/work-session-alert.template.md .protocol-state/
 ```
 
-**Issue 4: Missing Subfolders**
-```
+#### Issue 4: Missing Subfolders
+
+```text
 Directory not found: protocol/skills
 ```
 
-**Solution**:
+#### Solution for Issue 4
+
 ```bash
 mkdir -p protocol/skills
 cp core-files-v8.7.0/protocol/skills/* protocol/skills/
@@ -928,44 +930,44 @@ python scripts/verify-installation.py
 ### Core Four Agents
 
 **Mission Control** (Project initialization):
-```
+```text
 Read protocol/gojo.agent.md
 ```
 
 **Implementation** (Test-first development):
-```
+```text
 Read protocol/yuuji.agent.md and [your task]
 ```
 
 **Security Review** (OWASP Top 10):
-```
+```text
 Read protocol/megumi.agent.md and review [module/feature]
 ```
 
 **Creative Strategy & UX** (Design, accessibility):
-```
+```text
 Read protocol/nobara.agent.md and [design/strategy task]
 ```
 
 ### Extended Four Agents
 
-**Task Orchestration**:
-```
-Read protocol/todo.agent.md and [orchestration task]
+**Database & Backend**:
+```text
+Read protocol/todo.agent.md and [database task]
 ```
 
 **Performance & Infrastructure**:
-```
+```text
 Read protocol/maki.agent.md and [performance task]
 ```
 
 **Build & Integration**:
-```
+```text
 Read protocol/panda.agent.md and [build task]
 ```
 
 **API & Communication**:
-```
+```text
 Read protocol/inumaki.agent.md and [API task]
 ```
 
@@ -1022,7 +1024,7 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**END OF AI_INSTRUCTIONS.md**
+## END OF AI_INSTRUCTIONS.md
 
 ---
 

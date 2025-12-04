@@ -181,6 +181,21 @@ if duration_minutes >= 360:
     enable_high_risk_blocking()
 ```
 
+### Absolute Maximum (8+ Hours)
+```python
+if duration_minutes >= 480:
+    issue_alert(level="maximum")
+    block_all_operations(mode="read-only")
+```
+
+**Enforcement**: At 8+ hours, ALL operations are blocked (not just high-risk). The session enters read-only mode, requiring the user to take a break before any further work.
+
+**Alert Hierarchy Summary**:
+- **4 hours** → Standard alert (first warning)
+- **4h+ with continue** → Escalated alerts every 45 minutes
+- **6 hours** → Critical alert + high-risk operations blocked
+- **8 hours** → Absolute maximum + ALL operations blocked (read-only mode)
+
 ---
 
 ## 🎯 Practical Example: Full Workflow

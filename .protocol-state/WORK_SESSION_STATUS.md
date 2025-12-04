@@ -176,13 +176,18 @@ default_literals = [
 **Session Thresholds** (from session-state.json):
 ```json
 {
-  "initial_alert_minutes": 240,      // 4 hours
-  "escalated_alert_minutes": 45,     // 45 minutes after "continue"
-  "critical_session_minutes": 360,   // 6 hours (block high-risk ops)
-  "max_continuous_minutes": 480,     // 8 hours (read-only mode)
-  "late_night_hour": 22              // 10 PM
+  "initial_alert_minutes": 240,      // 4 hours - First standard alert
+  "escalated_alert_minutes": 45,     // 45 minutes - Escalated alert interval (after "continue")
+  "critical_session_minutes": 360,   // 6 hours - Critical alert + HIGH-RISK operations blocked
+  "max_continuous_minutes": 480,     // 8 hours - Absolute maximum + ALL operations blocked (read-only)
+  "late_night_hour": 22              // 10 PM - Late-night work detection
 }
 ```
+
+**Enforcement Levels**:
+- **4 hours**: Standard alert (warning only)
+- **6 hours**: Critical alert + high-risk operations blocked (git push, deployments, destructive commands)
+- **8 hours**: Absolute maximum + ALL operations blocked (complete read-only mode)
 
 ---
 
