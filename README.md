@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
-# Domain Zero Protocol v8.6.0
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
+# Domain Zero Protocol v8.7.0
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v8.6.0**: Nine-Agent System (Sukuna formalized as 9th agent), updated documentation across all files. See [What's New](#-version-information).
+> **New in v8.7.0**: Custom Agent Security Framework (8 critical vulnerabilities fixed, pre-invocation validation, runtime monitoring, audit logging). See [What's New](#-version-information).
 
 ---
 
@@ -227,7 +227,7 @@ Domain Zero is a nine-agent AI development system that provides specialized expe
 This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
-- `CLAUDE.md` - Main protocol specification (v8.6.0)
+- `CLAUDE.md` - Main protocol specification (v8.7.0)
 - `yuuji.agent.md` - Implementation agent protocol
 - `megumi.agent.md` - Security review agent protocol
 - `gojo.agent.md` - Mission control agent protocol
@@ -236,7 +236,7 @@ This distribution includes everything you need to deploy Domain Zero:
 - `maki.agent.md` - Performance optimization agent protocol (v8.4.0+)
 - `panda.agent.md` - Build & integration agent protocol (v8.4.0+)
 - `inumaki.agent.md` - API & communication agent protocol (v8.4.0+)
-- `sukuna.agent.md` - System update agent protocol (v8.6.0+, Gojo-invoked only)
+- `sukuna.agent.md` - System update agent protocol (v8.7.0+, Gojo-invoked only)
 - `EMERGENCY_STOP_STANDARD.md` - Kill Switch specification (v8.5.0+)
 - `TECHNICAL_LEVEL_ADAPTATION.md` - User level specification (v8.5.0+)
 - `TIER-SELECTION-GUIDE.md` - Quick reference for tier selection
@@ -375,7 +375,7 @@ Domain Zero creates a **controlled collaboration space** where nine specialized 
 - WebSocket protocols
 - OpenAPI specifications (Cursed Speech)
 
-**Special Agent (v8.6.0+):**
+**Special Agent (v8.7.0+):**
 
 **👹 RYOMEN SUKUNA** - System Update Agent
 - Protocol update stress-testing
@@ -500,20 +500,20 @@ Restart your AI session for changes to take effect.
 ```bash
 # Fresh Install - Copy entire protocol structure to NEW project
 mkdir -p your-project/protocol your-project/.protocol-state
-cp -r "Domain Zero Protocol v8.6.0/protocol" your-project/
-cp -r "Domain Zero Protocol v8.6.0/.protocol-state" your-project/
-cp "Domain Zero Protocol v8.6.0/protocol.config.yaml" your-project/
-cp "Domain Zero Protocol v8.6.0/.gitignore" your-project/
+cp -r "Domain Zero Protocol v8.7.0/protocol" your-project/
+cp -r "Domain Zero Protocol v8.7.0/.protocol-state" your-project/
+cp "Domain Zero Protocol v8.7.0/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v8.7.0/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
 # Fresh Install - Copy entire protocol structure to NEW project
 New-Item -ItemType Directory -Force -Path "your-project\protocol", "your-project\.protocol-state"
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.6.0\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.6.0\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.6.0\protocol.config.yaml" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.6.0\.gitignore" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.7.0\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.7.0\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.7.0\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.7.0\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
@@ -521,10 +521,10 @@ Copy-Item -Force "Domain Zero Protocol v8.6.0\.gitignore" -Destination "your-pro
 REM Fresh Install - Copy entire protocol structure to NEW project
 mkdir "your-project\protocol" 2>nul
 mkdir "your-project\.protocol-state" 2>nul
-xcopy /E /I /Y "Domain Zero Protocol v8.6.0\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol v8.6.0\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol v8.6.0\protocol.config.yaml" "your-project\"
-copy /Y "Domain Zero Protocol v8.6.0\.gitignore" "your-project\"
+xcopy /E /I /Y "Domain Zero Protocol v8.7.0\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v8.7.0\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v8.7.0\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v8.7.0\.gitignore" "your-project\"
 ```
 
 ---
@@ -544,10 +544,10 @@ cp -r protocol/ .protocol-state/ protocol.config.yaml backup/dzp-pre-upgrade-$(d
 ```bash
 # Protocol artifacts - safe to overwrite
 mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch "your-project/Domain Zero Agents"
-cp -r "Domain Zero Protocol v8.6.0/protocol/"* your-project/protocol/
-cp -r "Domain Zero Protocol v8.6.0/docs/"* your-project/docs/
-cp -r "Domain Zero Protocol v8.6.0/.dzp-killswitch/"* your-project/.dzp-killswitch/
-cp -r "Domain Zero Protocol v8.6.0/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
+cp -r "Domain Zero Protocol v8.7.0/protocol/"* your-project/protocol/
+cp -r "Domain Zero Protocol v8.7.0/docs/"* your-project/docs/
+cp -r "Domain Zero Protocol v8.7.0/.dzp-killswitch/"* your-project/.dzp-killswitch/
+cp -r "Domain Zero Protocol v8.7.0/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
 ```
 
 #### Step 3: DO NOT Overwrite .protocol-state/
@@ -679,7 +679,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent
 - SUKUNA (System Update): Protocol updates, adversarial analysis (Gojo-invoked only)
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.6.0)
+- protocol/CLAUDE.md (main protocol, v8.7.0)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -703,7 +703,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v8.6.0) for development projects. This is a nine-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.7.0) for development projects. This is a nine-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
@@ -735,7 +735,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 - Add Domain Zero Protocol pointer as shown in integration section
 
 **What to Include in Memory**:
-- ✅ Protocol name and version (Domain Zero Protocol v8.6.0)
+- ✅ Protocol name and version (Domain Zero Protocol v8.7.0)
 - ✅ The nine agent roles and their specializations
 - ✅ Protocol file locations (protocol/CLAUDE.md and all nine agent files)
 - ✅ Tier system overview (Rapid/Standard/Critical)
@@ -1614,11 +1614,11 @@ Domain Zero is now set up in your project.
 
 ## 📝 Version Information
 
-**Version**: 8.6.0
+**Version**: 8.7.0
 **Release Date**: December 2, 2025
 **Major Enhancements**: Nine-Agent System, Sukuna Formalization, Full Documentation Update
 
-**v8.6.0 Key Features**:
+**v8.7.0 Key Features**:
 - **Sukuna System Update Agent**: Adversarial-but-aligned 9th agent for protocol updates (Gojo-invoked only)
 - **Cross-Agent Edit Restrictions**: Non-Gojo agents have READ-ONLY access to all `.agent.md` files
 - **Modular Protocol Architecture**: 7 shared module files in `protocol/modules/`
@@ -1627,7 +1627,7 @@ Domain Zero is now set up in your project.
 - **Agent Module References**: All 9 agents reference modules instead of duplicating content
 
 **Version History**:
-- v8.6.0 - MINOR: Nine-Agent System (Sukuna formalized as 9th agent), documentation updated across all files
+- v8.7.0 - MINOR: Nine-Agent System (Sukuna formalized as 9th agent), documentation updated across all files
 - v8.5.1 - PATCH: Sukuna System Update Agent, Cross-Agent Edit Restrictions, Token Optimization via Modular Architecture
 - v8.5.0 - MINOR: Kill Switch Protocol, User Technical Level System, Emergency Stop coordination
 - v8.4.1 - PATCH: Agent file cleanup, JJK Character Reference additions, Research Mode updates
@@ -1658,5 +1658,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-**Domain Zero Protocol v8.6.0** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v8.7.0** - Perfect Code Through Infinite Collaboration
 **The weight is real. The protocol is absolute. Domain Zero is active.**

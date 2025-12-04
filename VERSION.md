@@ -1,17 +1,24 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.6.0
-**Release Date:** December 2, 2025
+**Version:** v8.7.0
+**Release Date:** December 3, 2025
 **Release Type:** Minor Release
 
 ---
 
 ## Release Summary
 
-This minor release formalizes Domain Zero as a **Nine-Agent System**, with Sukuna fully recognized as the 9th agent. All external-facing documentation has been updated to reflect the complete agent roster.
+This minor release introduces a **Custom Agent Security Framework**, addressing 8 CRITICAL vulnerabilities identified by Sukuna's red team assessment. The update includes pre-invocation validation, runtime monitoring, audit logging, and comprehensive test coverage for custom agent security.
 
-### Key Changes in v8.6.0
+### Key Changes in v8.7.0
+
+- **Custom Agent Security Framework** - Pre-invocation validation (440 lines), runtime monitoring (650+ lines), audit logging, and registry system
+- **8 Critical Vulnerabilities Fixed** - Agent name collision, self-declared tool permissions, YAML injection, agent self-modification, zero Gojo oversight, rate limiting, file immutability
+- **Comprehensive Test Coverage** - 60+ test cases for session monitoring, 110+ tests total for security features
+- **Agent Banner Compliance** - Fixed emoji consistency and added missing banner for Sukuna (protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md compliance)
+
+### Previous Release (v8.6.0)
 
 - **Nine-Agent System** - Sukuna formalized as the 9th agent; all documentation updated from "eight-agent" to "nine-agent"
 - **Full Documentation Update** - README, FAQ, PROTOCOL_QUICKSTART, VERSION, CLAUDE.md, gojo.agent.md all reflect 9-agent architecture

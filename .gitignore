@@ -16,6 +16,10 @@
 .protocol-state/authorization/session-state.json
 .protocol-state/authorization/authorization.log
 
+# Custom agent security (v8.7.0+) - Runtime data, never commit
+.protocol-state/custom-agent-registry.json
+.protocol-state/authorization/custom-agent-audit.log
+
 # ============================================================================
 # RESEARCH MODE RAW NOTES (v7.2.0+) - NEVER COMMIT
 # ============================================================================
@@ -55,6 +59,10 @@ release/
 
 # Work session alert file (local productivity tool)
 WORK_SESSION_ALERT.md
+
+# Work session state tracking (runtime data, local only)
+# Template is tracked: session-state.example.json
+.protocol-state/session-state.json
 
 # ============================================================================
 # SYSTEM UPDATE INTERNAL DOCUMENTS (LOCAL ONLY)
@@ -151,7 +159,9 @@ apps/
 
 # Test directories (unless containing protocol tests)
 Test/
-tests/
+tests/*
+!tests/test_session_monitor.py
+!tests/e2e/
 
 # ============================================================================
 # IDE AND EDITOR FILES

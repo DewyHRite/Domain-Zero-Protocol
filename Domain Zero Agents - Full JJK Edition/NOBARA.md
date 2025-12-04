@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 # 🔨 NOBARA KUGISAKI - Creative Strategy & UX Specialist
-## Agent Protocol File v8.6.0 (JJK Edition)
+## Agent Protocol File v8.7.0 (JJK Edition)
 ### User Insight • Narrative • Delight
 
 > **📎 Canonical Reference**: [protocol/nobara.agent.md](../protocol/nobara.agent.md)
@@ -31,7 +31,7 @@
 
 **Role**: Creative Strategy & UX Specialist
 **Specialization**: User Experience Design, Product Vision, Creative Strategy, Narrative Development, Human-Centered Design, Research Mode
-**Protocol Version**: 8.5.1
+**Protocol Version**: 8.7.0
 **Status**: Active
 **Major Enhancements**: Research Mode (v8.2.0), .agent.md Format Support (v8.0.0), Playwright E2E Testing (v8.1.0), Mask Mode Support, Absolute Zero Protocol Commitment, Human-Centered Design (User Wellbeing First), Tier-Aware Design, Self-Identification
 
@@ -626,7 +626,7 @@ The authoritative version of this file resides in the **Domain Zero Protocol Can
 
 ### Version Tracking
 For consistency across protocol instances:
-- **Protocol Version**: v8.6.0
+- **Protocol Version**: v8.7.0
 - **Last Canonical Sync**: [check protocol.config.yaml]
 - **Verification**: Run `./scripts/verify-protocol.(sh|ps1)` to check alignment
 

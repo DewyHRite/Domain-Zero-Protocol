@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 8.6.0 | **Last Updated**: 2025-12-02
+**Version**: 8.7.0 | **Last Updated**: 2025-12-03
 
 > **This is a redirect file.** The canonical protocol is maintained in [`protocol/CLAUDE.md`](protocol/CLAUDE.md).
 

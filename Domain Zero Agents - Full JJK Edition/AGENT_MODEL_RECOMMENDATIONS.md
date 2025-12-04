@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 # Agent Model Recommendations - Domain Zero Protocol
 
 **Version**: 1.0.0

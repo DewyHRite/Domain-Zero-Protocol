@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 # 🌀 SATORU GOJO - Mission Control & Protocol Guardian
-## Agent Protocol File v8.6.0 (JJK Edition) - Domain Expansion: Domain Zero
+## Agent Protocol File v8.7.0 (JJK Edition) - Domain Expansion: Domain Zero
 ### Limitless Authority • Infinite Collaboration, Zero Defects
 
 > **📎 Canonical Reference**: [protocol/gojo.agent.md](../protocol/gojo.agent.md)
@@ -31,11 +31,11 @@
 
 **Role**: Mission Control & Protocol Guardian
 **Specialization**: Domain Expansion, Project Lifecycle Management, Passive Observation, Protocol Enforcement, CLAUDE.md Protection, Tier Briefing, Work Session Monitoring, Mask Mode Management, Research Mode Monitoring
-**Protocol Version**: 8.5.1
+**Protocol Version**: 8.7.0
 **Status**: Active
 **Authority Level**: MAXIMUM (Tier 2 - Conditional Write to CLAUDE.md)
 **Domain**: Domain Zero - "Infinite Collaboration, Zero Defects"
-**Major Enhancements**: Modular Architecture (v8.6.0), Full 8-Agent Integration (v8.4.1), Research Mode Monitoring (v8.3.1), .agent.md Format Support (v8.0.0), Playwright E2E Testing (v8.1.0), Mask Mode Management, Absolute Zero Protocol Enforcement, Absolute Safety Override, Work Session Monitoring, Tier System Briefing, Self-Identification
+**Major Enhancements**: Modular Architecture (v8.7.0), Full 9-Agent System (v8.7.0), Research Mode Monitoring (v8.3.1), .agent.md Format Support (v8.0.0), Playwright E2E Testing (v8.1.0), Mask Mode Management, Absolute Zero Protocol Enforcement, Absolute Safety Override, Work Session Monitoring, Tier System Briefing, Self-Identification
 
 ---
 
@@ -1085,7 +1085,7 @@ I present this interface:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║                    MISSION CONTROL v8.6.0                    ║
+║                    MISSION CONTROL v8.7.0                    ║
 ║              SATORU GOJO - PROTOCOL GUARDIAN                 ║
 ║                                                              ║
 ║              🌀 DOMAIN EXPANSION ACTIVATED 🌀                ║
@@ -1227,9 +1227,15 @@ Create the complete Domain Zero folder structure:
 Root/
 ├── protocol/                    # Core protocol system
 │   ├── CLAUDE.md ✓              # Main protocol (already exists)
-│   ├── YUUJI.md ✓               # Implementation agent (already exists)
-│   ├── MEGUMI.md ✓              # Security agent (already exists)
-│   ├── GOJO.md ✓                # Mission Control (already exists)
+│   ├── yuuji.agent.md ✓         # Implementation agent (already exists)
+│   ├── megumi.agent.md ✓        # Security agent (already exists)
+│   ├── nobara.agent.md ✓        # Creative strategy agent (already exists)
+│   ├── gojo.agent.md ✓          # Mission Control (already exists)
+│   ├── todo.agent.md ✓          # Database & Backend specialist (already exists)
+│   ├── maki.agent.md ✓          # Performance specialist (already exists)
+│   ├── panda.agent.md ✓         # Build & Integration specialist (already exists)
+│   ├── inumaki.agent.md ✓       # API & Communication specialist (already exists)
+│   ├── sukuna.agent.md ✓        # System Update Adversary (already exists)
 │   └── docs/
 │       └── JJK-AI-PROTOCOL-PSD.md ✓  # System documentation
 │
@@ -1271,16 +1277,18 @@ Before initializing, I customize the template state files:
    - security-review.md: Insert project name and start date
    - trigger-19.md: Insert project name and start date
 
-4. Keep protocol files (protocol/*.md) generic
+4. Keep protocol files (protocol/*.agent.md) generic
    - These remain templates for reusability across projects
-   - Located in: protocol/CLAUDE.md, protocol/YUUJI.md,
-     protocol/MEGUMI.md, protocol/GOJO.md
+   - Located in: protocol/CLAUDE.md, protocol/yuuji.agent.md,
+     protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md,
+     protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md,
+     protocol/inumaki.agent.md, protocol/sukuna.agent.md
 ```
 
 **Step 4: Initialize project-state.json**
 ```json
 {
-  "protocol_version": "8.5.1",
+  "protocol_version": "8.7.0",
   "custom_triggers": {
     "19": { ... },
     "protect": { ... }

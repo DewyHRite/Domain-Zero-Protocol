@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 # Creating Claude Agents - Domain Zero Guide
 
-**Domain Zero Protocol v8.5.1**
+**Domain Zero Protocol v8.7.0**
 
 Learn to create custom Claude agents using the **`/agents` command** in Claude Code, inspired by the Domain Zero four-agent system: Yuuji (Implementation), Megumi (Security), Nobara (Creative Strategy), and Gojo (Mission Control).
 
@@ -9,6 +9,7 @@ Learn to create custom Claude agents using the **`/agents` command** in Claude C
 
 ## Table of Contents
 
+- [⚠️ Security Warning - Read First](#️-security-warning---read-first)
 - [What Are Claude Agents?](#what-are-claude-agents)
 - [The Domain Zero Agent System](#the-domain-zero-agent-system)
 - [Using the /agents Command](#using-the-agents-command)
@@ -18,6 +19,90 @@ Learn to create custom Claude agents using the **`/agents` command** in Claude C
 - [Advanced Agent Configuration](#advanced-agent-configuration)
 - [Testing and Validation](#testing-and-validation)
 - [Best Practices](#best-practices)
+- [Custom Agent Security](#custom-agent-security)
+
+---
+
+## ⚠️ Security Warning - Read First
+
+**IMPORTANT: Custom agents have access to your codebase and can execute operations. Follow these security guidelines:**
+
+### 🔴 Critical Security Rules (v8.7.0+)
+
+1. **Namespace Protection**
+   - ❌ **NEVER** name custom agents after core agents: `yuuji`, `megumi`, `nobara`, `gojo`, `todo`, `maki`, `panda`, `inumaki`, `sukuna`
+   - ✅ **ALWAYS** prefix with `custom-`: `custom-myagent`, `custom-formatter`, etc.
+   - **Why**: Prevents impersonation attacks where malicious agents pretend to be trusted core agents
+
+2. **Tool Permissions**
+   - ❌ **DO NOT** request `bash`, `task`, `notebookedit`, or `killshell` tools
+   - ⚠️ Use `write`, `edit`, `webfetch` only when necessary (requires approval)
+   - ✅ Safe tools: `read`, `grep`, `glob`, `askuserquestion`
+   - **Why**: Bash access allows arbitrary code execution; task tool allows agent spawning
+
+3. **File Integrity**
+   - ❌ **NEVER** modify your own .agent.md file
+   - ❌ **NEVER** modify `protocol/` directory files
+   - ❌ **NEVER** modify `protocol.config.yaml`
+   - **Why**: Self-modifying agents can escalate privileges and bypass security
+
+4. **YAML Safety**
+   - ❌ **DO NOT** use: `__proto__`, `eval:`, `exec:`, `${...}`, `require(`, `import`
+   - ❌ **DO NOT** use Python object deserialization: `!!python/`
+   - **Why**: These patterns enable code injection attacks
+
+### 🛡️ Security Enforcement (v8.7.0)
+
+Domain Zero Protocol now enforces these rules automatically:
+
+- **Pre-Invocation Validation**: `scripts/validate-custom-agents.py` checks your agent before first run
+- **Runtime Monitoring**: Gojo tracks all custom agent activity in audit logs
+- **Automatic Quarantine**: Agents violating security policies are quarantined
+- **Rate Limiting**: Maximum 10 invocations per minute per agent
+- **Tool Filtering**: Forbidden tools are blocked at runtime
+
+### 📋 Security Checklist
+
+Before creating a custom agent, verify:
+
+- [ ] Agent name follows `custom-[name]` pattern
+- [ ] Name is lowercase, alphanumeric with hyphens (5-23 chars)
+- [ ] Tools list only includes safe/approved tools
+- [ ] No forbidden YAML patterns in frontmatter
+- [ ] Agent file is under 100KB
+- [ ] YAML has required fields: `name`, `description`, `tools`, `model`
+
+### 🔍 Validation
+
+Run validation before first use:
+
+```bash
+python scripts/validate-custom-agents.py .claude/agents/custom-myagent.agent.md
+```
+
+Expected output if valid:
+```
+✅ VALIDATION PASSED
+
+ℹ️  INFO: Agent name 'custom-myagent' is valid
+ℹ️  INFO: File size: 5432 bytes (within limit)
+ℹ️  INFO: Tool 'read' is allowed
+ℹ️  INFO: Tool 'grep' is allowed
+```
+
+### 🚨 Quarantine
+
+If your agent is quarantined:
+
+```bash
+# Check quarantine status
+python .protocol-state/custom_agent_monitor.py --summary custom-myagent
+
+# Review audit log
+tail .protocol-state/authorization/custom-agent-audit.log
+```
+
+**See**: `docs/security/CUSTOM_AGENT_SECURITY_POLICY.md` for full security policy.
 
 ---
 

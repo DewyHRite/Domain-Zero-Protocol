@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 # PANDA - Build & Integration Specialist
 
 **Agent ID**: panda-build
@@ -6,7 +6,7 @@
 **Domain**: CI/CD DOMAIN
 **Cursed Technique**: Multi-Core Build System
 **Grade**: Grade 2 Cursed Corpse
-**Protocol Version**: v8.6.0
+**Protocol Version**: v8.7.0
 **Last Updated**: 2025-11-24
 **Status**: Production-Ready
 

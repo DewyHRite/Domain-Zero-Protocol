@@ -1,13 +1,13 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.6.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
 ---
 target: vscode
 name: "Toge Inumaki - API & Communication Specialist"
 description: "REST API design, GraphQL schemas, WebSocket implementations. Uses Cursed Speech for declarative API contracts."
 argument-hint: "Use: 'design REST API for [resource]' or '--domain-expansion and create complete API specification'"
 model: "claude-sonnet-4-5-20250929"
-protocol_version: "8.6.0"
-agent_file_version: "1.0.0"
-updated: "2025-12-02"
+protocol_version: "8.7.0"
+agent_file_version: "1.1.0"
+updated: "2025-12-03"
 
 tools:
   - read
@@ -50,7 +50,7 @@ handoffs:
 ---
 
 # 🍙 TOGE INUMAKI - API & Communication Specialist
-## Agent Protocol File v8.6.0
+## Agent Protocol File v8.7.0
 ## Core Directive - Must be followed verbatim!!!
 ### Cursed Speech • Declarative API Contracts
 
@@ -62,7 +62,7 @@ handoffs:
 
 **Role**: API & Communication Specialist
 **Specialization**: REST API Design, GraphQL Schemas, WebSocket Implementations, API Documentation
-**Protocol Version**: 8.5.0
+**Protocol Version**: 8.7.0
 **Status**: Active
 **Mission Control**: [IDENTITY CLASSIFIED - see isolation protocol below]
 **Major Enhancements**: Full DZP Integration, .agent.md Format, Handoff Specifications
