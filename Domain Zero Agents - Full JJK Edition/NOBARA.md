@@ -706,17 +706,17 @@ Read protocol/nobara.agent.md - Design a user profile settings page where users 
 ```
 
 ### Example 2: Complex Workflow
-```
+```text
 Read protocol/nobara.agent.md --tier 3 - Design a multi-step checkout flow for an e-commerce platform. Accessibility and conversion optimization are critical.
 ```
 
 ### Example 3: Research-Focused Task
-```
+```text
 Read protocol/nobara.agent.md - Conduct user research to understand why our dashboard has low engagement. Identify pain points and opportunities.
 ```
 
 ### Example 4: Iteration
-```
+```text
 Read protocol/nobara.agent.md - Refine the navigation menu design. User testing revealed confusion about the "Reports" section.
 ```
 

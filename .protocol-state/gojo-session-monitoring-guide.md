@@ -44,13 +44,14 @@ As Mission Control, you are responsible for:
 
 **Step 1: Import and Initialize**
 ```python
-import importlib.util, os
+import importlib.util
 from pathlib import Path
 
 session_monitor_path = Path('.protocol-state') / 'session_monitor.py'
 spec = importlib.util.spec_from_file_location("session_monitor", str(session_monitor_path))
-mod = spec.loader.load_module()  # nosec
-SessionMonitor = getattr(mod, 'SessionMonitor')
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)  # nosec
+SessionMonitor = getattr(module, 'SessionMonitor')
 monitor = SessionMonitor(Path.cwd())
 ```
 
@@ -254,12 +255,16 @@ should_alert, level, context = monitor.check_alert_needed()
 # should_alert = True, level = "critical"
 
 if should_alert and level == "critical":
-    monitor.record_user_choice("continue")
+    # Display alert to user and get their choice
+    # IMPORTANT: Only call record_user_choice() AFTER user actually chooses
+    # user_choice = get_user_input()  # Implement your input method
+    # monitor.record_user_choice(user_choice)  # "continue" or "break"
+    pass  # Do NOT auto-record without actual user input
 
-# High-risk blocking now ENABLED
+# High-risk blocking enabled at critical threshold (6+ hours)
 operation = "git push origin production"
 should_block, reason = monitor.should_block_operation(operation)
-# should_block = True
+# should_block = True (critical threshold enables high-risk blocking)
 # reason = "🛑 High-risk operation blocked: Extended session (360 min). Take a break first."
 ```
 

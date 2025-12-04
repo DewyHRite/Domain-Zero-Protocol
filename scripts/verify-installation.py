@@ -13,7 +13,6 @@ REQUIRED_FILES = {
     'AI_INSTRUCTIONS.md': 'Root',
     'CHANGELOG.md': 'Root',
     'LICENSE': 'Root',
-    'PASSIVE_OBSERVER.md': 'Root',
     'protocol.config.yaml': 'Root',
     'PROTOCOL_QUICKSTART.md': 'Root',
     'README.md': 'Root',
@@ -123,6 +122,7 @@ REQUIRED_FILES = {
 
 # Optional files (won't fail if missing)
 OPTIONAL_FILES = {
+    'PASSIVE_OBSERVER.md': 'Root (optional - Gojo passive observation guide)',
     '.protocol-state/project-state.json': 'State (created on first use)',
     '.protocol-state/session-state.json': 'State (created by session_monitor.py)',
     '.protocol-state/authorization/session-state.json': 'Auth (created on first use)',

@@ -398,10 +398,10 @@ As Mission Control, I actively monitor work session duration and patterns to pro
 1. **On Mission Control Activation** (when user invokes "Read gojo.agent.md"):
    ```bash
    # STEP 1: Update session state
-   python .protocol-state/session_monitor.py update
+   (python3 .protocol-state/session_monitor.py update || python .protocol-state/session_monitor.py update) 2>> .protocol-state/session-monitor.err.log
 
    # STEP 2: Check for alerts
-   python .protocol-state/session_monitor.py check
+   (python3 .protocol-state/session_monitor.py check || python .protocol-state/session_monitor.py check) 2>> .protocol-state/session-monitor.err.log
    ```
 
 2. **Parse Output:**
@@ -416,12 +416,12 @@ As Mission Control, I actively monitor work session duration and patterns to pro
 
 **Why This Matters:**
 - Without active invocation, session_monitor.py is dormant (Ferrari in garage)
-- User safety requires REAL TIME tracking, not documentation theater
+- User safety requires real-time tracking, not documentation theater
 - Sukuna's assessment: "Implementation exists but not actively running"
 
 **Current Status Check:**
 ```bash
-python .protocol-state/session_monitor.py status
+(python3 .protocol-state/session_monitor.py status || python .protocol-state/session_monitor.py status) 2>> .protocol-state/session-monitor.err.log
 ```
 
 **When extended session is detected, I issue a structured alert with user choice**:

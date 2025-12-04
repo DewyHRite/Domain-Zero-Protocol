@@ -122,10 +122,10 @@ Read protocol/CLAUDE.md
 - [ ] `protocol/yuuji.agent.md` (Implementation)
 - [ ] `protocol/megumi.agent.md` (Security)
 - [ ] `protocol/nobara.agent.md` (Creative/UX)
-- [ ] `protocol/todo.agent.md` (Task Orchestration)
+- [ ] `protocol/todo.agent.md` (Database & Backend)
 - [ ] `protocol/maki.agent.md` (Performance)
-- [ ] `protocol/panda.agent.md` (QA)
-- [ ] `protocol/inumaki.agent.md` (Documentation)
+- [ ] `protocol/panda.agent.md` (Build & Integration)
+- [ ] `protocol/inumaki.agent.md` (API & Communication)
 - [ ] `protocol/sukuna.agent.md` (System Update)
 
 **Main Protocol**:
@@ -685,7 +685,8 @@ python scripts/verify-installation.py
 
 ### 7.3 Upgrade Steps
 
-**Step 1: Backup Current Installation**
+#### Step 1: Backup Current Installation
+
 ```bash
 # Windows PowerShell
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
@@ -698,7 +699,8 @@ mkdir -p .protocol-state/backups/pre-upgrade_$timestamp
 cp .protocol-state/*.json .protocol-state/backups/pre-upgrade_$timestamp/ 2>/dev/null || true
 ```
 
-**Step 2: Extract New Core Files**
+#### Step 2: Extract New Core Files
+
 ```bash
 # Identify source directory
 ls core-files-v8.7.0/  # Example for v8.7.0
@@ -707,7 +709,8 @@ ls core-files-v8.7.0/  # Example for v8.7.0
 # If not, download from: https://github.com/DewyHRite/Domain-Zero-Protocol/releases
 ```
 
-**Step 3: Selective Copy (Preserve User Data)**
+#### Step 3: Selective Copy (Preserve User Data)
+
 ```bash
 # Copy CORE files only (NOT .protocol-state/*.json)
 # Windows PowerShell
@@ -720,7 +723,8 @@ Copy-Item -Path "core-files-v8.7.0/protocol.config.yaml" -Destination "." -Force
 Copy-Item -Path "core-files-v8.7.0/.protocol-state/*.template.*" -Destination ".protocol-state/" -Force
 Copy-Item -Path "core-files-v8.7.0/.protocol-state/*.example.*" -Destination ".protocol-state/" -Force
 Copy-Item -Path "core-files-v8.7.0/.protocol-state/*.py" -Destination ".protocol-state/" -Force
-Copy-Item -Path "core-files-v8.7.0/.protocol-state/*.md" -Destination ".protocol-state/" -Force
+# Copy .md files EXCEPT user-maintained artifacts (dev-notes.md, security-review.md, trigger-19.md)
+Get-ChildItem -Path "core-files-v8.7.0/.protocol-state/*.md" | Where-Object { $_.Name -notin @("dev-notes.md","security-review.md","trigger-19.md") } | Copy-Item -Destination ".protocol-state/" -Force
 
 # Linux/Mac
 cp -r core-files-v8.7.0/protocol/* protocol/
@@ -732,20 +736,29 @@ cp core-files-v8.7.0/protocol.config.yaml .
 cp core-files-v8.7.0/.protocol-state/*.template.* .protocol-state/
 cp core-files-v8.7.0/.protocol-state/*.example.* .protocol-state/
 cp core-files-v8.7.0/.protocol-state/*.py .protocol-state/
-cp core-files-v8.7.0/.protocol-state/*.md .protocol-state/
+# Copy .md files EXCEPT user-maintained artifacts
+for file in core-files-v8.7.0/.protocol-state/*.md; do
+  filename=$(basename "$file")
+  if [[ "$filename" != "dev-notes.md" && "$filename" != "security-review.md" && "$filename" != "trigger-19.md" ]]; then
+    cp "$file" .protocol-state/
+  fi
+done
 ```
 
-**Step 4: Verify Upgrade**
+#### Step 4: Verify Upgrade
+
 ```bash
 python scripts/verify-installation.py
 ```
 
-**Step 5: Sync Templates**
+#### Step 5: Sync Templates
+
 ```bash
 python scripts/sync-templates.py
 ```
 
-**Step 6: Update Version**
+#### Step 6: Update Version
+
 Edit `protocol.config.yaml`:
 ```yaml
 versioning:
@@ -760,7 +773,8 @@ versioning:
 
 ### 8.1 Installation Steps
 
-**Step 1: Verify Source Files**
+#### Step 1: Verify Source Files
+
 ```bash
 # Check core files directory exists
 ls core-files-v8.7.0/
@@ -769,7 +783,8 @@ ls core-files-v8.7.0/
 # https://github.com/DewyHRite/Domain-Zero-Protocol/releases
 ```
 
-**Step 2: Copy All Files**
+#### Step 2: Copy All Files
+
 ```bash
 # Windows PowerShell
 Copy-Item -Path "core-files-v8.7.0/*" -Destination "." -Recurse -Force
@@ -778,7 +793,8 @@ Copy-Item -Path "core-files-v8.7.0/*" -Destination "." -Recurse -Force
 cp -r core-files-v8.7.0/* .
 ```
 
-**Step 3: Create Required Directories**
+#### Step 3: Create Required Directories
+
 ```bash
 # Windows PowerShell
 New-Item -ItemType Directory -Path ".claude/commands" -Force
@@ -793,21 +809,24 @@ mkdir -p src
 mkdir -p tests
 ```
 
-**Step 4: Verify Installation**
+#### Step 4: Verify Installation
+
 ```bash
 python scripts/verify-installation.py
 
 # Expected: ✅ INSTALLATION COMPLETE
 ```
 
-**Step 5: Sync Templates**
+#### Step 5: Sync Templates
+
 ```bash
 python scripts/sync-templates.py
 
 # Expected: ✅ All templates synced
 ```
 
-**Step 6: Initialize Project State**
+#### Step 6: Initialize Project State
+
 ```bash
 # Run Gojo Mission Control to create project-state.json
 Read protocol/gojo.agent.md
@@ -821,7 +840,8 @@ Read protocol/gojo.agent.md
 
 ### 9.1 Identify Missing Files
 
-**Run verification**:
+#### Run verification
+
 ```bash
 python scripts/verify-installation.py > missing-files-report.txt
 cat missing-files-report.txt
@@ -829,37 +849,43 @@ cat missing-files-report.txt
 
 ### 9.2 Common Missing Files Issues
 
-**Issue 1: Missing Agent Files**
-```
+#### Issue 1: Missing Agent Files
+
+```text
 ❌ protocol/yuuji.agent.md
 ❌ protocol/megumi.agent.md
 ```
 
-**Solution**:
+#### Solution
+
 ```bash
 cp core-files-v8.7.0/protocol/yuuji.agent.md protocol/
 cp core-files-v8.7.0/protocol/megumi.agent.md protocol/
 ```
 
-**Issue 2: Missing Protocol Modules**
-```
+#### Issue 2: Missing Protocol Modules
+
+```text
 ❌ protocol/modules/SAFETY_FIRST.md
 ❌ protocol/modules/BINDING_OATH.md
 ```
 
-**Solution**:
+#### Solution
+
 ```bash
 mkdir -p protocol/modules
 cp core-files-v8.7.0/protocol/modules/* protocol/modules/
 ```
 
-**Issue 3: Missing State Files**
-```
+#### Issue 3: Missing State Files
+
+```text
 ❌ .protocol-state/session_monitor.py
 ❌ .protocol-state/work-session-alert.template.md
 ```
 
-**Solution**:
+#### Solution
+
 ```bash
 cp core-files-v8.7.0/.protocol-state/session_monitor.py .protocol-state/
 cp core-files-v8.7.0/.protocol-state/work-session-alert.template.md .protocol-state/
@@ -933,14 +959,14 @@ Read protocol/todo.agent.md and [orchestration task]
 Read protocol/maki.agent.md and [performance task]
 ```
 
-**Quality Assurance**:
+**Build & Integration**:
 ```
-Read protocol/panda.agent.md and [QA task]
+Read protocol/panda.agent.md and [build task]
 ```
 
-**Documentation**:
+**API & Communication**:
 ```
-Read protocol/inumaki.agent.md and [documentation task]
+Read protocol/inumaki.agent.md and [API task]
 ```
 
 ### Slash Commands (If Installed)
@@ -971,7 +997,7 @@ Read protocol/inumaki.agent.md and [documentation task]
 
 ## Canonical Source
 
-> **Repository**: https://github.com/DewyHRite/Domain-Zero-Protocol
+> **Repository**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 > **Version**: 8.7.0
 > **Canonical File**: `protocol/CLAUDE.md`
 

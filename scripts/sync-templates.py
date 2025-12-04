@@ -36,37 +36,42 @@ def sync_templates():
     synced_count = 0
     skipped_count = 0
     missing_count = 0
+    intentionally_skipped = 0
 
     for src, dst, create in templates:
         src_path = Path(src)
         dst_path = Path(dst)
 
+        # Check if source template exists
         if not src_path.exists():
             print(f"[WARN] Template missing: {src}")
             missing_count += 1
             continue
 
-        if dst_path.exists() and not create:
+        # If destination already exists, skip (regardless of create flag)
+        if dst_path.exists():
             print(f"[OK] Already exists (skipping): {dst}")
             skipped_count += 1
             continue
 
-        if dst_path.exists() and create:
-            print(f"[OK] Already exists (skipping): {dst}")
-            skipped_count += 1
+        # Destination doesn't exist
+        if not create:
+            # Intentionally not creating (e.g., session-state.json created by session_monitor.py)
+            print(f"[INFO] Not created by design: {dst} (created by {Path(src).stem} process)")
+            intentionally_skipped += 1
             continue
 
-        if create:
-            # Ensure destination directory exists
-            dst_path.parent.mkdir(parents=True, exist_ok=True)
+        # Create the destination file
+        # Ensure destination directory exists
+        dst_path.parent.mkdir(parents=True, exist_ok=True)
 
-            shutil.copy2(src, dst)
-            print(f"[OK] Synced: {src} -> {dst}")
-            synced_count += 1
+        shutil.copy2(src, dst)
+        print(f"[OK] Synced: {src} -> {dst}")
+        synced_count += 1
 
     print()
     print("=" * 70)
-    print(f"SUMMARY: {synced_count} synced, {skipped_count} already exist, {missing_count} missing")
+    print(f"SUMMARY: {synced_count} synced, {skipped_count} already exist, {intentionally_skipped} not created by design, {missing_count} missing")
     print("=" * 70)
 
     if missing_count > 0:

@@ -26,7 +26,7 @@ The Work Session Alert System is **FULLY FUNCTIONAL** after Sukuna's Fix-All ope
 - ✅ **session_monitor.py** (28,406 bytes, functional, NO regex warnings)
 - ✅ **State persistence** (session-state.json, schema v1.0.0)
 - ✅ **Alert template rendering** (v8.7.0, all placeholders working)
-- ✅ **CLI interface** (start, summary, status, test, end, update, check)
+- ✅ **CLI interface** (start, summary, status (alias), test, end, update, check)
 - ✅ **Backups present** (good change management, 3 backup sets)
 
 ### High-Risk Operation Blocking
@@ -76,7 +76,7 @@ python .protocol-state/session_monitor.py check
 ### Fix #1: Regex Warnings Eliminated ✅
 
 **Problem**: 15 regex patterns flagged as unsafe (ReDoS risk)
-```
+```text
 ⚠️  Skipping unsafe regex pattern: git push.*production
 ⚠️  Skipping unsafe regex pattern: rm\s+-rf
 ```
@@ -134,7 +134,7 @@ python .protocol-state/session_monitor.py check
 
 ### System Architecture
 
-```
+```text
 User → Gojo (Mission Control) → session_monitor.py → session-state.json
                                       ↓
                          work-session-alert.template.md
@@ -195,8 +195,8 @@ default_literals = [
 # Start session tracking
 python .protocol-state/session_monitor.py start
 
-# Check status
-python .protocol-state/session_monitor.py status
+# Check summary (or use 'status' alias)
+python .protocol-state/session_monitor.py summary
 
 # Test alert rendering
 python .protocol-state/session_monitor.py test
@@ -207,7 +207,7 @@ python .protocol-state/session_monitor.py end
 
 **Expected Output**:
 - `start`: ✅ New session started: session_YYYYMMDD_HHMMSS
-- `status`: 📊 Work Session Summary (duration, ID, start time)
+- `summary` (or `status`): 📊 Work Session Summary (duration, ID, start time)
 - `test`: ⚠️ Alert with ACTUAL data (not `{DURATION}` placeholders)
 - `end`: ✅ Session ended and archived
 
@@ -310,7 +310,8 @@ Commands:
   start      # Initialize new session
   update     # Update interaction timestamp
   check      # Check if alert needed
-  status     # Session summary
+  summary    # Session summary (canonical command)
+  status     # Alias for 'summary' (industry standard)
   test       # Test alert rendering
   end        # End and archive session
 ```
@@ -347,7 +348,7 @@ Commands:
 
 ### Issue: High-risk operations not blocked
 **Status**: ✅ FIXED (25 literals active)
-**Test**: `python .protocol-state/session_monitor.py status`
+**Test**: `python .protocol-state/session_monitor.py summary`
 **Verify**: No "Skipping unsafe regex pattern" warnings
 
 ---
@@ -396,7 +397,7 @@ Commands:
 
 ---
 
-**END OF STATUS DOCUMENT**
+### END OF STATUS DOCUMENT
 
 **Domain Zero Protocol v8.7.0 - Work Session Alert System**
 **Status**: ✅ READY FOR ACTIVATION

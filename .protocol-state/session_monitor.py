@@ -16,7 +16,6 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-import re
 
 
 class SessionMonitor:
@@ -97,62 +96,6 @@ class SessionMonitor:
 
         # Fall back to defaults if config unavailable or empty
         return default_literals
-
-    def _is_safe_regex(self, pattern: str, max_length: int = 200, timeout_seconds: float = 0.1) -> bool:
-        """
-        Validate that a regex pattern is safe (not a ReDoS attack).
-
-        Args:
-            pattern: Regex pattern string to validate
-            max_length: Maximum allowed pattern length
-            timeout_seconds: Maximum time allowed for pattern compilation/test
-
-        Returns:
-            True if pattern is safe, False otherwise
-        """
-        # Length check (excessive length is suspicious)
-        if len(pattern) > max_length:
-            return False
-
-        # Check for catastrophic backtracking patterns
-        dangerous_constructs = [
-            r'(\w+\*)+',  # Nested quantifiers
-            r'(\w+)+\w+', # Overlapping quantifiers
-            r'(\w*)*',    # Nested star quantifiers
-            r'(\w+)+$',   # Greedy quantifier before anchor
-        ]
-
-        for dangerous in dangerous_constructs:
-            if re.search(dangerous, pattern):
-                return False
-
-        # Try to compile the pattern with a timeout
-        try:
-            import signal
-
-            def timeout_handler(signum, frame):
-                raise TimeoutError("Regex compilation timeout")
-
-            # Set timeout (Unix only - Windows will skip this check)
-            if hasattr(signal, 'SIGALRM'):
-                signal.signal(signal.SIGALRM, timeout_handler)
-                signal.setitimer(signal.ITIMER_REAL, timeout_seconds)
-
-            # Attempt to compile
-            compiled = re.compile(pattern, re.IGNORECASE)
-
-            # Test against a worst-case string
-            test_string = 'a' * 100 + 'b'
-            compiled.search(test_string)
-
-            # Cancel timeout
-            if hasattr(signal, 'SIGALRM'):
-                signal.alarm(0)
-
-            return True
-
-        except (re.error, TimeoutError, Exception):
-            return False
 
     def _ensure_state_file(self):
         """Ensure session state file exists with proper schema."""
@@ -393,6 +336,12 @@ class SessionMonitor:
             alert_needed = True
             alert_level = "critical"
 
+        # Check if maximum continuous work threshold reached (8+ hours)
+        # This is the absolute maximum - enforce stricter read-only mode
+        if duration_minutes >= thresholds['max_continuous_minutes']:
+            alert_needed = True
+            alert_level = "maximum"  # Highest severity level
+
         # Build alert context
         context = {
             "duration_minutes": int(duration_minutes),
@@ -579,10 +528,18 @@ Template file not found at: {self.template_file}
         if not state['current_session']['session_active']:
             return False, ""
 
-        # Check if high-risk blocking is enabled
+        duration_minutes = state['session_metrics']['total_duration_minutes']
+        thresholds = state['thresholds']
+
+        # Check if 8-hour maximum continuous work threshold reached - BLOCK ALL OPERATIONS
+        if duration_minutes >= thresholds['max_continuous_minutes']:
+            reason = f"🛑 MAXIMUM WORK LIMIT REACHED: {duration_minutes} minutes ({duration_minutes // 60}+ hours). You MUST take a break. Session is now read-only."
+            return True, reason
+
+        # Check if 6-hour critical threshold reached - block high-risk operations only
         if state['current_session']['high_risk_operations_blocked']:
             if self.is_high_risk_operation(operation):
-                reason = f"🛑 High-risk operation blocked: Extended session ({state['session_metrics']['total_duration_minutes']} min). Take a break first."
+                reason = f"🛑 High-risk operation blocked: Extended session ({duration_minutes} min). Take a break first."
                 return True, reason
 
         return False, ""
@@ -700,7 +657,7 @@ def main():
 
     if len(sys.argv) < 2:
         print("Usage: python session_monitor.py <command>")
-        print("Commands: start, update, check, summary, end, break, test")
+        print("Commands: start, update, check, summary, status (alias for summary), end, break, test")
         sys.exit(1)
 
     command = sys.argv[1].lower()
@@ -717,7 +674,8 @@ def main():
             print(monitor.render_alert(context))
         else:
             print("✅ No alert needed")
-    elif command == "summary":
+    elif command == "summary" or command == "status":
+        # 'status' is an alias for 'summary' (industry standard expectation)
         print(monitor.get_session_summary())
     elif command == "end":
         monitor.end_session()
