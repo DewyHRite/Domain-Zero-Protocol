@@ -1,12 +1,12 @@
-[CORE DOCUMENT]
+[INTERNAL DOCUMENT]
 
 # Domain Zero: System Update Framework Protocol
 
-> **Version:** 1.2.0
+> **Version:** 1.3.0
 > **Status:** Production-Ready
 > **Classification:** INTERNAL DOCUMENT
 > **Authority:** Internal development framework - guides maintenance operations
-> **Last Updated:** 2025-11-27
+> **Last Updated:** 2025-12-05
 
 ---
 
@@ -402,6 +402,87 @@ Record:
 
 ---
 
+## Plan Mode Integration Protocol
+
+### Critical Requirement: Plan Persistence
+
+**PROBLEM IDENTIFIED**: Plan Mode outputs can be lost across session boundaries if not properly persisted to framework state files.
+
+**SOLUTION**: Mandatory plan persistence verification before Plan Mode exit.
+
+### Plan Mode Exit Requirements
+
+When Plan Mode completes, the following steps are **MANDATORY** before ExitPlanMode:
+
+#### Step 1: Write Complete Plan to Framework
+
+```
+Location: .protocol-state/system-update-framework/plan-documentation.md
+Format: UPDATE-{YYYY-MM-DD}-{SEQ} entry
+```
+
+**Required Content**:
+1. Complete phase breakdown (all weeks/phases)
+2. Task dependencies and ordering
+3. Acceptance criteria per phase
+4. File-by-file implementation sequence
+5. Risk assessment
+6. Rollback points between phases
+
+#### Step 2: Verify Plan Saved
+
+**MUST execute before proceeding**:
+
+```bash
+# Verify entry exists
+grep "UPDATE-{date}-{seq}" plan-documentation.md
+
+# Verify all phases documented
+grep -c "Phase [0-9]" plan-documentation.md
+
+# Verify task count matches plan
+# (manual verification)
+```
+
+#### Step 3: Confirmation Gate
+
+**Plan Mode MUST NOT exit until**:
+- [ ] Complete plan written to plan-documentation.md
+- [ ] Plan verification passed
+- [ ] User confirmation: "Plan persisted to framework"
+
+**If verification fails**: Retry plan write, do NOT exit Plan Mode
+
+### Session Boundary Protection
+
+**Guarantee**: Plans written to `plan-documentation.md` survive:
+- Session restarts
+- Context clears
+- Client crashes
+- Framework updates
+
+**Recovery**: If session ends unexpectedly, plan is recoverable from plan-documentation.md
+
+### Plan Recovery Protocol
+
+If plan was created in Plan Mode but NOT in plan-documentation.md:
+
+1. **Check** `internal-docs/previous session.md` for session transcript
+2. **Extract** plan details from transcript
+3. **Reconstruct** plan using Plan Recovery Protocol (see plan-recovery-protocol.md)
+4. **Document** in plan-documentation.md with RECOVERED flag
+5. **Lesson Learned**: Add to framework improvement backlog
+
+### Framework Version Requirement
+
+**Minimum Framework Version**: 1.3.0
+
+Plans created before v1.3.0 may not have persistence guarantees.
+
+**Upgrade Path**: Existing plans should be verified and consolidated into plan-documentation.md
+
+---
+
 ## Backup and Rollback Procedure
 
 ### Mandatory Backup Scope
@@ -618,6 +699,7 @@ The framework integrates with `.protocol-state/project-state.json`:
 | 1.0.0 | 2025-11-25 | Initial framework implementation |
 | 1.1.0 | 2025-11-27 | Applied Markdown best practices (heading hierarchy, code block languages, active voice, focused paragraphs) |
 | 1.2.0 | 2025-11-27 | Added Project State Preservation rules (4.1), Merge-Only behavior (4.2), Mandatory backup scope (4.3), Template file rules (4.4), Installation flow classification (4.5), based on JamWatHQ v8.5.1 incident review |
+| 1.3.0 | 2025-12-05 | **CRITICAL FIX**: Added Plan Mode Integration Protocol - mandatory plan persistence verification before Plan Mode exit. Prevents plan loss across session boundaries. Includes plan recovery procedures and session boundary protection guarantees. |
 
 ---
 
