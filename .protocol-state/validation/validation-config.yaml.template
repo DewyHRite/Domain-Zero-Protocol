@@ -1,0 +1,121 @@
+# Domain Zero Protocol - Validation Configuration (v8.8.0)
+# User overrides for validation framework settings
+# This file is OPTIONAL - defaults from tier-defaults.yaml are used if not present
+
+validation:
+  # Enable/disable validation framework
+  enabled: true  # Set by user on first v8.8.0 session
+
+  tier_validation:
+    # Enforce tier syntax validation
+    enforce_syntax: true  # Block invalid tier flags
+
+    # Enforce tier requirements during workflow
+    enforce_requirements: true  # Verify tests, security review per tier
+
+    # Auto-update tier usage statistics
+    auto_update_statistics: true  # Fix zeros in project-state.json
+
+  state_validation:
+    # Check state file integrity (checksums, required fields)
+    check_integrity: true
+
+    # Enable auto-fix functionality
+    auto_fix_enabled: true
+
+    # Confidence threshold for auto-fix (0.0-1.0)
+    # Tier 2 default: 0.85, Tier 3 default: 0.95
+    auto_fix_confidence_threshold: 0.85
+
+  snapshots:
+    # Enable context snapshots
+    enabled: true
+
+    # Snapshot frequency per tier
+    tier_1_frequency: manual  # Manual only
+    tier_2_frequency: every_10_operations  # Every 10 operations
+    tier_3_frequency: continuous  # Every operation
+
+    # Max snapshots retained per tier
+    max_snapshots_tier_1: 10
+    max_snapshots_tier_2: 30
+    max_snapshots_tier_3: 50
+
+    # Compression (gzip recommended)
+    compression: gzip
+
+  dependency_analysis:
+    # Track agent-to-file dependencies
+    track_dependencies: true
+
+    # Detect circular handoff chains
+    detect_circular: true
+
+    # Max handoff chain length before alert
+    max_chain_length: 5
+
+  performance:
+    # Max time for incremental validation (ms)
+    incremental_validation_max_ms: 500
+
+    # Max time for full validation (ms)
+    full_validation_max_ms: 5000
+
+    # Max time for snapshot creation (ms)
+    snapshot_creation_max_ms: 2000
+
+    # Max time for snapshot restoration (ms)
+    snapshot_restoration_max_ms: 30000
+
+# Per-agent validation overrides (optional)
+# Uncomment and customize as needed
+#
+# agent_overrides:
+#   yuuji:
+#     validation_mode: strict  # strict | standard | relaxed
+#     auto_fix_threshold: 0.90
+#
+#   megumi:
+#     validation_mode: strict
+#     auto_fix_threshold: 0.95
+#
+#   nobara:
+#     validation_mode: standard
+#     auto_fix_threshold: 0.85
+#
+#   gojo:
+#     validation_mode: strict
+#     drift_detection_frequency: continuous
+#
+#   sukuna:
+#     validation_mode: paranoid  # Maximum validation
+#     proposal_threshold:
+#       min_data_points: 100
+#       confidence_required: 0.98
+
+# Sukuna self-improvement settings (optional)
+#
+# sukuna:
+#   metrics:
+#     # How often to analyze metrics (days)
+#     analysis_frequency_days: 7
+#
+#     # Min data points before proposing changes
+#     min_data_points: 100
+#
+#     # Confidence required for auto proposals
+#     confidence_threshold: 0.95
+#
+#   learning:
+#     # Min manual fixes before proposing rule
+#     pattern_detection_threshold: 3
+#
+#     # Initial confidence for learned rules
+#     learned_rule_confidence: 0.70
+#
+#   performance:
+#     # Enable automatic performance optimization proposals
+#     auto_optimize: true
+#
+#     # Performance degradation threshold (ms)
+#     degradation_threshold_ms: 100
