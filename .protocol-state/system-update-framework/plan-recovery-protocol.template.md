@@ -27,10 +27,12 @@ Use this protocol when:
 
 **Primary Sources** (check in order):
 
-1. **Session Transcript**: `internal-docs/previous session.md`
-   - Look for Plan Mode output
-   - Search for phase breakdowns, task lists
+1. **Session Transcripts or Temporary Notes**:
+   - Look for any session notes, transcripts, or temporary documentation
+   - Common locations: `internal-docs/`, project root, or user notes
+   - Search for Plan Mode output, phase breakdowns, task lists
    - Extract todo lists and timelines
+   - **Note**: File names vary by installation (e.g., `session-notes.md`, `temp-plan.md`)
 
 2. **Implementation Progress**: `.protocol-state/IMPLEMENTATION_PROGRESS.md`
    - May contain partial plan details
@@ -194,15 +196,15 @@ New requirements prevent plan loss:
 
 ## Example Recovery
 
-### Scenario: v8.8.0 Validation Framework Plan Lost
+### Scenario: Multi-Week Implementation Plan Lost
 
-**Source**: `internal-docs/previous session.md` contains session transcript
+**Source**: Session transcript or temporary notes found in project
 
 **Extraction**:
-- Timeline: 9 weeks (Week 0 + Weeks 1-8 + Week 9 documentation)
-- Phase 0: Memory Tool Setup (Week 0) - 4 tasks identified
-- Phase 1: Validation Engine (Weeks 1-2) - 4 tasks inferred
-- Todo list: 32 tasks extracted from session transcript
+- Timeline: 9 weeks total identified from todo list
+- Phase structure: 5 phases identified from task groupings
+- Task breakdown: 32 tasks extracted from transcript
+- Phase details: Objectives and deliverables inferred from task names
 
 **Reconstruction**:
 - Phase objectives inferred from task names
