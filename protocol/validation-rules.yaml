@@ -74,7 +74,7 @@ schemas:
                 maximum: 3
           bypass_tracking:
             type: object
-            description: "3-strike tier bypass tracking"
+            description: "Tier bypass tracking (statistics only, no enforcement)"
             required:
               - enabled
               - current_month
@@ -90,8 +90,7 @@ schemas:
               bypass_count:
                 type: integer
                 minimum: 0
-                maximum: 3
-                description: "Number of bypasses this month (0-3)"
+                description: "Number of bypasses this month (statistics only, no limit)"
               last_bypass:
                 type: string
                 format: date-time

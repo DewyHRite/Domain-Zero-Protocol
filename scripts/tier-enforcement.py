@@ -1,27 +1,28 @@
 #!/usr/bin/env python3
 """
-Domain Zero Protocol - 3-Strike Tier Bypass Enforcement System
+Domain Zero Protocol - Tier Bypass Tracking System (Statistics Only)
 
-Version: 1.0.0
+Version: 2.0.0
 Created: 2025-12-05
-Part of: DZP v8.8.0 Validation Framework (Approved Enhancement)
+Updated: 2025-12-06
+Part of: DZP v8.8.0 Validation Framework
 
-This script implements the 3-strike tier bypass tracking system that:
-- Tracks tier override attempts per month
-- Allows up to 3 bypasses per calendar month
-- Hard-blocks further bypasses after 3rd strike
+This script tracks tier bypass statistics for analytics and reporting:
+- Records tier override attempts per month
+- Provides usage statistics and patterns
+- NO ENFORCEMENT - Always allows bypasses
 - Automatically resets counter at month boundary
 
-Original Plan Note:
-- Original v8.8.0 plan specified "Tier 2: Warns user, allows override"
-- Enhancement added via clarification: 3-strike bypass system per month
-- User approval: Hybrid plan (keep this enhancement, revert others)
+Original Plan Alignment:
+- Original v8.8.0 plan: "Tier 2: Warns user, allows override"
+- This implementation: Tracks for statistics, never blocks
+- User feedback: 3-strike hard-block was too restrictive
 
 Usage:
-    python scripts/tier-enforcement.py --check             # Check bypass status
+    python scripts/tier-enforcement.py --check             # Always returns OK
     python scripts/tier-enforcement.py --record            # Record a bypass
-    python scripts/tier-enforcement.py --reset             # Reset counter (admin)
-    python scripts/tier-enforcement.py --status            # Show full status
+    python scripts/tier-enforcement.py --reset             # Reset counter
+    python scripts/tier-enforcement.py --status            # Show statistics
 """
 
 import argparse
@@ -45,8 +46,8 @@ if sys.platform == 'win32':
 PROJECT_ROOT = Path(__file__).parent.parent
 PROJECT_STATE_FILE = PROJECT_ROOT / ".protocol-state" / "project-state.json"
 
-# 3-strike system constants
-MAX_BYPASSES_PER_MONTH = 3
+# Statistics tracking (no enforcement limits)
+BYPASS_TRACKING_ENABLED = True
 
 
 # =============================================================================
@@ -150,12 +151,12 @@ def check_month_rollover(state: Dict[str, Any]) -> bool:
 
 def can_bypass_tier_warning() -> Tuple[bool, str, Dict[str, Any]]:
     """
-    Check if user can bypass tier warning (has remaining strikes)
+    Check bypass tracking status (always allows bypass - statistics only)
 
     Returns:
         Tuple of (can_bypass: bool, reason: str, status: dict)
-        - can_bypass: True if user can bypass, False if hard-blocked
-        - reason: Human-readable explanation
+        - can_bypass: Always True (no enforcement, statistics only)
+        - reason: Human-readable explanation with current statistics
         - status: Current bypass tracking status
     """
     try:
@@ -171,37 +172,29 @@ def can_bypass_tier_warning() -> Tuple[bool, str, Dict[str, Any]]:
         if not tracking.get("enabled", True):
             return (True, "Bypass tracking is disabled", tracking)
 
-        # Check bypass count
+        # Get bypass count (for statistics only, no enforcement)
         bypass_count = tracking.get("bypass_count", 0)
-        remaining = MAX_BYPASSES_PER_MONTH - bypass_count
 
         status = {
             "current_month": tracking["current_month"],
             "bypass_count": bypass_count,
-            "max_bypasses": MAX_BYPASSES_PER_MONTH,
-            "remaining": remaining,
             "last_bypass": tracking.get("last_bypass"),
             "month_rolled_over": rolled_over
         }
 
-        if bypass_count >= MAX_BYPASSES_PER_MONTH:
-            # HARD-BLOCK: No more bypasses this month
-            reason = f"HARD-BLOCKED: You've used all {MAX_BYPASSES_PER_MONTH} tier bypasses for {tracking['current_month']}. Next reset: {get_next_month()}"
-            return (False, reason, status)
-        else:
-            # Can bypass
-            reason = f"Bypass allowed ({remaining}/{MAX_BYPASSES_PER_MONTH} remaining for {tracking['current_month']})"
-            return (True, reason, status)
+        # Always allow bypass - this is statistics only
+        reason = f"Bypass allowed (statistics only: {bypass_count} bypasses recorded this month)"
+        return (True, reason, status)
 
     except FileNotFoundError as e:
-        return (False, f"ERROR: {e}", {})
+        return (True, f"WARNING: {e} (allowing bypass)", {})
     except Exception as e:
-        return (False, f"ERROR: Unexpected error: {e}", {})
+        return (True, f"WARNING: Unexpected error: {e} (allowing bypass)", {})
 
 
 def record_bypass(tier: int, reason: str = "") -> Tuple[bool, str, Dict[str, Any]]:
     """
-    Record a tier bypass (increment counter)
+    Record a tier bypass for statistics tracking (no enforcement)
 
     Args:
         tier: Tier that was bypassed (1, 2, or 3)
@@ -209,6 +202,7 @@ def record_bypass(tier: int, reason: str = "") -> Tuple[bool, str, Dict[str, Any
 
     Returns:
         Tuple of (success: bool, message: str, status: dict)
+        - Always succeeds (statistics only, no blocking)
     """
     try:
         state = load_project_state()
@@ -219,31 +213,19 @@ def record_bypass(tier: int, reason: str = "") -> Tuple[bool, str, Dict[str, Any
 
         tracking = state["tier_settings"]["bypass_tracking"]
 
-        # Check if already at limit
-        can_bypass, check_reason, status = can_bypass_tier_warning()
-        if not can_bypass:
-            return (False, check_reason, status)
-
-        # Increment bypass counter
+        # Increment bypass counter (statistics only)
         tracking["bypass_count"] = tracking.get("bypass_count", 0) + 1
         tracking["last_bypass"] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
 
         # Save state
         save_project_state(state)
 
-        # Calculate remaining
-        remaining = MAX_BYPASSES_PER_MONTH - tracking["bypass_count"]
-
-        message = f"Bypass recorded for Tier {tier}. {remaining}/{MAX_BYPASSES_PER_MONTH} bypasses remaining for {tracking['current_month']}"
-
-        if remaining == 0:
-            message += f"\n⚠️ WARNING: You've used all bypasses for this month. Next bypass will be HARD-BLOCKED until {get_next_month()}."
+        bypass_count = tracking["bypass_count"]
+        message = f"Bypass recorded for Tier {tier}. Total this month: {bypass_count} (statistics only, no limits)"
 
         status = {
             "current_month": tracking["current_month"],
-            "bypass_count": tracking["bypass_count"],
-            "max_bypasses": MAX_BYPASSES_PER_MONTH,
-            "remaining": remaining,
+            "bypass_count": bypass_count,
             "last_bypass": tracking["last_bypass"]
         }
 
@@ -295,10 +277,10 @@ def reset_bypass_counter(admin_override: bool = False) -> Tuple[bool, str]:
 
 def get_bypass_status() -> Dict[str, Any]:
     """
-    Get current bypass tracking status
+    Get current bypass tracking status (statistics only)
 
     Returns:
-        Dictionary with bypass tracking status
+        Dictionary with bypass tracking statistics
     """
     try:
         state = load_project_state()
@@ -309,18 +291,13 @@ def get_bypass_status() -> Dict[str, Any]:
 
         tracking = state["tier_settings"]["bypass_tracking"]
         bypass_count = tracking.get("bypass_count", 0)
-        remaining = MAX_BYPASSES_PER_MONTH - bypass_count
-
-        can_bypass, reason, _ = can_bypass_tier_warning()
 
         return {
             "enabled": tracking.get("enabled", True),
             "current_month": tracking["current_month"],
             "bypass_count": bypass_count,
-            "max_bypasses": MAX_BYPASSES_PER_MONTH,
-            "remaining": remaining,
-            "can_bypass": can_bypass,
-            "status": "OK" if can_bypass else "BLOCKED",
+            "can_bypass": True,  # Always true - statistics only
+            "status": "TRACKING",
             "last_bypass": tracking.get("last_bypass"),
             "next_reset": get_next_month(),
             "month_rolled_over": rolled_over
@@ -360,12 +337,11 @@ def print_status(status: Dict[str, Any]) -> None:
         return
 
     print("\n╔══════════════════════════════════════════════════════════════╗")
-    print("║         3-Strike Tier Bypass Tracking System                ║")
+    print("║       Tier Bypass Tracking System (Statistics Only)         ║")
     print("╚══════════════════════════════════════════════════════════════╝")
     print(f"\nStatus:        {status['status']}")
     print(f"Current Month: {status['current_month']}")
-    print(f"Bypasses Used: {status['bypass_count']}/{status['max_bypasses']}")
-    print(f"Remaining:     {status['remaining']}")
+    print(f"Bypasses This Month: {status['bypass_count']}")
 
     if status['last_bypass']:
         last_bypass_dt = datetime.fromisoformat(status['last_bypass'].replace('Z', '+00:00'))
@@ -378,17 +354,7 @@ def print_status(status: Dict[str, Any]) -> None:
     if status['month_rolled_over']:
         print("\n✅ Month rolled over - counter automatically reset")
 
-    if status['can_bypass']:
-        if status['remaining'] == 1:
-            print(f"\n⚠️  WARNING: Only {status['remaining']} bypass remaining this month!")
-        elif status['remaining'] == 0:
-            print("\n🚫 HARD-BLOCKED: No bypasses remaining this month!")
-        else:
-            print(f"\n✅ You can bypass tier warnings ({status['remaining']} remaining)")
-    else:
-        print("\n🚫 HARD-BLOCKED: No more bypasses allowed until next month")
-        print(f"   Counter resets on {status['next_reset']}-01")
-
+    print("\nℹ️  Statistics only - bypasses are always allowed (no enforcement)")
     print()
 
 
@@ -399,24 +365,25 @@ def print_status(status: Dict[str, Any]) -> None:
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
-        description="Domain Zero Protocol - 3-Strike Tier Bypass Enforcement",
+        description="Domain Zero Protocol - Tier Bypass Tracking (Statistics Only)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s --check                Check if bypass is allowed
+  %(prog)s --check                Check bypass status (always returns OK)
   %(prog)s --record --tier 2      Record a Tier 2 bypass
-  %(prog)s --status               Show full bypass tracking status
-  %(prog)s --reset --admin        Reset counter (admin override)
+  %(prog)s --status               Show bypass statistics
+  %(prog)s --reset                Reset monthly counter
 
-3-Strike System:
-  - Users can bypass tier warnings up to 3 times per month
-  - 4th bypass attempt is HARD-BLOCKED
+Statistics-Only Tracking:
+  - Tracks tier bypasses for analytics and reporting
+  - NO ENFORCEMENT - Bypasses are always allowed
   - Counter automatically resets at month boundary
   - Bypass = using Tier 1 workflow when Tier 2/3 is recommended
 
-Note: This is an APPROVED ENHANCEMENT to the original v8.8.0 plan.
-      Original plan: "Tier 2: Warns user, allows override" (no mechanism)
-      Enhancement: 3-strike bypass system per month
+Original Plan Alignment:
+  - Original v8.8.0 plan: "Tier 2: Warns user, allows override"
+  - This implementation: Tracks for statistics, never blocks
+  - User feedback: Hard-blocking was too restrictive
         """
     )
 
