@@ -32,7 +32,7 @@ import json
 import os
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
@@ -384,7 +384,7 @@ def detect_drift(current_results: List[ValidationResult], last_validation_state:
             # Drift detected!
             drift_alerts.append(DriftAlert(
                 file=result.file,
-                detected_at=datetime.utcnow().isoformat() + 'Z',
+                detected_at=datetime.now(timezone.utc).isoformat() + 'Z',
                 changes=["checksum_mismatch"],
                 severity="medium"
             ))
@@ -440,7 +440,7 @@ def generate_auto_fixes(validation_results: List[ValidationResult]) -> List[Auto
                     description=f"Fix timestamp type mismatch at '{error.path}'",
                     confidence=FixConfidence.HIGH,
                     current_value="<invalid>",
-                    proposed_value=datetime.utcnow().isoformat() + 'Z'
+                    proposed_value=datetime.now(timezone.utc).isoformat() + 'Z'
                 )
 
             # MEDIUM confidence fixes - Require user approval
@@ -590,7 +590,7 @@ def update_validation_state(results: List[ValidationResult], auto_fixes: List[Au
     }
 
     # Update validation metadata
-    state["last_full_validation"] = datetime.utcnow().isoformat() + 'Z'
+    state["last_full_validation"] = datetime.now(timezone.utc).isoformat() + 'Z'
     state["last_validation_result"] = "passed" if all(r.status == ValidationStatus.VALID for r in results) else "failed"
 
     # Update file integrity checksums
@@ -599,7 +599,7 @@ def update_validation_state(results: List[ValidationResult], auto_fixes: List[Au
             file_key = Path(result.file).name
             state["state_file_integrity"][file_key] = {
                 "checksum": result.checksum,
-                "last_validated": datetime.utcnow().isoformat() + 'Z',
+                "last_validated": datetime.now(timezone.utc).isoformat() + 'Z',
                 "status": result.status.value,
                 "errors": [e.message for e in result.errors[:5]]  # Store first 5 errors
             }
@@ -609,7 +609,7 @@ def update_validation_state(results: List[ValidationResult], auto_fixes: List[Au
         if fix.applied:
             state["auto_fix_history"].append({
                 "fix_id": fix.fix_id,
-                "timestamp": datetime.utcnow().isoformat() + 'Z',
+                "timestamp": datetime.now(timezone.utc).isoformat() + 'Z',
                 "file": fix.file,
                 "fix_type": fix.fix_type,
                 "confidence": fix.confidence.value,
@@ -658,7 +658,7 @@ def generate_report(results: List[ValidationResult], drift_alerts: List[DriftAle
         exit_code = ExitCode.SUCCESS
 
     report = ValidationReport(
-        timestamp=datetime.utcnow().isoformat() + 'Z',
+        timestamp=datetime.now(timezone.utc).isoformat() + 'Z',
         total_files=len(results),
         files_validated=len(results) - files_missing,
         files_passed=files_passed,
@@ -682,9 +682,9 @@ def print_report_markdown(report: ValidationReport) -> None:
     print("\n## Summary")
     print(f"\n- **Total Files**: {report.total_files}")
     print(f"- **Files Validated**: {report.files_validated}")
-    print(f"- **Passed**: {report.files_passed} ✅")
-    print(f"- **Failed**: {report.files_failed} ❌")
-    print(f"- **Missing**: {report.files_missing} ⚠️")
+    print(f"- **Passed**: {report.files_passed}")
+    print(f"- **Failed**: {report.files_failed}")
+    print(f"- **Missing**: {report.files_missing}")
     print(f"- **Total Errors**: {report.total_errors}")
     print(f"- **Total Warnings**: {report.total_warnings}")
 
@@ -698,12 +698,13 @@ def print_report_markdown(report: ValidationReport) -> None:
 
     print("\n## Validation Details")
     for result in report.results:
+        # Use ASCII-safe status indicators for cross-platform compatibility
         status_icon = {
-            ValidationStatus.VALID: "✅",
-            ValidationStatus.INVALID: "❌",
-            ValidationStatus.DRIFT_DETECTED: "⚠️",
-            ValidationStatus.MISSING: "🚫"
-        }.get(result.status, "❓")
+            ValidationStatus.VALID: "[OK]",
+            ValidationStatus.INVALID: "[ERROR]",
+            ValidationStatus.DRIFT_DETECTED: "[DRIFT]",
+            ValidationStatus.MISSING: "[MISSING]"
+        }.get(result.status, "[?]")
 
         print(f"\n### {status_icon} `{result.file}`")
         print(f"**Schema**: {result.schema}")
@@ -719,19 +720,20 @@ def print_report_markdown(report: ValidationReport) -> None:
                 print(f"- ... and {len(result.errors) - 10} more errors")
 
         if result.drift_detected:
-            print("\n**⚠️ Drift Detected**: File changed since last validation")
+            print("\n**[DRIFT] Drift Detected**: File changed since last validation")
 
     print("\n---\n")
 
 
 def print_report_summary(report: ValidationReport) -> None:
     """Print brief validation summary to stdout"""
+    # Use ASCII-safe status indicators for cross-platform compatibility
     status_icon = {
-        ExitCode.SUCCESS: "✅",
-        ExitCode.WARNINGS: "⚠️",
-        ExitCode.ERRORS: "❌",
-        ExitCode.CRITICAL: "🚫"
-    }.get(report.exit_code, "❓")
+        ExitCode.SUCCESS: "[OK]",
+        ExitCode.WARNINGS: "[WARN]",
+        ExitCode.ERRORS: "[ERROR]",
+        ExitCode.CRITICAL: "[CRITICAL]"
+    }.get(report.exit_code, "[?]")
 
     print(f"\n{status_icon} Validation {report.exit_code.name}")
     print(f"   {report.files_passed}/{report.files_validated} files passed")
@@ -816,14 +818,14 @@ Exit Codes:
         # Discover state files
         if args.file:
             # Validate specific file
-            file_path = Path(args.file)
+            file_path = Path(args.file).resolve()  # Convert to absolute path
             if not file_path.exists():
                 print(f"ERROR: File not found: {file_path}", file=sys.stderr)
                 sys.exit(ExitCode.CRITICAL.value)
 
-            # Determine schema name (simplified - assumes standard naming)
-            schema_name = file_path.stem.replace('-', '_')
-            if schema_name.startswith('snapshot_'):
+            # Determine schema name (keep hyphens - matches validation-rules.yaml)
+            schema_name = file_path.stem  # Keep original name with hyphens
+            if schema_name.startswith('snapshot-'):
                 schema_name = 'snapshot'
 
             state_files = [StateFile(path=file_path, schema_name=schema_name, exists=True)]
@@ -876,7 +878,6 @@ Exit Codes:
             if args.output:
                 # Write to file
                 with open(args.output, 'w', encoding='utf-8') as f:
-                    import sys
                     stdout_backup = sys.stdout
                     sys.stdout = f
                     print_report_markdown(report)
