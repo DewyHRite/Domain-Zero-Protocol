@@ -4,7 +4,7 @@
 
 > **Classification:** INTERNAL DOCUMENT
 > **Created:** {{INSTALL_DATE}}
-> **Framework Version:** 1.2.0
+> **Framework Version:** 1.3.0
 > **Last Updated:** {{INSTALL_DATE}}
 > **Purpose:** Persistent record of all system updates, issue fixes, and structural modifications
 
@@ -17,6 +17,48 @@ This document accumulates historical records across the entire Domain Zero lifec
 1. **PLANNING PHASE** - Proposed changes, affected files, rationale, expected outcomes
 2. **IMPLEMENTATION PHASE** - Actions taken with timestamps and results
 3. **COMPLETION PHASE** - Final outcomes, deviations from plan, lessons learned
+
+---
+
+## Plan Mode Integration (Framework v1.3.0+)
+
+**CRITICAL**: When using Plan Mode for complex multi-week implementations:
+
+### Plan Mode Output Requirements
+
+All Plan Mode outputs MUST be written to this file before ExitPlanMode:
+
+**Required Sections**:
+- Complete phase breakdown (all weeks/phases with detailed tasks)
+- Task dependencies and implementation ordering
+- Acceptance criteria per phase
+- File-by-file implementation sequence
+- Risk assessment per phase
+- Rollback points between phases
+
+**Format**: Use UPDATE-{YYYY-MM-DD}-{SEQ} entry format (see template below)
+
+### Verification Before Exit
+
+Plan Mode MUST verify before exit:
+```bash
+# Verify plan entry exists
+grep "UPDATE-{date}-{seq}" plan-documentation.md
+
+# Verify phases documented
+grep "Phase [0-9]" plan-documentation.md
+```
+
+**DO NOT** exit Plan Mode until plan is persisted to this file.
+
+### Session Boundary Protection
+
+Plans written to this file survive:
+- Session restarts
+- Context clears
+- Client crashes
+
+**Guarantee**: Plans are never lost if properly persisted here.
 
 ---
 

@@ -1,0 +1,74 @@
+{
+  "_comment": "Domain Zero Protocol - Validation State Tracking (v8.8.0)",
+  "_description": "Central validation state file. Migrates to /memories/validation/validation-state.json when Memory Tool enabled.",
+  "_schema_version": "1.0.0",
+  "validation_enabled": false,
+  "last_full_validation": null,
+  "last_validation_result": "not_run",
+
+  "state_file_integrity": {
+    "project_state": {
+      "path": ".protocol-state/project-state.json",
+      "checksum": null,
+      "validation_status": "not_validated",
+      "last_validated": null,
+      "errors": []
+    },
+    "session_state": {
+      "path": ".protocol-state/session-state.json",
+      "checksum": null,
+      "validation_status": "not_validated",
+      "last_validated": null,
+      "errors": []
+    },
+    "version_registry": {
+      "path": ".protocol-state/system-update-framework/version-registry.json",
+      "checksum": null,
+      "validation_status": "not_validated",
+      "last_validated": null,
+      "errors": []
+    }
+  },
+
+  "tier_validation": {
+    "tier_1_rapid": {
+      "total_invocations": 0,
+      "passed_validations": 0,
+      "failed_validations": 0,
+      "common_violations": []
+    },
+    "tier_2_standard": {
+      "total_invocations": 0,
+      "passed_validations": 0,
+      "failed_validations": 0,
+      "common_violations": []
+    },
+    "tier_3_critical": {
+      "total_invocations": 0,
+      "passed_validations": 0,
+      "failed_validations": 0,
+      "common_violations": []
+    }
+  },
+
+  "agent_coordination": {
+    "handoff_chains": [],
+    "session_continuity": {
+      "yuuji_last_active": null,
+      "megumi_last_active": null,
+      "nobara_last_active": null,
+      "gojo_last_active": null,
+      "sukuna_last_active": null
+    }
+  },
+
+  "drift_detection": {
+    "detected_drifts": [],
+    "last_drift_scan": null,
+    "drift_scan_frequency": "every_10_operations"
+  },
+
+  "snapshot_manifest_ref": ".protocol-state/validation/snapshots/snapshot-manifest.json",
+  "auto_fix_history": [],
+  "validation_runs": []
+}

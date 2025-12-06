@@ -133,5 +133,14 @@
   "current_files": [],
   "open_security_issues": [],
   "critical_issues": [],
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "tier_settings": {
+    "default_tier": 2,
+    "bypass_tracking": {
+      "enabled": true,
+      "current_month": "2025-12",
+      "bypass_count": 0,
+      "last_bypass": "2025-12-06T05:19:49.709138Z"
+    }
+  }
 }
