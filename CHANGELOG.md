@@ -9,6 +9,149 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.8.0] - 2025-12-06
+
+### Added
+
+#### **Phase 4: Tier Validation System + Dual Learning Systems** - Intelligent tier workflow completion
+
+This release completes the tier system evolution with active validation, automatic statistics tracking, and opt-in learning capabilities for continuous protocol improvement.
+
+**Component 1: Tier Validation System**
+1. **Working Directory Verification** (`scripts/verify_working_directory.py`)
+   - Validates pwd before operations (prevents accidental cross-project modifications)
+   - Integrated into all Phase 4 scripts (tier-statistics.py, sukuna-learn.py, gojo-learn.py)
+   - Safety-first approach: fail fast if not in correct project
+
+2. **Tier Configuration** (`protocol/tier-defaults.yaml`)
+   - 18KB comprehensive tier profile configuration
+   - Tier 1 (Rapid): No tests, no security review, minimal docs
+   - Tier 2 (Standard): TDD + security review, 80% coverage [DEFAULT]
+   - Tier 3 (Critical): Enhanced tests + dual review, 95% coverage
+   - Snapshot frequency, validation rules, typical use cases per tier
+
+3. **Agent Tier Validation** (All 9 .agent.md files updated)
+   - Added `## ✅ TIER VALIDATION (v8.8.0+)` sections to all agents
+   - Step-by-step tier determination process (user flag → session state → default)
+   - Tier requirements verification before task execution
+   - Sukuna: Special tier-exempt status (system updates inherently Tier 3)
+
+4. **Backward Compatibility** (`protocol.config.yaml`)
+   - 30-day migration grace period (migration_start_date: 2025-12-06)
+   - Legacy mode support for gradual adoption
+   - allow_tier_bypass configuration option
+
+**Component 2: Tier Statistics**
+1. **Statistics Tracking** (`scripts/tier-statistics.py`)
+   - 426-line utility for automatic tier usage tracking
+   - Records 5 event types: tier_selected, tier_completed, tier_bypassed, tier_violated, tier_transitioned
+   - Tracks compliance rates, average duration per tier, bypass/violation counts
+   - Rolling event log (last 100 events)
+
+2. **Reporting Capabilities**
+   - Text, Markdown, and JSON output formats
+   - Markdown format integrated with Trigger 19 intelligence reports
+   - Last 30 days usage statistics
+   - Tier distribution analysis
+
+3. **Input Sanitization** (Added during adversarial testing)
+   - Filters non-alphanumeric characters from agent/feature names
+   - Prevents SQL injection and path traversal data pollution
+   - 100-character limit enforcement
+   - Warnings on sanitized input
+
+**Component 3: Dual Learning Systems** - USER + PROJECT Protected
+1. **Sukuna Learning System** (`scripts/sukuna-learn.py`)
+   - Learns from protocol update patterns (file dependencies, duration, rollback triggers)
+   - 590-line implementation with comprehensive safety checks
+   - Project isolation via 8-char hash in filename (sukuna-patterns-{hash}.json)
+   - Confidence threshold: 80%+ with 3+ sample minimum
+   - Sensitive data pattern detection (passwords, API keys, emails, etc.)
+   - Security-weakening pattern rejection (bypass validation, disable auth, etc.)
+   - Opt-in by default (learning.enabled: false)
+
+2. **Gojo Learning System** (`scripts/gojo-learn.py`)
+   - Learns from tier selection patterns (feature keywords → tier recommendations)
+   - 680-line implementation with USER protection guarantees
+   - Feedback mechanism: "Was this helpful?" with auto-dismiss after 3x "not helpful"
+   - Exploitative pattern rejection (user fatigue, stress exploitation, etc.)
+   - Suggestions only (never automatic actions)
+   - Fixed CLI messaging to accurately report when learning is disabled
+
+3. **USER Protection Guarantees**
+   - Suggestions only, never automatic actions
+   - Instant disable capability (no confirmation required)
+   - No pressure tactics or manipulation
+   - Easy dismiss mechanism
+   - Remember dismissals (don't re-suggest)
+   - Kill Switch integration (learning pauses during emergencies)
+   - No exploitation of user vulnerabilities
+
+4. **PROJECT Protection Guarantees**
+   - Project isolation (separate learning DB per project)
+   - Sensitive data sanitization
+   - No security-weakening patterns accepted
+   - No quality-reduction patterns accepted
+   - Confidence threshold enforcement (80%+)
+   - Minimum sample size enforcement (3+)
+   - No automatic code execution
+   - Privacy-first (local-only, gitignored, instantly clearable)
+
+**Documentation**
+- `MIGRATION_v8.7_to_v8.8.md`: 500+ line comprehensive migration guide
+- `.protocol-state/system-update-framework/learning-systems-verification-checklist.md`: 35 test cases for dual learning systems
+- Updated `protocol.config.yaml` with 60+ lines of learning system configuration
+
+**Safety & Testing**
+- Sukuna adversarial testing completed (all 3 components tested)
+- No critical issues found (minor polish items addressed)
+- Comprehensive USER + PROJECT protection verified
+- Kill Switch integration tested
+
+### Changed
+
+- **protocol.config.yaml**: Version 8.7.0 → 8.8.0
+  - Added `backward_compatibility` section for tier validation migration
+  - Added `learning` section (60+ lines) with Sukuna + Gojo learning configs
+  - Updated `versioning.protocol_version: "8.8.0"`
+
+- **All 9 Agent Files**: Added tier validation sections
+  - `protocol/yuuji.agent.md`: Tier validation workflow
+  - `protocol/megumi.agent.md`: Tier validation workflow
+  - `protocol/nobara.agent.md`: Tier validation workflow
+  - `protocol/gojo.agent.md`: Tier coordination workflow
+  - `protocol/todo.agent.md`: Tier validation workflow
+  - `protocol/maki.agent.md`: Tier validation workflow
+  - `protocol/panda.agent.md`: Tier validation workflow
+  - `protocol/inumaki.agent.md`: Tier validation workflow
+  - `protocol/sukuna.agent.md`: Tier-exempt status documentation
+
+- **.gitignore**: Added learning patterns exclusions
+  - `.protocol-state/learning/` directory
+  - `*-patterns-*.json` files
+  - `sukuna-patterns-*.json` and `gojo-patterns-*.json` specifically
+  - `metadata.json` for learning systems
+
+### Fixed
+
+- **gojo-learn.py**: Fixed misleading CLI success messages
+  - `record_tier_selection()` now returns boolean (True/False)
+  - CLI checks return value before displaying success message
+  - Accurate "[INFO] Learning disabled" message when not recording
+  - Helpful enable instructions provided
+
+- **tier-statistics.py**: Added input sanitization
+  - New `_sanitize_input()` method filters malicious input
+  - Blocks SQL injection attempts (e.g., `'; DROP TABLE`)
+  - Blocks path traversal attempts (e.g., `../../../etc/passwd`)
+  - 100-character length limit
+  - Warnings displayed when input is sanitized
+
+- **sukuna.agent.md**: Added missing tier validation section
+  - Documented tier-exempt status (system updates are inherently Tier 3)
+  - Explained why Sukuna doesn't follow standard tier workflow
+  - Clarified Sukuna's role in validating tier requirements in user code
+
 ## [8.7.0] - 2025-12-03
 
 > **📌 Release Note**: This release bundles two milestones:

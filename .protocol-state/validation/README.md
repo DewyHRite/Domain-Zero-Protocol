@@ -15,7 +15,7 @@ Once Memory Tool is enabled, these files will migrate to `/memories/validation/`
 
 ## Directory Structure
 
-```
+```text
 .protocol-state/validation/
 ├── README.md                  # This file
 ├── snapshots/                 # Context snapshots

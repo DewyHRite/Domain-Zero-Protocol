@@ -38,7 +38,9 @@ class MemoryPathValidator:
     ]
 
     # Allowed agent subdirectories
-    ALLOWED_AGENTS = [
+    # Option: Load from environment or config file
+    env_agents = os.environ.get("DZP_ALLOWED_AGENTS", "").strip()
+    ALLOWED_AGENTS = [a.strip() for a in env_agents.split(",") if a.strip()] if env_agents else [
         "yuuji",
         "megumi",
         "nobara",
@@ -86,7 +88,9 @@ class MemoryPathValidator:
             return False, f"Path must start with '{self.MEMORY_PREFIX}' (got: {path})"
 
         # Rule 2: No directory traversal
-        if ".." in path:
+        # Check for literal and common encoded variants
+        traversal_patterns = ["..", "%2e%2e", "%2E%2E", "..%2f", "..%5c"]
+        if any(p in path for p in traversal_patterns):
             return False, f"Directory traversal not allowed (path contains '..'): {path}"
 
         # Rule 3: Canonical path resolution
@@ -214,7 +218,7 @@ class MemoryPathValidator:
         # Attempt to resolve canonical
         try:
             canonical = self._resolve_canonical(path)
-        except:
+        except Exception:
             return None
 
         # Validate the sanitized path

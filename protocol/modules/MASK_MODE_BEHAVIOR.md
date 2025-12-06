@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
 # Mask Mode Behavior
-## Domain Zero Protocol v8.7.0
+## Domain Zero Protocol v8.8.0
 
 > **Module Type:** Shared Protocol Behavior
 > **Referenced By:** All 9 agents

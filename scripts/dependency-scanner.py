@@ -160,13 +160,17 @@ class DependencyGraph:
         visited = set()
         rec_stack = []
 
-        def dfs(node: str, path: List[str]) -> None:
+        def dfs(node: str) -> None:
             """DFS helper to detect cycles."""
             if node in rec_stack:
                 # Found a cycle
                 cycle_start = rec_stack.index(node)
                 cycle = rec_stack[cycle_start:] + [node]
-                cycles.append(cycle)
+                # Normalize cycle to avoid duplicates (start from smallest element)
+                normalized = min(range(len(cycle)-1), key=lambda i: cycle[i])
+                normalized_cycle = cycle[normalized:-1] + cycle[:normalized] + [cycle[normalized]]
+                if normalized_cycle not in cycles:
+                    cycles.append(normalized_cycle)
                 return
 
             if node in visited:
@@ -176,14 +180,14 @@ class DependencyGraph:
             rec_stack.append(node)
 
             for neighbor in self.dependencies.get(node, set()):
-                dfs(neighbor, path + [node])
+                dfs(neighbor)
 
             rec_stack.pop()
 
         # Try DFS from each node
         for node in self.dependencies.keys():
             if node not in visited:
-                dfs(node, [])
+                dfs(node)
 
         return cycles
 
@@ -234,7 +238,7 @@ class PythonFileScanner:
 
             except SyntaxError:
                 # If AST parsing fails, fall back to regex
-                pass
+                pass  # Intentional: regex fallback handles this case
 
             # Regex fallback for file patterns
             patterns = [
@@ -272,21 +276,19 @@ class JSONFileScanner:
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
-            # Recursively search for string values that look like paths
-            def extract_paths(obj):
+            # Iterative traversal to avoid recursion limit on deeply nested JSON
+            stack = [data]
+            while stack:
+                obj = stack.pop()
                 if isinstance(obj, dict):
-                    for value in obj.values():
-                        extract_paths(value)
+                    stack.extend(obj.values())
                 elif isinstance(obj, list):
-                    for item in obj:
-                        extract_paths(item)
+                    stack.extend(obj)
                 elif isinstance(obj, str):
                     # Check if string looks like a path
                     if any(pattern in obj for pattern in ['.json', '.yaml', '.md', '.py', 'protocol/', '.protocol-state/']):
                         if '/' in obj or '\\' in obj:
                             dependencies.add(obj)
-
-            extract_paths(data)
 
         except Exception as e:
             print(f"Warning: Failed to scan {file_path}: {e}", file=sys.stderr)
@@ -370,7 +372,7 @@ class DependencyScanner:
             return ""
 
         # Check for control characters or weird unicode
-        if any(ord(c) < 32 or ord(c) > 126 for c in path_str if c not in '\n\r\t'):
+        if any(ord(c) < 32 or ord(c) > 126 for c in path_str):
             return ""
 
         # Must look like a valid file path
@@ -418,7 +420,7 @@ class DependencyScanner:
         self.graph.file_types[source] = file_path.suffix
         try:
             self.graph.file_sizes[source] = file_path.stat().st_size
-        except:
+        except OSError:
             pass
 
         # Scan for dependencies
@@ -555,7 +557,7 @@ class ReportGenerator:
         # File type
         file_type = self.graph.file_types.get(file_path, "Unknown")
         print(f"\nFILE TYPE: {file_type}")
-        print(f"BLAST RADIUS: {impact['risk_level']}")
+        print(f"BLAST RADIUS: {impact['blast_radius']}")
         print(f"RISK LEVEL: {impact['risk_level']}")
 
         if impact['is_critical']:

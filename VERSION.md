@@ -1,17 +1,25 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.7.0
-**Release Date:** December 3, 2025
+**Version:** v8.8.0
+**Release Date:** December 6, 2025
 **Release Type:** Minor Release
 
 ---
 
 ## Release Summary
 
-This minor release introduces a **Custom Agent Security Framework**, addressing 8 CRITICAL vulnerabilities identified by Sukuna's red team assessment. The update includes pre-invocation validation, runtime monitoring, audit logging, and comprehensive test coverage for custom agent security.
+This minor release introduces **Phase 4: Tier Validation System + Dual Learning Systems**, completing the intelligent tier workflow with active validation, automatic statistics tracking, and opt-in learning capabilities for both protocol updates (Sukuna) and mission coordination (Gojo).
 
-### Key Changes in v8.7.0
+### Key Changes in v8.8.0
+
+- **Component 1: Tier Validation System** - Active pwd verification, tier-defaults.yaml (18KB config), all 9 agents updated with tier validation sections, 30-day backward compatibility grace period
+- **Component 2: Tier Statistics** - Automatic tier usage tracking, compliance monitoring, markdown/JSON reporting for Trigger 19 integration
+- **Component 3: Dual Learning Systems** - Sukuna learns from protocol updates, Gojo learns from tier selections, comprehensive USER + PROJECT protection, opt-in by default
+- **Comprehensive Safety** - Kill Switch integration, sanitized data, project isolation, confidence thresholds (80%+, 3+ samples), instant disable capability
+- **Migration Guide** - 500+ line MIGRATION_v8.7_to_v8.8.md with step-by-step upgrade instructions
+
+### Previous Release (v8.7.0)
 
 - **Custom Agent Security Framework** - Pre-invocation validation (440 lines), runtime monitoring (650+ lines), audit logging, and registry system
 - **8 Critical Vulnerabilities Fixed** - Agent name collision, self-declared tool permissions, YAML injection, agent self-modification, zero Gojo oversight, rate limiting, file immutability

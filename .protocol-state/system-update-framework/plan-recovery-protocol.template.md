@@ -95,22 +95,22 @@ Use this protocol when:
 
 If plan is incomplete, use these inference methods:
 
-**Method 1: Infer from Completed Work**
+#### Method 1: Infer from Completed Work
 - Review `.protocol-state/IMPLEMENTATION_PROGRESS.md`
 - Check git log for implemented features
 - Deduce planned features from partially completed work
 
-**Method 2: Infer from Todo Lists**
+#### Method 2: Infer from Todo Lists
 - Extract all ☐ and ☒ tasks from session transcript
 - Group tasks by similarity (likely same phase)
 - Estimate phase boundaries based on task complexity
 
-**Method 3: Infer from Framework Knowledge**
+#### Method 3: Infer from Framework Knowledge
 - Use domain knowledge (e.g., validation framework needs schemas, engine, tests)
 - Standard phase structure: Setup → Implementation → Testing → Documentation
 - Typical week allocations: 2 weeks per major phase
 
-**Method 4: Ask User for Clarification**
+#### Method 4: Ask User for Clarification
 - Use AskUserQuestion tool for critical gaps
 - Focus on: phase objectives, acceptance criteria, dependencies
 

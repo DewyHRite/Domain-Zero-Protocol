@@ -104,12 +104,14 @@ def save_manifest(manifest: Dict[str, Any]) -> None:
 # State File Discovery
 # =============================================================================
 
-def discover_state_files() -> Dict[str, Path]:
+def discover_state_files() -> Dict[str, Any]:
     """
     Discover all DZP state files to include in snapshot
 
     Returns:
-        Dictionary mapping file keys to file paths
+        Dictionary mapping logical keys to:
+        - Path objects for core state files, and
+        - Nested dicts of agent → {relative_path → Path} for "agent_memories".
     """
     state_files = {}
 

@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
 # Gojo Operational Procedures - Detailed Reference
 
-**Version**: 8.7.0
+**Version**: 8.8.0
 **Parent Agent**: gojo.agent.md
 **Purpose**: Detailed step-by-step procedures for Mission Control operations
 

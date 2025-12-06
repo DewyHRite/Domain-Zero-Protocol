@@ -118,6 +118,7 @@ class SnapshotIntegration:
 
     def _save_session_state(self) -> None:
         """Save session state to file."""
+        SESSION_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
         with open(SESSION_STATE_PATH, 'w', encoding='utf-8') as f:
             json.dump(self.session_state, f, indent=2)
 

@@ -416,7 +416,7 @@ When Plan Mode completes, the following steps are **MANDATORY** before ExitPlanM
 
 #### Step 1: Write Complete Plan to Framework
 
-```
+```text
 Location: .protocol-state/system-update-framework/plan-documentation.md
 Format: UPDATE-{YYYY-MM-DD}-{SEQ} entry
 ```

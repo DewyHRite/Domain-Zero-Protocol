@@ -695,6 +695,120 @@ tiers:
     compliance_frameworks: ["PCI", "HIPAA", "SOC2", "GDPR"]
     target_time_minutes: 90
 
+  # ============================================================================
+  # BACKWARD COMPATIBILITY (v8.8.0 Migration Support)
+  # ============================================================================
+  # Optional flag to disable tier enforcement for existing users during migration
+  # Set to true to allow gradual adoption of tier validation (v8.8.0+)
+  # Set to false for strict tier enforcement (recommended after migration)
+  backward_compatibility:
+    allow_tier_bypass: false              # Default: strict enforcement
+    migration_grace_period_days: 30       # 30-day grace period for migration
+    migration_start_date: "2025-12-06"    # When v8.8.0 tier validation began
+
+    # Legacy mode (pre-v8.8.0 behavior)
+    # Enable to revert to pre-tier-validation workflow (NOT recommended)
+    legacy_mode_enabled: false            # Default: use tier system
+
+    # Grace period behavior
+    # During grace period, tier violations generate warnings instead of blocks
+    grace_period_behavior:
+      tier_violations_as_warnings: true   # Warn instead of block during grace period
+      log_violations: true                # Track all violations for migration planning
+      migration_report_on_trigger19: true # Include migration status in intelligence reports
+
+  # ============================================================================
+  # TIER STATISTICS (v8.8.0 Component 2)
+  # ============================================================================
+  # Automatic tracking and reporting of tier system usage
+  # Statistics stored in project-state.json, reported in Trigger 19
+  tier_statistics:
+    enabled: true                    # Enable automatic tier tracking
+
+    # What to track
+    tracking:
+      record_events: true            # Record tier events (selection, completion, bypass)
+      calculate_averages: true       # Calculate rolling average time per tier
+      track_compliance: true         # Track compliance rates per tier
+      track_bypasses: true           # Track bypass attempts
+      track_violations: true         # Track tier violations
+
+    # Reporting configuration
+    reporting:
+      include_in_trigger19: true     # Add tier analysis to Trigger 19 reports
+      rolling_window_days: 30        # Statistics time window (last N days)
+      report_format: "markdown"      # Default report format (text, markdown, json)
+
+    # Privacy settings
+    privacy:
+      track_feature_names: true      # Store feature names in events (set false for privacy)
+      track_session_ids: false       # Store session identifiers (default: false for privacy)
+      max_event_history: 100         # Maximum events to keep in rolling log
+
+  # ============================================================================
+  # LEARNING SYSTEMS (v8.8.0 Component 3 - Dual Learning)
+  # ============================================================================
+  # CRITICAL SAFETY: USER + PROJECT protection mandatory
+  # Learning systems provide SUGGESTIONS ONLY, never automatic actions
+  # User authority always supreme, learning instantly disableable
+  learning:
+    enabled: false                   # DEFAULT: DISABLED (user must opt-in with explicit consent)
+    require_user_consent: true       # Explicit consent required before enabling
+
+    # User Protection
+    user_protection:
+      suggestions_only: true         # Never automatic actions
+      no_pressure: true              # Never guilt-trip or manipulate
+      easy_dismiss: true             # One-click "No thanks"
+      remember_dismissals: true      # Don't re-suggest dismissed patterns
+      respect_kill_switch: true      # Pause during emergencies
+      no_exploitation: true          # Never learn user vulnerabilities
+
+    # Project Protection
+    project_protection:
+      isolate_patterns: true         # Each project has separate learning DB
+      sanitize_data: true            # Remove sensitive information
+      no_security_weakening: true    # Reject patterns that weaken security
+      no_quality_reduction: true     # Reject patterns that reduce test coverage
+      require_backup_before_changes: true  # Backup before learned changes
+
+    # Sukuna Learning (Protocol Updates)
+    sukuna:
+      enabled: false                 # DEFAULT: DISABLED (opt-in)
+      learn_from:
+        - file_dependencies          # Which files change together
+        - update_durations           # Estimated vs actual time
+        - rollback_triggers          # What causes rollbacks
+        - breaking_changes           # Version compatibility patterns
+      confidence_threshold: 0.80     # Minimum confidence to show suggestions (80%)
+      min_sample_size: 3             # Minimum samples before suggesting
+
+    # Gojo Learning (Mission Coordination)
+    gojo:
+      enabled: false                 # DEFAULT: DISABLED (opt-in)
+      learn_from:
+        - tier_selections            # Feature keywords → appropriate tier
+        - agent_handoffs             # Optimal agent transitions
+        - work_sessions              # User productivity rhythms
+        - compliance_violations      # Common mistakes to prevent
+      confidence_threshold: 0.80     # Minimum confidence to show suggestions (80%)
+      min_sample_size: 3             # Minimum samples before suggesting
+      auto_dismiss_threshold: 3      # Auto-dismiss after N "not helpful" responses
+
+    # Privacy & Data
+    privacy:
+      local_only: true               # Never leaves .protocol-state/learning/
+      gitignored_by_default: true    # Not committed to git
+      clear_anytime: true            # User can wipe data instantly
+      no_cross_project: true         # Project isolation enforced
+      sanitize_sensitive_data: true  # Remove passwords, keys, emails, etc.
+
+    # Kill Switch Integration
+    kill_switch:
+      pause_learning: true           # Stop all learning when Kill Switch active
+      no_suggestions: true           # Don't show suggestions during emergency
+      no_learning_from_stress: true  # Don't learn from stressed user
+
 # ============================================================================
 # FILE PATHS & LOCATIONS
 # ============================================================================
@@ -1196,9 +1310,9 @@ custom_agent_security:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "8.7.0"
-  config_version: "2.7"
-  last_updated: "2025-12-03"
+  protocol_version: "8.8.0"
+  config_version: "2.8"
+  last_updated: "2025-12-06"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

@@ -150,7 +150,7 @@ Once enabled, DZP agents have access to six Memory Tool operations:
 
 DZP v8.8.0 uses this standardized memory structure:
 
-```
+```text
 /memories/
 ├── agents/
 │   ├── yuuji/
@@ -207,7 +207,7 @@ DZP v8.8.0 uses this standardized memory structure:
 
 Start a DZP agent and verify Memory Tool access:
 
-```
+```text
 User: "Read gojo.agent.md"
 Gojo: [Gojo should be able to view /memories/agents/gojo/]
 ```
@@ -216,7 +216,7 @@ If Memory Tool is working, Gojo will check `/memories/agents/gojo/` on startup.
 
 ### Test 2: Create Test Memory File
 
-```
+```text
 User: "Create a test memory file at /memories/test.txt with content 'Hello DZP'"
 ```
 
@@ -224,7 +224,7 @@ Expected: File created successfully with no errors.
 
 ### Test 3: View Memory Directory
 
-```
+```text
 User: "View /memories/ directory"
 ```
 
@@ -248,12 +248,12 @@ Expected: Should see directory listing with agents/, validation/, project/ subdi
 **Solution**: All DZP memory operations must use paths starting with `/memories/`
 
 **Correct**:
-```
+```text
 view /memories/agents/yuuji/session-context.json
 ```
 
 **Incorrect**:
-```
+```text
 view /session-context.json  # Missing /memories/ prefix
 view ../memories/  # Directory traversal not allowed
 ```
@@ -348,10 +348,10 @@ See Anthropic's Memory Tool documentation for subclassing `BetaAbstractMemoryToo
 
 ### Migration Prerequisites
 
-**Step 1: Verify Memory Tool Availability**
+### Step 1: Verify Memory Tool Availability
 
 Test Memory Tool access before migrating:
-```
+```text
 User: "View /memories/ directory"
 ```
 
@@ -359,7 +359,7 @@ Expected: Directory listing or empty directory (no error).
 
 If you get "Memory Tool not available", see troubleshooting section above.
 
-**Step 2: Check Existing State Files**
+### Step 2: Check Existing State Files
 
 Identify files to migrate in `.protocol-state/`:
 ```bash
@@ -371,7 +371,7 @@ Identify files to migrate in `.protocol-state/`:
 # ... and other agent state files
 ```
 
-**Step 3: Create Backup**
+### Step 3: Create Backup
 
 **CRITICAL**: Always backup before migration.
 
@@ -389,7 +389,7 @@ cp -r .protocol-state .protocol-state.backup-$(date +%Y%m%d-%H%M%S)
 **Migration Process** (via agent invocation):
 
 1. **Invoke Gojo for Migration**:
-```
+```text
 User: "Read gojo.agent.md and migrate my state files to Memory Tool"
 ```
 
@@ -402,12 +402,12 @@ User: "Read gojo.agent.md and migrate my state files to Memory Tool"
    - Rename old files to `.backup` (not deleted)
 
 3. **Verify Migration**:
-```
+```text
 User: "View /memories/ directory structure"
 ```
 
 Expected output:
-```
+```text
 /memories/
 ├── agents/
 │   └── gojo/
@@ -420,14 +420,14 @@ Expected output:
 ```
 
 4. **Test Memory Persistence**:
-```
+```text
 User: "Read gojo.agent.md and check if my project state persisted"
 ```
 
 Gojo should read from `/memories/` and display current project state.
 
 5. **Cleanup** (after verification):
-```
+```text
 User: "Remove .protocol-state/ backup files after confirming migration successful"
 ```
 
@@ -642,22 +642,22 @@ You can keep both for redundancy during transition period.
 
 **After migration, verify success**:
 
-**Test 1: Memory Tool Read**
-```
+### Test 1: Memory Tool Read
+```text
 User: "Read gojo.agent.md and show me my current project state"
 ```
 
 Expected: Gojo reads from `/memories/project/project-state.json` and displays state.
 
-**Test 2: Memory Tool Write**
-```
+### Test 2: Memory Tool Write
+```text
 User: "Read gojo.agent.md and update my project name to 'Test Migration'"
 ```
 
 Expected: Gojo updates `/memories/project/project-state.json`.
 
-**Test 3: Session Persistence**
-```
+### Test 3: Session Persistence
+```text
 # Session 1:
 User: "Read gojo.agent.md and create test memory: /memories/test-migration.txt with content 'Session 1'"
 
@@ -669,8 +669,8 @@ User: "Read gojo.agent.md and read /memories/test-migration.txt"
 
 Expected: Session 2 successfully reads content created in Session 1.
 
-**Test 4: Data Integrity**
-```
+### Test 4: Data Integrity
+```text
 User: "Read gojo.agent.md and verify all my project metadata migrated correctly"
 ```
 

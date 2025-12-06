@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
-**Version:** v8.7.0
+**Version:** v8.8.0
 **Last Updated:** 2025-12-02
 
 ---
@@ -607,5 +607,5 @@ Runs only critical checks (dependencies, files, config, yaml)
 ---
 
 **Last Updated:** December 2, 2025
-**Protocol Version:** v8.7.0
+**Protocol Version:** v8.8.0
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol
