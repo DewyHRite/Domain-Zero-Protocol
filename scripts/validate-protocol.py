@@ -201,12 +201,13 @@ def discover_state_files(root_dir: Path) -> List[StateFile]:
             content=content
         ))
 
-    # Discover snapshot files (snapshot-*.json pattern)
+    # Discover snapshot files (snapshot-*.json.gz pattern)
     snapshots_dir = state_dir / "snapshots"
     if snapshots_dir.exists():
-        for snapshot_file in snapshots_dir.glob("snapshot-*.json"):
+        for snapshot_file in snapshots_dir.glob("snapshot-*.json.gz"):
             try:
-                with open(snapshot_file, 'r', encoding='utf-8') as f:
+                import gzip
+                with gzip.open(snapshot_file, 'rt', encoding='utf-8') as f:
                     content = json.load(f)
                 state_files.append(StateFile(
                     path=snapshot_file,

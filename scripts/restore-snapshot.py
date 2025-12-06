@@ -64,8 +64,12 @@ def load_manifest() -> Dict[str, Any]:
     if not MANIFEST_FILE.exists():
         return {"snapshots": []}
 
-    with open(MANIFEST_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    try:
+        with open(MANIFEST_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"WARNING: Corrupted manifest file: {e}", file=sys.stderr)
+        return {"snapshots": []}
 
 
 # =============================================================================
@@ -179,9 +183,14 @@ def create_pre_restore_backup() -> Optional[str]:
     """
     try:
         # Import create_snapshot from create-snapshot.py
-        import sys
-        sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
-        from create_snapshot import create_snapshot
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "create_snapshot",
+            PROJECT_ROOT / "scripts" / "create-snapshot.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        create_snapshot = module.create_snapshot
 
         print("Creating pre-restore backup...")
         result = create_snapshot(
@@ -312,8 +321,8 @@ def restore_snapshot(snapshot_id: str, skip_backup: bool = False) -> bool:
                 json.dump(session_state, f, indent=2)
 
             print("   ✅ Session state updated")
-    except Exception:
-        print("   ⚠️  Session state update skipped")
+    except Exception as e:
+        print(f"   ⚠️  Session state update skipped: {e}", file=sys.stderr)
 
     # Calculate restore time
     restore_time = time.time() - start_time
@@ -443,6 +452,8 @@ Performance:
                         help='Skip pre-restore backup (dangerous)')
     parser.add_argument('--rollback', action='store_true',
                         help='Rollback to pre-restore backup')
+    parser.add_argument('--debug', action='store_true',
+                        help='Show full error tracebacks')
 
     args = parser.parse_args()
 
@@ -472,8 +483,9 @@ Performance:
         sys.exit(130)
     except Exception as e:
         print(f"\nERROR: {e}", file=sys.stderr)
-        import traceback
-        traceback.print_exc()
+        if args.debug:
+            import traceback
+            traceback.print_exc()
         sys.exit(1)
 
 

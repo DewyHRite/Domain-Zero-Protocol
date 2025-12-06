@@ -61,7 +61,7 @@ python scripts/dependency-scanner.py --scan --analyze <file-path>
 - Actionable recommendations
 
 **Example Output**:
-```
+```text
 ═══════════════════════════════════════════════════════════════
 DEPENDENCY ANALYSIS: .protocol-state/project-state.json
 ═══════════════════════════════════════════════════════════════
@@ -101,7 +101,7 @@ python scripts/dependency-scanner.py --scan --check-cycles
 ```
 
 **Circular Dependencies**:
-```
+```text
 project-state.json → tier-enforcement.py → validation-state.json → project-state.json
 └────────────────────────── CIRCULAR LOOP ──────────────────────────┘
 ```
@@ -126,7 +126,7 @@ python scripts/dependency-scanner.py --scan --agent-matrix
 ```
 
 **Output**:
-```
+```text
 ═══════════════════════════════════════════════════════════════
 AGENT DEPENDENCY MATRIX
 ═══════════════════════════════════════════════════════════════
@@ -252,7 +252,7 @@ The scanner assesses risk based on **blast radius** (number of reverse dependenc
 
 ### Circular Dependency Detection (DFS)
 
-```
+```text
 function detect_cycles(graph):
     visited = empty_set
     rec_stack = empty_list
@@ -285,7 +285,7 @@ function dfs(node, visited, rec_stack, cycles):
 
 ### Impact Analysis (BFS)
 
-```
+```text
 function analyze_impact(file, graph):
     # Get all files that depend on this file (reverse dependencies)
     reverse_deps = bfs_traversal(file, graph.reverse_dependencies)

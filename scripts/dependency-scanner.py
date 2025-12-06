@@ -160,13 +160,17 @@ class DependencyGraph:
         visited = set()
         rec_stack = []
 
-        def dfs(node: str, path: List[str]) -> None:
+        def dfs(node: str) -> None:
             """DFS helper to detect cycles."""
             if node in rec_stack:
                 # Found a cycle
                 cycle_start = rec_stack.index(node)
                 cycle = rec_stack[cycle_start:] + [node]
-                cycles.append(cycle)
+                # Normalize cycle to avoid duplicates (start from smallest element)
+                normalized = min(range(len(cycle)-1), key=lambda i: cycle[i])
+                normalized_cycle = cycle[normalized:-1] + cycle[:normalized] + [cycle[normalized]]
+                if normalized_cycle not in cycles:
+                    cycles.append(normalized_cycle)
                 return
 
             if node in visited:
@@ -176,14 +180,14 @@ class DependencyGraph:
             rec_stack.append(node)
 
             for neighbor in self.dependencies.get(node, set()):
-                dfs(neighbor, path + [node])
+                dfs(neighbor)
 
             rec_stack.pop()
 
         # Try DFS from each node
         for node in self.dependencies.keys():
             if node not in visited:
-                dfs(node, [])
+                dfs(node)
 
         return cycles
 
@@ -234,7 +238,7 @@ class PythonFileScanner:
 
             except SyntaxError:
                 # If AST parsing fails, fall back to regex
-                pass
+                pass  # Intentional: regex fallback handles this case
 
             # Regex fallback for file patterns
             patterns = [
@@ -273,6 +277,9 @@ class JSONFileScanner:
                 data = json.load(f)
 
             # Recursively search for string values that look like paths
+            # Note: Recursive extraction could hit recursion limit on deeply nested JSON.
+            # This is unlikely for typical config files but could be problematic for
+            # malformed/malicious input.
             def extract_paths(obj):
                 if isinstance(obj, dict):
                     for value in obj.values():
@@ -370,7 +377,7 @@ class DependencyScanner:
             return ""
 
         # Check for control characters or weird unicode
-        if any(ord(c) < 32 or ord(c) > 126 for c in path_str if c not in '\n\r\t'):
+        if any(ord(c) < 32 or ord(c) > 126 for c in path_str):
             return ""
 
         # Must look like a valid file path
@@ -418,7 +425,7 @@ class DependencyScanner:
         self.graph.file_types[source] = file_path.suffix
         try:
             self.graph.file_sizes[source] = file_path.stat().st_size
-        except:
+        except OSError:
             pass
 
         # Scan for dependencies

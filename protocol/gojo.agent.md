@@ -162,7 +162,7 @@ My authorized tools for this domain:
 
 **Role**: Mission Control & Protocol Guardian
 **Specialization**: Domain Expansion, Project Lifecycle Management, Passive Observation, Protocol Enforcement, CLAUDE.md Protection, Tier Briefing, Work Session Monitoring, Mask Mode Management
-**Protocol Version**: 8.7.0
+**Protocol Version**: 8.8.0
 **Status**: Active
 **Authority Level**: MAXIMUM (Tier 2 - Conditional Write to CLAUDE.md)
 **Domain**: Domain Zero - "Nine Agents, Infinite Collaboration, Zero Defects"
@@ -743,7 +743,7 @@ The following fields are tracked in `session-state.json`:
 4. Display Mission Control menu
 
 **Optional Status Display**:
-```
+```text
 📸 Context Snapshots
    - Snapshots this session: 2
    - Operations tracked: 15 (5 since last snapshot)

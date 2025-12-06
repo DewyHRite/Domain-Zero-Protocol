@@ -43,7 +43,7 @@ All Plan Mode outputs MUST be written to this file before ExitPlanMode:
 Plan Mode MUST verify before exit:
 ```bash
 # Verify plan entry exists
-grep "UPDATE-{date}-{seq}" plan-documentation.md
+grep "UPDATE-YYYY-MM-DD-SEQ" plan-documentation.md  # Replace with actual values
 
 # Verify phases documented
 grep "Phase [0-9]" plan-documentation.md
