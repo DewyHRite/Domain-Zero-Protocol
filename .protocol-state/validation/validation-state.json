@@ -1,0 +1,45 @@
+{
+  "validation_enabled": true,
+  "last_full_validation": "2025-12-06T06:54:26.331923+00:00Z",
+  "last_validation_result": "failed",
+  "state_file_integrity": {
+    "project-state.json": {
+      "checksum": "8b9deeb0189f5789858f10cb5eca51de95d6e71f2aa82b26fc96dc9dadcc821a",
+      "last_validated": "2025-12-06T06:54:26.331923+00:00Z",
+      "status": "invalid",
+      "errors": [
+        "'validation_state' is a required property",
+        "'agent_registry' is a required property",
+        "'tier_1_tasks' is a required property",
+        "'tier_2_tasks' is a required property",
+        "'tier_3_tasks' is a required property"
+      ]
+    },
+    "session-state.json": {
+      "checksum": "cb2e9d545a7a798ee53d4225543c3f7b03fa4a25c72f739e6e76d88e46bf3f51",
+      "last_validated": "2025-12-06T06:26:35.842816Z",
+      "status": "invalid",
+      "errors": [
+        "'session_id' is a required property",
+        "'started_at' is a required property",
+        "'active_tier' is a required property",
+        "'current_agent' is a required property",
+        "'task_queue' is a required property"
+      ]
+    },
+    "snapshot-manifest.json": {
+      "checksum": "ed4415bd2dc6c3daeafce32d5d0f1cd586bfe4b6e5f5cfacd61e6e2746337807",
+      "last_validated": "2025-12-06T06:26:35.842816Z",
+      "status": "invalid",
+      "errors": [
+        "'snapshot_id' is a required property",
+        "'created_at' is a required property",
+        "'tier' is a required property",
+        "'reason' is a required property",
+        "'state_files' is a required property"
+      ]
+    }
+  },
+  "drift_alerts": [],
+  "auto_fix_history": []
+}

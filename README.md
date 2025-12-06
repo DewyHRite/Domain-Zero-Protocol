@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
-# Domain Zero Protocol v8.7.0
+<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
+# Domain Zero Protocol v8.8.0
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v8.7.0**: Custom Agent Security Framework (8 critical vulnerabilities fixed, pre-invocation validation, runtime monitoring, audit logging). See [What's New](#-version-information).
+> **New in v8.8.0**: Phase 4 - Tier Validation System + Dual Learning Systems (active tier enforcement, automatic statistics, Sukuna/Gojo learning with USER + PROJECT protection). See [What's New](#-version-information).
 
 ---
 

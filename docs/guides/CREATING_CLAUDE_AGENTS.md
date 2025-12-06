@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
 # Creating Claude Agents - Domain Zero Guide
 
-**Domain Zero Protocol v8.7.0**
+**Domain Zero Protocol v8.8.0**
 
 Learn to create custom Claude agents using the **`/agents` command** in Claude Code, inspired by the Domain Zero four-agent system: Yuuji (Implementation), Megumi (Security), Nobara (Creative Strategy), and Gojo (Mission Control).
 
@@ -27,7 +27,7 @@ Learn to create custom Claude agents using the **`/agents` command** in Claude C
 
 **IMPORTANT: Custom agents have access to your codebase and can execute operations. Follow these security guidelines:**
 
-### 🔴 Critical Security Rules (v8.7.0+)
+### 🔴 Critical Security Rules (v8.8.0+)
 
 1. **Namespace Protection**
    - ❌ **NEVER** name custom agents after core agents: `yuuji`, `megumi`, `nobara`, `gojo`, `todo`, `maki`, `panda`, `inumaki`, `sukuna`
@@ -51,7 +51,7 @@ Learn to create custom Claude agents using the **`/agents` command** in Claude C
    - ❌ **DO NOT** use Python object deserialization: `!!python/`
    - **Why**: These patterns enable code injection attacks
 
-### 🛡️ Security Enforcement (v8.7.0)
+### 🛡️ Security Enforcement (v8.8.0)
 
 Domain Zero Protocol now enforces these rules automatically:
 

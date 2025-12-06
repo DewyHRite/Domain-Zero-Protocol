@@ -1,8 +1,8 @@
-# Custom Agent Security Policy (v8.7.0)
+# Custom Agent Security Policy (v8.8.0)
 
 **Domain Zero Protocol - Custom Agent Security Policy**
-**Version**: 8.7.0
-**Effective Date**: 2025-12-03
+**Version**: 8.8.0
+**Effective Date**: 2025-12-06
 **Status**: ACTIVE
 
 ---
@@ -360,10 +360,10 @@ Retention: Indefinite (user responsible for archival)
 
 Format:
 ```
-2025-12-03T10:30:15 | INVOCATION | custom-agent | by=user | validated=True
-2025-12-03T10:30:16 | TOOL_GRANTED | custom-agent | read | DEFAULT_ALLOWED
-2025-12-03T10:30:20 | TOOL_DENIED | custom-agent | bash | FORBIDDEN
-2025-12-03T10:30:21 | AGENT_QUARANTINED | custom-agent | Reason: Forbidden tool
+2025-12-06T10:30:15 | INVOCATION | custom-agent | by=user | validated=True
+2025-12-06T10:30:16 | TOOL_GRANTED | custom-agent | read | DEFAULT_ALLOWED
+2025-12-06T10:30:20 | TOOL_DENIED | custom-agent | bash | FORBIDDEN
+2025-12-06T10:30:21 | AGENT_QUARANTINED | custom-agent | Reason: Forbidden tool
 ```
 
 ### Security Reviews
@@ -376,7 +376,7 @@ Format:
 
 ## Version History
 
-- **v8.7.0** (2025-12-03): Initial security policy
+- **v8.8.0** (2025-12-06): Initial security policy
   - Implemented namespace protection
   - Implemented tool permission control
   - Implemented YAML sanitization
@@ -387,7 +387,7 @@ Format:
 
 ## References
 
-- **Red Team Assessment**: `internal-docs/RED_TEAM_ASSESSMENT_CUSTOM_AGENTS_v8.7.0.md`
+- **Red Team Assessment**: `internal-docs/RED_TEAM_ASSESSMENT_CUSTOM_AGENTS_v8.8.0.md`
 - **Gojo Integration Guide**: `.protocol-state/gojo-custom-agent-security-guide.md`
 - **Validation Script**: `scripts/validate-custom-agents.py`
 - **Monitor Module**: `.protocol-state/custom_agent_monitor.py`

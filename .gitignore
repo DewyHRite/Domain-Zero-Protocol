@@ -42,6 +42,11 @@
 *.backup.*
 *_backup.*
 
+# Snapshots (v8.8.0+ - user-specific state checkpoints)
+.protocol-state/snapshots/
+*.snapshot.json
+*.snapshot.json.gz
+
 # Versioned folder backups (OLD SYSTEM - keep external)
 Domain Zero Protocol Backups/
 Domain Zero Protocol v*/
@@ -68,6 +73,25 @@ WORK_SESSION_ALERT.md
 # Work session state tracking (runtime data, local only)
 # Template is tracked: session-state.example.json
 .protocol-state/session-state.json
+
+# ============================================================================
+# LEARNING SYSTEMS (v8.8.0+ Component 3 - NEVER COMMIT)
+# ============================================================================
+
+# CRITICAL: Learning patterns contain project-specific behavioral data
+# USER + PROJECT protection: These files MUST stay local
+
+# Learned patterns (Sukuna + Gojo learning systems)
+.protocol-state/learning/
+.protocol-state/learning/*.json
+.protocol-state/learning/*-patterns-*.json
+
+# Specifically exclude learning system files
+.protocol-state/learning/sukuna-patterns-*.json
+.protocol-state/learning/gojo-patterns-*.json
+
+# Learning metadata
+.protocol-state/learning/metadata.json
 
 # ============================================================================
 # SYSTEM UPDATE INTERNAL DOCUMENTS (LOCAL ONLY)

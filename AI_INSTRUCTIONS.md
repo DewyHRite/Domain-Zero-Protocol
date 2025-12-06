@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 8.7.0 | **Last Updated**: 2025-12-04
+**Version**: 8.8.0 | **Last Updated**: 2025-12-04
 **Purpose**: Complete installation and verification guide for AI assistants
 
 ---
@@ -703,7 +703,7 @@ cp .protocol-state/*.json .protocol-state/backups/pre-upgrade_$timestamp/ 2>/dev
 
 ```bash
 # Identify source directory
-ls core-files-v8.7.0/  # Example for v8.7.0
+ls core-files-v8.8.0/  # Example for v8.8.0
 
 # Verify it exists
 # If not, download from: https://github.com/DewyHRite/Domain-Zero-Protocol/releases
@@ -714,30 +714,30 @@ ls core-files-v8.7.0/  # Example for v8.7.0
 ```bash
 # Copy CORE files only (NOT .protocol-state/*.json)
 # Windows PowerShell
-Copy-Item -Path "core-files-v8.7.0/protocol/*" -Destination "protocol/" -Recurse -Force
-Copy-Item -Path "core-files-v8.7.0/docs/*" -Destination "docs/" -Recurse -Force
-Copy-Item -Path "core-files-v8.7.0/*.md" -Destination "." -Force
-Copy-Item -Path "core-files-v8.7.0/protocol.config.yaml" -Destination "." -Force
+Copy-Item -Path "core-files-v8.8.0/protocol/*" -Destination "protocol/" -Recurse -Force
+Copy-Item -Path "core-files-v8.8.0/docs/*" -Destination "docs/" -Recurse -Force
+Copy-Item -Path "core-files-v8.8.0/*.md" -Destination "." -Force
+Copy-Item -Path "core-files-v8.8.0/protocol.config.yaml" -Destination "." -Force
 
 # Copy state TEMPLATES only (NOT actual state files)
-Copy-Item -Path "core-files-v8.7.0/.protocol-state/*.template.*" -Destination ".protocol-state/" -Force
-Copy-Item -Path "core-files-v8.7.0/.protocol-state/*.example.*" -Destination ".protocol-state/" -Force
-Copy-Item -Path "core-files-v8.7.0/.protocol-state/*.py" -Destination ".protocol-state/" -Force
+Copy-Item -Path "core-files-v8.8.0/.protocol-state/*.template.*" -Destination ".protocol-state/" -Force
+Copy-Item -Path "core-files-v8.8.0/.protocol-state/*.example.*" -Destination ".protocol-state/" -Force
+Copy-Item -Path "core-files-v8.8.0/.protocol-state/*.py" -Destination ".protocol-state/" -Force
 # Copy .md files EXCEPT user-maintained artifacts (dev-notes.md, security-review.md, trigger-19.md)
-Get-ChildItem -Path "core-files-v8.7.0/.protocol-state/*.md" | Where-Object { $_.Name -notin @("dev-notes.md","security-review.md","trigger-19.md") } | Copy-Item -Destination ".protocol-state/" -Force
+Get-ChildItem -Path "core-files-v8.8.0/.protocol-state/*.md" | Where-Object { $_.Name -notin @("dev-notes.md","security-review.md","trigger-19.md") } | Copy-Item -Destination ".protocol-state/" -Force
 
 # Linux/Mac
-cp -r core-files-v8.7.0/protocol/* protocol/
-cp -r core-files-v8.7.0/docs/* docs/
-cp core-files-v8.7.0/*.md .
-cp core-files-v8.7.0/protocol.config.yaml .
+cp -r core-files-v8.8.0/protocol/* protocol/
+cp -r core-files-v8.8.0/docs/* docs/
+cp core-files-v8.8.0/*.md .
+cp core-files-v8.8.0/protocol.config.yaml .
 
 # Copy templates only
-cp core-files-v8.7.0/.protocol-state/*.template.* .protocol-state/
-cp core-files-v8.7.0/.protocol-state/*.example.* .protocol-state/
-cp core-files-v8.7.0/.protocol-state/*.py .protocol-state/
+cp core-files-v8.8.0/.protocol-state/*.template.* .protocol-state/
+cp core-files-v8.8.0/.protocol-state/*.example.* .protocol-state/
+cp core-files-v8.8.0/.protocol-state/*.py .protocol-state/
 # Copy .md files EXCEPT user-maintained artifacts
-for file in core-files-v8.7.0/.protocol-state/*.md; do
+for file in core-files-v8.8.0/.protocol-state/*.md; do
   filename=$(basename "$file")
   if [[ "$filename" != "dev-notes.md" && "$filename" != "security-review.md" && "$filename" != "trigger-19.md" ]]; then
     cp "$file" .protocol-state/
@@ -762,7 +762,7 @@ python scripts/sync-templates.py
 Edit `protocol.config.yaml`:
 ```yaml
 versioning:
-  protocol_version: "8.7.0"  # Update to new version
+  protocol_version: "8.8.0"  # Update to new version
 ```
 
 ---
@@ -777,7 +777,7 @@ versioning:
 
 ```bash
 # Check core files directory exists
-ls core-files-v8.7.0/
+ls core-files-v8.8.0/
 
 # If missing, download from:
 # https://github.com/DewyHRite/Domain-Zero-Protocol/releases
@@ -787,10 +787,10 @@ ls core-files-v8.7.0/
 
 ```bash
 # Windows PowerShell
-Copy-Item -Path "core-files-v8.7.0/*" -Destination "." -Recurse -Force
+Copy-Item -Path "core-files-v8.8.0/*" -Destination "." -Recurse -Force
 
 # Linux/Mac
-cp -r core-files-v8.7.0/* .
+cp -r core-files-v8.8.0/* .
 ```
 
 #### Step 3: Create Required Directories
@@ -859,8 +859,8 @@ cat missing-files-report.txt
 #### Solution
 
 ```bash
-cp core-files-v8.7.0/protocol/yuuji.agent.md protocol/
-cp core-files-v8.7.0/protocol/megumi.agent.md protocol/
+cp core-files-v8.8.0/protocol/yuuji.agent.md protocol/
+cp core-files-v8.8.0/protocol/megumi.agent.md protocol/
 ```
 
 #### Issue 2: Missing Protocol Modules
@@ -874,7 +874,7 @@ cp core-files-v8.7.0/protocol/megumi.agent.md protocol/
 
 ```bash
 mkdir -p protocol/modules
-cp core-files-v8.7.0/protocol/modules/* protocol/modules/
+cp core-files-v8.8.0/protocol/modules/* protocol/modules/
 ```
 
 #### Issue 3: Missing State Files
@@ -887,8 +887,8 @@ cp core-files-v8.7.0/protocol/modules/* protocol/modules/
 #### Solution for Issue 3
 
 ```bash
-cp core-files-v8.7.0/.protocol-state/session_monitor.py .protocol-state/
-cp core-files-v8.7.0/.protocol-state/work-session-alert.template.md .protocol-state/
+cp core-files-v8.8.0/.protocol-state/session_monitor.py .protocol-state/
+cp core-files-v8.8.0/.protocol-state/work-session-alert.template.md .protocol-state/
 ```
 
 #### Issue 4: Missing Subfolders
@@ -901,7 +901,7 @@ Directory not found: protocol/skills
 
 ```bash
 mkdir -p protocol/skills
-cp core-files-v8.7.0/protocol/skills/* protocol/skills/
+cp core-files-v8.8.0/protocol/skills/* protocol/skills/
 ```
 
 ### 9.3 Mass Recovery (Copy Everything)
@@ -910,10 +910,10 @@ cp core-files-v8.7.0/protocol/skills/* protocol/skills/
 
 ```bash
 # Windows PowerShell
-Copy-Item -Path "core-files-v8.7.0/*" -Destination "." -Recurse -Force -Exclude "*.json"
+Copy-Item -Path "core-files-v8.8.0/*" -Destination "." -Recurse -Force -Exclude "*.json"
 
 # Linux/Mac
-rsync -av --exclude='*.json' core-files-v8.7.0/ ./
+rsync -av --exclude='*.json' core-files-v8.8.0/ ./
 ```
 
 **Then verify**:
@@ -1000,7 +1000,7 @@ Read protocol/inumaki.agent.md and [API task]
 ## Canonical Source
 
 > **Repository**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Version**: 8.7.0
+> **Version**: 8.8.0
 > **Canonical File**: `protocol/CLAUDE.md`
 
 All protocol updates originate from the canonical source.
@@ -1028,5 +1028,5 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**Domain Zero Protocol v8.7.0 - Complete Installation Guide**
+**Domain Zero Protocol v8.8.0 - Complete Installation Guide**
 **Updated**: 2025-12-04 by Ryomen Sukuna (System Update Adversary)

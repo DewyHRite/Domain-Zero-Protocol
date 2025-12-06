@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
 # User Level Adaptation
-## Domain Zero Protocol v8.7.0
+## Domain Zero Protocol v8.8.0
 
 > **Module Type:** Shared Protocol Behavior
 > **Referenced By:** All 9 agents
@@ -91,7 +91,7 @@ user:
 Each agent file must include a domain-specific addendum:
 
 ```markdown
-## USER LEVEL ADAPTATION (v8.7.0+)
+## USER LEVEL ADAPTATION (v8.8.0+)
 
 **Full Protocol**: See `protocol/modules/USER_LEVEL_ADAPTATION.md`
 
