@@ -276,24 +276,19 @@ class JSONFileScanner:
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
-            # Recursively search for string values that look like paths
-            # Note: Recursive extraction could hit recursion limit on deeply nested JSON.
-            # This is unlikely for typical config files but could be problematic for
-            # malformed/malicious input.
-            def extract_paths(obj):
+            # Iterative traversal to avoid recursion limit on deeply nested JSON
+            stack = [data]
+            while stack:
+                obj = stack.pop()
                 if isinstance(obj, dict):
-                    for value in obj.values():
-                        extract_paths(value)
+                    stack.extend(obj.values())
                 elif isinstance(obj, list):
-                    for item in obj:
-                        extract_paths(item)
+                    stack.extend(obj)
                 elif isinstance(obj, str):
                     # Check if string looks like a path
                     if any(pattern in obj for pattern in ['.json', '.yaml', '.md', '.py', 'protocol/', '.protocol-state/']):
                         if '/' in obj or '\\' in obj:
                             dependencies.add(obj)
-
-            extract_paths(data)
 
         except Exception as e:
             print(f"Warning: Failed to scan {file_path}: {e}", file=sys.stderr)
