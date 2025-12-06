@@ -82,7 +82,6 @@ internal-docs/
 !.protocol-state/system-update-framework/*.template.*
 !.protocol-state/system-update-framework/*.template.md
 !.protocol-state/system-update-framework/*.template.json
-!.protocol-state/system-update-framework/plan-documentation.md
 
 # System update completion reports (INTERNAL classification)
 SYSTEM_UPDATE_*.md
