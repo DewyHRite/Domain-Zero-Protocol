@@ -562,7 +562,7 @@ class ReportGenerator:
         # File type
         file_type = self.graph.file_types.get(file_path, "Unknown")
         print(f"\nFILE TYPE: {file_type}")
-        print(f"BLAST RADIUS: {impact['risk_level']}")
+        print(f"BLAST RADIUS: {impact['blast_radius']}")
         print(f"RISK LEVEL: {impact['risk_level']}")
 
         if impact['is_critical']:

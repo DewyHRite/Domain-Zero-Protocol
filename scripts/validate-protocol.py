@@ -27,6 +27,7 @@ Usage:
 """
 
 import argparse
+import gzip
 import hashlib
 import json
 import os
@@ -206,7 +207,6 @@ def discover_state_files(root_dir: Path) -> List[StateFile]:
     if snapshots_dir.exists():
         for snapshot_file in snapshots_dir.glob("snapshot-*.json.gz"):
             try:
-                import gzip
                 with gzip.open(snapshot_file, 'rt', encoding='utf-8') as f:
                     content = json.load(f)
                 state_files.append(StateFile(

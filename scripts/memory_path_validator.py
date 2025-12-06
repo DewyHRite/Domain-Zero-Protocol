@@ -39,7 +39,8 @@ class MemoryPathValidator:
 
     # Allowed agent subdirectories
     # Option: Load from environment or config file
-    ALLOWED_AGENTS = os.environ.get("DZP_ALLOWED_AGENTS", "").split(",") or [
+    env_agents = os.environ.get("DZP_ALLOWED_AGENTS", "").strip()
+    ALLOWED_AGENTS = [a.strip() for a in env_agents.split(",") if a.strip()] if env_agents else [
         "yuuji",
         "megumi",
         "nobara",
@@ -48,7 +49,7 @@ class MemoryPathValidator:
         "todo",
         "maki",
         "panda",
-        "inumaki"  # fallback defaults
+        "inumaki"
     ]
 
     def __init__(self, strict_mode: bool = True):
