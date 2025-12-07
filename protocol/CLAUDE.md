@@ -1154,6 +1154,8 @@ Structured, auditable research sessions for keeping agents current with evolving
 
 **Solution**: Three-tier system allows users to match process rigor to feature criticality.
 
+**Enforcement Model (v8.8.0+)**: The tier system is ADVISORY + STATISTICS TRACKING. Tier guidelines are recommendations, not technical hard blocks. Users may choose to bypass tier recommendations, and all deviations are logged in tier statistics for transparency and pattern analysis. Gojo prompts for tier compliance but respects user authority in all decisions.
+
 ---
 
 ### TIER 1: RAPID 🚀
@@ -1657,11 +1659,14 @@ AUTHORIZATION CLAIM
 - Expires: [ISO-8601]
 ```
 
-**Logging Requirement:**
-All elevated operations logged to `.protocol-state/authorization/authorization.log`:
-```
-[ISO-8601] | [AGENT] | [OPERATION] | [AUTH_SOURCE] | [STATUS]
-```
+**Audit Trail (v8.8.0 Update - Gap #5 Resolution):**
+Git commit history serves as the authorization audit trail for CORE file modifications:
+- All CLAUDE.md changes tracked in git commits with timestamps, authors, and change diffs
+- All agent file modifications tracked in git history
+- Sukuna system updates documented in commit messages with Co-Authored-By attribution
+- Kill Switch activations logged to `.dzp-killswitch/activations.log`
+
+**Rationale**: Git provides tamper-evident, timestamped audit trail with full change tracking. Dedicated authorization.log deemed unnecessary for local development protocol.
 
 **Denial Protocol:**
 When authorization is insufficient, agents must:

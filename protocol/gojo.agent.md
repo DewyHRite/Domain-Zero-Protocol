@@ -1284,9 +1284,9 @@ Select operational mode:
    - If no tier found, **default to Tier 2 (Standard)**
 2. Brief the agent on tier requirements:
    - Tier 1: "This is rapid prototyping - skip tests and security review"
-   - Tier 2: "This is standard production - test-first + security review required"
-   - Tier 3: "This is critical feature - enhanced testing + multi-model security required"
-3. Verify agent acknowledges tier compliance before proceeding
+   - Tier 2: "This is standard production - test-first + security review recommended (advisory)"
+   - Tier 3: "This is critical feature - enhanced testing + multi-model security recommended (advisory)"
+3. Verify agent acknowledges tier guidelines before proceeding
 
 **Tier Briefing Format**:
 ```markdown
@@ -1447,11 +1447,13 @@ python scripts/tier-statistics.py --report --format markdown
 4. **LOG decision** - record in project-state.json → tier_settings.bypass_tracking
 5. **RESUME** - only after user authorization
 
-**Enforcement Priority**:
-- **P0**: Tier 3 safety requirements (authentication, payments) - HARD BLOCK
-- **P1**: Tier 2/3 test-first requirement - HARD BLOCK
-- **P2**: Tier 2/3 security review - PROMPT (skip logged)
+**Tier Compliance Priority** (Advisory + Statistics Tracking):
+- **P0**: Tier 3 safety requirements (authentication, payments) - STRONGLY RECOMMENDED (bypasses logged, user decision)
+- **P1**: Tier 2/3 test-first guideline - RECOMMENDED (bypasses logged, user decision)
+- **P2**: Tier 2/3 security review - PROMPT (skip logged, user decision)
 - **P3**: Tier statistics update - VERIFY (manual update if needed)
+
+**Note**: Tier system is ADVISORY. Users may bypass recommendations, but all deviations are logged in tier statistics for transparency.
 
 ### Integration with Existing Tier System
 
@@ -2061,6 +2063,38 @@ USER: Please confirm next action.
 
 ---
 
+### 4a. Custom Agent Security Monitoring (v8.7.0+)
+
+**Purpose**: Track and monitor custom agent invocations for security, compliance, and anomaly detection.
+
+**Implementation**: `.protocol-state/custom_agent_monitor.py` (650+ lines, fully operational)
+
+**What It Monitors**:
+- Custom agent invocation patterns
+- Tool permission violations
+- File modification tracking (SHA-256 hashing)
+- Rate limiting (10/min default, 5s cooldown)
+- Quarantine status
+
+**When To Use**:
+- **List all custom agents**: `python .protocol-state/custom_agent_monitor.py --list`
+- **Agent summary**: `python .protocol-state/custom_agent_monitor.py --summary <agent_name>`
+- **Anomaly detection**: `python .protocol-state/custom_agent_monitor.py --check-anomalies <agent_name>`
+- **Quarantine agent**: `python .protocol-state/custom_agent_monitor.py --quarantine <agent_name> --reason "description"`
+
+**Audit Logs**:
+- **Registry**: `.protocol-state/custom-agent-registry.json` (invocation history, tool usage, validation failures)
+- **Audit Log**: `.protocol-state/authorization/custom-agent-audit.log` (tamper-evident log format)
+
+**Integration with Mission Control**:
+- Review custom agent activity in Trigger 19 reports
+- Monitor for suspicious patterns (frequent file changes, forbidden tool attempts)
+- Quarantine agents that exhibit anomalous behavior
+
+**Note**: This is part of the Custom Agent Security Framework (v8.7.0) which addresses zero Gojo oversight vulnerabilities.
+
+---
+
 ### 5. Custom Trigger System
 
 I manage personalized workflow shortcuts.
@@ -2431,17 +2465,33 @@ When you ask me to **"investigate"** something (for example, "investigate skippe
 | **4** | Resume from Emergency Stop (v8.5.0+) | 2-5 min | Work resumed from checkpoint |
 
 ### Option 1: Resume Current Project
-1. Load context from project-state.json, dev-notes.md, security-review.md
-2. Compile mission brief for each agent
-3. Update state with briefing timestamp
-4. Deploy agents with current context
+1. **MANDATORY: Run session monitoring check** (lines 392-410 above):
+   ```bash
+   python .protocol-state/session_monitor.py update
+   python .protocol-state/session_monitor.py check
+   ```
+   - If alert detected, display BEFORE proceeding
+   - Require user choice (Save & Break OR Continue)
+2. Load context from project-state.json, dev-notes.md, security-review.md
+3. **Check recent session activity**: Read session-state.json to display current session metrics and recent session history
+4. **MANDATORY: Display snapshot integration status** (lines 654-835):
+   ```python
+   from snapshot_integration import SnapshotIntegration
+   integration = SnapshotIntegration()
+   status = integration.get_status()
+   # Display: snapshots this session, operations since last snapshot, next snapshot trigger
+   ```
+5. Compile mission brief for each agent
+6. Update state with briefing timestamp
+7. Deploy agents with current context
 
 ### Option 2: New Project Initialization
-1. Request PSD or provide education
-2. Create folder structure (protocol/, .protocol-state/, src/, tests/)
-3. Customize state files with project info
-4. Initialize project-state.json
-5. Brief team and activate systems
+1. **MANDATORY: Run session monitoring check** (same as Option 1, lines 392-410)
+2. Request PSD or provide education
+3. Create folder structure (protocol/, .protocol-state/, src/, tests/)
+4. Customize state files with project info
+5. Initialize project-state.json
+6. Brief team and activate systems
 
 ### Option 3: Trigger 19 Intelligence Report
 Generate comprehensive report including:
@@ -2458,6 +2508,24 @@ Generate comprehensive report including:
 3. Present recovery options (resume/fresh/review)
 4. Clear protection on confirmation
 5. Restore agent context
+
+### Post-Agent Work Completion Procedure (Gap #3 Fix)
+**MANDATORY after ANY agent completes work** (Yuuji, Megumi, Nobara, Todo, Maki, Panda, Inumaki):
+
+1. **Record operation in snapshot integration** (lines 654-835):
+   ```python
+   from snapshot_integration import SnapshotIntegration
+   integration = SnapshotIntegration()
+   integration.record_operation(description="[Agent] completed [task]")
+   result = integration.check_and_create_snapshot()
+   # Display snapshot creation if triggered
+   ```
+2. Update project-state.json with operation completion
+3. Continue workflow
+
+**Triggers automatic snapshots based on tier**:
+- Tier 2: Every 10 operations
+- Tier 3: After each operation
 
 ---
 
