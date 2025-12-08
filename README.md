@@ -4,7 +4,7 @@
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v8.8.0**: Phase 4 - Tier Validation System + Dual Learning Systems (active tier enforcement, automatic statistics, Sukuna/Gojo learning with USER + PROJECT protection). See [What's New](#-version-information).
+> **New in v8.8.0**: Phase 4 - Tier Validation System + Dual Learning Systems + **Dual-AI Meta Prompt Workflow** (IDE AI generates prompts → Claude CLI executes). See [What's New](#-version-information).
 
 ---
 
@@ -1707,6 +1707,7 @@ Domain Zero is now set up in your project.
 **Major Enhancements**: Phase 4 - Tier Validation System + Dual Learning Systems
 
 **v8.8.0 Key Features**:
+- **🆕 Dual-AI Meta Prompt Workflow**: Use IDE AI (VS Code, Cursor, Antigravity) to generate prompts via `gojo.prompt.md`, then Claude CLI executes - 70-80% token savings with full project context
 - **Phase 4: Tier Validation System**: Active tier workflow completion with working directory verification, tier configuration (tier-defaults.yaml), agent tier validation sections
 - **Tier Statistics Tracking**: Automatic tier usage monitoring (tier-statistics.py), compliance rates, event logging (5 event types)
 - **Dual Learning Systems**: Sukuna learning (protocol patterns) + Gojo learning (tier selection patterns), opt-in by default with USER + PROJECT protection
@@ -1715,7 +1716,7 @@ Domain Zero is now set up in your project.
 - **Learning Protection**: Suggestions only (never automatic actions), instant disable, no pressure tactics, privacy-first
 
 **Version History**:
-- v8.8.0 - MINOR: Phase 4 - Tier Validation System + Dual Learning Systems (active tier enforcement, automatic statistics, Sukuna/Gojo learning with USER + PROJECT protection)
+- v8.8.0 - MINOR: Phase 4 - Tier Validation System + Dual Learning Systems + Dual-AI Meta Prompt Workflow (gojo.prompt.md for IDE-to-CLI workflow)
 - v8.7.0 - MINOR: Nine-Agent System (Sukuna formalized as 9th agent), documentation updated across all files
 - v8.5.1 - PATCH: Sukuna System Update Agent, Cross-Agent Edit Restrictions, Token Optimization via Modular Architecture
 - v8.5.0 - MINOR: Kill Switch Protocol, User Technical Level System, Emergency Stop coordination
