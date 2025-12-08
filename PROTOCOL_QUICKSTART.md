@@ -150,12 +150,12 @@ Read protocol/yuuji.agent.md --tier critical and implement OAuth2 authentication
    ```
 
 2. **In IDE AI** (e.g., Antigravity):
-   ```
+   ```bash
    "Read gojo.prompt.md and create a prompt for implementing user authentication"
    ```
 
 3. **In Claude CLI**:
-   ```
+   ```bash
    "Read prompt.md"
    ```
 

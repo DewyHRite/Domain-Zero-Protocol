@@ -609,7 +609,7 @@ cp /path/to/v8.8.0/gojo.prompt.md your-project/
 
 In your IDE AI:
 
-```
+```bash
 Read gojo.prompt.md and generate a prompt for implementing user authentication with JWT
 ```
 

@@ -655,8 +655,9 @@ Domain Zero includes a **meta prompt** (`gojo.prompt.md`) that generates orchest
 
 ### How It Works
 
-**Step 1: Generate the Prompt (IDE AI)**
-```
+#### Step 1: Generate the Prompt (IDE AI)
+
+```bash
 # In your IDE AI (e.g., Antigravity, Cursor)
 "Read gojo.prompt.md and generate a prompt for implementing user authentication"
 ```
@@ -667,8 +668,9 @@ The IDE AI will:
 - Auto-detect the appropriate tier
 - Generate a complete `prompt.md` file
 
-**Step 2: Execute the Prompt (Main AI)**
-```
+#### Step 2: Execute the Prompt (Main AI)
+
+```bash
 # In Claude CLI or your main AI
 "Read prompt.md"
 ```
