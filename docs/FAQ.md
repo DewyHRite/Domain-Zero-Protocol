@@ -2,13 +2,14 @@
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
 **Version:** v8.8.0
-**Last Updated:** 2025-12-02
+**Last Updated:** 2025-12-08
 
 ---
 
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+  - [What is the Dual-AI Meta Prompt workflow?](#what-is-the-dual-ai-meta-prompt-workflow) 🆕
 - [Tier System](#tier-system)
 - [Agent Behavior](#agent-behavior)
 - [Configuration](#configuration)
@@ -80,6 +81,33 @@ Domain Zero works with any AI assistant that can read files:
 - **Cursor** - Supports file reading, good IDE integration
 
 **Tip:** Use Claude or ChatGPT for workflow orchestration, Copilot for code completion.
+
+---
+
+### What is the Dual-AI Meta Prompt workflow?
+
+**The recommended way to use Domain Zero** for optimal token efficiency and project context.
+
+**How it works:**
+1. **IDE AI** (VS Code, Cursor, Antigravity, etc.) reads `gojo.prompt.md` and generates a `prompt.md` file
+2. **Main AI** (Claude CLI) executes the generated prompt by running `"Read prompt.md"`
+
+**Why use two AIs?**
+- IDE AI has full project context (files, structure, imports)
+- Saves 70-80% tokens on your main AI
+- Better prompts because IDE AI can reference actual code
+- Separation of concerns: generation vs execution
+
+**Example:**
+```bash
+# In IDE AI (e.g., Antigravity)
+"Read gojo.prompt.md and create a prompt for implementing user login"
+
+# In Claude CLI
+"Read prompt.md"
+```
+
+**See:** [Dual-AI Meta Prompt Workflow](../README.md#-dual-ai-meta-prompt-workflow-recommended) in README.md
 
 ---
 

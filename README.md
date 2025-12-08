@@ -203,6 +203,7 @@ Domain Zero is a nine-agent AI development system that provides specialized expe
 - [Mask Mode](#mask-mode) ⭐ NEW in v7.1.0
 - [Prerequisites & Optional Integrations](#-prerequisites--optional-integrations)
 - [Quick Setup](#-quick-setup)
+- [Dual-AI Meta Prompt Workflow](#-dual-ai-meta-prompt-workflow-recommended) 🆕 RECOMMENDED
 - [AI Assistant Integration & Canonical Source](#-ai-assistant-integration--canonical-source)
 - [Adaptive Workflow Complexity (Tier System)](#-adaptive-workflow-complexity-tier-system)
 - [Tier Selection Guide](#-tier-selection-guide)
@@ -629,6 +630,91 @@ Gojo will present Mission Control with 3 options:
 **How it works:** The MCP server exposes protocol files as tools that Claude Code can call directly, eliminating the need to read large markdown files repeatedly. Gojo will guide you through the setup process.
 
 See [`docs/installation/MCP_SERVER_SETUP.md`](docs/installation/MCP_SERVER_SETUP.md) for detailed instructions.
+
+---
+
+## 🎯 Dual-AI Meta Prompt Workflow (Recommended)
+
+**For optimal token efficiency and project context, use two AI assistants together.**
+
+Domain Zero includes a **meta prompt** (`gojo.prompt.md`) that generates orchestrated workflow prompts. This works best with a dual-AI setup:
+
+### The Two-AI Setup
+
+| AI Role | Recommended Tool | Purpose |
+|---------|-----------------|---------|
+| **Prompt Generator** | IDE built-in AI (VS Code, Cursor, Antigravity, etc.) | Reads `gojo.prompt.md`, generates `prompt.md` |
+| **Main Executor** | Claude CLI or primary AI | Executes the generated `prompt.md` |
+
+### Why This Works Better
+
+1. **Full Project Context**: IDE AI has complete access to your codebase, file structure, and project state
+2. **Token Savings**: The prompt generator handles the heavy lifting (reading protocols, analyzing context) - your main AI just executes
+3. **Better Prompts**: IDE AI can reference actual files, imports, and code patterns when generating prompts
+4. **Separation of Concerns**: Generation vs execution are distinct phases
+
+### How It Works
+
+**Step 1: Generate the Prompt (IDE AI)**
+```
+# In your IDE AI (e.g., Antigravity, Cursor)
+"Read gojo.prompt.md and generate a prompt for implementing user authentication"
+```
+
+The IDE AI will:
+- Read your project structure
+- Analyze the request
+- Auto-detect the appropriate tier
+- Generate a complete `prompt.md` file
+
+**Step 2: Execute the Prompt (Main AI)**
+```
+# In Claude CLI or your main AI
+"Read prompt.md"
+```
+
+Your main AI executes the pre-generated, context-rich prompt without needing to re-read all protocol files.
+
+### Example Workflow
+
+```bash
+# 1. Open your project in IDE with built-in AI
+cd your-project
+
+# 2. Ask IDE AI to generate prompt
+"Read gojo.prompt.md and create a prompt for adding Stripe payment integration"
+
+# 3. IDE AI creates prompt.md with:
+#    - Tier 3 (Critical) auto-detected
+#    - Yuuji + Megumi agents assigned
+#    - Pre-execution checks included
+#    - Project-specific context embedded
+
+# 4. In Claude CLI
+claude
+> "Read prompt.md"
+
+# 5. Claude CLI executes the complete workflow
+```
+
+### Supported IDE AIs
+
+| IDE AI | Integration | Notes |
+|--------|-------------|-------|
+| **VS Code + Copilot Chat** | Built-in extension | Use `@workspace` for project context |
+| **Antigravity** | VS Code extension | Full project context, excellent for DZP |
+| **Cursor** | Built-in | Excellent file access, auto-indexes project |
+| **Cody** | VS Code/JetBrains | Sourcegraph integration |
+| **Continue** | Open source | Multiple model support |
+
+### Benefits Summary
+
+- **70-80% token reduction** on main AI
+- **Better context** from IDE integration
+- **Faster iteration** with pre-built prompts
+- **Consistent quality** through standardized generation
+
+**Note**: You can still use the single-AI workflow (reading agent files directly) - the dual-AI approach is an optimization for power users.
 
 ---
 
