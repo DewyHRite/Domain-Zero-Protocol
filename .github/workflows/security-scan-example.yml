@@ -15,6 +15,7 @@ name: Security Scan (Example - Disabled)
 
 permissions:
   contents: read
+  security-events: write
 # This workflow is disabled by default - only runs on manual trigger
 # Uncomment additional events to enable automatic scanning:
 on:
