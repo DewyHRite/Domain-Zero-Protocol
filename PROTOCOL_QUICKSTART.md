@@ -133,6 +133,43 @@ Read protocol/yuuji.agent.md --tier critical and implement OAuth2 authentication
 
 ---
 
+## Step 6: Use Dual-AI Workflow (Recommended for Power Users)
+
+**For optimal token efficiency**, use two AI assistants together:
+
+| AI Role | Tool | Purpose |
+|---------|------|---------|
+| **Prompt Generator** | IDE AI (VS Code, Cursor, Antigravity, etc.) | Reads `gojo.prompt.md`, generates `prompt.md` |
+| **Main Executor** | Claude CLI | Executes the generated `prompt.md` |
+
+### Quick Setup
+
+1. **Copy meta prompt** to your project:
+   ```bash
+   cp /path/to/Domain-Zero/gojo.prompt.md your-project/
+   ```
+
+2. **In IDE AI** (e.g., Antigravity):
+   ```bash
+   "Read gojo.prompt.md and create a prompt for implementing user authentication"
+   ```
+
+3. **In Claude CLI**:
+   ```bash
+   "Read prompt.md"
+   ```
+
+### Why This Works
+
+- **IDE AI** has full project context (files, imports, structure)
+- **Token savings**: 70-80% reduction on main AI
+- **Better prompts**: IDE AI references actual code when generating
+- **Faster iteration**: Pre-built prompts execute immediately
+
+**See:** [Dual-AI Meta Prompt Workflow](README.md#-dual-ai-meta-prompt-workflow-recommended) in README.md for detailed setup.
+
+---
+
 ## You're Done! 🎉
 
 **What You Just Set Up**:

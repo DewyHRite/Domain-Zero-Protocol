@@ -16,6 +16,7 @@
   - [Claude Code (VS Code Extension)](#claude-code-vs-code-extension)
   - [GitHub Copilot](#github-copilot)
   - [Generic AI Setup](#generic-ai-setup)
+- [Dual-AI Meta Prompt Setup](#dual-ai-meta-prompt-setup-recommended) 🆕 RECOMMENDED
 - [Configuration](#configuration)
 - [Testing Your Setup](#testing-your-setup)
 - [Troubleshooting](#troubleshooting)
@@ -552,6 +553,125 @@ I need to implement a user registration feature for my web app. Use Tier 2 (Stan
 1. Read protocol/yuuji.agent.md and implement user registration
 2. After implementation, read protocol/megumi.agent.md and review the code
 ```
+
+---
+
+## Dual-AI Meta Prompt Setup (Recommended)
+
+**For power users**: Use two AI assistants together for optimal token efficiency and project context.
+
+### Overview
+
+Domain Zero includes `gojo.prompt.md`, a meta prompt that generates orchestrated workflow prompts. The recommended workflow:
+
+1. **IDE AI** (prompt generator) - VS Code, Cursor, Antigravity, etc. reads `gojo.prompt.md`, generates `prompt.md`
+2. **Main AI** (executor) - Claude CLI reads and executes `prompt.md`
+
+### Why Use Two AIs?
+
+| Benefit | Explanation |
+|---------|-------------|
+| **Full Project Context** | IDE AI has complete access to your codebase |
+| **Token Savings** | 70-80% reduction on main AI usage |
+| **Better Prompts** | IDE AI references actual files and code patterns |
+| **Faster Iteration** | Pre-built prompts execute immediately |
+
+### Setup Steps
+
+#### Step 1: Place the Meta Prompt
+
+Copy `gojo.prompt.md` to your project root:
+
+```bash
+cp /path/to/v8.8.0/gojo.prompt.md your-project/
+```
+
+#### Step 2: Configure IDE AI
+
+**For Antigravity** (Recommended):
+- Built-in AI has automatic project context
+- No additional configuration needed
+- Full file system access
+
+**For Cursor**:
+- Enable "Codebase" context in settings
+- Cursor automatically indexes your project
+
+**For GitHub Copilot Chat**:
+- Use `@workspace` to include project context
+- Example: `@workspace Read gojo.prompt.md and generate a prompt for...`
+
+**For Cody (Sourcegraph)**:
+- Enable repository indexing
+- Use `@repo` mention for full context
+
+#### Step 3: Generate Prompts
+
+In your IDE AI:
+
+```bash
+Read gojo.prompt.md and generate a prompt for implementing user authentication with JWT
+```
+
+The IDE AI will:
+1. Read your project structure
+2. Auto-detect Tier 3 (Critical) for authentication
+3. Generate `prompt.md` with:
+   - Pre-execution checks
+   - Agent assignments (Yuuji + Megumi)
+   - Project-specific context
+   - Success criteria
+
+#### Step 4: Execute in Main AI
+
+In Claude CLI:
+
+```bash
+claude
+> "Read prompt.md"
+```
+
+Claude executes the complete workflow without re-reading protocol files.
+
+### Example Session
+
+```bash
+# Terminal 1: IDE with Antigravity
+$ code your-project/
+
+# In Antigravity chat:
+"Read gojo.prompt.md and create a prompt for adding Stripe payment integration"
+
+# Antigravity generates prompt.md with:
+# - Tier 3 (Critical) auto-detected
+# - Yuuji + Megumi agents
+# - OWASP payment security checklist
+# - Your existing payment utils referenced
+
+# Terminal 2: Claude CLI
+$ cd your-project
+$ claude
+> "Read prompt.md"
+
+# Claude executes the pre-built workflow
+```
+
+### Tips for Dual-AI Workflow
+
+1. **Keep prompt.md in .gitignore** - It's session-specific
+2. **Review generated prompts** - Verify tier and agent selection
+3. **Iterate on generation** - Ask IDE AI to refine if needed
+4. **Use for complex tasks** - Simple tasks can use direct agent invocation
+
+### Supported IDE AIs
+
+| IDE AI | Context Quality | Setup Difficulty |
+|--------|----------------|------------------|
+| **VS Code + Copilot Chat** | Good | Use @workspace |
+| **Antigravity** | Excellent | None (VS Code extension) |
+| **Cursor** | Excellent | Minimal |
+| **Cody** | Good | Enable indexing |
+| **Continue** | Variable | Model-dependent |
 
 ---
 
