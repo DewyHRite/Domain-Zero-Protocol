@@ -466,7 +466,7 @@ test -f "./scripts/verify-protocol.sh" && "./scripts/verify-protocol.sh"
 ## 🔄 Workflow (Domain Zero Rules)
 
 1. **User** runs pre-execution checks
-2. **User** says "Read prompt.md"
+2. **User** says "/Gojo Read prompt.md assign correct agents and execute task."
 3. **Yuuji** implements (TDD for Tier 2/3)
 4. **Yuuji** tags @user-review
 5. **[USER ACTION]** Review and approve
