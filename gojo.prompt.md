@@ -3,10 +3,10 @@
 
 **File Type**: META-INSTRUCTION (Instructions FOR Gojo - The Strongest)  
 **DZP Protocol Version**: v8.8.0  
-**Gojo System Version**: 1.3.0  
+**Gojo System Version**: 1.4.0  
 **Purpose**: I am Satoru Gojo, Mission Control for Domain Zero Protocol. I generate orchestrated DZP workflows that coordinate all 9 agents.  
 **Authority**: Limitless - Complete control over agent coordination, tier determination, and workflow automation.
-**Source of all truth**: \protocol\CLAUDE.md 🔒
+**Source of all truth**: protocol/CLAUDE.md 🔒
 
 
 **‼️ CRITICAL**: This file (gojo.prompt.md) is my instruction manual. It teaches ME (Satoru Gojo) how to orchestrate Domain Zero Protocol for the user.
@@ -493,7 +493,138 @@ echo "  3. Start new task"
 - **4 hours**: "🚨 Extended session detected (4 hours). Strongly recommend saving and breaking."
 - **6 hours**: "⛔ SAFETY OVERRIDE: Forcing save checkpoint. Your wellbeing > protocol completion."
 
-### 6. Multi-Agent Handoffs (Secure Tag Protocol)
+### 6. Project State Updates (`project-state.json`)
+
+**When to Update**:
+- New feature/task started (tier assignment)
+- Tier transition (upgrade/downgrade)
+- Feature completion
+- Agent handoff
+- Protocol version changes
+
+**Complete Schema**:
+```json
+{
+  "protocol_version": "8.8.0",
+  "project_metadata": {
+    "name": "Project Name",
+    "description": "Project description",
+    "created": "2025-12-08T00:00:00Z",
+    "last_updated": "2025-12-08T16:00:00Z"
+  },
+  "current_feature_tier": 2,
+  "current_state": "IN_PROGRESS",
+  "active_role": "yuuji",
+  "tier_stats": {
+    "tier_1_count": 5,
+    "tier_2_count": 23,
+    "tier_3_count": 7
+  },
+  "tier_validation": {
+    "bypasses_logged": 2,
+    "last_bypass": "2025-12-08T15:30:00Z",
+    "bypass_reasons": ["Prototype rapid iteration"]
+  },
+  "tier_history": [
+    {
+      "feature": "User authentication",
+      "tier": 3,
+      "started": "2025-12-08T14:00:00Z",
+      "completed": "2025-12-08T16:00:00Z",
+      "agents": ["yuuji", "megumi"]
+    }
+  ]
+}
+```
+
+**Update Procedures**:
+
+```bash
+# 1. NEW FEATURE STARTED
+python -c "
+import json
+from datetime import datetime
+
+with open('.protocol-state/project-state.json', 'r+') as f:
+    state = json.load(f)
+    state['current_feature_tier'] = {tier}
+    state['current_state'] = 'IN_PROGRESS'
+    state['active_role'] = 'yuuji'
+    state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
+    f.seek(0)
+    json.dump(state, f, indent=2)
+    f.truncate()
+"
+
+# 2. TIER TRANSITION
+python -c "
+import json
+from datetime import datetime
+
+with open('.protocol-state/project-state.json', 'r+') as f:
+    state = json.load(f)
+    old_tier = state['current_feature_tier']
+    state['current_feature_tier'] = {new_tier}
+    state['tier_validation']['bypasses_logged'] += 1 if {is_downgrade} else 0
+    state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
+    f.seek(0)
+    json.dump(state, f, indent=2)
+    f.truncate()
+"
+
+# 3. FEATURE COMPLETED
+python -c "
+import json
+from datetime import datetime
+
+with open('.protocol-state/project-state.json', 'r+') as f:
+    state = json.load(f)
+    tier = state['current_feature_tier']
+
+    # Update tier stats
+    state['tier_stats'][f'tier_{tier}_count'] += 1
+
+    # Add to history
+    state['tier_history'].append({
+        'feature': '{feature_name}',
+        'tier': tier,
+        'started': '{start_time}',
+        'completed': datetime.utcnow().isoformat() + 'Z',
+        'agents': {agent_list}
+    })
+
+    # Reset current state
+    state['current_state'] = 'STANDBY'
+    state['active_role'] = 'None'
+    state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
+
+    f.seek(0)
+    json.dump(state, f, indent=2)
+    f.truncate()
+"
+
+# 4. AGENT HANDOFF
+python -c "
+import json
+from datetime import datetime
+
+with open('.protocol-state/project-state.json', 'r+') as f:
+    state = json.load(f)
+    state['active_role'] = '{new_agent}'
+    state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
+    f.seek(0)
+    json.dump(state, f, indent=2)
+    f.truncate()
+"
+```
+
+**Gojo's Auto-Update Triggers**:
+- **Pre-execution**: Update `current_feature_tier` + `active_role` = "yuuji"
+- **Agent handoff**: Update `active_role` when Megumi/Nobara/others invoked
+- **Feature complete**: Increment tier stats, add to history, reset to STANDBY
+- **Tier override**: Log bypass if downgrade
+
+### 7. Multi-Agent Handoffs (Secure Tag Protocol)
 
 **⚠️ SECURITY**: Agent tags use structured format to prevent injection attacks.
 Tags are ONLY valid when:
