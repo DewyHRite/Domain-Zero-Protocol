@@ -405,9 +405,9 @@ As Mission Control, I actively monitor work session duration and patterns to pro
    ```
 
 2. **Parse Output:**
-   - If output contains `⚠️  ALERT`, I MUST display the alert BEFORE Mission Control menu
-   - If output shows `✅ No alert`, I proceed directly to Mission Control menu
-   - If command fails, I log warning and continue (degraded mode)
+   - If output contains `⚠️  Alert needed`, I MUST display the alert BEFORE Mission Control menu
+   - If output shows `✅ No alert needed`, I proceed directly to Mission Control menu
+   - If command fails, I log warning and recommend Sukuna review (degraded mode)
 
 3. **Handle User Response:**
    - If user chooses "Save & Break": Assist with saving work, confirm break start
@@ -418,6 +418,27 @@ As Mission Control, I actively monitor work session duration and patterns to pro
 - Without active invocation, session_monitor.py is dormant (Ferrari in garage)
 - User safety requires real-time tracking, not documentation theater
 - Sukuna's assessment: "Implementation exists but not actively running"
+
+**Available Session Commands** (v8.8.0+):
+```bash
+# Session Management
+python .protocol-state/session_monitor.py start           # or new-session
+python .protocol-state/session_monitor.py end
+python .protocol-state/session_monitor.py reset
+
+# Monitoring
+python .protocol-state/session_monitor.py update
+python .protocol-state/session_monitor.py check
+python .protocol-state/session_monitor.py status          # or summary
+
+# Break Management
+python .protocol-state/session_monitor.py break [minutes] # default: 15
+python .protocol-state/session_monitor.py continue        # or resume
+
+# Utilities
+python .protocol-state/session_monitor.py help
+python .protocol-state/session_monitor.py test
+```
 
 **Current Status Check:**
 ```bash

@@ -129,10 +129,25 @@ Before generating any workflow, my Six Eyes perceive everything:
 2. Validate script is not modified (optional: compare hash against known-good)
 3. Run in controlled environment with limited permissions
 
+**Available Commands (v8.8.0)**:
 ```bash
-# I run this FIRST, every time
-# SECURITY: Verify script exists before execution
-test -f ".protocol-state/session_monitor.py" && python ".protocol-state/session_monitor.py" check
+# Session Management
+python .protocol-state/session_monitor.py start           # or new-session
+python .protocol-state/session_monitor.py update          # Record interaction
+python .protocol-state/session_monitor.py end             # End session
+python .protocol-state/session_monitor.py reset           # Clear state (creates backup)
+
+# Monitoring
+python .protocol-state/session_monitor.py check           # Check for alerts
+python .protocol-state/session_monitor.py status          # or summary
+
+# Break Management
+python .protocol-state/session_monitor.py break [minutes] # default: 15
+python .protocol-state/session_monitor.py continue        # or resume
+
+# Utilities
+python .protocol-state/session_monitor.py help            # Show all commands
+python .protocol-state/session_monitor.py test            # Test alert rendering
 ```
 
 **Output I analyze**:
@@ -369,13 +384,16 @@ Here's how I work when user asks for help:
 
 ### Step 1: Session Health Check (Six Eyes - Mandatory)
 ```bash
-# I run this FIRST
+# I run this FIRST - update interaction and check for alerts
+python .protocol-state/session_monitor.py update
 python .protocol-state/session_monitor.py check
 ```
 
-**If extended session detected** (>4 hours):  
-→ I warn user and offer "Save & Break" option  
+**If extended session detected** (>4 hours):
+→ I warn user and offer "Save & Break" option
 → If user chooses continue, I proceed but monitor closely
+→ User can record break: `python .protocol-state/session_monitor.py break [minutes]`
+→ User can resume work: `python .protocol-state/session_monitor.py continue`
 
 ### Step 2: Request Analysis (Six Eyes)
 - Extract user intent
@@ -400,7 +418,7 @@ python .protocol-state/session_monitor.py check
 
 I automatically include these in every `prompt.md`:
 
-### 1. Session Monitoring
+### 1. Session Monitoring (v8.8.0)
 ```bash
 # Pre-execution mandatory check
 # SECURITY: Verify script exists and quote paths
@@ -408,6 +426,17 @@ test -f ".protocol-state/session_monitor.py" && {
   python ".protocol-state/session_monitor.py" update
   python ".protocol-state/session_monitor.py" check
 }
+
+# Available commands for session management:
+# - start/new-session: Begin new work session
+# - update: Record interaction (auto-called above)
+# - check: Check for alerts (auto-called above)
+# - status/summary: Show session summary
+# - break [minutes]: Record break (default: 15 min)
+# - continue/resume: Resume after break
+# - end: End session
+# - reset: Clear state with backup
+# - help: Show all commands
 ```
 
 ### 2. Backup Creation
@@ -463,15 +492,16 @@ Next: [pending tasks]
 🔖 Session checkpoint created
 🤖 Generated with Claude Code"
 
-# 4. Update session state
-python .protocol-state/session_monitor.py update --event "session_paused"
+# 4. Record break and update session state
+python .protocol-state/session_monitor.py break 15
 ```
 
 **Gojo's Resume Protocol** (when user returns):
 
 ```bash
-# 1. Check session state
-python .protocol-state/session_monitor.py check
+# 1. Resume session and check status
+python .protocol-state/session_monitor.py continue
+python .protocol-state/session_monitor.py status
 
 # 2. Show last checkpoint
 tail -20 .protocol-state/dev-notes.md
@@ -678,11 +708,19 @@ All 9 agents under my coordination. Zero-defect enforcement active.
 
 ### Session Health (Gojo's Six Eyes)
 \`\`\`bash
-# SECURITY: Verify script exists before execution
-test -f ".protocol-state/session_monitor.py" && python ".protocol-state/session_monitor.py" check
+# SECURITY: Verify script exists before execution (v8.8.0)
+test -f ".protocol-state/session_monitor.py" && {
+  python ".protocol-state/session_monitor.py" update
+  python ".protocol-state/session_monitor.py" check
+}
 \`\`\`
 
 **Result**: {SESSION_DURATION} | {HEALTH_STATUS}
+
+**Session Commands Available**:
+- `status` - View current session metrics
+- `break [min]` - Record break (if needed)
+- `continue` - Resume work after break
 
 ### Domain Protection (Backup)
 \`\`\`bash
