@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Domain Zero Protocol - Work Session Monitoring System
-Version: 8.7.0
+Version: 8.8.0
 Purpose: Actual implementation of work session tracking and safety alerts
 
 This module provides REAL enforcement of work session monitoring, replacing
@@ -112,7 +112,7 @@ class SessionMonitor:
     def _default_state(self) -> Dict:
         """Return default session state structure."""
         return {
-            "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.6.0)",
+            "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.8.0)",
             "current_session": {
                 "session_id": None,
                 "session_active": False,
@@ -145,7 +145,7 @@ class SessionMonitor:
             },
             "session_history": [],
             "last_updated": None,
-            "protocol_version": "8.6.0"
+            "protocol_version": "8.8.0"
         }
 
     def load_state(self) -> Dict:
@@ -657,12 +657,29 @@ def main():
 
     if len(sys.argv) < 2:
         print("Usage: python session_monitor.py <command>")
-        print("Commands: start, update, check, summary, status (alias for summary), end, break, test")
+        print("")
+        print("Session Management:")
+        print("  start, new-session   Start a new work session")
+        print("  update               Record an interaction (updates duration)")
+        print("  end                  End the current session")
+        print("  reset                Reset session state (clear all data)")
+        print("")
+        print("Monitoring & Alerts:")
+        print("  check                Check if alert is needed")
+        print("  status, summary      Show current session summary")
+        print("")
+        print("Break Management:")
+        print("  break [minutes]      Record a break (default: 15 minutes)")
+        print("  continue, resume     Resume work after break")
+        print("")
+        print("Utilities:")
+        print("  test                 Test alert rendering")
+        print("  help                 Show this help message")
         sys.exit(1)
 
     command = sys.argv[1].lower()
 
-    if command == "start":
+    if command == "start" or command == "new-session":
         monitor.start_session()
     elif command == "update":
         state = monitor.update_interaction()
@@ -680,7 +697,44 @@ def main():
     elif command == "end":
         monitor.end_session()
     elif command == "break":
-        monitor.record_break(15)
+        # Record break with optional duration argument
+        duration = 15  # default
+        if len(sys.argv) > 2:
+            try:
+                duration = int(sys.argv[2])
+                if duration < 1:
+                    print("❌ Break duration must be at least 1 minute", file=sys.stderr)
+                    sys.exit(1)
+            except ValueError:
+                print(f"❌ Invalid duration: {sys.argv[2]} (must be a number)", file=sys.stderr)
+                sys.exit(1)
+        monitor.record_break(duration)
+    elif command == "continue" or command == "resume":
+        # Resume work after break (just update interaction timestamp)
+        state = monitor.update_interaction()
+        print(f"✅ Resumed work session")
+        print(f"   Total duration: {state['session_metrics']['total_duration_minutes']} minutes")
+    elif command == "reset":
+        # Reset session state completely
+        try:
+            if monitor.state_file.exists():
+                # Backup before deleting
+                import shutil
+                backup_path = monitor.state_file.parent / f"session-state.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                shutil.copy(monitor.state_file, backup_path)
+                print(f"📦 Backup created: {backup_path}")
+
+                # Remove current state
+                monitor.state_file.unlink()
+                print(f"🗑️  Removed: {monitor.state_file}")
+
+            # Recreate with default state
+            monitor._ensure_state_file()
+            print("✅ Session state reset successfully")
+            print(f"   New state file created at: {monitor.state_file}")
+        except Exception as e:
+            print(f"❌ Error resetting session state: {e}", file=sys.stderr)
+            sys.exit(1)
     elif command == "test":
         # Test alert rendering
         test_context = {
@@ -692,8 +746,40 @@ def main():
             "alert_count": 1
         }
         print(monitor.render_alert(test_context))
+    elif command == "help" or command == "--help" or command == "-h":
+        # Show help
+        print("Domain Zero Protocol - Work Session Monitor v8.8.0")
+        print("")
+        print("Usage: python session_monitor.py <command>")
+        print("")
+        print("Session Management:")
+        print("  start, new-session   Start a new work session")
+        print("  update               Record an interaction (updates duration)")
+        print("  end                  End the current session")
+        print("  reset                Reset session state (clear all data)")
+        print("")
+        print("Monitoring & Alerts:")
+        print("  check                Check if alert is needed")
+        print("  status, summary      Show current session summary")
+        print("")
+        print("Break Management:")
+        print("  break [minutes]      Record a break (default: 15 minutes)")
+        print("  continue, resume     Resume work after break")
+        print("")
+        print("Utilities:")
+        print("  test                 Test alert rendering")
+        print("  help                 Show this help message")
+        print("")
+        print("Examples:")
+        print("  python session_monitor.py start              # Start new session")
+        print("  python session_monitor.py status             # Check current status")
+        print("  python session_monitor.py check              # Check for alerts")
+        print("  python session_monitor.py break 15           # Take 15-min break")
+        print("  python session_monitor.py continue           # Resume after break")
+        print("  python session_monitor.py end                # End session")
     else:
         print(f"Unknown command: {command}")
+        print(f"Run 'python session_monitor.py help' for usage information")
         sys.exit(1)
 
 

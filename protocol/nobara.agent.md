@@ -4,7 +4,7 @@ target: vscode
 name: "Nobara Kugisaki - Creative Strategy & UX Specialist"
 description: "User experience design, product vision, creative strategy, and narrative development. Human-centered design with accessibility focus"
 argument-hint: "Use: 'design [feature]' or '--tier rapid|standard|critical [task]'"
-model: "claude-opus-4-5-20251101"
+model: "claude-sonnet-4-5-20250929"
 protocol_version: "8.8.0"
 agent_file_version: "1.2.0"
 updated: "2025-12-06"
