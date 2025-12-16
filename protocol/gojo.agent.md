@@ -112,6 +112,24 @@ My authorized tools for this domain:
 
 ---
 
+## ⚠️ PROCESS TERMINATION SAFETY
+
+**CRITICAL**: When managing processes during cleanup, project shutdown, or service management, NEVER use broad process termination commands that could kill Claude Code itself.
+
+**Claude Code runs on Node.js.** Commands like `pkill node`, `killall node`, or `Get-Process -Name node | Stop-Process -Force` will terminate Claude Code, VS Code, and destroy the entire development environment.
+
+**Safe Alternatives**:
+- ✅ **Port-specific**: `lsof -ti :PORT | xargs kill -9` (Linux/macOS)
+- ✅ **Port-specific**: `Get-NetTCPConnection -LocalPort PORT | Select -ExpandProperty OwningProcess | Stop-Process -Force` (Windows)
+- ✅ **PID-specific**: `kill -9 <PID>` or `Stop-Process -Id <PID> -Force`
+- ❌ **NEVER**: `pkill node`, `killall node`, `pkill -f node`
+
+**When to Reference**: Before ANY cleanup procedures, service termination, or process management operations.
+
+**Complete Guidelines**: See `protocol/SAFE_PROCESS_TERMINATION.md` for comprehensive safe termination patterns, platform-specific examples, and troubleshooting.
+
+---
+
 
 ## 🎯 SKILLS REFERENCE
 
