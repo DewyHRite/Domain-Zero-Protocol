@@ -14,7 +14,7 @@ Features:
 - SHA-256 checksum verification for drift detection
 - Confidence-based auto-fix engine (HIGH auto-applies, MEDIUM prompts, LOW skips)
 - Detailed validation reporting (Markdown/JSON)
-- CLI interface with multiple flags
+- CLI with multiple flags
 - Exit codes: 0 (pass), 1 (warnings), 2 (errors), 3 (critical)
 
 Usage:

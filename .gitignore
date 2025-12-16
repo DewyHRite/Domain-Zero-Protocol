@@ -58,6 +58,9 @@ Domain Zero Protocol v*/
 # Release folder - built/packaged versions (keep local, not in repo)
 release/
 
+# Patched folder - contains patches for other installations (local only)
+Patched/
+
 # Old version core-files directories (archived versions, not in repo)
 core-files-v8.4.1/
 core-files-v8.5.1/
@@ -195,6 +198,9 @@ tests/*
 # ============================================================================
 # IDE AND EDITOR FILES
 # ============================================================================
+
+# Pre-commit hooks configuration (local development tool)
+.pre-commit-config.yaml
 
 # Claude Code settings (local user configuration)
 .claude/

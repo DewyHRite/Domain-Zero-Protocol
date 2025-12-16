@@ -24,7 +24,7 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 ## 🛡️ HOW AI AGENTS USE THIS FILE
 
 ### During Fresh Installation
-```
+```text
 1. AI reads SUKUNA-REPORT.md
 2. Identifies patches marked "REQUIRED FOR NEW INSTALLATIONS"
 3. Implements applicable patches during setup
@@ -32,7 +32,7 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 ```
 
 ### During In-Place Upgrade
-```
+```text
 1. AI reads current protocol version from project-state.json
 2. AI reads SUKUNA-REPORT.md
 3. Filters patches by: current_version < patch.applies_to_version
@@ -41,7 +41,7 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 ```
 
 ### During Security Review
-```
+```text
 1. Megumi conducts threat model or security audit
 2. Megumi identifies vulnerabilities and creates remediation code
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
@@ -82,7 +82,6 @@ Each patch entry follows this format:
 **Rollback**:
 ```bash
 [Commands to undo patch if needed]
-```
 ```
 
 ---
@@ -831,7 +830,7 @@ git diff protocol/gojo.agent.md protocol/panda.agent.md protocol/yuuji.agent.md
 3. **Sukuna reviews and adds to SUKUNA-REPORT.md**:
    - Assigns PATCH-ID
    - Categorizes and prioritizes
-   - Ensures code is copy-paste ready
+   - Ensures code is copy-paste-ready
    - Adds to manifest
 
 4. **AI agents auto-apply** on next:
