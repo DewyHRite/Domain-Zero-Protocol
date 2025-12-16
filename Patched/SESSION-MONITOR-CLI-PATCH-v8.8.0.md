@@ -180,17 +180,18 @@ test -f .protocol-state/session_monitor.py && echo "EXISTS" || echo "MISSING"
 #### Step 2: Create Backups (MANDATORY)
 
 ```bash
-# Create timestamped backup directory
-mkdir -p ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)"
+# Create timestamped backup directory (capture timestamp once to avoid re-evaluation bug)
+BACKUP_DIR=".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$BACKUP_DIR"
 
 # Backup all files being modified
-cp ".protocol-state/session_monitor.py" ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)/"
-cp "protocol/gojo.agent.md" ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)/"
-cp ".protocol-state/gojo-session-monitoring-guide.md" ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)/"
-cp "gojo.prompt.md" ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)/"
-cp ".protocol-state/session-state.example.json" ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)/"
+cp ".protocol-state/session_monitor.py" "$BACKUP_DIR/"
+cp "protocol/gojo.agent.md" "$BACKUP_DIR/"
+cp ".protocol-state/gojo-session-monitoring-guide.md" "$BACKUP_DIR/"
+cp "gojo.prompt.md" "$BACKUP_DIR/"
+cp ".protocol-state/session-state.example.json" "$BACKUP_DIR/"
 
-echo "✅ Backups created"
+echo "✅ Backups created in: $BACKUP_DIR"
 ```
 
 #### Step 3: Apply Code Changes

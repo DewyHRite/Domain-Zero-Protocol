@@ -740,13 +740,20 @@ A nine-agent AI development system that provides specialized expertise through d
 #### System Update Agent (Special)
 
 **RYOMEN SUKUNA** (System Update Adversary)
-- **Role**: Protocol updates, version migrations, risk assessment, red-team reviews
+- **Role**: Protocol updates, version migrations, risk assessment, red-team reviews, patch management
 - **File**: sukuna.agent.md
 - **Personality**: Adversarial-but-aligned, sardonic, critical, principled
 - **Cursed Technique**: Malevolent Shrine (System Update Framework - comprehensive protocol modifications)
 - **Access**: Read/Write to protocol files (via Gojo coordination and User approval only)
-- **Invoke**: Via Gojo only: "Read gojo.agent.md and engage Sukuna to [update task]"
+- **Invoke**: Via Gojo only: "Read gojo.agent.md and engage Sukuna to [update task]" OR via /sukuna slash command
 - **Relationship to Gojo**: Enemies by design, allies by purpose - adversarial dynamic ensures thorough reviews
+- **NEW IN v8.8.0**: **Required collaboration with Megumi** for all DZP development and system updates
+- **NEW IN v8.8.0**: **Maintains SUKUNA-REPORT.md** - Self-service patch manifest for AI-assisted patch application
+
+**Sukuna-Megumi Workflow** (v8.8.0+):
+1. Megumi identifies vulnerabilities → creates remediation → tags @remediation-required
+2. Sukuna reviews with adversarial mindset → stress-tests fixes → adds to SUKUNA-REPORT.md
+3. AI agents auto-apply patches during setup/upgrade by reading SUKUNA-REPORT.md
 
 **Important**: Sukuna is NOT a general-purpose agent. Only Gojo or the User may invoke Sukuna. All other agents must treat Sukuna as a higher-level authority they cannot command directly.
 
@@ -1916,6 +1923,7 @@ Domain-Zero/                              # Project root
 │   ├── nobara.agent.md                   # Creative strategy agent
 │   ├── gojo.agent.md                     # Mission Control & Protocol Guardian
 │   ├── sukuna.agent.md                   # System Update Adversary (Gojo-invoked)
+│   ├── SUKUNA-REPORT.md 🔧               # Self-Service Patch Manifest (v8.8.0+ NEW)
 │   ├── todo.agent.md                     # Database & Backend specialist
 │   ├── maki.agent.md                     # Performance optimization specialist
 │   ├── panda.agent.md                    # Build & Integration specialist
@@ -2199,6 +2207,45 @@ Create personalized workflow shortcuts for common operations.
 "Read gojo.agent.md - Set trigger: start → Resume Project"
 "Read gojo.agent.md - Set trigger: status → Mission Status Check"
 ```
+
+---
+
+### Self-Service Patch System (v8.8.0+)
+
+**NEW IN v8.8.0**: SUKUNA-REPORT.md enables AI-assisted self-service patching.
+
+**How It Works**:
+- Megumi identifies vulnerabilities and creates remediation code
+- Sukuna reviews with adversarial mindset and adds to SUKUNA-REPORT.md
+- AI agents automatically read the patch manifest during setup/upgrade
+- Patches are applied automatically based on version and priority
+
+**Benefits**:
+- ✅ No manual patching across installations
+- ✅ Scalable: One patch entry updates all future installations
+- ✅ Traceable: Version tracking, priority levels, rollback procedures
+- ✅ Safe: All patches include validation and rollback steps
+
+**Sukuna-Megumi Collaboration Workflow**:
+```
+1. Security Review:
+   "Read protocol/megumi.agent.md and threat model [feature]"
+
+2. Implementation with Adversarial Review:
+   "Read protocol/sukuna.agent.md and implement Megumi's recommendations"
+
+3. Automatic Patch Distribution:
+   Sukuna adds patch to SUKUNA-REPORT.md
+   AI agents apply on next setup/upgrade
+```
+
+**Patch Types**:
+- **Security Patches** (P0-P3): Vulnerability fixes with OWASP mapping
+- **Performance Patches**: Optimization improvements
+- **Bugfix Patches**: Protocol bug corrections
+- **Enhancement Patches**: New features and capabilities
+
+**See**: `protocol/SUKUNA-REPORT.md` for complete patch manifest and implementation details.
 
 ---
 

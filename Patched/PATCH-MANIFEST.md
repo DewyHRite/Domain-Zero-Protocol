@@ -71,9 +71,12 @@ This patch addresses **all 6 gaps** identified in the comprehensive gap analysis
 
 1. **Backup your current files**:
    ```bash
-   mkdir -p .protocol-state/backups/pre-gap-patch-$(date +%Y%m%d-%H%M%S)
-   cp protocol/gojo.agent.md .protocol-state/backups/pre-gap-patch-*/
-   cp protocol/CLAUDE.md .protocol-state/backups/pre-gap-patch-*/
+   # Capture timestamp once to avoid re-evaluation bug
+   BACKUP_DIR=".protocol-state/backups/pre-gap-patch-$(date +%Y%m%d-%H%M%S)"
+   mkdir -p "$BACKUP_DIR"
+   cp protocol/gojo.agent.md "$BACKUP_DIR/"
+   cp protocol/CLAUDE.md "$BACKUP_DIR/"
+   echo "✅ Backups created in: $BACKUP_DIR"
    ```
 
 2. **Copy patched files** (from this Patched folder):

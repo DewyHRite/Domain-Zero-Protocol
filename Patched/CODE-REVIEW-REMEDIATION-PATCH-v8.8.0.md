@@ -164,17 +164,18 @@ test -f protocol/yuuji.agent.md && echo "EXISTS" || echo "MISSING"
 #### Step 2: Create Backups (MANDATORY)
 
 ```bash
-# Create timestamped backup directory
-mkdir -p ".protocol-state/backups/code-review-remediation-$(date +%Y%m%d_%H%M%S)"
+# Create timestamped backup directory (capture timestamp once to avoid re-evaluation bug)
+BACKUP_DIR=".protocol-state/backups/code-review-remediation-$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$BACKUP_DIR"
 
 # Backup all files being modified
-cp "gojo.prompt.md" ".protocol-state/backups/code-review-remediation-$(date +%Y%m%d_%H%M%S)/"
-cp "SESSION_MONITOR_CLI_UPDATE_v8.8.0.md" ".protocol-state/backups/code-review-remediation-$(date +%Y%m%d_%H%M%S)/"
-cp "Patched/SESSION-MONITOR-CLI-PATCH-v8.8.0.md" ".protocol-state/backups/code-review-remediation-$(date +%Y%m%d_%H%M%S)/"
-cp "protocol/yuuji.agent.md" ".protocol-state/backups/code-review-remediation-$(date +%Y%m%d_%H%M%S)/"
-cp "protocol/nobara.agent.md" ".protocol-state/backups/code-review-remediation-$(date +%Y%m%d_%H%M%S)/"
+cp "gojo.prompt.md" "$BACKUP_DIR/"
+cp "SESSION_MONITOR_CLI_UPDATE_v8.8.0.md" "$BACKUP_DIR/"
+cp "Patched/SESSION-MONITOR-CLI-PATCH-v8.8.0.md" "$BACKUP_DIR/"
+cp "protocol/yuuji.agent.md" "$BACKUP_DIR/"
+cp "protocol/nobara.agent.md" "$BACKUP_DIR/"
 
-echo "✅ Backups created"
+echo "✅ Backups created in: $BACKUP_DIR"
 ```
 
 #### Step 3: Apply Changes

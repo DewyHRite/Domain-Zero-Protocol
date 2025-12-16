@@ -536,9 +536,11 @@ copy /Y "Domain Zero Protocol v8.8.0\.gitignore" "your-project\"
 
 #### Step 1: Backup First (MANDATORY)
 ```bash
-# Create timestamped backup including .protocol-state/
-mkdir -p backup/dzp-pre-upgrade-$(date +%Y%m%d)
-cp -r protocol/ .protocol-state/ protocol.config.yaml backup/dzp-pre-upgrade-$(date +%Y%m%d)/
+# Create timestamped backup including .protocol-state/ (capture timestamp once)
+BACKUP_DIR="backup/dzp-pre-upgrade-$(date +%Y%m%d)"
+mkdir -p "$BACKUP_DIR"
+cp -r protocol/ .protocol-state/ protocol.config.yaml "$BACKUP_DIR/"
+echo "✅ Backup created in: $BACKUP_DIR"
 ```
 
 #### Step 2: Sync Protocol Files Only (Safe to Overwrite)
@@ -1735,6 +1737,60 @@ Domain Zero is now set up in your project.
 - v3.0 - Dual Workflow Implementation
 - v2.0 - Three-Agent Architecture
 - v1.0 - Initial Single-Agent System
+
+---
+
+## 🔧 Self-Service Patch System (v8.8.0+)
+
+**NEW IN v8.8.0**: Domain Zero Protocol now includes **SUKUNA-REPORT.md** - a living patch manifest that enables AI-assisted self-service patching.
+
+### How It Works
+
+Instead of manually updating your DZP installation for every patch, AI agents **read the patch manifest and auto-apply updates** during:
+- Fresh installation setup
+- In-place protocol upgrades
+- Security reviews
+
+### SUKUNA-REPORT.md
+
+**Location**: `protocol/SUKUNA-REPORT.md`
+
+**Contains**:
+- Complete patch catalog with version tracking
+- Self-contained, copy-paste ready code
+- Validation and rollback procedures
+- Priority levels (P0-Critical to P3-Low)
+- Implementation status tracking
+
+### Sukuna + Megumi Collaboration
+
+**NEW IN v8.8.0**: Sukuna (System Update Adversary) and Megumi (Security Analyst) now work together on all DZP development:
+
+1. **Megumi identifies vulnerabilities** through threat modeling and security audits
+2. **Megumi creates remediation** with complete fix code and validation
+3. **Sukuna reviews with adversarial mindset**, stress-tests fixes, and adds to SUKUNA-REPORT.md
+4. **AI agents auto-apply patches** on next setup/upgrade
+
+**Workflow**:
+```bash
+# Security review
+"Read protocol/megumi.agent.md and threat model [feature]"
+
+# Implementation with adversarial review
+"Read protocol/sukuna.agent.md and implement Megumi's recommendations"
+
+# Patches automatically added to SUKUNA-REPORT.md
+# Other AI agents will apply them during future installations
+```
+
+### Benefits
+
+✅ **No Manual Patching**: AI reads SUKUNA-REPORT.md and applies patches automatically
+✅ **Scalable**: One patch entry updates all future installations
+✅ **Traceable**: Every patch has version, priority, status, and rollback
+✅ **Safe**: All patches include validation and rollback procedures
+
+**See**: `protocol/SUKUNA-REPORT.md` for the complete patch manifest
 
 ---
 

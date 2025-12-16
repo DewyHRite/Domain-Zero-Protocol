@@ -76,11 +76,13 @@ After copying, customize `.protocol-state/project-state.json` with your project 
 
 #### Step 1: Backup (MANDATORY)
 ```bash
-# Create timestamped backup of ALL existing files including .protocol-state/
-mkdir -p backup/dzp-pre-upgrade-$(date +%Y%m%d)
-cp -r protocol/ backup/dzp-pre-upgrade-$(date +%Y%m%d)/
-cp -r .protocol-state/ backup/dzp-pre-upgrade-$(date +%Y%m%d)/
-cp protocol.config.yaml backup/dzp-pre-upgrade-$(date +%Y%m%d)/
+# Create timestamped backup of ALL existing files including .protocol-state/ (capture timestamp once)
+BACKUP_DIR="backup/dzp-pre-upgrade-$(date +%Y%m%d)"
+mkdir -p "$BACKUP_DIR"
+cp -r protocol/ "$BACKUP_DIR/"
+cp -r .protocol-state/ "$BACKUP_DIR/"
+cp protocol.config.yaml "$BACKUP_DIR/"
+echo "✅ Backup created in: $BACKUP_DIR"
 ```
 
 #### Step 2: Sync Protocol Files ONLY (Safe to Overwrite)
