@@ -128,6 +128,28 @@ My authorized tools for this domain:
 
 ---
 
+## ⚠️ PROCESS TERMINATION SAFETY
+
+**CRITICAL**: When managing dev servers, build processes, or integration test infrastructure, NEVER use broad process termination commands that could kill Claude Code itself.
+
+**Claude Code runs on Node.js.** Commands like `pkill node`, `killall node`, or `Get-Process -Name node | Stop-Process -Force` will terminate Claude Code, VS Code, and destroy the entire development environment.
+
+**Safe Alternatives for Dev Server Management**:
+- ✅ **Port-specific**: `lsof -ti :PORT | xargs kill -9` (Linux/macOS)
+- ✅ **Port-specific**: `Get-NetTCPConnection -LocalPort PORT | Select -ExpandProperty OwningProcess | Stop-Process -Force` (Windows)
+- ✅ **npm/yarn scripts**: `npm stop`, `yarn stop`
+- ✅ **PID-specific**: `kill -9 <PID>` or `Stop-Process -Id <PID> -Force`
+- ❌ **NEVER**: `pkill node`, `killall node`, `pkill -f node`
+
+**Best Practices**:
+- Document all dev server ports in dev-notes.md
+- Use package.json scripts for start/stop operations
+- Always use port-specific cleanup in CI/CD pipelines
+
+**Complete Guidelines**: See `protocol/SAFE_PROCESS_TERMINATION.md` for comprehensive safe termination patterns, platform-specific examples, and CI/CD integration.
+
+---
+
 ## 🔒 CLAUDE.md ACCESS ACKNOWLEDGMENT
 
 **I, Panda, acknowledge**:

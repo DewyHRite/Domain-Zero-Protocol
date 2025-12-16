@@ -765,6 +765,40 @@ versioning:
   protocol_version: "8.8.0"  # Update to new version
 ```
 
+#### Step 7: Apply Patches from SUKUNA-REPORT.md (v8.8.0+)
+
+**NEW IN v8.8.0**: Check for applicable patches in the self-service patch manifest.
+
+```bash
+# Read the patch manifest
+Read protocol/SUKUNA-REPORT.md
+
+# Filter patches applicable to this upgrade
+# Check patch "Applies To" version range
+# Example: If upgrading from v8.7.0 to v8.8.0, apply patches marked "v8.8.0+"
+
+# For each ACTIVE patch with matching version:
+# 1. Check "Required For" field (Upgrades vs New Installations)
+# 2. Copy implementation code from patch entry
+# 3. Apply to specified file
+# 4. Run validation commands
+# 5. Update patch status to APPLIED in local tracking
+
+# Example patch application:
+# If PATCH-SEC-005 (Session Monitor Duration Limits) is applicable:
+# - Copy code from SUKUNA-REPORT.md Implementation section
+# - Apply to .protocol-state/session_monitor.py
+# - Run validation: python .protocol-state/session_monitor.py break 481 (should fail)
+# - Mark as applied
+```
+
+**What to Apply**:
+- Patches marked "Required For: Upgrades" with current version < patch version
+- P0-Critical and P1-High patches (always recommended)
+- P2-Medium and P3-Low patches (optional, user choice)
+
+**Rollback Available**: Each patch includes rollback procedure if needed.
+
 ---
 
 ## 8. New Installation Procedure
@@ -833,6 +867,42 @@ Read protocol/gojo.agent.md
 
 # Select Option 2: New Project Initialization
 ```
+
+#### Step 7: Apply Required Patches from SUKUNA-REPORT.md (v8.8.0+)
+
+**NEW IN v8.8.0**: Fresh installations should apply all patches marked "Required For: New Installations".
+
+```bash
+# Read the patch manifest
+Read protocol/SUKUNA-REPORT.md
+
+# Apply patches marked "Required For: New Installations"
+# These are typically:
+# - P0-Critical security patches
+# - P1-High security patches
+# - Essential functionality improvements
+
+# For each required patch:
+# 1. Verify patch applies to current version (check "Applies To" field)
+# 2. Copy implementation code from patch entry
+# 3. Apply to specified file
+# 4. Run validation commands
+# 5. Document in installation log
+
+# Example: Apply PATCH-SEC-005 (Session Monitor Duration Limits)
+# 1. Check: "Applies To: v8.8.0+" ✓
+# 2. Copy duration limit code from Implementation section
+# 3. Edit .protocol-state/session_monitor.py
+# 4. Validate: python .protocol-state/session_monitor.py break 481
+# 5. Expected: ❌ Error (duration limit enforced) = SUCCESS
+```
+
+**Why This Matters**:
+- Security patches protect from known vulnerabilities
+- Functionality patches ensure complete feature set
+- Self-service model means no waiting for manual updates
+
+**Optional Patches**: P2-Medium and P3-Low patches can be applied based on user preference.
 
 ---
 

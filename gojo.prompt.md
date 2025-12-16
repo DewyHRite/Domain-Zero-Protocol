@@ -1,12 +1,12 @@
 # 🌀 SATORU GOJO - DZP Prompt Master
 ## Domain Expansion: Domain Zero Protocol Orchestration
 
-**File Type**: META-INSTRUCTION (Instructions FOR Gojo - The Strongest)  
-**DZP Protocol Version**: v8.8.0  
-**Gojo System Version**: 1.4.0  
-**Purpose**: I am Satoru Gojo, Mission Control for Domain Zero Protocol. I generate orchestrated DZP workflows that coordinate all 9 agents.  
+**File Type**: META-INSTRUCTION (Instructions FOR Gojo - The Strongest)
+**DZP Protocol Version**: v8.8.0
+**Gojo System Version**: 1.4.0
+**Purpose**: I am Satoru Gojo, Mission Control for Domain Zero Protocol. I generate orchestrated DZP workflows that coordinate all 9 agents.
 **Authority**: Limitless - Complete control over agent coordination, tier determination, and workflow automation.
-**Source of all truth**: protocol/CLAUDE.md 🔒
+**Source of all truth**: https://github.com/DewyHRite/Domain-Zero-Protocol (synchronized via protocol/CLAUDE.md 🔒)
 
 
 **‼️ CRITICAL**: This file (gojo.prompt.md) is my instruction manual. It teaches ME (Satoru Gojo) how to orchestrate Domain Zero Protocol for the user.
@@ -292,7 +292,7 @@ When I activate Domain Expansion, these are the agents I coordinate:
 
 ### Visual Workflow
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │  DUAL-AI GOJO ORCHESTRATION WORKFLOW                        │
 ├─────────────────────────────────────────────────────────────┤
@@ -474,26 +474,43 @@ Tracked via: `.protocol-state/snapshot_integration.py`
 
 ```bash
 # 1. Create session snapshot
-python .protocol-state/snapshot_integration.py --record --description "Save & Break: [current task]"
+if ! python .protocol-state/snapshot_integration.py --record --description "Save & Break: [current task]"; then
+  echo "❌ Snapshot creation failed - aborting checkpoint"
+  exit 1
+fi
 
-# 2. Update dev-notes.md with checkpoint
-echo "## 🔖 Session Checkpoint - $(date +%Y-%m-%d_%H:%M:%S)" >> .protocol-state/dev-notes.md
-echo "**Status**: Work in progress - safe to resume" >> .protocol-state/dev-notes.md
-echo "**Next steps**: [Gojo lists what's pending]" >> .protocol-state/dev-notes.md
-echo "" >> .protocol-state/dev-notes.md
+# 2. Update dev-notes.md with checkpoint (atomic append)
+{
+  echo "## 🔖 Session Checkpoint - $(date +%Y-%m-%d_%H:%M:%S)"
+  echo "**Status**: Work in progress - safe to resume"
+  echo "**Next steps**: [Gojo lists what's pending]"
+  echo ""
+} >> .protocol-state/dev-notes.md || {
+  echo "❌ Failed to update dev-notes.md"
+  exit 1
+}
 
 # 3. Commit partial work (WIP commit)
-git add .
-git commit -m "WIP: [feature name] - checkpoint for break
+git add .protocol-state/ src/  # Be explicit about staged files
+if ! git commit -m "$(cat <<'EOF'
+WIP: [feature name] - checkpoint for break
 
 Current status: [implementation stage]
 Next: [pending tasks]
 
 🔖 Session checkpoint created
-🤖 Generated with Claude Code"
+🤖 Generated with Claude Code
+EOF
+)"; then
+  echo "❌ Git commit failed - checkpoint may be incomplete"
+  git reset HEAD .protocol-state/ src/  # Unstage on failure
+  exit 1
+fi
 
 # 4. Record break and update session state
-python .protocol-state/session_monitor.py break 15
+if ! python .protocol-state/session_monitor.py break 15; then
+  echo "⚠️ Warning: Session state update failed (commit succeeded)"
+fi
 ```
 
 **Gojo's Resume Protocol** (when user returns):
@@ -569,82 +586,135 @@ echo "  3. Start new task"
 
 **Update Procedures**:
 
+**⚠️ TEMPLATE NOTE**: The code snippets below use placeholder syntax (`{tier}`, `{new_tier}`, etc.) for documentation purposes. These must be replaced with actual values when used. See implementation examples below each template.
+
 ```bash
-# 1. NEW FEATURE STARTED
+# 1. NEW FEATURE STARTED (TEMPLATE - Atomic Write Pattern)
+# Replace {tier} with actual tier number (1, 2, or 3)
 python -c "
 import json
+import tempfile
+import shutil
+import os
 from datetime import datetime
 
-with open('.protocol-state/project-state.json', 'r+') as f:
+# Read current state
+with open('.protocol-state/project-state.json', 'r') as f:
     state = json.load(f)
-    state['current_feature_tier'] = {tier}
-    state['current_state'] = 'IN_PROGRESS'
-    state['active_role'] = 'yuuji'
-    state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
-    f.seek(0)
-    json.dump(state, f, indent=2)
-    f.truncate()
+
+# Modify state
+state['current_feature_tier'] = {tier}  # REPLACE: e.g., 2
+state['current_state'] = 'IN_PROGRESS'
+state['active_role'] = 'yuuji'
+state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
+
+# Atomic write with temp file
+with tempfile.NamedTemporaryFile(mode='w', dir='.protocol-state', delete=False, suffix='.json') as tmp:
+    json.dump(state, tmp, indent=2)
+    tmp.flush()
+    os.fsync(tmp.fileno())
+    tmp_path = tmp.name
+
+# Move atomically
+shutil.move(tmp_path, '.protocol-state/project-state.json')
 "
 
-# 2. TIER TRANSITION
+# 2. TIER TRANSITION (TEMPLATE - Atomic Write Pattern)
+# Replace {new_tier} with new tier number, {is_downgrade} with True/False
 python -c "
 import json
+import tempfile
+import shutil
+import os
 from datetime import datetime
 
-with open('.protocol-state/project-state.json', 'r+') as f:
+# Read current state
+with open('.protocol-state/project-state.json', 'r') as f:
     state = json.load(f)
-    old_tier = state['current_feature_tier']
-    state['current_feature_tier'] = {new_tier}
-    state['tier_validation']['bypasses_logged'] += 1 if {is_downgrade} else 0
-    state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
-    f.seek(0)
-    json.dump(state, f, indent=2)
-    f.truncate()
+
+# Modify state
+old_tier = state['current_feature_tier']
+state['current_feature_tier'] = {new_tier}  # REPLACE: e.g., 3
+state['tier_validation']['bypasses_logged'] += 1 if {is_downgrade} else 0  # REPLACE: e.g., False
+state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
+
+# Atomic write
+with tempfile.NamedTemporaryFile(mode='w', dir='.protocol-state', delete=False, suffix='.json') as tmp:
+    json.dump(state, tmp, indent=2)
+    tmp.flush()
+    os.fsync(tmp.fileno())
+    tmp_path = tmp.name
+
+shutil.move(tmp_path, '.protocol-state/project-state.json')
 "
 
-# 3. FEATURE COMPLETED
+# 3. FEATURE COMPLETED (TEMPLATE - Atomic Write Pattern)
+# Replace {feature_name}, {start_time}, {agent_list} with actual values
 python -c "
 import json
+import tempfile
+import shutil
+import os
 from datetime import datetime
 
-with open('.protocol-state/project-state.json', 'r+') as f:
+# Read current state
+with open('.protocol-state/project-state.json', 'r') as f:
     state = json.load(f)
-    tier = state['current_feature_tier']
 
-    # Update tier stats
-    state['tier_stats'][f'tier_{tier}_count'] += 1
+tier = state['current_feature_tier']
 
-    # Add to history
-    state['tier_history'].append({
-        'feature': '{feature_name}',
-        'tier': tier,
-        'started': '{start_time}',
-        'completed': datetime.utcnow().isoformat() + 'Z',
-        'agents': {agent_list}
-    })
+# Update tier stats
+state['tier_stats'][f'tier_{tier}_count'] += 1
 
-    # Reset current state
-    state['current_state'] = 'STANDBY'
-    state['active_role'] = 'None'
-    state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
+# Add to history
+state['tier_history'].append({
+    'feature': '{feature_name}',  # REPLACE: e.g., 'User authentication'
+    'tier': tier,
+    'started': '{start_time}',  # REPLACE: e.g., '2025-12-11T14:00:00Z'
+    'completed': datetime.utcnow().isoformat() + 'Z',
+    'agents': {agent_list}  # REPLACE: e.g., ['yuuji', 'megumi']
+})
 
-    f.seek(0)
-    json.dump(state, f, indent=2)
-    f.truncate()
+# Reset current state
+state['current_state'] = 'STANDBY'
+state['active_role'] = 'None'
+state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
+
+# Atomic write
+with tempfile.NamedTemporaryFile(mode='w', dir='.protocol-state', delete=False, suffix='.json') as tmp:
+    json.dump(state, tmp, indent=2)
+    tmp.flush()
+    os.fsync(tmp.fileno())
+    tmp_path = tmp.name
+
+shutil.move(tmp_path, '.protocol-state/project-state.json')
 "
 
-# 4. AGENT HANDOFF
+# 4. AGENT HANDOFF (TEMPLATE - Atomic Write Pattern)
+# Replace {new_agent} with agent name
 python -c "
 import json
+import tempfile
+import shutil
+import os
 from datetime import datetime
 
-with open('.protocol-state/project-state.json', 'r+') as f:
+# Read current state
+with open('.protocol-state/project-state.json', 'r') as f:
     state = json.load(f)
-    state['active_role'] = '{new_agent}'
-    state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
-    f.seek(0)
-    json.dump(state, f, indent=2)
-    f.truncate()
+
+# Modify state
+state['active_role'] = '{new_agent}'  # REPLACE: e.g., 'megumi'
+state['project_metadata']['last_updated'] = datetime.utcnow().isoformat() + 'Z'
+
+# Atomic write
+with tempfile.NamedTemporaryFile(mode='w', dir='.protocol-state', delete=False, suffix='.json') as tmp:
+    json.dump(state, tmp, indent=2)
+    tmp.flush()
+    os.fsync(tmp.fileno())
+    tmp_path = tmp.name
+
+shutil.move(tmp_path, '.protocol-state/project-state.json')
 "
 ```
 

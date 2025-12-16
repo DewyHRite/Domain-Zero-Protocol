@@ -9,7 +9,7 @@
 
 ## 📋 What This Patch Adds
 
-This patch enhances the session monitoring system with **complete CLI interface** and **updated operational procedures** for Gojo's orchestration workflow.
+This patch enhances the session monitoring system with **complete CLI** and **updated operational procedures** for Gojo's orchestration workflow.
 
 ### Session Monitor CLI Enhancements (v8.8.0)
 
@@ -46,7 +46,7 @@ This patch enhances the session monitoring system with **complete CLI interface*
 
 ## 🔧 Detailed Changes
 
-### 1. session_monitor.py - Complete CLI Interface
+### 1. session_monitor.py - Complete CLI
 
 **New Commands Added**:
 
@@ -180,24 +180,25 @@ test -f .protocol-state/session_monitor.py && echo "EXISTS" || echo "MISSING"
 #### Step 2: Create Backups (MANDATORY)
 
 ```bash
-# Create timestamped backup directory
-mkdir -p ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)"
+# Create timestamped backup directory (capture timestamp once to avoid re-evaluation bug)
+BACKUP_DIR=".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$BACKUP_DIR"
 
 # Backup all files being modified
-cp ".protocol-state/session_monitor.py" ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)/"
-cp "protocol/gojo.agent.md" ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)/"
-cp ".protocol-state/gojo-session-monitoring-guide.md" ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)/"
-cp "gojo.prompt.md" ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)/"
-cp ".protocol-state/session-state.example.json" ".protocol-state/backups/session-cli-patch-$(date +%Y%m%d_%H%M%S)/"
+cp ".protocol-state/session_monitor.py" "$BACKUP_DIR/"
+cp "protocol/gojo.agent.md" "$BACKUP_DIR/"
+cp ".protocol-state/gojo-session-monitoring-guide.md" "$BACKUP_DIR/"
+cp "gojo.prompt.md" "$BACKUP_DIR/"
+cp ".protocol-state/session-state.example.json" "$BACKUP_DIR/"
 
-echo "✅ Backups created"
+echo "✅ Backups created in: $BACKUP_DIR"
 ```
 
 #### Step 3: Apply Code Changes
 
 **File 1: `.protocol-state/session_monitor.py`**
 
-Use the **Edit tool** to add the following command handlers to the CLI interface section (around line 681):
+Use the **Edit tool** to add the following command handlers to the CLI section (around line 681):
 
 ```python
 # Add after existing command handlers:
@@ -506,6 +507,6 @@ python .protocol-state/session_monitor.py help
 
 **Patch Created**: 2025-12-11
 **Protocol Version**: 8.8.0
-**Patch Type**: Feature Enhancement (CLI Interface)
+**Patch Type**: Feature Enhancement (CLI)
 **Breaking Changes**: None
 **Testing Status**: All commands verified ✅
