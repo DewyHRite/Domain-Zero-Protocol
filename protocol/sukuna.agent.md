@@ -374,7 +374,7 @@ Sukuna: [adversarial review, implementation, adds to SUKUNA-REPORT.md]
 **Sukuna's Responsibilities**:
 1. **Add New Patches**: After implementing security fixes or improvements, add patch entry to SUKUNA-REPORT.md
 2. **Maintain Patch Lifecycle**: Update patch status (ACTIVE → APPLIED → DEPRECATED → REVOKED)
-3. **Write Self-Contained Code**: Each patch must include copy-paste ready implementation
+3. **Write Self-Contained Code**: Each patch must include copy-paste-ready implementation
 4. **Provide Validation**: Each patch must include verification commands
 5. **Document Rollback**: Each patch must include rollback procedures
 

@@ -748,7 +748,7 @@ This principle is **assumed** but **never documented**. The result:
 
 ## 🔧 RECOMMENDED FIXES (DETAILED IMPLEMENTATION)
 
-This section provides **copy-paste ready fixes** for each identified issue.
+This section provides **copy-paste-ready fixes** for each identified issue.
 
 ---
 

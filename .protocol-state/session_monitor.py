@@ -13,9 +13,16 @@ Usage:
 """
 
 import json
+import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+# Session duration limits (PATCH-SEC-005 - SEC-DZP-008 remediation)
+MAX_BREAK_DURATION = 480  # 8 hours
+MIN_BREAK_DURATION = 1    # 1 minute
+MAX_SESSION_DURATION = 1440  # 24 hours
 
 
 class SessionMonitor:
@@ -698,12 +705,17 @@ def main():
         monitor.end_session()
     elif command == "break":
         # Record break with optional duration argument
+        # PATCH-SEC-005: Validate duration to prevent DoS via infinite loops
         duration = 15  # default
         if len(sys.argv) > 2:
             try:
                 duration = int(sys.argv[2])
-                if duration < 1:
-                    print("❌ Break duration must be at least 1 minute", file=sys.stderr)
+                if duration < MIN_BREAK_DURATION or duration > MAX_BREAK_DURATION:
+                    print(
+                        f"❌ Break duration must be between {MIN_BREAK_DURATION}-{MAX_BREAK_DURATION} minutes",
+                        file=sys.stderr
+                    )
+                    print(f"   You requested: {duration} minutes", file=sys.stderr)
                     sys.exit(1)
             except ValueError:
                 print(f"❌ Invalid duration: {sys.argv[2]} (must be a number)", file=sys.stderr)
@@ -711,30 +723,70 @@ def main():
         monitor.record_break(duration)
     elif command == "continue" or command == "resume":
         # Resume work after break (just update interaction timestamp)
-        state = monitor.update_interaction()
-        print(f"✅ Resumed work session")
-        print(f"   Total duration: {state['session_metrics']['total_duration_minutes']} minutes")
+        # PATCH-SEC-007 (SEC-004): Add error handling
+        try:
+            state = monitor.update_interaction()
+            timestamp = datetime.now().strftime('%H:%M')
+            print(f"✅ Work resumed at {timestamp}")
+            print(f"   Total session time: {state['session_metrics']['total_duration_minutes']} minutes")
+        except Exception as e:
+            print(f"❌ Failed to resume session: {e}", file=sys.stderr)
+            print(f"   Try starting a new session with 'start' or 'new-session'", file=sys.stderr)
+            sys.exit(1)
     elif command == "reset":
         # Reset session state completely
-        try:
-            if monitor.state_file.exists():
-                # Backup before deleting
-                import shutil
-                backup_path = monitor.state_file.parent / f"session-state.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-                shutil.copy(monitor.state_file, backup_path)
-                print(f"📦 Backup created: {backup_path}")
+        # PATCH-SEC-007: Atomic reset with backup verification
+        if monitor.state_file.exists():
+            try:
+                # Create timestamped backup
+                backup_timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                backup_filename = f"session-state.backup.{backup_timestamp}.json"
+                backup_path = monitor.state_file.parent / backup_filename
 
-                # Remove current state
+                # Copy to backup location
+                shutil.copy2(monitor.state_file, backup_path)
+
+                # CRITICAL: Verify backup integrity before deletion
+                if not backup_path.exists() or backup_path.stat().st_size == 0:
+                    raise IOError("Backup verification failed: file missing or empty")
+
+                # Verify backup is valid JSON
+                with open(backup_path, 'r', encoding='utf-8') as f:
+                    json.load(f)  # Will raise exception if corrupted
+
+                print(f"✅ Backup created and verified: {backup_filename}")
+
+                # PATCH-SEC-007 (SEC-003): Clean up old backups (keep last 10)
+                backup_pattern = monitor.state_file.parent.glob('session-state.backup.*.json')
+                backups = sorted(backup_pattern, key=lambda p: p.stat().st_mtime)
+                if len(backups) > 10:
+                    for old_backup in backups[:-10]:
+                        old_backup.unlink()
+                    print(f"ℹ️  Cleaned up {len(backups) - 10} old backup(s)")
+
+                # Only delete after verified backup exists
                 monitor.state_file.unlink()
-                print(f"🗑️  Removed: {monitor.state_file}")
+                print(f"🗑️  Removed: {monitor.state_file.name}")
 
-            # Recreate with default state
-            monitor._ensure_state_file()
-            print("✅ Session state reset successfully")
-            print(f"   New state file created at: {monitor.state_file}")
-        except Exception as e:
-            print(f"❌ Error resetting session state: {e}", file=sys.stderr)
-            sys.exit(1)
+                # Recreate with default state
+                monitor._ensure_state_file()
+                print("✅ Session state reset successfully")
+                print(f"   New state file created at: {monitor.state_file}")
+
+            except (IOError, OSError, PermissionError) as e:
+                print(f"❌ Backup failed: {e}", file=sys.stderr)
+                print(f"   Session state NOT reset (original preserved)", file=sys.stderr)
+                sys.exit(1)
+            except json.JSONDecodeError as e:
+                print(f"❌ Backup verification failed: Invalid JSON ({e})", file=sys.stderr)
+                print(f"   Session state NOT reset (original preserved)", file=sys.stderr)
+                # Clean up corrupted backup
+                if backup_path.exists():
+                    backup_path.unlink()
+                sys.exit(1)
+        else:
+            print("ℹ️  No session state file found (already reset)")
+            print("   Use 'start' or 'new-session' to begin a new work session")
     elif command == "test":
         # Test alert rendering
         test_context = {

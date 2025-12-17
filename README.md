@@ -1757,7 +1757,7 @@ Instead of manually updating your DZP installation for every patch, AI agents **
 
 **Contains**:
 - Complete patch catalog with version tracking
-- Self-contained, copy-paste ready code
+- Self-contained, copy-paste-ready code
 - Validation and rollback procedures
 - Priority levels (P0-Critical to P3-Low)
 - Implementation status tracking

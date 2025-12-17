@@ -18,7 +18,7 @@ Features:
 - Impact analysis with blast radius calculation
 - Agent dependency matrix
 - Export to JSON for visualization tools
-- CLI interface with multiple report formats
+- CLI with multiple report formats
 
 Usage:
     python scripts/dependency-scanner.py --scan                    # Full scan

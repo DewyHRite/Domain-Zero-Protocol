@@ -486,9 +486,9 @@ Start-Process powershell -Verb RunAs -ArgumentList "-Command",
 ## 📚 REFERENCES
 
 **External Resources**:
-- Claude Code Issue #3068: https://github.com/anthropics/claude-code/issues/3068
-- lsof man page: https://man7.org/linux/man-pages/man8/lsof.8.html
-- Process Management Best Practices: https://www.kernel.org/doc/html/latest/process/index.html
+- Claude Code Issue #3068: <https://github.com/anthropics/claude-code/issues/3068>
+- lsof man page: <https://man7.org/linux/man-pages/man8/lsof.8.html>
+- Process Management Best Practices: <https://www.kernel.org/doc/html/latest/process/index.html>
 
 **Related Protocol Files**:
 - `protocol/gojo.agent.md` - Mission Control cleanup procedures

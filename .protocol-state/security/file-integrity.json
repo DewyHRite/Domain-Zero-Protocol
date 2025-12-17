@@ -1,0 +1,17 @@
+{
+  "version": "8.8.0",
+  "timestamp": 1765948863,
+  "hashes": {
+    "protocol/CLAUDE.md": "82d7096c7e93cc2041da41ed7fb7847718c8d37373769f5ddfe45bea74ee3657",
+    "protocol/yuuji.agent.md": "d8e897f7cf95bc1841b91c41085eecbcf4b4547120cb74eb47a85e184a044ffd",
+    "protocol/megumi.agent.md": "d2dbe8e34e63a226348ab7499dff31f1a84963da0fd4f3614ecfd38fa8449e02",
+    "protocol/nobara.agent.md": "613850a1bbd06e2b76cd9ebe779efeb168ac4c23fefe5ba8a2eb6e54e5662d3c",
+    "protocol/gojo.agent.md": "34b742ece248b19ddace28a13954b32ad4443f4a567b578997d18d47c8f1d162",
+    "protocol/sukuna.agent.md": "38e9c2cc7e343a2665b8b98e99f22bf5cb091e71c2f368e675e0ce1253994ab4",
+    "protocol/todo.agent.md": "3236d8d65c4bd87c32130cdfd52a258c8e931e31b0da8ddb7c1bbbb03b8420a7",
+    "protocol/maki.agent.md": "e81fb4f2adcc02de2d7207fccc5bd0e9332ab04d4e532ec4b4346ea04f735463",
+    "protocol/panda.agent.md": "4dc5a0a6f79396461a137d8f1d215372eb7796e088d18b735ae74eaf53971c17",
+    "protocol/inumaki.agent.md": "0e97f2f449a150b65116ddc35515f36db13f49c83d25720afb10edcfc4848ebc",
+    "protocol/SUKUNA-REPORT.md": "f8942e916d01c33267716b4acd0b54d1192a9a9909a89a8b4ac1fc3d89c7c03a"
+  }
+}
