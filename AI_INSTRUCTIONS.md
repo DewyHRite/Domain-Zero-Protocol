@@ -580,6 +580,8 @@ REQUIRED_FILES = {
     'scripts/verify-protocol.sh': 'Scripts',
     'scripts/validate-protocol.py': 'Scripts',
     'scripts/domain-record-rotate.py': 'Scripts',
+    'scripts/verify-installation.py': 'Scripts',
+    'scripts/sync-templates.py': 'Scripts',
 
     # Domain Record System (v8.8.0+)
     '.dzp-domain/domain.record.md': 'Domain Record',
