@@ -1,7 +1,7 @@
 <!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 8.8.0 | **Last Updated**: 2025-12-04
+**Version**: 8.8.0 | **Last Updated**: 2025-12-17
 **Purpose**: Complete installation and verification guide for AI assistants
 
 ---
@@ -196,7 +196,16 @@ Read protocol/CLAUDE.md
 - [ ] `docs/SYSTEM_UPDATE_IMPLEMENTATION_GUIDE.md`
 - [ ] `docs/TOKEN_EFFICIENCY_RECOMMENDATIONS.md`
 
-### 3.7 State Directory (`.protocol-state/`) - CRITICAL
+### 3.7 Domain Record Directory (`.dzp-domain/`) - NEW IN v8.8.0
+
+**Domain Record Files** (Gojo + Sukuna ONLY):
+- [ ] `.dzp-domain/domain.record.md` (shared notes repository)
+- [ ] `.dzp-domain/.rotation-metadata.json` (rotation tracking)
+- [ ] `.dzp-domain/archive/` (directory for rotated archives)
+
+**Purpose**: Shared notes repository for Gojo and Sukuna to prevent agent file bloat, enable crash recovery, and track strategic decisions. Auto-rotates at 5,000 lines.
+
+### 3.8 State Directory (`.protocol-state/`) - CRITICAL
 
 **Root State Files**:
 - [ ] `.protocol-state/custom-agent-registry.example.json` (template)
@@ -225,14 +234,16 @@ Read protocol/CLAUDE.md
 - [ ] `.protocol-state/jjk-character-reference/ryomen-sukuna.md`
 - [ ] `.protocol-state/jjk-character-reference/satoru-gojo.md`
 
-### 3.8 Scripts Directory (`scripts/`)
+### 3.9 Scripts Directory (`scripts/`)
 
 - [ ] `scripts/verify-protocol.ps1` (Windows)
 - [ ] `scripts/verify-protocol.sh` (Linux/Mac)
+- [ ] `scripts/validate-protocol.py` (Python - cross-platform validation)
+- [ ] `scripts/domain-record-rotate.py` (Python - domain record rotation, v8.8.0+)
 - [ ] `scripts/verify-installation.py` (Python - cross-platform)
 - [ ] `scripts/sync-templates.py` (Python - cross-platform)
 
-### 3.9 Domain Zero Agents Templates
+### 3.10 Domain Zero Agents Templates
 
 **Generic Templates** (`Domain Zero Agents/`):
 - [ ] `Domain Zero Agents/DOMAIN_ZERO_AGENT.md`
@@ -255,7 +266,7 @@ Read protocol/CLAUDE.md
 - [ ] `Domain Zero Agents - Full JJK Edition/TODO.md`
 - [ ] `Domain Zero Agents - Full JJK Edition/YUUJI.md`
 
-### 3.10 Slash Commands (`.claude/commands/`) - OPTIONAL
+### 3.11 Slash Commands (`.claude/commands/`) - OPTIONAL
 
 If using Claude Code CLI:
 - [ ] `.claude/commands/gojo.md`
@@ -373,6 +384,8 @@ $folders = @(
     "docs/installation",
     "docs/reference",
     "docs/templates",
+    ".dzp-domain",
+    ".dzp-domain/archive",
     ".protocol-state",
     ".protocol-state/system-update-framework",
     ".protocol-state/authorization",
@@ -408,6 +421,8 @@ folders=(
     "docs/installation"
     "docs/reference"
     "docs/templates"
+    ".dzp-domain"
+    ".dzp-domain/archive"
     ".protocol-state"
     ".protocol-state/system-update-framework"
     ".protocol-state/authorization"
@@ -1099,4 +1114,4 @@ All protocol updates originate from the canonical source.
 ---
 
 **Domain Zero Protocol v8.8.0 - Complete Installation Guide**
-**Updated**: 2025-12-04 by Ryomen Sukuna (System Update Adversary)
+**Updated**: 2025-12-17 (Domain Record System + Code Review Fixes)
