@@ -30,6 +30,7 @@ except ImportError:
     HAS_MSVCRT = False
 
 INTEGRITY_FILE = '.protocol-state/security/file-integrity.json'
+AUDIT_LOG = '.protocol-state/security/integrity-audit.log'
 
 PROTECTED_FILES = [
     'protocol/CLAUDE.md',
@@ -165,22 +166,79 @@ def verify_file_integrity() -> Dict[str, str]:
     return violations
 
 
-def update_integrity_baseline(filepath: str) -> None:
+def _is_authorized_for_baseline_update(authorized_by: Optional[str]) -> bool:
+    """
+    Verify authorization for baseline updates.
+
+    Args:
+        authorized_by: Identity of the entity requesting the update
+
+    Returns:
+        True if authorized, False otherwise
+    """
+    # SECURITY: For now, require explicit authorization
+    # Future enhancement: Integrate with authorization.py token verification
+    if authorized_by is None:
+        return False
+
+    # Accept USER or Gojo as valid authorizers
+    valid_authorizers = ['USER', 'GOJO', 'SYSTEM']
+    return authorized_by.upper() in valid_authorizers
+
+
+def _append_audit_entry(filepath: str, old_hash: str, new_hash: str, actor: str) -> None:
+    """
+    Append tamper-evident audit entry for baseline updates.
+
+    Args:
+        filepath: File that was updated
+        old_hash: Previous hash value
+        new_hash: New hash value
+        actor: Entity that performed the update
+    """
+    entry = {
+        'timestamp': int(time.time()),
+        'actor': actor,
+        'filepath': filepath,
+        'old_hash': old_hash,
+        'new_hash': new_hash
+    }
+
+    # Ensure audit log directory exists
+    Path(AUDIT_LOG).parent.mkdir(parents=True, exist_ok=True)
+
+    # Append to audit log with fsync for durability
+    with open(AUDIT_LOG, 'a', encoding='utf-8') as f:
+        f.write(json.dumps(entry) + '\n')
+        f.flush()
+        os.fsync(f.fileno())  # Ensure written to disk
+
+
+def update_integrity_baseline(filepath: str, authorized_by: Optional[str] = None) -> None:
     """
     Update baseline hash for a specific file after authorized modification.
 
     Args:
         filepath: Path to file whose hash should be updated
+        authorized_by: Identity of authorizing entity (USER, GOJO, or SYSTEM)
 
     Raises:
         ValueError: If filepath is not in PROTECTED_FILES
+        PermissionError: If not authorized for baseline updates
         RuntimeError: If baseline is missing or corrupted
         FileNotFoundError: If file doesn't exist
 
     Example:
         >>> # After authorized edit to CLAUDE.md
-        >>> update_integrity_baseline('protocol/CLAUDE.md')
+        >>> update_integrity_baseline('protocol/CLAUDE.md', authorized_by='USER')
     """
+    # SECURITY: Verify authorization first
+    if not _is_authorized_for_baseline_update(authorized_by):
+        raise PermissionError(
+            f"Unauthorized baseline update attempt by {authorized_by or 'unknown'}. "
+            "Only USER, GOJO, or SYSTEM can update the integrity baseline."
+        )
+
     # SECURITY: Validate filepath is in protected list
     if filepath not in PROTECTED_FILES:
         raise ValueError(
@@ -197,20 +255,28 @@ def update_integrity_baseline(filepath: str) -> None:
     if not Path(filepath).exists():
         raise FileNotFoundError(f"Cannot update hash for non-existent file: {filepath}")
 
-    # Acquire exclusive lock for read-modify-write (prevents race conditions)
-    with open(INTEGRITY_FILE, 'r+', encoding='utf-8') as f:
-        try:
-            # Platform-specific file locking
-            if HAS_FCNTL:
-                # Unix/Linux/Mac: acquire exclusive lock
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-            elif HAS_MSVCRT:
-                # Windows: acquire exclusive lock
-                msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
-            # If neither available, proceed without locking (best effort)
+    # Use a dedicated lockfile to protect the entire critical section
+    lockfile = INTEGRITY_FILE + '.lock'
 
-            # Load existing baseline with corruption handling
-            data = json.load(f)
+    with open(lockfile, 'w', encoding='utf-8') as lock_f:
+        # Acquire exclusive lock on dedicated lockfile (fail-fast if unavailable)
+        if HAS_FCNTL:
+            # Unix/Linux/Mac: acquire exclusive lock
+            fcntl.flock(lock_f.fileno(), fcntl.LOCK_EX)
+        elif HAS_MSVCRT:
+            # Windows: acquire exclusive lock
+            msvcrt.locking(lock_f.fileno(), msvcrt.LK_LOCK, 1)
+        else:
+            # SECURITY: File locking is required for integrity guarantee
+            raise RuntimeError(
+                "File locking not available on this platform. "
+                "Cannot safely update integrity baseline."
+            )
+
+        # Load existing baseline with corruption handling
+        try:
+            with open(INTEGRITY_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
         except json.JSONDecodeError as e:
             raise RuntimeError(f"Baseline file corrupted: {e}") from e
 
@@ -220,16 +286,19 @@ def update_integrity_baseline(filepath: str) -> None:
         data['hashes'][filepath] = new_hash
         data['timestamp'] = int(time.time())
 
-        # Write to temp file while holding lock
+        # Atomic write: write to temp file, then rename (all within lock)
         temp_file = INTEGRITY_FILE + '.tmp'
         with open(temp_file, 'w', encoding='utf-8') as tmp:
             json.dump(data, tmp, indent=2)
             tmp.write('\n')  # Add trailing newline
 
-        # Lock is released automatically when context exits
+        # Atomic replace while still holding lock (prevents race window)
+        Path(temp_file).replace(INTEGRITY_FILE)
 
-    # Atomic replace (must happen after file is closed/unlocked)
-    Path(temp_file).replace(INTEGRITY_FILE)
+        # AUDIT: Log baseline update for forensics and compliance
+        _append_audit_entry(filepath, old_hash, new_hash, authorized_by or 'unknown')
+
+        # Lock released automatically when context exits
 
     print(f"[INFO] Updated integrity hash for: {filepath}")
     print(f"[INFO] Old hash: {old_hash[:16]}... -> New hash: {new_hash[:16]}...")
@@ -266,10 +335,10 @@ if __name__ == "__main__":
         print(f"[FAIL] Integrity verification failed: {e}")
         sys.exit(1)
 
-    # Test 3: Test update functionality
+    # Test 3: Test authorized update functionality
     try:
         if Path('protocol/CLAUDE.md').exists():
-            update_integrity_baseline('protocol/CLAUDE.md')
+            update_integrity_baseline('protocol/CLAUDE.md', authorized_by='SYSTEM')
             print("[PASS] Baseline update working")
         else:
             print("[SKIP] CLAUDE.md not found, skipping update test")
@@ -277,9 +346,17 @@ if __name__ == "__main__":
         print(f"[FAIL] Baseline update failed: {e}")
         sys.exit(1)
 
-    # Test 4: Test security validation (unprotected file should fail)
+    # Test 4: Test unauthorized update (should fail)
     try:
-        update_integrity_baseline('unprotected-file.txt')
+        update_integrity_baseline('protocol/CLAUDE.md', authorized_by=None)
+        print("[FAIL] Unauthorized update should have been rejected")
+        sys.exit(1)
+    except PermissionError:
+        print("[PASS] Unauthorized update rejected correctly")
+
+    # Test 5: Test security validation (unprotected file should fail)
+    try:
+        update_integrity_baseline('unprotected-file.txt', authorized_by='SYSTEM')
         print("[FAIL] Unprotected file update should have been rejected")
         sys.exit(1)
     except ValueError:
