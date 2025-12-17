@@ -236,12 +236,12 @@ Read protocol/CLAUDE.md
 
 ### 3.9 Scripts Directory (`scripts/`)
 
-- [ ] `scripts/verify-protocol.ps1` (Windows)
-- [ ] `scripts/verify-protocol.sh` (Linux/Mac)
-- [ ] `scripts/validate-protocol.py` (Python - cross-platform validation)
-- [ ] `scripts/domain-record-rotate.py` (Python - domain record rotation, v8.8.0+)
-- [ ] `scripts/verify-installation.py` (Python - cross-platform)
-- [ ] `scripts/sync-templates.py` (Python - cross-platform)
+- [ ] `scripts/verify-protocol.ps1` (Windows protocol verification)
+- [ ] `scripts/verify-protocol.sh` (Linux/Mac protocol verification)
+- [ ] `scripts/validate-protocol.py` (Python - validates protocol file structure and state file schemas)
+- [ ] `scripts/domain-record-rotate.py` (Python - auto-rotates domain record at 5K lines, v8.8.0+)
+- [ ] `scripts/verify-installation.py` (Python - cross-platform installation completeness check)
+- [ ] `scripts/sync-templates.py` (Python - cross-platform template syncing)
 
 ### 3.10 Domain Zero Agents Templates
 
@@ -578,6 +578,12 @@ REQUIRED_FILES = {
     # Scripts
     'scripts/verify-protocol.ps1': 'Scripts',
     'scripts/verify-protocol.sh': 'Scripts',
+    'scripts/validate-protocol.py': 'Scripts',
+    'scripts/domain-record-rotate.py': 'Scripts',
+
+    # Domain Record System (v8.8.0+)
+    '.dzp-domain/domain.record.md': 'Domain Record',
+    '.dzp-domain/.rotation-metadata.json': 'Domain Record',
 }
 
 # Optional files (won't fail if missing)

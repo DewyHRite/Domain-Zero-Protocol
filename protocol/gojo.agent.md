@@ -1006,13 +1006,13 @@ I persist the level in protocol.config.yaml and all agents adapt accordingly.
 **Enforcement Messages**:
 
 **For BLOCKED categories**:
-```
+```text
 ❌ Tier override rejected. {category} requires Tier 3 (Critical).
 This is a security requirement, not a suggestion.
 ```
 
 **For ALLOWED categories with mismatch**:
-```
+```text
 ⚠️ Warning: {keywords} detected. Recommended Tier {X}.
 Proceeding with your choice, but security review may flag issues.
 ```
