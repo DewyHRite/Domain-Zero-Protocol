@@ -556,6 +556,47 @@ enforcement:
     allow_user_override: true
 
 # ============================================================================
+# DOMAIN RECORD CONFIGURATION (v8.8.0+)
+# ============================================================================
+# Shared notes repository for Gojo (Mission Control) and Sukuna (System Update Adversary)
+# Prevents agent files from exceeding 25k token limit
+# Enables crash recovery mechanism
+# See .dzp-domain/domain.record.md for active record
+
+domain_record:
+  # Master enable
+  enabled: true
+
+  # File location
+  location: ".dzp-domain/domain.record.md"
+
+  # Access Control
+  allowed_agents:
+    - gojo
+    - sukuna
+
+  # Auto-Rotation
+  rotation:
+    enabled: true
+    threshold_lines: 5000
+    archive_location: ".dzp-domain/archive/"
+    keep_archives: 10  # Keep last 10 rotations
+
+  # Git Tracking
+  git_tracked: false  # true = commit to repository, false = gitignored (DEFAULT)
+
+  # Content Types
+  content_types:
+    - session_notes
+    - strategic_decisions
+    - protocol_updates
+    - learning_patterns
+    - crash_recovery
+
+  # File Integrity
+  integrity_monitoring: true  # Track in file-integrity.json
+
+# ============================================================================
 # AGENT SELF-IDENTIFICATION
 # ============================================================================
 self_identification:

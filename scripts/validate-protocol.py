@@ -759,6 +759,38 @@ def print_report_summary(report: ValidationReport) -> None:
 
 
 # =============================================================================
+# Domain Record Validation (v8.8.0+)
+# =============================================================================
+
+def validate_domain_record() -> bool:
+    """Validate domain record integrity and size"""
+    domain_record = Path(".dzp-domain/domain.record.md")
+
+    if not domain_record.exists():
+        print("[WARN] domain.record.md not found - creating fresh file")
+        # Domain record will be created by rotation script if needed
+        return True
+
+    # Check line count
+    try:
+        with open(domain_record, 'r', encoding='utf-8') as f:
+            line_count = sum(1 for _ in f)
+
+        threshold = 5000
+        if line_count >= threshold:
+            print(f"[WARN] domain.record.md exceeds threshold ({line_count} / {threshold} lines)")
+            print("       Run: python scripts/domain-record-rotate.py --rotate")
+            return False
+        else:
+            print(f"[OK] domain.record.md size OK ({line_count} / {threshold} lines)")
+            return True
+
+    except Exception as e:
+        print(f"[WARN] Error checking domain.record.md: {e}")
+        return False
+
+
+# =============================================================================
 # CLI Interface
 # =============================================================================
 
@@ -905,6 +937,14 @@ Exit Codes:
         if args.scan_dependencies:
             print("Dependency scanning feature not yet implemented")
             print("Will scan for circular dependencies in future release")
+
+        # Domain record validation (v8.8.0+)
+        if args.check or args.verbose:
+            print("\nValidating domain record...")
+            domain_record_ok = validate_domain_record()
+            if not domain_record_ok and report.exit_code == ExitCode.SUCCESS:
+                # Downgrade to warnings if domain record needs rotation
+                report.exit_code = ExitCode.WARNINGS
 
         sys.exit(report.exit_code.value)
 
