@@ -2,8 +2,8 @@
 <!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
 
 **Purpose**: Guide for Gojo to enforce custom agent security policies
-**Version**: 8.7.0
-**Updated**: 2025-12-03
+**Version**: 8.8.0
+**Updated**: 2025-12-17
 
 ---
 
