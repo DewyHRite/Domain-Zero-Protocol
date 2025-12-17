@@ -759,6 +759,53 @@ def print_report_summary(report: ValidationReport) -> None:
 
 
 # =============================================================================
+# Domain Record Validation (v8.8.0+)
+# =============================================================================
+
+def validate_domain_record() -> bool:
+    """Validate domain record integrity and size"""
+    domain_record = PROJECT_ROOT / ".dzp-domain" / "domain.record.md"
+    config_file = PROJECT_ROOT / "protocol.config.yaml"
+
+    # Load threshold from config
+    default_threshold = 5000
+    threshold = default_threshold
+
+    try:
+        if config_file.exists():
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config = yaml.safe_load(f)
+                domain_config = config.get('domain_record', {})
+                rotation_config = domain_config.get('rotation', {})
+                threshold = rotation_config.get('threshold_lines', default_threshold)
+    except (yaml.YAMLError, IOError) as e:
+        print(f"[WARN] Failed to load config, using default threshold: {e}")
+        threshold = default_threshold
+
+    if not domain_record.exists():
+        print("[WARN] domain.record.md not found - will be created on first rotation")
+        # Domain record will be created by rotation script if needed
+        return True
+
+    # Check line count
+    try:
+        with open(domain_record, 'r', encoding='utf-8') as f:
+            line_count = sum(1 for _ in f)
+
+        if line_count >= threshold:
+            print(f"[WARN] domain.record.md exceeds threshold ({line_count} / {threshold} lines)")
+            print("       Run: python scripts/domain-record-rotate.py --rotate")
+            return False
+        else:
+            print(f"[OK] domain.record.md size OK ({line_count} / {threshold} lines)")
+            return True
+
+    except Exception as e:
+        print(f"[WARN] Error checking domain.record.md: {e}")
+        return False
+
+
+# =============================================================================
 # CLI Interface
 # =============================================================================
 
@@ -885,6 +932,14 @@ Exit Codes:
 
         # Generate report
         report = generate_report(results, drift_alerts, auto_fixes)
+
+        # Domain record validation (v8.8.0+) - run before printing report
+        if args.check or args.verbose:
+            print("\nValidating domain record...")
+            domain_record_ok = validate_domain_record()
+            if not domain_record_ok and report.exit_code == ExitCode.SUCCESS:
+                # Downgrade to warnings if domain record needs rotation
+                report.exit_code = ExitCode.WARNINGS
 
         # Output report
         if args.report or args.verbose:

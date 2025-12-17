@@ -616,6 +616,57 @@ Runs only critical checks (dependencies, files, config, yaml)
 
 ---
 
+### What is domain.record.md? (v8.8.0+)
+
+**A:** A shared notes repository for Gojo (Mission Control) and Sukuna (System Update Adversary) that prevents their agent files from exceeding token limits. It stores:
+- Session observations and notes
+- Strategic decisions with rationale
+- Protocol update tracking
+- Learning patterns across sessions
+- Crash recovery checkpoints
+
+**Access:** Gojo + Sukuna ONLY (all other agents denied)
+**Location:** `.dzp-domain/domain.record.md`
+**Auto-rotation:** Archives at 5,000 lines to `.dzp-domain/archive/`
+**Git tracking:** Gitignored by default (configurable via `protocol.config.yaml`)
+
+---
+
+### Why can't other agents access domain.record.md?
+
+**A:** Access is restricted to Gojo and Sukuna to:
+1. Maintain clear separation between operational notes (domain.record.md) and agent-specific logs (dev-notes.md, security-review.md)
+2. Prevent cross-contamination of strategic intelligence
+3. Preserve the integrity of crash recovery checkpoints
+4. Enforce the three-tier authorization hierarchy (USER > Gojo/Sukuna > Other agents)
+
+**Other agents** use their own dedicated logs:
+- Yuuji → `.protocol-state/dev-notes.md`
+- Megumi → `.protocol-state/security-review.md`
+- Gojo/Sukuna → `.dzp-domain/domain.record.md` (shared)
+
+---
+
+### How do I rotate the domain record when it gets large?
+
+**A:** The system auto-rotates at 5,000 lines, but you can manually trigger rotation:
+
+```bash
+# Check current size
+python scripts/domain-record-rotate.py --check
+
+# Force rotation (creates archive)
+python scripts/domain-record-rotate.py --rotate
+```
+
+**What happens during rotation:**
+1. Current `domain.record.md` archived to `.dzp-domain/archive/domain.record_YYYYMMDD_HHMMSS.md`
+2. Fresh template created for new notes
+3. Rotation metadata updated (`.dzp-domain/.rotation-metadata.json`)
+4. Old archives cleaned up (keeps last 10 by default)
+
+---
+
 ## Still Have Questions?
 
 **Resources:**

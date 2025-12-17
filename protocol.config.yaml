@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 8.7.0
+# Version: 8.8.0
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,7 +8,7 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v8.7.0"
+  version: "v8.8.0"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -554,6 +554,47 @@ enforcement:
     # User can override routing with explicit command
     # Example: "Override dual workflow and review [feature]"
     allow_user_override: true
+
+# ============================================================================
+# DOMAIN RECORD CONFIGURATION (v8.8.0+)
+# ============================================================================
+# Shared notes repository for Gojo (Mission Control) and Sukuna (System Update Adversary)
+# Prevents agent files from exceeding 25k token limit
+# Enables crash recovery mechanism
+# See .dzp-domain/domain.record.md for active record
+
+domain_record:
+  # Master enable
+  enabled: true
+
+  # File location
+  location: ".dzp-domain/domain.record.md"
+
+  # Access Control
+  allowed_agents:
+    - gojo
+    - sukuna
+
+  # Auto-Rotation
+  rotation:
+    enabled: true
+    threshold_lines: 5000
+    archive_location: ".dzp-domain/archive/"
+    keep_archives: 10  # Keep last 10 rotations
+
+  # Git Tracking
+  git_tracked: false  # true = commit to repository, false = gitignored (DEFAULT)
+
+  # Content Types
+  content_types:
+    - session_notes
+    - strategic_decisions
+    - protocol_updates
+    - learning_patterns
+    - crash_recovery
+
+  # File Integrity
+  integrity_monitoring: true  # Track in file-integrity.json
 
 # ============================================================================
 # AGENT SELF-IDENTIFICATION

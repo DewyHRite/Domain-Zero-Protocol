@@ -125,6 +125,13 @@ I cannot invoke Sukuna (System Update Agent) directly. All system updates and pr
 
 **See**: `Domain Zero Agents - Full JJK Edition/AGENT_TOOLS_REFERENCE.md` for complete tool specifications.
 
+### File Access Restrictions
+
+**DENIED FILES** (hidden from this agent):
+- `.dzp-domain/domain.record.md` - Gojo/Sukuna ONLY
+- `.dzp-domain/archive/*` - Gojo/Sukuna ONLY
+- `.dzp-killswitch/*` - Gojo ONLY (emergency protocols)
+
 ---
 
 ## 🎯 SKILLS REFERENCE

@@ -13,6 +13,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### **Domain Record System** - Shared notes repository for Gojo and Sukuna
+
+**Purpose**: Prevent agent files from exceeding 25k token limit while enabling crash recovery
+
+1. **File Structure** (`.dzp-domain/`)
+   - `domain.record.md` - Shared notes repository (Gojo + Sukuna ONLY access)
+   - `archive/` - Rotated archives (auto-rotation at 5,000 lines)
+   - `.rotation-metadata.json` - Rotation history tracking
+
+2. **Content Types**
+   - Session notes and observations
+   - Strategic decisions with rationale
+   - Protocol update tracking
+   - Learning patterns across sessions
+   - Crash recovery checkpoints
+
+3. **Access Control** (9 agent files updated)
+   - Gojo: Full READ/WRITE access with operational documentation
+   - Sukuna: Full READ/WRITE access with update-focused documentation
+   - All other agents: DENIED (yuuji, megumi, nobara, todo, maki, panda, inumaki)
+   - File access restrictions added to all 7 non-Gojo/Sukuna agent files
+
+4. **Auto-Rotation Script** (`scripts/domain-record-rotate.py`)
+   - Check size: `python scripts/domain-record-rotate.py --check`
+   - Force rotation: `python scripts/domain-record-rotate.py --rotate`
+   - Archives at 5,000 line threshold
+   - Keeps last 10 rotations (configurable)
+   - Windows-compatible output (no emoji encoding errors)
+
+5. **Configuration** (`protocol.config.yaml`)
+   - Added `domain_record` section with rotation, access, and git tracking settings
+   - Conditional git tracking (gitignored by default, user-configurable)
+   - Integrity monitoring enabled
+
+6. **File Protection** (`.protocol-state/system-update-framework/file-classifications.json`)
+   - Domain record added to `project_state_protected` (NEVER_OVERWRITE during updates)
+   - Archives protected from system updates
+
+7. **Validation Integration** (`scripts/validate-protocol.py`)
+   - Added `validate_domain_record()` function
+   - Checks line count against threshold
+   - Integrated into `--check` workflow
+   - Windows-compatible output
+
+8. **File Integrity** (`.protocol-state/security/file-integrity.json`)
+   - SHA-256 hash tracking for domain.record.md
+   - Integrity monitoring enabled
+
+**Documentation Updated**:
+- README.md - Added domain record to v8.8.0 key features and file structure
+- docs/FAQ.md - Added 3 Q&A entries (what is domain.record.md, why access restricted, how to rotate)
+- PROTOCOL_QUICKSTART.md - Added to file structure and key concepts
+- docs/installation/IMPLEMENTATION_GUIDE.md - Added configuration section with usage examples
+
+---
+
 #### **Phase 4: Tier Validation System + Dual Learning Systems** - Intelligent tier workflow completion
 
 This release completes the tier system evolution with active validation, automatic statistics tracking, and opt-in learning capabilities for continuous protocol improvement.

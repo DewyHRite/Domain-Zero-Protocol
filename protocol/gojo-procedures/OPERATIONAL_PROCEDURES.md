@@ -365,6 +365,255 @@ Brief affected agents with checkpoint context and resume work.
 
 ---
 
+## Procedure 7: Tier System Briefing
+
+**Purpose**: Brief agents and users on the Adaptive Workflow Complexity (tier system)
+
+**When to Use**: During agent briefing, project initialization, tier transitions
+
+**Version**: v6.0+ (Carried Forward to v8.8.0)
+
+### Three Workflow Tiers
+
+- **Tier 1 (Rapid)**: 10-15 min, no tests, no security review [Prototypes]
+- **Tier 2 (Standard)**: 30-45 min, full workflow [DEFAULT, Production]
+- **Tier 3 (Critical)**: 60-90 min, enhanced security [Auth, Payments, Sensitive Data]
+
+### Briefing Yuuji on Tiers
+
+When briefing Yuuji, explain:
+```text
+"Yuuji, as of v6.0, you now recognize workflow tiers.
+
+USER will specify tier with --tier flag:
+- '--tier rapid' = Fast implementation, no tests, skip security review
+- No flag or '--tier standard' = Current workflow (default)
+- '--tier critical' = Enhanced tests (unit + integration + E2E) + performance benchmarks
+
+Key points:
+- Tier 1: Implement directly, create backup, minimal docs, tag @user-review (no security review)
+- Tier 2: Test-first development, prompted security handoff after user approval (v7.1.0+)
+- Tier 3: Enhanced testing, performance benchmarks, prompted enhanced security handoff (v7.1.0+)
+
+Backup requirements apply to ALL tiers. Never skip backups.
+
+If USER doesn't specify tier, default to Tier 2 (Standard)."
+```
+
+### Briefing Megumi on Tiers
+
+> **NOTE**: As of v7.1.0, this briefing is replaced by the prompted handoff briefing. See Procedure 8 (Prompted Security Handoff Orchestration) for current process.
+
+Old briefing (deprecated as of v7.1.0):
+```text
+"Megumi, as of v6.0, you now conduct tier-aware security reviews.
+
+[DEPRECATED - Manual tagging replaced by automatic handoff in v7.1.0]
+```
+
+### Briefing USER on Tier Selection
+
+When USER asks about tiers, provide decision guidance:
+```text
+"Here's how to choose the right tier:
+
+TIER 1 (Rapid) - Use when:
+- Not going to production
+- Prototype or experiment
+- Learning exercise
+- Speed > quality right now
+→ Example: "Read yuuji.agent.md --tier rapid and create file renaming script"
+
+TIER 2 (Standard) - Use when:
+- Production feature
+- Standard patterns (CRUD, APIs, UI)
+- Balanced quality + speed
+- Default for most work
+→ Example: "Read yuuji.agent.md and implement user registration"
+
+TIER 3 (Critical) - Use when:
+- Authentication/authorization
+- Payment processing
+- Financial calculations
+- Medical/health/legal data
+- Compliance requirements
+- Security failure = severe consequences
+→ Example: "Read yuuji.agent.md --tier critical and implement Stripe payments"
+
+If unsure → Default to Tier 2 (Standard)."
+```
+
+### Tracking Tier Usage
+
+Monitor tier usage in project-state.json:
+```json
+{
+  "tier_usage_statistics": {
+    "tier_1_rapid": {
+      "total_features": X,
+      "avg_time_minutes": Y,
+      "last_used": "timestamp"
+    },
+    "tier_2_standard": { ... },
+    "tier_3_critical": { ... }
+  }
+}
+```
+
+In Trigger 19 reports, analyze:
+- Tier distribution (is user choosing appropriate tiers?)
+- Time savings from Tier 1 usage
+- Quality improvements from Tier 3 usage
+- Recommendations for tier optimization
+
+**Time**: 2-5 minutes per briefing
+**Output**: Agents understand tier expectations, users understand tier selection
+
+---
+
+## Procedure 8: Prompted Security Handoff Orchestration
+
+**Purpose**: Orchestrate prompted security handoff from Yuuji to Megumi for Tier 2/3 features
+
+**When to Use**: After Yuuji completes Tier 2/3 implementation and user approves
+
+**Version**: v7.1.0+ (Carried Forward to v8.8.0)
+
+### Role in Dual Workflow Enforcement
+
+**As of v7.1.0**, Gojo orchestrates prompted security handoff from Yuuji to Megumi for Tier 2/3 features.
+
+### How to Manage Prompted Handoff
+
+1. **Monitor Yuuji's Implementation Progress**
+   - Track when Yuuji completes Tier 2/3 implementation
+   - Detect @user-review tag in dev-notes.md
+   - Wait for user approval of implementation
+
+2. **Trigger Prompted Security Handoff**
+   - Upon user approval, facilitate handoff to Megumi
+   - Pass handoff context to Megumi:
+     - Files modified/created
+     - Tier level (Standard or Critical)
+     - Scope and requirements from dev-notes.md
+     - Implementation summary
+   - Update project-state.json with handoff timestamp
+
+3. **Handle User Skip Requests**
+   - User can explicitly skip: "Skip security review for [feature]"
+   - Acknowledge skip and track in project-state.json:
+     ```json
+     {
+       "skipped_security_reviews": [
+         {
+           "feature": "feature-name",
+           "tier": "standard|critical",
+           "skipped_date": "ISO-8601 timestamp",
+           "reason": "user-requested-skip"
+         }
+       ]
+     }
+     ```
+   - Begin periodic reminder schedule based on tier
+
+4. **Send Periodic Reminders for Skipped Reviews**
+   - **Tier 2 (Standard)**: Remind every 24 hours
+   - **Tier 3 (Critical)**: Remind every 8 hours (increased urgency)
+   - Reminder format:
+     ```text
+     🌀 MISSION CONTROL - SECURITY REVIEW REMINDER 🌀
+
+     **Pending Security Review**
+
+     Feature: [feature-name]
+     Tier: [Standard|Critical]
+     Days Since Implementation: X
+     Last Reminder: X hours ago
+
+     This [Tier 2|Tier 3] feature has been implemented but not security reviewed.
+
+     **Recommendation**: "Read megumi.agent.md and review [feature-name]"
+
+     **User Choice**:
+     - Proceed with review now (recommended)
+     - Defer reminder: "Remind me in [X] hours"
+     - Acknowledge risk: "I accept the risk, stop reminders"
+
+     **Skipped reviews tracked in project-state.json**
+     ```
+
+5. **Track Workflow Compliance**
+   - Monitor dual workflow adherence percentage
+   - Count bypass attempts and user overrides
+   - Include in Trigger 19 intelligence reports
+   - Identify patterns of skipped reviews
+
+### Briefing Yuuji on Prompted Handoff (v7.1.0+)
+
+When briefing Yuuji, explain:
+```text
+"Yuuji, as of v7.1.0, security handoff is prompted for Tier 2/3.
+
+After USER approves your implementation:
+- Tag @user-review as usual
+- Upon user approval, you output instruction prompting for Megumi invocation
+- You don't tag @security-review manually anymore
+- I pass full context (files, scope, tier) to Megumi
+
+User CAN skip security review with explicit choice.
+If skipped, I track it and send periodic reminders.
+
+Tier 1 exception unchanged: no security review for prototypes."
+```
+
+### Briefing Megumi on Prompted Handoff (v7.1.0+)
+
+When briefing Megumi, explain:
+```text
+"Megumi, as of v7.1.0, you're engaged for Tier 2/3 reviews through prompted workflow.
+
+You'll receive handoff from me (not manual tags from user):
+- Handoff includes full context (files, scope, tier)
+- Review as normal, document in security-review.md
+- Tag @remediation-required or @approved
+
+If user directly invokes you for NEW Tier 2/3 features:
+- Use refusal/routing logic (see megumi.agent.md § Dual Workflow Enforcement)
+- Route through proper Yuuji→Megumi workflow
+- Allow standalone audits of EXISTING code
+
+Tier 1 reviews: refuse and explain Tier 1 exception."
+```
+
+### Configuration
+
+Prompted handoff behavior is controlled in `protocol.config.yaml`:
+
+```yaml
+enforcement:
+  dual_workflow:
+    auto_invoke_megumi: true             # Prompt for Megumi invocation (config key name unchanged for compatibility)
+    allow_user_skip: true                # User can skip with explicit choice
+    remind_skipped_reviews: true         # Send periodic reminders
+    reminder_interval_hours: 24          # Tier 2 reminder frequency
+    critical_reminder_interval_hours: 8  # Tier 3 reminder frequency (more urgent)
+    track_skipped_reviews: true          # Track in project-state.json
+```
+
+### Trigger 19 Reporting on Dual Workflow
+
+In intelligence reports, analyze:
+- **Dual Workflow Adherence**: % of Tier 2/3 features that received security review
+- **Skip Patterns**: Features/tiers most commonly skipped
+- **Time to Review**: Average delay between implementation and review
+- **Reminder Effectiveness**: Do reminders lead to deferred reviews?
+- **Recommendations**: Suggest tier adjustments or workflow improvements
+
+**Time**: 3-10 minutes per handoff coordination
+**Output**: Seamless Yuuji→Megumi handoff with full context, tracked skips and reminders
+
+---
+
 ## References
 
 - **Parent Agent**: `protocol/gojo.agent.md`
