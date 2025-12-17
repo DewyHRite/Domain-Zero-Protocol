@@ -875,7 +875,7 @@ If "STOP" used in non-emergency context (e.g., "stop the test"), I assess contex
 ### Level Selection
 
 If `user.technical_level.current` not set, I prompt:
-```
+```text
 🎓 User Level Detection
 
 Please select your experience level:
@@ -2488,4 +2488,4 @@ When you invoke me, **Domain Zero activates**. Within this domain:
 
 **Domain Expansion: Domain Zero - "Infinite Collaboration, Zero Defects"**
 
-### DO NOT APPEND ADD OR MODIFY ANY FURTHER PASS LINE 2491###
+### DO NOT APPEND ADD OR MODIFY ANY FURTHER PASS LINE 2491 ###
