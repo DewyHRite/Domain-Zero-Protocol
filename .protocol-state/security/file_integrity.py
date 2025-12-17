@@ -44,6 +44,7 @@ PROTECTED_FILES = [
     'protocol/panda.agent.md',
     'protocol/inumaki.agent.md',
     'protocol/SUKUNA-REPORT.md',
+    'protocol.config.yaml',
 ]
 
 
@@ -310,56 +311,74 @@ if __name__ == "__main__":
 
     print("[INFO] Running PATCH-SEC-002 self-tests...")
 
+    # SECURITY: Use test-specific baseline to avoid modifying production baseline
+    original_integrity_file = INTEGRITY_FILE
+    original_audit_log = AUDIT_LOG
+    INTEGRITY_FILE = '.protocol-state/security/file-integrity.test.json'
+    AUDIT_LOG = '.protocol-state/security/integrity-audit.test.log'
+
     # Enable auto-creation for testing only
     os.environ['DZP_ALLOW_BASELINE_AUTOCREATE'] = '1'
 
-    # Test 1: Initialize baseline
     try:
-        baseline = initialize_integrity_baseline()
-        if len(baseline) == 0:
-            print("[FAIL] No files found to protect")
+        # Test 1: Initialize baseline
+        try:
+            baseline = initialize_integrity_baseline()
+            if len(baseline) == 0:
+                print("[FAIL] No files found to protect")
+                sys.exit(1)
+            print(f"[PASS] Baseline created with {len(baseline)} files")
+        except Exception as e:
+            print(f"[FAIL] Baseline creation failed: {e}")
             sys.exit(1)
-        print(f"[PASS] Baseline created with {len(baseline)} files")
-    except Exception as e:
-        print(f"[FAIL] Baseline creation failed: {e}")
-        sys.exit(1)
 
-    # Test 2: Verify integrity (should pass immediately after creation)
-    try:
-        violations = verify_file_integrity()
-        if len(violations) > 0:
-            print(f"[FAIL] Unexpected violations: {violations}")
+        # Test 2: Verify integrity (should pass immediately after creation)
+        try:
+            violations = verify_file_integrity()
+            if len(violations) > 0:
+                print(f"[FAIL] Unexpected violations: {violations}")
+                sys.exit(1)
+            print("[PASS] Integrity verification passed")
+        except Exception as e:
+            print(f"[FAIL] Integrity verification failed: {e}")
             sys.exit(1)
-        print("[PASS] Integrity verification passed")
-    except Exception as e:
-        print(f"[FAIL] Integrity verification failed: {e}")
-        sys.exit(1)
 
-    # Test 3: Test authorized update functionality
-    try:
-        if Path('protocol/CLAUDE.md').exists():
-            update_integrity_baseline('protocol/CLAUDE.md', authorized_by='SYSTEM')
-            print("[PASS] Baseline update working")
-        else:
-            print("[SKIP] CLAUDE.md not found, skipping update test")
-    except Exception as e:
-        print(f"[FAIL] Baseline update failed: {e}")
-        sys.exit(1)
+        # Test 3: Test authorized update functionality
+        try:
+            if Path('protocol/CLAUDE.md').exists():
+                update_integrity_baseline('protocol/CLAUDE.md', authorized_by='SYSTEM')
+                print("[PASS] Baseline update working")
+            else:
+                print("[SKIP] CLAUDE.md not found, skipping update test")
+        except Exception as e:
+            print(f"[FAIL] Baseline update failed: {e}")
+            sys.exit(1)
 
-    # Test 4: Test unauthorized update (should fail)
-    try:
-        update_integrity_baseline('protocol/CLAUDE.md', authorized_by=None)
-        print("[FAIL] Unauthorized update should have been rejected")
-        sys.exit(1)
-    except PermissionError:
-        print("[PASS] Unauthorized update rejected correctly")
+        # Test 4: Test unauthorized update (should fail)
+        try:
+            update_integrity_baseline('protocol/CLAUDE.md', authorized_by=None)
+            print("[FAIL] Unauthorized update should have been rejected")
+            sys.exit(1)
+        except PermissionError:
+            print("[PASS] Unauthorized update rejected correctly")
 
-    # Test 5: Test security validation (unprotected file should fail)
-    try:
-        update_integrity_baseline('unprotected-file.txt', authorized_by='SYSTEM')
-        print("[FAIL] Unprotected file update should have been rejected")
-        sys.exit(1)
-    except ValueError:
-        print("[PASS] Unprotected file update rejected correctly")
+        # Test 5: Test security validation (unprotected file should fail)
+        try:
+            update_integrity_baseline('unprotected-file.txt', authorized_by='SYSTEM')
+            print("[FAIL] Unprotected file update should have been rejected")
+            sys.exit(1)
+        except ValueError:
+            print("[PASS] Unprotected file update rejected correctly")
 
-    print("\n[PASS] All PATCH-SEC-002 tests passed")
+        print("\n[PASS] All PATCH-SEC-002 tests passed")
+
+    finally:
+        # Clean up test files
+        test_files = [INTEGRITY_FILE, AUDIT_LOG, INTEGRITY_FILE + '.lock']
+        for test_file in test_files:
+            if Path(test_file).exists():
+                Path(test_file).unlink()
+
+        # Restore original paths
+        INTEGRITY_FILE = original_integrity_file
+        AUDIT_LOG = original_audit_log

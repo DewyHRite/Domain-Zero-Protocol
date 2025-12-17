@@ -181,4 +181,14 @@ if __name__ == "__main__":
         print("[FAIL] Valid nested path rejected (false positive)")
         sys.exit(1)
 
+    # Test 9: Path confusion attack (sibling directory)
+    try:
+        # Create a test scenario with sibling directories
+        # If base is '/home/user', attacker might try '../username' to escape
+        result = safe_join('.protocol-state', '../.protocol-state-sibling/file.txt')
+        print(f"[FAIL] Path confusion attack not blocked: {result}")
+        sys.exit(1)
+    except SecurityError:
+        print("[PASS] Path confusion attack (sibling directory) blocked")
+
     print("\n[PASS] All PATCH-SEC-004 tests passed")
