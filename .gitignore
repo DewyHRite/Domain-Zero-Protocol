@@ -20,10 +20,12 @@
 .protocol-state/custom-agent-registry.json
 .protocol-state/authorization/custom-agent-audit.log
 
-# File integrity monitoring (v8.8.0+) - Audit log and lockfiles
+# File integrity monitoring (v8.8.0+) - Audit log, lockfiles, and test files
 .protocol-state/security/integrity-audit.log
 .protocol-state/security/file-integrity.json.lock
 .protocol-state/security/*.lock
+.protocol-state/security/*.test.json
+.protocol-state/security/*.test.log
 
 # ============================================================================
 # RESEARCH MODE RAW NOTES (v7.2.0+) - NEVER COMMIT

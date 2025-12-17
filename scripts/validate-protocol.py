@@ -489,18 +489,19 @@ def generate_auto_fixes(validation_results: List[ValidationResult]) -> List[Auto
     return auto_fixes
 
 
-def apply_auto_fixes(auto_fixes: List[AutoFix], preview_only: bool = False) -> int:
+def apply_auto_fixes(auto_fixes: List[AutoFix], preview_only: bool = False, ci_mode: bool = False) -> int:
     """
     Apply auto-fixes based on confidence level
 
     Args:
         auto_fixes: List of AutoFix objects
         preview_only: If True, only show what would be fixed (dry-run)
+        ci_mode: If True, skip interactive prompts (auto-skip MEDIUM confidence)
 
     Returns:
         Number of fixes applied
 
-    Note: HIGH auto-applies, MEDIUM prompts, LOW skips
+    Note: HIGH auto-applies, MEDIUM prompts (or skips in CI mode), LOW skips
     """
     applied_count = 0
 
@@ -516,10 +517,18 @@ def apply_auto_fixes(auto_fixes: List[AutoFix], preview_only: bool = False) -> i
                 applied_count += 1
 
         elif fix.confidence == FixConfidence.MEDIUM:
-            # MEDIUM confidence - prompt user
+            # MEDIUM confidence - prompt user (or skip in CI mode)
             if preview_only:
                 print(f"[PREVIEW] Would prompt for: {fix.description}")
+            elif ci_mode:
+                # CI mode: auto-skip MEDIUM confidence fixes (no prompts)
+                print(f"\n[MEDIUM CONFIDENCE FIX - SKIPPED IN CI MODE]")
+                print(f"  File: {fix.file}")
+                print(f"  Fix: {fix.description}")
+                print(f"  [SKIPPED - run without --ci-mode to prompt]")
+                fix.user_approved = False
             else:
+                # Interactive mode: prompt user
                 print(f"\n[MEDIUM CONFIDENCE FIX]")
                 print(f"  File: {fix.file}")
                 print(f"  Fix: {fix.description}")
@@ -763,6 +772,7 @@ Examples:
   %(prog)s --check                    Basic validation check
   %(prog)s --check --verbose          Verbose validation output
   %(prog)s --fix                      Apply auto-fixes (HIGH auto, MEDIUM prompt, LOW skip)
+  %(prog)s --fix --ci-mode            Apply auto-fixes in CI mode (no prompts, skip MEDIUM)
   %(prog)s --fix --preview            Preview fixes without applying (dry-run)
   %(prog)s --report                   Generate Markdown report
   %(prog)s --file <path>              Validate specific file only
@@ -792,6 +802,8 @@ Exit Codes:
                         help='Manually trigger dependency scan (checks for circular dependencies)')
     parser.add_argument('--output', '-o', type=str, metavar='FILE',
                         help='Write report to file instead of stdout')
+    parser.add_argument('--ci-mode', action='store_true',
+                        help='CI/CD mode: skip interactive prompts, auto-skip MEDIUM confidence fixes')
 
     args = parser.parse_args()
 
@@ -863,7 +875,7 @@ Exit Codes:
             auto_fixes = generate_auto_fixes(results)
             if auto_fixes:
                 print(f"\n{len(auto_fixes)} auto-fix suggestion(s) generated")
-                applied = apply_auto_fixes(auto_fixes, preview_only=args.preview)
+                applied = apply_auto_fixes(auto_fixes, preview_only=args.preview, ci_mode=args.ci_mode)
                 if not args.preview:
                     print(f"{applied} fix(es) applied\n")
 
