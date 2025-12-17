@@ -695,7 +695,7 @@ echo "✅ Session monitor duration limits working"
 
 **Implementation**:
 
-**Step 1: Create Safe Termination Guidelines**
+#### Step 1: Create Safe Termination Guidelines
 ```markdown
 # File: protocol/SAFE_PROCESS_TERMINATION.md
 # Create complete guideline document with:
@@ -709,7 +709,7 @@ echo "✅ Session monitor duration limits working"
 # (File created by this patch - comprehensive 400+ line guideline document)
 ```
 
-**Step 2: Update Agent Files with Safety References**
+#### Step 2: Update Agent Files with Safety References
 ```markdown
 # File: protocol/gojo.agent.md
 # Add after Tool Access Matrix section:
@@ -732,7 +732,7 @@ and destroy the entire development environment.
 **Complete Guidelines**: See `protocol/SAFE_PROCESS_TERMINATION.md`
 ```
 
-**Step 3: Apply Same Pattern to Panda and Yuuji**
+#### Step 3: Apply Same Pattern to Panda and Yuuji
 ```markdown
 # File: protocol/panda.agent.md
 # Add process termination safety section with dev server specific guidance
@@ -836,7 +836,7 @@ git diff protocol/gojo.agent.md protocol/panda.agent.md protocol/yuuji.agent.md
 
 **Implementation**:
 
-**Step 1: Add Module-Level Imports**
+#### Step 1: Add Module-Level Imports
 ```python
 # File: .protocol-state/session_monitor.py
 # Lines 15-20
@@ -849,7 +849,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 ```
 
-**Step 2: Fix Reset Command with Backup Verification**
+#### Step 2: Fix Reset Command with Backup Verification
 ```python
 # File: .protocol-state/session_monitor.py
 # Replace reset command (lines 717-737) with:
@@ -910,7 +910,7 @@ elif command == "reset":
         print("   Use 'start' or 'new-session' to begin a new work session")
 ```
 
-**Step 3: Fix Continue/Resume Error Handling**
+#### Step 3: Fix Continue/Resume Error Handling
 ```python
 # File: .protocol-state/session_monitor.py
 # Replace continue/resume command (lines 712-716) with:
