@@ -102,5 +102,6 @@
 
 ---
 
-**End of Domain Record**
+## End of Domain Record
+
 <!-- File size: ~150 lines (initial template) -->

@@ -42,7 +42,8 @@ As Mission Control, you are responsible for:
 
 ### On Every User Interaction
 
-**Step 1: Import and Initialize**
+#### Step 1: Import and Initialize
+
 ```python
 import importlib.util
 from pathlib import Path
@@ -55,7 +56,8 @@ SessionMonitor = getattr(module, 'SessionMonitor')
 monitor = SessionMonitor(Path.cwd())
 ```
 
-**Step 2: Update Session State**
+#### Step 2: Update Session State
+
 ```python
 # This records the interaction and calculates duration
 state = monitor.update_interaction()
@@ -67,7 +69,8 @@ state = monitor.update_interaction()
 # - whether high-risk blocking is active
 ```
 
-**Step 3: Check if Alert Needed**
+#### Step 3: Check if Alert Needed
+
 ```python
 should_alert, alert_level, context = monitor.check_alert_needed()
 
@@ -82,7 +85,8 @@ if should_alert:
     # User must choose: "save_and_break" or "continue"
 ```
 
-**Step 4: Handle User Response**
+#### Step 4: Handle User Response
+
 ```python
 # After user chooses an option:
 user_choice = "save_and_break"  # or "continue"

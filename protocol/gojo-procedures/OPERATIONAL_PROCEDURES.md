@@ -382,7 +382,7 @@ Brief affected agents with checkpoint context and resume work.
 ### Briefing Yuuji on Tiers
 
 When briefing Yuuji, explain:
-```
+```text
 "Yuuji, as of v6.0, you now recognize workflow tiers.
 
 USER will specify tier with --tier flag:
@@ -414,7 +414,7 @@ Old briefing (deprecated as of v7.1.0):
 ### Briefing USER on Tier Selection
 
 When USER asks about tiers, provide decision guidance:
-```
+```text
 "Here's how to choose the right tier:
 
 TIER 1 (Rapid) - Use when:
