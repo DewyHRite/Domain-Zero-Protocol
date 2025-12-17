@@ -441,6 +441,11 @@ your-project/
 │   ├── security-review.md        # Megumi's security findings
 │   └── trigger-19.md             # Gojo's intelligence (private)
 │
+├── .dzp-domain/                  # Domain Record (Gojo/Sukuna ONLY, v8.8.0+)
+│   ├── domain.record.md          # Shared notes repository
+│   ├── archive/                  # Rotated archives (auto at 5k lines)
+│   └── .rotation-metadata.json   # Rotation tracking
+│
 ├── protocol.config.yaml          # CENTRAL CONFIG (edit this!)
 ├── src/                          # Your code
 └── tests/                        # Your tests
@@ -472,6 +477,7 @@ A controlled collaboration space where agents operate under absolute protocol au
 - **CLAUDE.md is protected**: Only YOU and GOJO (with authorization) can edit
 - **Yuuji, Megumi, and Nobara are read-only**: Prevents accidental protocol corruption
 - **trigger-19.md is gitignored**: Private intelligence for you and Gojo only
+- **domain.record.md (v8.8.0+)**: Shared notes for Gojo and Sukuna only - prevents agent file bloat, enables crash recovery, auto-rotates at 5,000 lines
 
 ---
 

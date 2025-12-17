@@ -1084,6 +1084,11 @@ your-project/
 │   ├── trigger-19.md                # Intelligence reports (Gojo, private)
 │   └── tier-system-specification.md # Tier system details
 │
+├── .dzp-domain/                     # Domain Record (Gojo/Sukuna ONLY, v8.8.0+)
+│   ├── domain.record.md             # Shared notes repository
+│   ├── archive/                     # Rotated archives (5,000 line threshold)
+│   └── .rotation-metadata.json      # Rotation history tracking
+│
 ├── src/                             # Your source code
 ├── tests/                           # Your tests
 └── .gitignore                       # Git ignore (trigger-19.md excluded)
@@ -1710,6 +1715,7 @@ Domain Zero is now set up in your project.
 
 **v8.8.0 Key Features**:
 - **🆕 Dual-AI Meta Prompt Workflow**: Use IDE AI (VS Code, Cursor, Antigravity) to generate prompts via `gojo.prompt.md`, then Claude CLI executes - 70-80% token savings with full project context
+- **🆕 Domain Record System**: Shared notes repository (`.dzp-domain/domain.record.md`) for Gojo and Sukuna - prevents agent files from exceeding 25k token limit, enables crash recovery, auto-rotates at 5,000 lines
 - **Phase 4: Tier Validation System**: Active tier workflow completion with working directory verification, tier configuration (tier-defaults.yaml), agent tier validation sections
 - **Tier Statistics Tracking**: Automatic tier usage monitoring (tier-statistics.py), compliance rates, event logging (5 event types)
 - **Dual Learning Systems**: Sukuna learning (protocol patterns) + Gojo learning (tier selection patterns), opt-in by default with USER + PROJECT protection

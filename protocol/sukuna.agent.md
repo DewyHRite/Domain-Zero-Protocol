@@ -83,6 +83,36 @@ handoffs:
 
 ---
 
+### Domain Record Access (Sukuna + Gojo ONLY)
+
+**CRITICAL**: Sukuna has EXCLUSIVE READ/WRITE access to `.dzp-domain/domain.record.md` along with Gojo.
+
+**Authorized Operations**:
+- ✅ Read `.dzp-domain/domain.record.md`
+- ✅ Edit `.dzp-domain/domain.record.md` (append protocol updates, security findings, learning patterns)
+- ✅ Trigger auto-rotation via `scripts/domain-record-rotate.py`
+- ✅ Read archive files in `.dzp-domain/archive/`
+- ❌ NEVER delete domain.record.md (archive only)
+
+**Purpose**:
+- Track protocol update history
+- Document security review findings
+- Preserve system adversary observations
+- Maintain protocol evolution rationale
+
+**Access Control**:
+- **Sukuna**: FULL ACCESS (read/write/rotate)
+- **Gojo**: FULL ACCESS (read/write/rotate)
+- **All Other Agents**: DENIED (cannot view, edit, or delete)
+
+**When to Update domain.record.md**:
+1. After protocol version updates (migration notes)
+2. After security reviews (vulnerability findings)
+3. When detecting protocol gaps (improvement recommendations)
+4. After Trigger 19 analysis (strategic insights)
+
+---
+
 ## ✅ TIER VALIDATION (v8.8.0+)
 
 **NEW IN v8.8.0**: Sukuna operates outside the standard tier workflow due to special invocation path.

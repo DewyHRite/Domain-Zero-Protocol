@@ -784,6 +784,50 @@ safety:
     high_risk_session_threshold_minutes: 360  # 6 hours
 ```
 
+#### Domain Record System (v8.8.0+)
+
+```yaml
+# Shared notes repository for Gojo and Sukuna
+# Prevents agent files from exceeding token limits
+domain_record:
+  enabled: true
+  location: ".dzp-domain/domain.record.md"
+
+  # Access Control (Gojo and Sukuna ONLY)
+  allowed_agents:
+    - gojo
+    - sukuna
+
+  # Auto-Rotation Settings
+  rotation:
+    enabled: true
+    threshold_lines: 5000                # Archive at 5,000 lines
+    archive_location: ".dzp-domain/archive/"
+    keep_archives: 10                     # Keep last 10 rotations
+
+  # Git Tracking
+  git_tracked: false  # true = commit to repo, false = gitignored (DEFAULT)
+
+  # Content Types
+  content_types:
+    - session_notes
+    - strategic_decisions
+    - protocol_updates
+    - learning_patterns
+    - crash_recovery
+
+  # File Integrity Monitoring
+  integrity_monitoring: true  # Track in file-integrity.json
+```
+
+**Purpose**: domain.record.md stores session notes, strategic decisions, and crash recovery checkpoints for Gojo and Sukuna. It auto-rotates at 5,000 lines to prevent bloat.
+
+**Manual rotation**:
+```bash
+python scripts/domain-record-rotate.py --check   # Check size
+python scripts/domain-record-rotate.py --rotate  # Force rotation
+```
+
 ---
 
 ## Testing Your Setup
