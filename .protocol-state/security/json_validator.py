@@ -9,7 +9,7 @@ OWASP: A03:2021 - Injection
 """
 
 try:
-    from jsonschema import validate, ValidationError, Draft7Validator
+    from jsonschema import validate, ValidationError
 except ImportError:
     print("[ERROR] jsonschema package not installed")
     print("[INFO] Install with: pip install jsonschema")
@@ -17,6 +17,14 @@ except ImportError:
 
 from typing import Dict, Any
 import json
+from pathlib import Path
+
+# Import path validator for secure file access
+try:
+    from .path_validator import safe_join, SecurityError
+except ImportError:
+    # Fallback for direct script execution
+    from path_validator import safe_join, SecurityError
 
 PROJECT_STATE_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -112,12 +120,12 @@ def validate_session_state(state: Dict[str, Any]) -> None:
 
 
 # Safe loader functions
-def load_validated_project_state(filepath: str = '.protocol-state/project-state.json') -> Dict[str, Any]:
+def load_validated_project_state(filepath: str = 'project-state.json') -> Dict[str, Any]:
     """
     Load and validate project state.
 
     Args:
-        filepath: Path to project state file
+        filepath: Filename (not full path) within .protocol-state/ directory
 
     Returns:
         Validated project state dictionary
@@ -126,24 +134,28 @@ def load_validated_project_state(filepath: str = '.protocol-state/project-state.
         ValidationError: If state is invalid
         FileNotFoundError: If file doesn't exist
         json.JSONDecodeError: If file is not valid JSON
+        SecurityError: If path traversal detected
 
     Example:
         >>> state = load_validated_project_state()
         >>> assert "protocol_version" in state
     """
-    with open(filepath, 'r', encoding='utf-8') as f:
+    # SECURITY: Use safe_join to prevent path traversal
+    safe_filepath = safe_join('.protocol-state', filepath)
+
+    with open(safe_filepath, 'r', encoding='utf-8') as f:
         state = json.load(f)
 
     validate_project_state(state)
     return state
 
 
-def load_validated_session_state(filepath: str = '.protocol-state/session-state.json') -> Dict[str, Any]:
+def load_validated_session_state(filepath: str = 'session-state.json') -> Dict[str, Any]:
     """
     Load and validate session state.
 
     Args:
-        filepath: Path to session state file
+        filepath: Filename (not full path) within .protocol-state/ directory
 
     Returns:
         Validated session state dictionary
@@ -152,12 +164,16 @@ def load_validated_session_state(filepath: str = '.protocol-state/session-state.
         ValidationError: If state is invalid
         FileNotFoundError: If file doesn't exist
         json.JSONDecodeError: If file is not valid JSON
+        SecurityError: If path traversal detected
 
     Example:
         >>> state = load_validated_session_state()
         >>> assert "protocol_version" in state
     """
-    with open(filepath, 'r', encoding='utf-8') as f:
+    # SECURITY: Use safe_join to prevent path traversal
+    safe_filepath = safe_join('.protocol-state', filepath)
+
+    with open(safe_filepath, 'r', encoding='utf-8') as f:
         state = json.load(f)
 
     validate_session_state(state)

@@ -41,12 +41,26 @@ def safe_join(base_dir: Union[str, Path], user_path: Union[str, Path]) -> Path:
     base = Path(base_dir).resolve()
     target = (base / user_path).resolve()
 
-    if not str(target).startswith(str(base)):
-        raise SecurityError(
-            f"Path traversal detected: {user_path}\n"
-            f"Attempted to access: {target}\n"
-            f"Must remain within: {base}"
-        )
+    # Use is_relative_to() to prevent path confusion attacks
+    # (e.g., /home/user vs /home/username substring matching)
+    try:
+        # Python 3.9+ has is_relative_to()
+        if not target.is_relative_to(base):
+            raise SecurityError(
+                f"Path traversal detected: {user_path}\n"
+                f"Attempted to access: {target}\n"
+                f"Must remain within: {base}"
+            )
+    except AttributeError:
+        # Fallback for Python < 3.9: use relative_to()
+        try:
+            target.relative_to(base)
+        except ValueError:
+            raise SecurityError(
+                f"Path traversal detected: {user_path}\n"
+                f"Attempted to access: {target}\n"
+                f"Must remain within: {base}"
+            )
 
     return target
 
@@ -71,6 +85,10 @@ def validate_backup_path(backup_name: str) -> Path:
         >>> validate_backup_path('../../../etc/passwd')
         SecurityError: Invalid backup name
     """
+    # Validate backup name is not empty
+    if not backup_name or not backup_name.strip():
+        raise SecurityError("Backup name cannot be empty")
+
     # Whitelist allowed characters
     if not all(c.isalnum() or c in '-_.' for c in backup_name):
         raise SecurityError(f"Invalid backup name: {backup_name}")

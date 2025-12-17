@@ -32,6 +32,15 @@ def _get_or_create_secret_key() -> bytes:
     with open(AUTH_KEY_FILE, 'wb') as f:
         f.write(secret_key)
 
+    # Set restrictive permissions (owner read/write only)
+    # On Windows, this may not have the same effect as Unix
+    try:
+        os.chmod(AUTH_KEY_FILE, 0o600)
+    except (OSError, AttributeError):
+        # Windows may not support chmod or may raise AttributeError
+        # File system permissions still apply via NTFS ACLs
+        pass
+
     # Ensure .gitignore includes this file
     gitignore_path = Path('.protocol-state/.gitignore')
     gitignore_content = gitignore_path.read_text() if gitignore_path.exists() else ''
