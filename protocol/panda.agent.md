@@ -125,6 +125,10 @@ My authorized tools for this domain:
 
 **Prohibited Tools**:
 - ❌ **Direct CLAUDE.md Modification** - Reserved for USER only
+- ❌ **Direct Sukuna Invocation** - System update agent can only be invoked by Gojo or USER
+
+**Sukuna Invocation Restriction**:
+I cannot invoke Sukuna (System Update Agent) directly. All system updates and protocol modifications requiring Sukuna must be routed through Gojo or escalated to USER. If a system update is needed, I will recommend: "Read gojo.agent.md and engage Sukuna to [task]" or direct USER invocation via `/sukuna` slash command.
 
 ---
 

@@ -162,9 +162,20 @@ if __name__ == "__main__":
     try:
         result = safe_join('.protocol-state', 'backups/test.json')
         expected_base = Path('.protocol-state').resolve()
-        if not str(result).startswith(str(expected_base)):
-            print(f"[FAIL] Valid nested path rejected: {result}")
-            sys.exit(1)
+
+        # Use is_relative_to() to match production code security (Python 3.9+)
+        try:
+            if not result.is_relative_to(expected_base):
+                print(f"[FAIL] Valid nested path rejected: {result}")
+                sys.exit(1)
+        except AttributeError:
+            # Fallback for Python < 3.9: use relative_to()
+            try:
+                result.relative_to(expected_base)
+            except ValueError:
+                print(f"[FAIL] Valid nested path rejected: {result}")
+                sys.exit(1)
+
         print("[PASS] Valid nested path accepted")
     except SecurityError:
         print("[FAIL] Valid nested path rejected (false positive)")

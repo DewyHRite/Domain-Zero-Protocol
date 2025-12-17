@@ -11,9 +11,23 @@ OWASP: A08:2021 - Software and Data Integrity Failures
 import hashlib
 import json
 import os
+import platform
 import time
 from pathlib import Path
 from typing import Dict, Optional
+
+# Platform-specific file locking imports
+try:
+    import fcntl  # Unix/Linux/Mac
+    HAS_FCNTL = True
+except ImportError:
+    HAS_FCNTL = False
+
+try:
+    import msvcrt  # Windows
+    HAS_MSVCRT = True
+except ImportError:
+    HAS_MSVCRT = False
 
 INTEGRITY_FILE = '.protocol-state/security/file-integrity.json'
 
@@ -183,26 +197,38 @@ def update_integrity_baseline(filepath: str) -> None:
     if not Path(filepath).exists():
         raise FileNotFoundError(f"Cannot update hash for non-existent file: {filepath}")
 
-    # Load existing baseline with corruption handling
-    try:
-        with open(INTEGRITY_FILE, 'r', encoding='utf-8') as f:
+    # Acquire exclusive lock for read-modify-write (prevents race conditions)
+    with open(INTEGRITY_FILE, 'r+', encoding='utf-8') as f:
+        try:
+            # Platform-specific file locking
+            if HAS_FCNTL:
+                # Unix/Linux/Mac: acquire exclusive lock
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            elif HAS_MSVCRT:
+                # Windows: acquire exclusive lock
+                msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+            # If neither available, proceed without locking (best effort)
+
+            # Load existing baseline with corruption handling
             data = json.load(f)
-    except json.JSONDecodeError as e:
-        raise RuntimeError(f"Baseline file corrupted: {e}") from e
+        except json.JSONDecodeError as e:
+            raise RuntimeError(f"Baseline file corrupted: {e}") from e
 
-    # Compute new hash
-    new_hash = compute_file_hash(filepath)
-    old_hash = data['hashes'].get(filepath, 'none')
-    data['hashes'][filepath] = new_hash
-    data['timestamp'] = int(time.time())
+        # Compute new hash
+        new_hash = compute_file_hash(filepath)
+        old_hash = data['hashes'].get(filepath, 'none')
+        data['hashes'][filepath] = new_hash
+        data['timestamp'] = int(time.time())
 
-    # Atomic write: write to temp file, then rename
-    temp_file = INTEGRITY_FILE + '.tmp'
-    with open(temp_file, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2)
-        f.write('\n')  # Add trailing newline
+        # Write to temp file while holding lock
+        temp_file = INTEGRITY_FILE + '.tmp'
+        with open(temp_file, 'w', encoding='utf-8') as tmp:
+            json.dump(data, tmp, indent=2)
+            tmp.write('\n')  # Add trailing newline
 
-    # Atomic replace
+        # Lock is released automatically when context exits
+
+    # Atomic replace (must happen after file is closed/unlocked)
     Path(temp_file).replace(INTEGRITY_FILE)
 
     print(f"[INFO] Updated integrity hash for: {filepath}")
