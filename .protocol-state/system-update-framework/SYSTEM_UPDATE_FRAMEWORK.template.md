@@ -28,8 +28,34 @@ Before executing ANY system update, bug fix, feature addition, or structural mod
 2. **File Classification Verification** - MUST identify and respect INTERNAL vs CORE classifications
 3. **Version Checklist Sweep** - MUST verify all version identifiers update appropriately
 4. **Plan Documentation** - MUST create or update with proposed changes
+5. **SUKUNA-REPORT.md Check** (v8.8.0+) - MUST review patch manifest for applicable patches
 
 > **CRITICAL:** No changes proceed until confirmed rollback capability exists. This is non-negotiable.
+
+#### v8.8.0+ Requirement: SUKUNA-REPORT.md Integration
+
+**NEW IN v8.8.0**: All system updates MUST check `protocol/SUKUNA-REPORT.md` for applicable patches.
+
+**When to Check**:
+- Before any protocol file modification
+- During version upgrades
+- After security reviews (Megumi findings)
+- Before marking system update as complete
+
+**What to Check**:
+1. Read `protocol/SUKUNA-REPORT.md`
+2. Filter patches by "Applies To" version range
+3. Check "Required For" field (New Installations vs Upgrades)
+4. Prioritize P0-Critical and P1-High patches
+5. Apply patches before or as part of system update
+
+**Why This Matters**:
+- Self-service patch system eliminates manual patch distribution
+- Security patches auto-apply during upgrades
+- One patch entry updates all future installations
+- Traceable patch history with rollback procedures
+
+**See**: `protocol/SUKUNA-REPORT.md` for complete patch manifest
 
 ---
 
