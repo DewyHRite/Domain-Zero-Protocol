@@ -13,6 +13,8 @@ Usage:
 """
 
 import json
+import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -711,30 +713,70 @@ def main():
         monitor.record_break(duration)
     elif command == "continue" or command == "resume":
         # Resume work after break (just update interaction timestamp)
-        state = monitor.update_interaction()
-        print(f"✅ Resumed work session")
-        print(f"   Total duration: {state['session_metrics']['total_duration_minutes']} minutes")
+        # PATCH-SEC-007 (SEC-004): Add error handling
+        try:
+            state = monitor.update_interaction()
+            timestamp = datetime.now().strftime('%H:%M')
+            print(f"✅ Work resumed at {timestamp}")
+            print(f"   Total session time: {state['session_metrics']['total_duration_minutes']} minutes")
+        except Exception as e:
+            print(f"❌ Failed to resume session: {e}", file=sys.stderr)
+            print(f"   Try starting a new session with 'start' or 'new-session'", file=sys.stderr)
+            sys.exit(1)
     elif command == "reset":
         # Reset session state completely
-        try:
-            if monitor.state_file.exists():
-                # Backup before deleting
-                import shutil
-                backup_path = monitor.state_file.parent / f"session-state.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-                shutil.copy(monitor.state_file, backup_path)
-                print(f"📦 Backup created: {backup_path}")
+        # PATCH-SEC-007: Atomic reset with backup verification
+        if monitor.state_file.exists():
+            try:
+                # Create timestamped backup
+                backup_timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                backup_filename = f"session-state.backup.{backup_timestamp}.json"
+                backup_path = monitor.state_file.parent / backup_filename
 
-                # Remove current state
+                # Copy to backup location
+                shutil.copy2(monitor.state_file, backup_path)
+
+                # CRITICAL: Verify backup integrity before deletion
+                if not backup_path.exists() or backup_path.stat().st_size == 0:
+                    raise IOError("Backup verification failed: file missing or empty")
+
+                # Verify backup is valid JSON
+                with open(backup_path, 'r', encoding='utf-8') as f:
+                    json.load(f)  # Will raise exception if corrupted
+
+                print(f"✅ Backup created and verified: {backup_filename}")
+
+                # PATCH-SEC-007 (SEC-003): Clean up old backups (keep last 10)
+                backup_pattern = monitor.state_file.parent.glob('session-state.backup.*.json')
+                backups = sorted(backup_pattern, key=lambda p: p.stat().st_mtime)
+                if len(backups) > 10:
+                    for old_backup in backups[:-10]:
+                        old_backup.unlink()
+                    print(f"ℹ️  Cleaned up {len(backups) - 10} old backup(s)")
+
+                # Only delete after verified backup exists
                 monitor.state_file.unlink()
-                print(f"🗑️  Removed: {monitor.state_file}")
+                print(f"🗑️  Removed: {monitor.state_file.name}")
 
-            # Recreate with default state
-            monitor._ensure_state_file()
-            print("✅ Session state reset successfully")
-            print(f"   New state file created at: {monitor.state_file}")
-        except Exception as e:
-            print(f"❌ Error resetting session state: {e}", file=sys.stderr)
-            sys.exit(1)
+                # Recreate with default state
+                monitor._ensure_state_file()
+                print("✅ Session state reset successfully")
+                print(f"   New state file created at: {monitor.state_file}")
+
+            except (IOError, OSError, PermissionError) as e:
+                print(f"❌ Backup failed: {e}", file=sys.stderr)
+                print(f"   Session state NOT reset (original preserved)", file=sys.stderr)
+                sys.exit(1)
+            except json.JSONDecodeError as e:
+                print(f"❌ Backup verification failed: Invalid JSON ({e})", file=sys.stderr)
+                print(f"   Session state NOT reset (original preserved)", file=sys.stderr)
+                # Clean up corrupted backup
+                if backup_path.exists():
+                    backup_path.unlink()
+                sys.exit(1)
+        else:
+            print("ℹ️  No session state file found (already reset)")
+            print("   Use 'start' or 'new-session' to begin a new work session")
     elif command == "test":
         # Test alert rendering
         test_context = {
