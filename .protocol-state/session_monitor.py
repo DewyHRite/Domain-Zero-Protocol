@@ -19,6 +19,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+# Session duration limits (PATCH-SEC-005 - SEC-DZP-008 remediation)
+MAX_BREAK_DURATION = 480  # 8 hours
+MIN_BREAK_DURATION = 1    # 1 minute
+MAX_SESSION_DURATION = 1440  # 24 hours
+
 
 class SessionMonitor:
     """
@@ -700,12 +705,17 @@ def main():
         monitor.end_session()
     elif command == "break":
         # Record break with optional duration argument
+        # PATCH-SEC-005: Validate duration to prevent DoS via infinite loops
         duration = 15  # default
         if len(sys.argv) > 2:
             try:
                 duration = int(sys.argv[2])
-                if duration < 1:
-                    print("❌ Break duration must be at least 1 minute", file=sys.stderr)
+                if duration < MIN_BREAK_DURATION or duration > MAX_BREAK_DURATION:
+                    print(
+                        f"❌ Break duration must be between {MIN_BREAK_DURATION}-{MAX_BREAK_DURATION} minutes",
+                        file=sys.stderr
+                    )
+                    print(f"   You requested: {duration} minutes", file=sys.stderr)
                     sys.exit(1)
             except ValueError:
                 print(f"❌ Invalid duration: {sys.argv[2]} (must be a number)", file=sys.stderr)

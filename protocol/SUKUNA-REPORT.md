@@ -1053,11 +1053,11 @@ The fix is simple but critical:
 
 | Patch ID | Status | Applied Version | Date Applied |
 |----------|--------|----------------|--------------|
-| PATCH-SEC-001 | ACTIVE | - | Pending |
-| PATCH-SEC-002 | ACTIVE | - | Pending |
-| PATCH-SEC-003 | ACTIVE | - | Pending |
-| PATCH-SEC-004 | ACTIVE | - | Pending |
-| PATCH-SEC-005 | ACTIVE | - | Pending |
+| PATCH-SEC-001 | ACTIVE | v8.8.0+ | 2025-12-16 |
+| PATCH-SEC-002 | ACTIVE | v8.8.0+ | 2025-12-16 |
+| PATCH-SEC-003 | ACTIVE | v8.8.0+ | 2025-12-16 |
+| PATCH-SEC-004 | ACTIVE | v8.8.0+ | 2025-12-16 |
+| PATCH-SEC-005 | ACTIVE | v8.8.0+ | 2025-12-16 |
 | PATCH-SEC-006 | ACTIVE | v8.8.0+ | 2025-12-16 |
 | PATCH-SEC-007 | ACTIVE | v8.8.0+ | 2025-12-16 |
 
