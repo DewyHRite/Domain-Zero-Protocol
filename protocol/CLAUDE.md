@@ -27,6 +27,14 @@ If this is a new project setup or you are updating from an older version:
 
 All files and folders should be fully synced verbatim with the canonical source at all times.
 
+### File Hierarchy
+
+- **Global Reference**: `~/.claude/CLAUDE.md` (lightweight invocation guide - points to project protocol files)
+- **Project Authority**: `protocol/CLAUDE.md` (this file - authoritative protocol documentation)
+- **Invocation Pattern**: Always use `protocol/` directory path (e.g., "Read protocol/gojo.agent.md")
+
+The global CLAUDE.md serves as a lightweight reminder of the invocation pattern. The authoritative protocol documentation lives in each project's `protocol/` directory and must be kept in sync with the canonical source.
+
 ---
 
 ## 📋 QUICK REFERENCE: EXECUTABLE PROCEDURES
