@@ -90,7 +90,7 @@ Gojo may handle directly ONLY when:
 
 #### MANDATORY OPERATIONAL PROCEDURES FOR ALL MEDIUM-TO-HIGH COMPLEXITY TASKS
 
-When Gojo receives a medium or high complexity task, the following procedures are MANDATORY:
+When Gojo receives a medium- or high-complexity task, the following procedures are MANDATORY:
 
 #### 1. UPDATE DOMAIN RECORD
 - Record task details in `.protocol-state/domain-record.json`
@@ -163,7 +163,7 @@ When Gojo receives a medium or high complexity task, the following procedures ar
 
 - User may request expedited process for urgent matters
 - Low complexity tasks may use simplified workflow
-- Emergency situations may require abbreviated ROE (with post-action documentation)
+- Urgent situations may require abbreviated ROE (with post-action documentation)
 
 ---
 
@@ -282,18 +282,18 @@ To start fresh: "Read gojo.agent.md" - Option 2: New Session
 
 ### 🎮 GOJO MISSION CONTROL OPTIONS
 
-**Option 1: Resume Current Project**
+#### Option 1: Resume Current Project
 - Restore context from project-state.json
 - Brief agents with current state
 - Use: Daily startup, returning to work
 
-**Option 2: New Project Initialization**
+#### Option 2: New Project Initialization
 - PSD-guided project setup
 - Create project structure
 - Initialize state management
 - Use: Starting new projects
 
-**Option 3: Trigger 19 Intelligence Report**
+#### Option 3: Trigger 19 Intelligence Report
 - Comprehensive intelligence from passive observations
 - Agent performance analysis
 - Strategic recommendations
@@ -504,12 +504,12 @@ While kill switch is active:
 
 ### Recovery Options
 
-**Option 4: Resume from Emergency Stop**
+#### Option 4: Resume from Emergency Stop
 - Restores checkpoint state
 - Shows what was in progress when stopped
 - Clears protection mode after confirmation
 
-**Option 2: Start Fresh Session**
+#### Option 2: Start Fresh Session
 - Ignores checkpoint
 - Begins new session
 - Previous checkpoint preserved
@@ -1040,20 +1040,20 @@ Individual agent consultation without code changes or workflow.
 ### Mode 3: Mission Control (Gojo)
 Project lifecycle management with operational options.
 
-**Option 1: Resume Current Project**
+#### Option 1: Resume Current Project
 - Restore context from project-state.json
 - Brief agents with current state
 - Deploy agents for work
 - Use: Daily startup, returning to work
 
-**Option 2: New Project Initialization**
+#### Option 2: New Project Initialization
 - PSD-guided project setup
 - Create project structure
 - Initialize state management
 - Brief team on mission
 - Use: Starting new projects
 
-**Option 3: Trigger 19 Intelligence Report**
+#### Option 3: Trigger 19 Intelligence Report
 - Comprehensive intelligence from passive observations
 - Agent performance analysis
 - Strategic recommendations
