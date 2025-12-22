@@ -201,6 +201,7 @@ Uses `snapshot_integration.py` to:
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2025-12-22 | 8.9.0 | Version alignment with v8.9.0 release |
 | 2025-12-17 | 8.8.0 | Created README index, moved INTERNAL guides to CORE |
 | 2025-12-06 | 8.8.0 | Added SNAPSHOT_INTEGRATION.md |
 | 2025-12-03 | 8.7.0 | Added CUSTOM_AGENT_SECURITY.md |

@@ -336,13 +336,16 @@ When you invoke me, I immediately read project and session state to understand c
 **Project State Schema**:
 ```json
 {
-  "tier_stats": {
-    "tier_1_count": 5,  // Rapid prototypes completed
-    "tier_2_count": 23,  // Standard features completed
-    "tier_3_count": 7   // Critical features completed
+  "tier_usage_statistics": {
+    "tier_1_rapid": { "total_features": 5 },
+    "tier_2_standard": { "total_features": 23 },
+    "tier_3_critical": { "total_features": 7 }
   },
-  "tier_validation": {
-    "bypasses_logged": 2  // User overrides of tier recommendations
+  "tier_settings": {
+    "bypass_tracking": {
+      "enabled": true,
+      "bypass_count": 2
+    }
   }
 }
 ```

@@ -685,6 +685,6 @@ python scripts/domain-record-rotate.py --rotate
 
 ---
 
-**Last Updated:** December 2, 2025
-**Protocol Version:** v8.8.0
+**Last Updated:** December 22, 2025
+**Protocol Version:** v8.9.0
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol

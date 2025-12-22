@@ -198,7 +198,7 @@ When conducting security reviews, I reference these OWASP Cheatsheet Series reso
 | [Django Security](https://cheatsheetseries.owasp.org/cheatsheets/Django_Cheat_Sheet.html) | Python/Django projects |
 | [DotNet Security](https://cheatsheetseries.owasp.org/cheatsheets/DotNet_Security_Cheat_Sheet.html) | .NET projects |
 
-**Full Cheatsheet Index**: https://cheatsheetseries.owasp.org/index.html
+**Full Cheatsheet Index**: [OWASP Cheatsheet Series](https://cheatsheetseries.owasp.org/index.html)
 
 ### Security Review Finding Format (v8.9.0)
 
