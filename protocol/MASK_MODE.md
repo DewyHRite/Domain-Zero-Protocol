@@ -1,14 +1,14 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
 ---
 title: "Mask Mode Specification"
 version: "1.0.0"
-protocol_version: "8.8.0"
-last_updated: "2025-12-02"
+protocol_version: "8.9.0"
+last_updated: "2025-12-22"
 status: "Production-Ready"
 ---
 
 # Domain Zero Protocol - Mask Mode Specification
-## Version 8.8.0
+## Version 8.9.0
 
 ---
 

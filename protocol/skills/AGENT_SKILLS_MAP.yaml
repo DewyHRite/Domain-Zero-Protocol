@@ -1,24 +1,62 @@
-# Domain Zero – Agent ↔ Skills Mapping (v2)
-# Purpose: Provide a single place to record which Claude Skills (example or custom)
-# are recommended per agent. Keep organization-specific skills in a private repo.
+# Domain Zero - Agent Skills Mapping (v3)
+# Purpose: Map Claude Skills (Anthropic + custom) to each DZP agent
+# Reference: https://github.com/anthropics/skills/tree/main/skills
+# Updated for v8.9.0 Claude Skills Integration
 
-version: 2
-updated: 2025-11-25
+version: 3
+updated: 2025-12-22
+protocol_version: "8.9.0"
 
 canonical_reference:
   overview: https://claude.com/blog/skills
-  repository: https://github.com/anthropics/skills/tree/main
+  repository: https://github.com/anthropics/skills/tree/main/skills
+
+# Available Anthropic Skills (16 total)
+anthropic_skills_index:
+  - pdf                    # PDF document creation
+  - docx                   # Word document creation
+  - xlsx                   # Excel spreadsheet creation
+  - pptx                   # PowerPoint creation
+  - frontend-design        # UI/UX design artifacts
+  - web-artifacts-builder  # Interactive web components
+  - webapp-testing         # Web application testing
+  - mcp-builder            # MCP server creation
+  - skill-creator          # New skill development
+  - brand-guidelines       # Brand documentation
+  - canvas-design          # Visual design canvas
+  - doc-coauthoring        # Collaborative document editing
+  - internal-comms         # Internal communication templates
+  - theme-factory          # Theme/styling generation
+  - algorithmic-art        # Generative art creation
+  - slack-gif-creator      # Animated GIF creation
 
 agents:
+  gojo:
+    role: "Mission Control"
+    anthropic_skills:
+      - skill-creator        # Create new protocol skills
+      - pptx                 # Project summary presentations
+      - internal-comms       # Protocol announcements
+      - doc-coauthoring      # Collaborative documentation
+    document_skills:
+      - pptx
+    custom_skills:
+      - skill-builder        # Create new skills rapidly
+      - protocol-verify      # Protocol validation
+      - release-briefing     # Release documentation
+      - version-audit        # Version consistency check
+      - work-session-monitoring
+
   yuuji:
-    example_skills:
-      - webapp-testing          # Playwright-based UI testing patterns
-      - mcp-server              # Guidance for creating MCP integrations
-      - artifacts-builder       # Structured artifact scaffolds (when helpful)
+    role: "Implementation Specialist"
+    anthropic_skills:
+      - web-artifacts-builder  # Interactive component building
+      - webapp-testing         # Test implementation
+      - mcp-builder            # MCP server development
+      - skill-creator          # Custom skill implementation
+      - doc-coauthoring        # Dev notes documentation
     document_skills:
       - docx
-      - pptx
-      - xlsx
       - pdf
     custom_skills:
       - codegen-standards
@@ -27,88 +65,115 @@ agents:
       - testing-fixtures
 
   megumi:
-    example_skills:
-      - webapp-testing          # For e2e verification hooks during audits
-    document_skills: []
-    custom_skills:
-      - owasp-checklist
-      - threat-modeling
-      - jwt-audit
-      - secrets-review
-      - dependency-audit
-
-  nobara:
-    example_skills:
-      - brand-guidelines
-      - theme-factory
-      - canvas-design
-      - slack-gif-creator
+    role: "Security Analyst"
+    anthropic_skills:
+      - pdf                  # Security reports
+      - webapp-testing       # Security testing
+      - doc-coauthoring      # Security review documentation
     document_skills:
-      - pptx
       - pdf
     custom_skills:
-      - ux-writing
-      - a11y-review
-      - onboarding-flows
+      - owasp-checklist      # OWASP Top 10 verification
+      - threat-modeling      # Threat model creation
+      - jwt-audit            # JWT security review
+      - secrets-review       # Secrets management audit
+      - dependency-audit     # Dependency vulnerability scan
+
+  nobara:
+    role: "Creative Strategy & UX"
+    anthropic_skills:
+      - pdf                  # Design documentation
+      - docx                 # User documentation
+      - pptx                 # Design presentations
+      - frontend-design      # UI mockups
+      - web-artifacts-builder  # Interactive prototypes
+      - brand-guidelines     # Brand standards
+      - canvas-design        # Visual layouts
+      - theme-factory        # Theme generation
+      - algorithmic-art      # Decorative elements
+      - slack-gif-creator    # Animated content
+      - doc-coauthoring      # Design specs
+    document_skills:
+      - pdf
+      - docx
+      - pptx
+    custom_skills:
+      - ux-writing           # UX copy and microcopy
+      - a11y-review          # Accessibility audit
+      - onboarding-flows     # User onboarding design
       - design-system-glossary
 
-  gojo:
-    example_skills:
-      - skill-creator
-      - template-skill
-      - mcp-server
-      - internal-comms
-    document_skills: []
-    custom_skills:
-      - skill-builder         # Create new skills rapidly with proper structure
-      - protocol-verify
-      - release-briefing
-      - version-audit
-      - work-session-monitoring
-
   todo:
-    example_skills:
-      - mcp-server            # Database integrations via MCP
-    document_skills: []
+    role: "Database & Backend"
+    anthropic_skills:
+      - xlsx                 # Schema documentation, data exports
+      - doc-coauthoring      # Database documentation
+    document_skills:
+      - xlsx
     custom_skills:
-      - schema-design         # Database schema design patterns
-      - migration-planner     # Data migration planning and execution
-      - query-optimization    # SQL/NoSQL query optimization
-      - orm-configuration     # ORM setup and relationship mapping
-      - data-normalization    # Database normalization strategies
+      - schema-design        # Database schema design
+      - migration-planner    # Data migration planning
+      - query-optimization   # SQL/NoSQL optimization
+      - orm-configuration    # ORM setup
+      - data-normalization   # Normalization strategies
 
   maki:
-    example_skills:
-      - webapp-testing        # For performance testing hooks
-    document_skills: []
+    role: "Performance Specialist"
+    anthropic_skills:
+      - xlsx                 # Performance metrics, benchmarks
+      - theme-factory        # Optimized CSS generation
+      - doc-coauthoring      # Performance reports
+    document_skills:
+      - xlsx
     custom_skills:
-      - lighthouse-audit      # Web performance auditing
-      - bundle-analysis       # JavaScript bundle optimization
-      - profiling-tools       # Chrome DevTools and profiler usage
-      - memory-optimization   # Memory leak detection and resolution
-      - critical-path         # Critical rendering path optimization
+      - lighthouse-audit     # Web performance auditing
+      - bundle-analysis      # Bundle optimization
+      - profiling-tools      # Profiler usage
+      - memory-optimization  # Memory leak detection
+      - critical-path        # Critical rendering path
 
   panda:
-    example_skills:
-      - mcp-server            # CI/CD tool integrations
-    document_skills: []
+    role: "Build & Integration"
+    anthropic_skills:
+      - xlsx                 # Build metrics, dependency lists
+      - mcp-builder          # CI/CD MCP integrations
+      - doc-coauthoring      # Build documentation
+    document_skills:
+      - xlsx
     custom_skills:
-      - github-actions        # GitHub Actions workflow configuration
-      - vite-config           # Vite build tool configuration
-      - docker-builds         # Docker containerization for builds
-      - build-caching         # Build cache optimization strategies
-      - test-pipelines        # Test automation pipeline setup
+      - github-actions       # GitHub Actions workflows
+      - vite-config          # Vite configuration
+      - docker-builds        # Docker containerization
+      - build-caching        # Build cache optimization
+      - test-pipelines       # Test automation
 
   inumaki:
-    example_skills:
-      - mcp-server            # API gateway integrations
+    role: "API & Communication"
+    anthropic_skills:
+      - pdf                  # API documentation
+      - docx                 # API guides
+      - internal-comms       # API change notifications
+      - doc-coauthoring      # OpenAPI specs
+    document_skills:
+      - pdf
+      - docx
+    custom_skills:
+      - openapi-design       # OpenAPI 3.0 specification
+      - graphql-schema       # GraphQL design
+      - rest-patterns        # RESTful API patterns
+      - api-validation       # Request/response validation
+      - websocket-design     # Real-time communication
+
+  sukuna:
+    role: "System Update Adversary"
+    anthropic_skills:
+      - skill-creator        # Adversarial skill testing
+      - doc-coauthoring      # Update documentation
     document_skills: []
     custom_skills:
-      - openapi-design        # OpenAPI 3.0 specification design
-      - graphql-schema        # GraphQL schema and resolver design
-      - rest-patterns         # RESTful API design patterns
-      - api-validation        # Request/response validation schemas
-      - websocket-design      # Real-time communication design
+      - adversarial-review   # Challenge protocol changes
+      - update-validation    # Validate system updates
+      - protocol-stress-test # Test protocol under stress
 
 policy:
   execution_risk:

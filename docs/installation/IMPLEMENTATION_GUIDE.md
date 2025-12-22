@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
-**Version**: 8.8.0
+**Version**: 8.9.0
 **Last Updated**: December 2025
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
 
@@ -27,7 +27,7 @@
 ## Quick Start (5 Minutes)
 
 **Prerequisites**:
-- Downloaded the v8.8.0 release package
+- Downloaded the v8.9.0 release package
 - Access to Claude.ai, Claude Code, GitHub Copilot, or another AI assistant
 
 ---
@@ -54,16 +54,16 @@
 ```bash
 # macOS/Linux
 mkdir -p your-project/protocol your-project/.protocol-state
-cp -r v8.8.0/protocol your-project/
-cp -r v8.8.0/.protocol-state your-project/
-cp v8.8.0/protocol.config.yaml your-project/
-cp v8.8.0/README.md your-project/DOMAIN_ZERO_README.md
+cp -r v8.9.0/protocol your-project/
+cp -r v8.9.0/.protocol-state your-project/
+cp v8.9.0/protocol.config.yaml your-project/
+cp v8.9.0/README.md your-project/DOMAIN_ZERO_README.md
 
 # Windows PowerShell
 New-Item -ItemType Directory -Force -Path "your-project\protocol", "your-project\.protocol-state"
-Copy-Item -Recurse v8.8.0\protocol -Destination your-project\
-Copy-Item -Recurse v8.8.0\.protocol-state -Destination your-project\
-Copy-Item v8.8.0\protocol.config.yaml -Destination your-project\
+Copy-Item -Recurse v8.9.0\protocol -Destination your-project\
+Copy-Item -Recurse v8.9.0\.protocol-state -Destination your-project\
+Copy-Item v8.9.0\protocol.config.yaml -Destination your-project\
 ```
 
 After copying, customize `.protocol-state/project-state.json` with your project metadata.
@@ -89,17 +89,17 @@ echo "✅ Backup created in: $BACKUP_DIR"
 ```bash
 # These files are protocol artifacts - safe to overwrite
 mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch your-project/.claude/commands "your-project/Domain Zero Agents"
-cp -r v8.8.0/protocol/* your-project/protocol/
-cp -r v8.8.0/docs/* your-project/docs/
-cp -r "v8.8.0/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
-cp -r v8.8.0/.claude/commands/* your-project/.claude/commands/
-cp -r v8.8.0/.dzp-killswitch/* your-project/.dzp-killswitch/
+cp -r v8.9.0/protocol/* your-project/protocol/
+cp -r v8.9.0/docs/* your-project/docs/
+cp -r "v8.9.0/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
+cp -r v8.9.0/.claude/commands/* your-project/.claude/commands/
+cp -r v8.9.0/.dzp-killswitch/* your-project/.dzp-killswitch/
 ```
 
 #### Step 3: DO NOT Copy .protocol-state/ Wholesale
 ```bash
 # ✗ NEVER DO THIS on existing projects:
-# cp -r v8.8.0/.protocol-state/* your-project/.protocol-state/  # WRONG!
+# cp -r v8.9.0/.protocol-state/* your-project/.protocol-state/  # WRONG!
 
 # ✓ Instead, manually update protocol_version in project-state.json:
 # Open .protocol-state/project-state.json and update "protocol_version": "8.8.0"
@@ -271,8 +271,8 @@ workflow:
    ```bash
    cd /your-project
    mkdir -p protocol
-   cp -r /path/to/v8.8.0/protocol/* ./protocol/
-   cp /path/to/v8.8.0/protocol.config.yaml ./
+   cp -r /path/to/v8.9.0/protocol/* ./protocol/
+   cp /path/to/v8.9.0/protocol.config.yaml ./
    ```
 
 2. **Create `.protocol-state` directory** (for state management):
@@ -368,8 +368,8 @@ Create `.protocol-state/project-state.json`:
 1. **Copy protocol files** to your repo:
    ```bash
    mkdir -p .github/domain-zero
-   cp -r /path/to/v8.8.0/protocol .github/domain-zero/
-   cp /path/to/v8.8.0/protocol.config.yaml .github/domain-zero/
+   cp -r /path/to/v8.9.0/protocol .github/domain-zero/
+   cp /path/to/v8.9.0/protocol.config.yaml .github/domain-zero/
    ```
 
 2. **Create agent instruction summaries** in `.github/copilot-instructions.md`:
@@ -476,7 +476,7 @@ Save this as `domain-zero-system-prompt.md`:
 ```markdown
 # Domain Zero Protocol System Prompt
 
-You are an AI assistant operating under the Domain Zero Protocol v8.8.0.
+You are an AI assistant operating under the Domain Zero Protocol v8.9.0.
 
 ## Agent System
 
@@ -585,7 +585,7 @@ Domain Zero includes `gojo.prompt.md`, a meta prompt that generates orchestrated
 Copy `gojo.prompt.md` to your project root:
 
 ```bash
-cp /path/to/v8.8.0/gojo.prompt.md your-project/
+cp /path/to/v8.9.0/gojo.prompt.md your-project/
 ```
 
 #### Step 2: Configure IDE AI
@@ -784,7 +784,7 @@ safety:
     high_risk_session_threshold_minutes: 360  # 6 hours
 ```
 
-#### Domain Record System (v8.8.0+)
+#### Domain Record System (v8.9.0+)
 
 ```yaml
 # Shared notes repository for Gojo and Sukuna
@@ -970,7 +970,7 @@ Read protocol.config.yaml and tell me:
 **Problem**: Agent references old version or features
 
 **Solutions**:
-1. Verify you're using v8.8.0 files
+1. Verify you're using v8.9.0 files
 2. Check `protocol.config.yaml` → `protocol_version` is "8.8.0" (not earlier versions)
 3. Re-upload all protocol files
 4. Clear conversation and start fresh
@@ -1569,7 +1569,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent
 - INUMAKI (API & Communication): REST, GraphQL, WebSocket design
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.8.0)
+- protocol/CLAUDE.md (main protocol, v8.9.0)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -1594,7 +1594,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
 Add to "What would you like ChatGPT to know about you?":
 
 ```
-I use the Domain Zero Protocol (v8.8.0) for development projects. This is a nine-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.9.0) for development projects. This is a nine-agent AI development framework with specialized roles:
 
 **Core Four:**
 - YUUJI: Implementation with test-first development
@@ -1640,7 +1640,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent
 - INUMAKI (API & Communication): REST, GraphQL, WebSocket design
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.8.0)
+- protocol/CLAUDE.md (main protocol, v8.9.0)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)

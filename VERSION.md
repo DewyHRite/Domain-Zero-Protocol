@@ -1,17 +1,25 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.8.0
-**Release Date:** December 6, 2025
+**Version:** v8.9.0
+**Release Date:** December 22, 2025
 **Release Type:** Minor Release
 
 ---
 
 ## Release Summary
 
-This minor release introduces **Phase 4: Tier Validation System + Dual Learning Systems**, completing the intelligent tier workflow with active validation, automatic statistics tracking, and opt-in learning capabilities for both protocol updates (Sukuna) and mission coordination (Gojo).
+This release introduces **Claude Skills Integration + Implementation Restrictions**, integrating 16 Anthropic skills across all 9 agents, adding file rotation for dev-notes.md and security-review.md, and establishing implementation restrictions to route code changes through Yuuji.
 
-### Key Changes in v8.8.0
+### Key Changes in v8.9.0
+
+- **Component 1: Claude Skills Integration** - 16 Anthropic skills (pdf, docx, xlsx, pptx, frontend-design, web-artifacts-builder, webapp-testing, mcp-builder, skill-creator, brand-guidelines, canvas-design, doc-coauthoring, internal-comms, theme-factory, algorithmic-art, slack-gif-creator) mapped to all 9 agents
+- **Component 2: Implementation Restrictions** - Nobara, Todo, Maki, Panda, Inumaki now route all code implementation through Yuuji; edit/bash tools removed from these agents
+- **Component 3: File Rotation System** - scripts/file-rotate.py for dev-notes.md and security-review.md rotation at 25k character threshold
+- **Component 4: OWASP Cheatsheet Integration** - Megumi updated with comprehensive OWASP Cheatsheet Series references (Tier 1/2/3 organization)
+- **Updated Skill Registry** - SKILL_REGISTRY.md and AGENT_SKILLS_MAP.yaml v3 with complete skill mappings
+
+### Previous Release (v8.8.0)
 
 - **Component 1: Tier Validation System** - Active pwd verification, tier-defaults.yaml (18KB config), all 9 agents updated with tier validation sections, 30-day backward compatibility grace period
 - **Component 2: Tier Statistics** - Automatic tier usage tracking, compliance monitoring, markdown/JSON reporting for Trigger 19 integration

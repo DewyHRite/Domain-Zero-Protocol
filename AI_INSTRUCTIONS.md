@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 8.8.0 | **Last Updated**: 2025-12-17
+**Version**: 8.9.0 | **Last Updated**: 2025-12-22
 **Purpose**: Complete installation and verification guide for AI assistants
 
 ---
@@ -29,6 +29,36 @@
 - Unsynced templates → Agents cannot function
 - Missing subfolders → Configuration errors
 - Incomplete installation → User frustration and wasted time
+
+---
+
+## What's New in v8.9.0
+
+### Claude Skills Integration
+16 Anthropic skills from <https://github.com/anthropics/skills> mapped to all 9 agents:
+- **Document Skills**: pdf, docx, xlsx, pptx
+- **Development Skills**: frontend-design, web-artifacts-builder, webapp-testing, mcp-builder
+- **Creative Skills**: brand-guidelines, canvas-design, theme-factory, algorithmic-art, slack-gif-creator
+- **Collaboration Skills**: doc-coauthoring, internal-comms, skill-creator
+
+### Implementation Restrictions
+5 agents now route all code implementation through Yuuji:
+- **Restricted agents**: Nobara, Todo, Maki, Panda, Inumaki
+- **Cannot use**: `edit`, `bash` tools for code changes
+- **Can use**: `write` for documentation, skills for document creation
+
+### File Rotation System
+Generalized file rotation for:
+- `dev-notes.md` - 25k character threshold
+- `security-review.md` - 25k character threshold
+- Script: `scripts/file-rotate.py`
+- Archives: `.protocol-state/archive/{filename}/`
+
+### OWASP Cheatsheet Integration
+Megumi updated with comprehensive OWASP Cheatsheet Series references:
+- Tier 1 (Critical): Authentication, Authorization, SQL Injection, XSS, CSRF, Input Validation
+- Tier 2 (High): Cryptographic Storage, REST Security, GraphQL Security
+- Tier 3 (Context-specific): Docker, Kubernetes, Node.js, Django, Mobile
 
 ---
 
@@ -196,7 +226,7 @@ Read protocol/CLAUDE.md
 - [ ] `docs/SYSTEM_UPDATE_IMPLEMENTATION_GUIDE.md`
 - [ ] `docs/TOKEN_EFFICIENCY_RECOMMENDATIONS.md`
 
-### 3.7 Domain Record Directory (`.dzp-domain/`) - NEW IN v8.8.0
+### 3.7 Domain Record Directory (`.dzp-domain/`) - v8.8.0+
 
 **Domain Record Files** (Gojo + Sukuna ONLY):
 - [ ] `.dzp-domain/domain.record.md` (shared notes repository)
@@ -240,6 +270,7 @@ Read protocol/CLAUDE.md
 - [ ] `scripts/verify-protocol.sh` (Linux/Mac protocol verification)
 - [ ] `scripts/validate-protocol.py` (Python - validates protocol file structure and state file schemas)
 - [ ] `scripts/domain-record-rotate.py` (Python - auto-rotates domain record at 5K lines, v8.8.0+)
+- [ ] `scripts/file-rotate.py` (Python - generalized file rotation for dev-notes.md/security-review.md, v8.9.0+)
 - [ ] `scripts/verify-installation.py` (Python - cross-platform installation completeness check)
 - [ ] `scripts/sync-templates.py` (Python - cross-platform template syncing)
 
@@ -726,7 +757,7 @@ cp .protocol-state/*.json .protocol-state/backups/pre-upgrade_$timestamp/ 2>/dev
 
 ```bash
 # Identify source directory
-ls core-files-v8.8.0/  # Example for v8.8.0
+ls core-files-v8.9.0/  # Example for v8.8.0
 
 # Verify it exists
 # If not, download from: https://github.com/DewyHRite/Domain-Zero-Protocol/releases
@@ -737,30 +768,30 @@ ls core-files-v8.8.0/  # Example for v8.8.0
 ```bash
 # Copy CORE files only (NOT .protocol-state/*.json)
 # Windows PowerShell
-Copy-Item -Path "core-files-v8.8.0/protocol/*" -Destination "protocol/" -Recurse -Force
-Copy-Item -Path "core-files-v8.8.0/docs/*" -Destination "docs/" -Recurse -Force
-Copy-Item -Path "core-files-v8.8.0/*.md" -Destination "." -Force
-Copy-Item -Path "core-files-v8.8.0/protocol.config.yaml" -Destination "." -Force
+Copy-Item -Path "core-files-v8.9.0/protocol/*" -Destination "protocol/" -Recurse -Force
+Copy-Item -Path "core-files-v8.9.0/docs/*" -Destination "docs/" -Recurse -Force
+Copy-Item -Path "core-files-v8.9.0/*.md" -Destination "." -Force
+Copy-Item -Path "core-files-v8.9.0/protocol.config.yaml" -Destination "." -Force
 
 # Copy state TEMPLATES only (NOT actual state files)
-Copy-Item -Path "core-files-v8.8.0/.protocol-state/*.template.*" -Destination ".protocol-state/" -Force
-Copy-Item -Path "core-files-v8.8.0/.protocol-state/*.example.*" -Destination ".protocol-state/" -Force
-Copy-Item -Path "core-files-v8.8.0/.protocol-state/*.py" -Destination ".protocol-state/" -Force
+Copy-Item -Path "core-files-v8.9.0/.protocol-state/*.template.*" -Destination ".protocol-state/" -Force
+Copy-Item -Path "core-files-v8.9.0/.protocol-state/*.example.*" -Destination ".protocol-state/" -Force
+Copy-Item -Path "core-files-v8.9.0/.protocol-state/*.py" -Destination ".protocol-state/" -Force
 # Copy .md files EXCEPT user-maintained artifacts (dev-notes.md, security-review.md, trigger-19.md)
-Get-ChildItem -Path "core-files-v8.8.0/.protocol-state/*.md" | Where-Object { $_.Name -notin @("dev-notes.md","security-review.md","trigger-19.md") } | Copy-Item -Destination ".protocol-state/" -Force
+Get-ChildItem -Path "core-files-v8.9.0/.protocol-state/*.md" | Where-Object { $_.Name -notin @("dev-notes.md","security-review.md","trigger-19.md") } | Copy-Item -Destination ".protocol-state/" -Force
 
 # Linux/Mac
-cp -r core-files-v8.8.0/protocol/* protocol/
-cp -r core-files-v8.8.0/docs/* docs/
-cp core-files-v8.8.0/*.md .
-cp core-files-v8.8.0/protocol.config.yaml .
+cp -r core-files-v8.9.0/protocol/* protocol/
+cp -r core-files-v8.9.0/docs/* docs/
+cp core-files-v8.9.0/*.md .
+cp core-files-v8.9.0/protocol.config.yaml .
 
 # Copy templates only
-cp core-files-v8.8.0/.protocol-state/*.template.* .protocol-state/
-cp core-files-v8.8.0/.protocol-state/*.example.* .protocol-state/
-cp core-files-v8.8.0/.protocol-state/*.py .protocol-state/
+cp core-files-v8.9.0/.protocol-state/*.template.* .protocol-state/
+cp core-files-v8.9.0/.protocol-state/*.example.* .protocol-state/
+cp core-files-v8.9.0/.protocol-state/*.py .protocol-state/
 # Copy .md files EXCEPT user-maintained artifacts
-for file in core-files-v8.8.0/.protocol-state/*.md; do
+for file in core-files-v8.9.0/.protocol-state/*.md; do
   filename=$(basename "$file")
   if [[ "$filename" != "dev-notes.md" && "$filename" != "security-review.md" && "$filename" != "trigger-19.md" ]]; then
     cp "$file" .protocol-state/
@@ -834,7 +865,7 @@ Read protocol/SUKUNA-REPORT.md
 
 ```bash
 # Check core files directory exists
-ls core-files-v8.8.0/
+ls core-files-v8.9.0/
 
 # If missing, download from:
 # https://github.com/DewyHRite/Domain-Zero-Protocol/releases
@@ -844,10 +875,10 @@ ls core-files-v8.8.0/
 
 ```bash
 # Windows PowerShell
-Copy-Item -Path "core-files-v8.8.0/*" -Destination "." -Recurse -Force
+Copy-Item -Path "core-files-v8.9.0/*" -Destination "." -Recurse -Force
 
 # Linux/Mac
-cp -r core-files-v8.8.0/* .
+cp -r core-files-v8.9.0/* .
 ```
 
 #### Step 3: Create Required Directories
@@ -952,8 +983,8 @@ cat missing-files-report.txt
 #### Solution
 
 ```bash
-cp core-files-v8.8.0/protocol/yuuji.agent.md protocol/
-cp core-files-v8.8.0/protocol/megumi.agent.md protocol/
+cp core-files-v8.9.0/protocol/yuuji.agent.md protocol/
+cp core-files-v8.9.0/protocol/megumi.agent.md protocol/
 ```
 
 #### Issue 2: Missing Protocol Modules
@@ -967,7 +998,7 @@ cp core-files-v8.8.0/protocol/megumi.agent.md protocol/
 
 ```bash
 mkdir -p protocol/modules
-cp core-files-v8.8.0/protocol/modules/* protocol/modules/
+cp core-files-v8.9.0/protocol/modules/* protocol/modules/
 ```
 
 #### Issue 3: Missing State Files
@@ -980,8 +1011,8 @@ cp core-files-v8.8.0/protocol/modules/* protocol/modules/
 #### Solution for Issue 3
 
 ```bash
-cp core-files-v8.8.0/.protocol-state/session_monitor.py .protocol-state/
-cp core-files-v8.8.0/.protocol-state/work-session-alert.template.md .protocol-state/
+cp core-files-v8.9.0/.protocol-state/session_monitor.py .protocol-state/
+cp core-files-v8.9.0/.protocol-state/work-session-alert.template.md .protocol-state/
 ```
 
 #### Issue 4: Missing Subfolders
@@ -994,7 +1025,7 @@ Directory not found: protocol/skills
 
 ```bash
 mkdir -p protocol/skills
-cp core-files-v8.8.0/protocol/skills/* protocol/skills/
+cp core-files-v8.9.0/protocol/skills/* protocol/skills/
 ```
 
 ### 9.3 Mass Recovery (Copy Everything)
@@ -1003,10 +1034,10 @@ cp core-files-v8.8.0/protocol/skills/* protocol/skills/
 
 ```bash
 # Windows PowerShell
-Copy-Item -Path "core-files-v8.8.0/*" -Destination "." -Recurse -Force -Exclude "*.json"
+Copy-Item -Path "core-files-v8.9.0/*" -Destination "." -Recurse -Force -Exclude "*.json"
 
 # Linux/Mac
-rsync -av --exclude='*.json' core-files-v8.8.0/ ./
+rsync -av --exclude='*.json' core-files-v8.9.0/ ./
 ```
 
 **Then verify**:
@@ -1093,7 +1124,7 @@ Read protocol/inumaki.agent.md and [API task]
 ## Canonical Source
 
 > **Repository**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Version**: 8.8.0
+> **Version**: 8.9.0
 > **Canonical File**: `protocol/CLAUDE.md`
 
 All protocol updates originate from the canonical source.
@@ -1121,5 +1152,5 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**Domain Zero Protocol v8.8.0 - Complete Installation Guide**
-**Updated**: 2025-12-17 (Domain Record System + Code Review Fixes)
+**Domain Zero Protocol v8.9.0 - Complete Installation Guide**
+**Updated**: 2025-12-22 (Claude Skills + Implementation Restrictions + File Rotation)

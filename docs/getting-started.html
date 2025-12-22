@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Getting Started with Domain Zero Protocol - A comprehensive guide for new users of the nine-agent AI development system">
+    <title>Getting Started | Domain Zero Protocol v8.9.0</title>
+    <style>
+        /* CSS Custom Properties for theming */
+        :root {
+            /* Agent Colors */
+            --color-gojo: #3B82F6;
+            --color-yuuji: #EC4899;
+            --color-megumi: #8B5CF6;
+            --color-nobara: #F59E0B;
+            --color-todo: #10B981;
+            --color-maki: #EF4444;
+            --color-panda: #14B8A6;
+            --color-inumaki: #6366F1;
+            --color-sukuna: #991B1B;
+
+            /* Base colors */
+            --color-bg: #0f172a;
+            --color-bg-secondary: #1e293b;
+            --color-bg-tertiary: #334155;
+            --color-text: #f8fafc;
+            --color-text-secondary: #94a3b8;
+            --color-text-muted: #64748b;
+            --color-border: #475569;
+            --color-accent: #3B82F6;
+
+            /* Spacing - Mobile-first values */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.25rem;
+            --space-xl: 1.5rem;
+            --space-2xl: 2rem;
+            --space-3xl: 2.5rem;
+
+            /* Typography */
+            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+
+            /* Focus styles for accessibility */
+            --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.5);
+
+            /* Touch target minimum (WCAG 2.2) */
+            --touch-target-min: 44px;
+        }
+
+        /* Tablet+ spacing adjustments */
+        @media (min-width: 768px) {
+            :root {
+                --space-lg: 1.5rem;
+                --space-xl: 2rem;
+                --space-2xl: 3rem;
+                --space-3xl: 4rem;
+            }
+        }
+
+        /* Reset and base styles */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--color-text);
+            background-color: var(--color-bg);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Skip link for accessibility */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--color-accent);
+            color: white;
+            padding: var(--space-sm) var(--space-md);
+            text-decoration: none;
+            z-index: 100;
+            border-radius: 0 0 4px 0;
+            min-height: var(--touch-target-min);
+            display: flex;
+            align-items: center;
+        }
+
+        .skip-link:focus {
+            top: 0;
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        /* Focus styles */
+        a:focus,
+        button:focus,
+        input:focus,
+        [tabindex]:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
+
+        @media (min-width: 480px) {
+            .container {
+                padding: 0 var(--space-lg);
+            }
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg) 100%);
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--space-lg) 0;
+        }
+
+        @media (min-width: 768px) {
+            header {
+                padding: var(--space-xl) 0;
+            }
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: var(--space-md);
+        }
+
+        @media (min-width: 768px) {
+            .header-content {
+                gap: var(--space-lg);
+            }
+        }
+
+        .logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        @media (min-width: 480px) {
+            .logo {
+                flex-direction: row;
+                gap: var(--space-md);
+            }
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+        }
+
+        @media (min-width: 480px) {
+            .logo-icon {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        h1 {
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--color-gojo), var(--color-yuuji));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: var(--color-bg-tertiary);
+            color: var(--color-text-secondary);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+        }
+
+        @media (min-width: 480px) {
+            .version-badge {
+                font-size: 0.875rem;
+            }
+        }
+
+        .header-description {
+            max-width: 600px;
+            font-size: 0.9rem;
+            padding: 0 var(--space-sm);
+        }
+
+        @media (min-width: 480px) {
+            .header-description {
+                font-size: 1rem;
+                padding: 0;
+            }
+        }
+
+        /* Navigation - Mobile First (horizontal scroll) */
+        nav {
+            background: var(--color-bg-secondary);
+            border-bottom: 1px solid var(--color-border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-list {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            list-style: none;
+            padding: var(--space-sm) var(--space-md);
+            gap: var(--space-xs);
+            min-width: max-content;
+        }
+
+        /* Hide scrollbar but keep functionality */
+        nav::-webkit-scrollbar {
+            height: 0;
+            display: none;
+        }
+        nav {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        @media (min-width: 768px) {
+            nav {
+                overflow-x: visible;
+            }
+            .nav-list {
+                flex-wrap: wrap;
+                justify-content: center;
+                min-width: auto;
+                gap: var(--space-sm);
+                padding: var(--space-md) 0;
+            }
+        }
+
+        .nav-list li {
+            flex-shrink: 0;
+        }
+
+        .nav-list a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: 4px;
+            transition: background-color 0.2s, color 0.2s;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            min-height: var(--touch-target-min);
+        }
+
+        @media (min-width: 480px) {
+            .nav-list a {
+                font-size: 0.9rem;
+            }
+        }
+
+        .nav-list a:hover,
+        .nav-list a:focus {
+            background: var(--color-bg-tertiary);
+            color: var(--color-text);
+        }
+
+        /* Main content */
+        main {
+            padding: var(--space-2xl) 0;
+        }
+
+        @media (min-width: 768px) {
+            main {
+                padding: var(--space-3xl) 0;
+            }
+        }
+
+        section {
+            margin-bottom: var(--space-2xl);
+        }
+
+        @media (min-width: 768px) {
+            section {
+                margin-bottom: var(--space-3xl);
+            }
+        }
+
+        h2 {
+            font-size: clamp(1.25rem, 4vw, 2rem);
+            font-weight: 600;
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-sm);
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        @media (min-width: 768px) {
+            h2 {
+                margin-bottom: var(--space-xl);
+            }
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: var(--space-sm);
+            color: var(--color-text);
+        }
+
+        @media (min-width: 480px) {
+            h3 {
+                font-size: 1.25rem;
+                margin-bottom: var(--space-md);
+            }
+        }
+
+        p {
+            margin-bottom: var(--space-md);
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+        }
+
+        @media (min-width: 480px) {
+            p {
+                font-size: 1rem;
+            }
+        }
+
+        /* Introduction section - Mobile First Grid */
+        .intro-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--space-md);
+        }
+
+        @media (min-width: 480px) {
+            .intro-grid {
+                gap: var(--space-lg);
+            }
+        }
+
+        @media (min-width: 600px) {
+            .intro-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .intro-grid {
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                gap: var(--space-xl);
+            }
+        }
+
+        .intro-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: var(--space-lg);
+        }
+
+        @media (min-width: 768px) {
+            .intro-card {
+                padding: var(--space-xl);
+            }
+        }
+
+        .intro-card h3 {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .intro-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        @media (min-width: 480px) {
+            .intro-icon {
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        /* Agent cards - Mobile First Grid */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--space-md);
+        }
+
+        @media (min-width: 480px) {
+            .agents-grid {
+                gap: var(--space-lg);
+            }
+        }
+
+        @media (min-width: 600px) {
+            .agents-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .agents-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+
+        .agent-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: var(--space-md);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 480px) {
+            .agent-card {
+                padding: var(--space-lg);
+            }
+        }
+
+        .agent-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .agent-card:hover,
+        .agent-card:focus-within {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .agent-card[data-agent="gojo"]::before { background: var(--color-gojo); }
+        .agent-card[data-agent="yuuji"]::before { background: var(--color-yuuji); }
+        .agent-card[data-agent="megumi"]::before { background: var(--color-megumi); }
+        .agent-card[data-agent="nobara"]::before { background: var(--color-nobara); }
+        .agent-card[data-agent="todo"]::before { background: var(--color-todo); }
+        .agent-card[data-agent="maki"]::before { background: var(--color-maki); }
+        .agent-card[data-agent="panda"]::before { background: var(--color-panda); }
+        .agent-card[data-agent="inumaki"]::before { background: var(--color-inumaki); }
+        .agent-card[data-agent="sukuna"]::before { background: var(--color-sukuna); }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        @media (min-width: 480px) {
+            .agent-header {
+                gap: var(--space-md);
+                margin-bottom: var(--space-md);
+            }
+        }
+
+        .agent-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        @media (min-width: 480px) {
+            .agent-avatar {
+                width: 48px;
+                height: 48px;
+                font-size: 1.25rem;
+            }
+        }
+
+        .agent-card[data-agent="gojo"] .agent-avatar { background: var(--color-gojo); }
+        .agent-card[data-agent="yuuji"] .agent-avatar { background: var(--color-yuuji); }
+        .agent-card[data-agent="megumi"] .agent-avatar { background: var(--color-megumi); }
+        .agent-card[data-agent="nobara"] .agent-avatar { background: var(--color-nobara); }
+        .agent-card[data-agent="todo"] .agent-avatar { background: var(--color-todo); }
+        .agent-card[data-agent="maki"] .agent-avatar { background: var(--color-maki); }
+        .agent-card[data-agent="panda"] .agent-avatar { background: var(--color-panda); }
+        .agent-card[data-agent="inumaki"] .agent-avatar { background: var(--color-inumaki); }
+        .agent-card[data-agent="sukuna"] .agent-avatar { background: var(--color-sukuna); }
+
+        .agent-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        @media (min-width: 480px) {
+            .agent-name {
+                font-size: 1.1rem;
+            }
+        }
+
+        .agent-role {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        @media (min-width: 480px) {
+            .agent-role {
+                font-size: 0.875rem;
+            }
+        }
+
+        .agent-description {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-sm);
+        }
+
+        @media (min-width: 480px) {
+            .agent-description {
+                font-size: 0.9rem;
+                margin-bottom: var(--space-md);
+            }
+        }
+
+        .agent-invoke {
+            background: var(--color-bg-tertiary);
+            padding: var(--space-sm);
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--color-text);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (min-width: 480px) {
+            .agent-invoke {
+                padding: var(--space-sm) var(--space-md);
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Tier system visualization */
+        .tier-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+            margin: var(--space-lg) 0;
+        }
+
+        @media (min-width: 768px) {
+            .tier-diagram {
+                gap: var(--space-xl);
+                margin: var(--space-xl) 0;
+            }
+        }
+
+        .tier-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: var(--space-lg);
+            position: relative;
+        }
+
+        /* Mobile: Colored top border indicates tier */
+        .tier-card[data-tier="1"] {
+            border-top: 4px solid #22c55e;
+        }
+        .tier-card[data-tier="2"] {
+            border-top: 4px solid #3b82f6;
+        }
+        .tier-card[data-tier="3"] {
+            border-top: 4px solid #ef4444;
+        }
+
+        @media (min-width: 600px) {
+            .tier-card {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: var(--space-lg);
+                align-items: start;
+                padding: var(--space-xl);
+                border-top-width: 1px;
+            }
+            .tier-card[data-tier="1"],
+            .tier-card[data-tier="2"],
+            .tier-card[data-tier="3"] {
+                border-top-width: 1px;
+                border-top-color: var(--color-border);
+            }
+        }
+
+        /* Mobile: inline badge at top of card */
+        .tier-badge {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: 6px;
+            margin-bottom: var(--space-md);
+            width: fit-content;
+        }
+
+        @media (min-width: 600px) {
+            .tier-badge {
+                flex-direction: column;
+                padding: var(--space-md);
+                min-width: 100px;
+                justify-content: center;
+                text-align: center;
+                margin-bottom: 0;
+            }
+        }
+
+        .tier-badge[data-tier="1"] {
+            background: linear-gradient(135deg, #22c55e20, #22c55e10);
+            border: 2px solid #22c55e;
+        }
+
+        .tier-badge[data-tier="2"] {
+            background: linear-gradient(135deg, #3b82f620, #3b82f610);
+            border: 2px solid #3b82f6;
+        }
+
+        .tier-badge[data-tier="3"] {
+            background: linear-gradient(135deg, #ef444420, #ef444410);
+            border: 2px solid #ef4444;
+        }
+
+        .tier-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        @media (min-width: 600px) {
+            .tier-number {
+                font-size: 2rem;
+            }
+        }
+
+        .tier-badge[data-tier="1"] .tier-number { color: #22c55e; }
+        .tier-badge[data-tier="2"] .tier-number { color: #3b82f6; }
+        .tier-badge[data-tier="3"] .tier-number { color: #ef4444; }
+
+        .tier-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        @media (min-width: 600px) {
+            .tier-label {
+                font-size: 0.875rem;
+            }
+        }
+
+        .tier-content h3 {
+            margin-bottom: var(--space-xs);
+        }
+
+        @media (min-width: 600px) {
+            .tier-content h3 {
+                margin-bottom: var(--space-sm);
+            }
+        }
+
+        .tier-features {
+            list-style: none;
+            margin-top: var(--space-sm);
+        }
+
+        @media (min-width: 600px) {
+            .tier-features {
+                margin-top: var(--space-md);
+            }
+        }
+
+        .tier-features li {
+            padding: var(--space-xs) 0;
+            padding-left: var(--space-lg);
+            position: relative;
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .tier-features li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.6em;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .tier-card[data-tier="1"] .tier-features li::before { background: #22c55e; }
+        .tier-card[data-tier="2"] .tier-features li::before { background: #3b82f6; }
+        .tier-card[data-tier="3"] .tier-features li::before { background: #ef4444; }
+
+        .tier-time {
+            display: inline-block;
+            background: var(--color-bg-tertiary);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: var(--space-sm);
+        }
+
+        @media (min-width: 480px) {
+            .tier-time {
+                font-size: 0.875rem;
+            }
+        }
+
+        /* SVG Diagram containers - Mobile responsive */
+        .workflow-container,
+        .relationship-diagram {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: var(--space-md);
+            margin: var(--space-lg) 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (min-width: 768px) {
+            .workflow-container,
+            .relationship-diagram {
+                padding: var(--space-xl);
+                margin: var(--space-xl) 0;
+            }
+        }
+
+        .workflow-svg,
+        .relationship-svg {
+            display: block;
+            margin: 0 auto;
+            min-width: 600px;
+            height: auto;
+        }
+
+        @media (min-width: 800px) {
+            .workflow-svg {
+                min-width: auto;
+                width: 100%;
+                max-width: 800px;
+            }
+        }
+
+        @media (min-width: 720px) {
+            .relationship-svg {
+                min-width: auto;
+                width: 100%;
+                max-width: 700px;
+            }
+        }
+
+        /* Scroll hint for diagrams on mobile */
+        .diagram-scroll-hint {
+            display: block;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-top: var(--space-sm);
+        }
+
+        @media (min-width: 800px) {
+            .diagram-scroll-hint {
+                display: none;
+            }
+        }
+
+        /* Code blocks - Mobile responsive */
+        .code-block {
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: var(--space-md);
+            margin: var(--space-sm) 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (min-width: 768px) {
+            .code-block {
+                padding: var(--space-lg);
+                margin: var(--space-md) 0;
+            }
+        }
+
+        .code-block code {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--color-text);
+            white-space: pre;
+            word-break: break-word;
+            display: block;
+        }
+
+        @media (min-width: 480px) {
+            .code-block code {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .code-block code {
+                font-size: 0.9rem;
+            }
+        }
+
+        .code-label {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-xs);
+        }
+
+        @media (min-width: 480px) {
+            .code-label {
+                font-size: 0.75rem;
+                margin-bottom: var(--space-sm);
+            }
+        }
+
+        /* Getting started steps - Mobile First */
+        .steps-list {
+            counter-reset: step;
+            list-style: none;
+        }
+
+        .step-item {
+            counter-increment: step;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        @media (min-width: 600px) {
+            .step-item {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: var(--space-lg);
+                margin-bottom: var(--space-xl);
+                padding-bottom: var(--space-xl);
+            }
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .step-number {
+            width: var(--touch-target-min);
+            height: var(--touch-target-min);
+            background: var(--color-accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        @media (min-width: 600px) {
+            .step-number {
+                width: 48px;
+                height: 48px;
+                font-size: 1.25rem;
+            }
+        }
+
+        .step-number::before {
+            content: counter(step);
+        }
+
+        .step-content h3 {
+            margin-bottom: var(--space-xs);
+        }
+
+        @media (min-width: 600px) {
+            .step-content h3 {
+                margin-bottom: var(--space-sm);
+            }
+        }
+
+        /* Protocol files table - Mobile responsive */
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: var(--space-md) 0;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+        }
+
+        @media (min-width: 768px) {
+            .table-container {
+                margin: var(--space-lg) 0;
+            }
+        }
+
+        .files-table {
+            width: 100%;
+            min-width: 480px;
+            border-collapse: collapse;
+        }
+
+        @media (min-width: 768px) {
+            .files-table {
+                min-width: auto;
+            }
+        }
+
+        .files-table th,
+        .files-table td {
+            padding: var(--space-sm) var(--space-md);
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 0.85rem;
+        }
+
+        @media (min-width: 768px) {
+            .files-table th,
+            .files-table td {
+                padding: var(--space-md);
+                font-size: 1rem;
+            }
+        }
+
+        .files-table th {
+            background: var(--color-bg-tertiary);
+            font-weight: 600;
+            color: var(--color-text);
+            white-space: nowrap;
+        }
+
+        .files-table td {
+            color: var(--color-text-secondary);
+        }
+
+        .files-table td:first-child {
+            white-space: nowrap;
+        }
+
+        .files-table code {
+            background: var(--color-bg-tertiary);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+        }
+
+        @media (min-width: 480px) {
+            .files-table code {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .files-table code {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Footer - Mobile responsive */
+        footer {
+            background: var(--color-bg-secondary);
+            border-top: 1px solid var(--color-border);
+            padding: var(--space-lg) 0;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            footer {
+                padding: var(--space-xl) 0;
+            }
+        }
+
+        footer p {
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        @media (min-width: 480px) {
+            footer p {
+                font-size: 0.875rem;
+            }
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        @media (min-width: 480px) {
+            .footer-links {
+                flex-direction: row;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: var(--space-md);
+            }
+        }
+
+        .footer-links a {
+            color: var(--color-accent);
+            text-decoration: none;
+            padding: var(--space-sm) var(--space-md);
+            min-height: var(--touch-target-min);
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-links a:hover,
+        .footer-links a:focus {
+            text-decoration: underline;
+        }
+
+        .footer-separator {
+            display: none;
+        }
+
+        @media (min-width: 480px) {
+            .footer-separator {
+                display: inline;
+                color: var(--color-text-muted);
+            }
+        }
+
+        /* Utility classes */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .highlight {
+            color: var(--color-text);
+            font-weight: 600;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --color-border: #94a3b8;
+            }
+
+            .agent-card,
+            .tier-card,
+            .intro-card {
+                border-width: 2px;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            .agent-card,
+            .nav-list a {
+                transition: none;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+
+            nav,
+            .skip-link {
+                display: none;
+            }
+
+            .agent-card,
+            .tier-card,
+            .intro-card {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <!-- Domain Zero Logo SVG -->
+                <svg class="logo-icon" viewBox="0 0 60 60" aria-hidden="true" focusable="false">
+                    <defs>
+                        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#3B82F6"/>
+                            <stop offset="100%" style="stop-color:#EC4899"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="30" cy="30" r="28" fill="none" stroke="url(#logoGradient)" stroke-width="3"/>
+                    <circle cx="30" cy="30" r="18" fill="none" stroke="url(#logoGradient)" stroke-width="2"/>
+                    <circle cx="30" cy="30" r="8" fill="url(#logoGradient)"/>
+                    <text x="30" y="35" text-anchor="middle" fill="white" font-size="10" font-weight="bold">0</text>
+                </svg>
+                <div>
+                    <h1>Domain Zero Protocol</h1>
+                    <span class="version-badge">v8.9.0</span>
+                </div>
+            </div>
+            <p class="header-description">A nine-agent AI development system providing specialized expertise through distinct personalities, operating under absolute protocol authority.</p>
+        </div>
+    </header>
+
+    <nav aria-label="Main navigation">
+        <div class="container">
+            <ul class="nav-list">
+                <li><a href="#what-is-dzp">What is DZP?</a></li>
+                <li><a href="#agents">The 9 Agents</a></li>
+                <li><a href="#relationships">Agent Relationships</a></li>
+                <li><a href="#tiers">Tier System</a></li>
+                <li><a href="#workflow">Workflow</a></li>
+                <li><a href="#getting-started">Getting Started</a></li>
+                <li><a href="#files">Protocol Files</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main id="main-content">
+        <div class="container">
+
+            <!-- What is Domain Zero Protocol -->
+            <section id="what-is-dzp" aria-labelledby="what-is-dzp-heading">
+                <h2 id="what-is-dzp-heading">What is Domain Zero Protocol?</h2>
+
+                <div class="intro-grid">
+                    <div class="intro-card">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                            Zero Defects
+                        </h3>
+                        <p>The ultimate goal of perfect code: zero security vulnerabilities, zero bugs, zero performance loss, zero technical debt.</p>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            Nine Specialized Agents
+                        </h3>
+                        <p>Each agent brings distinct expertise: implementation, security, UX design, database, performance, build systems, API design, and system updates.</p>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            Safety First
+                        </h3>
+                        <p>User safety and wellbeing override all other objectives. No agent may compromise user safety under any circumstances.</p>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="3" y1="9" x2="21" y2="9"/>
+                                <line x1="9" y1="21" x2="9" y2="9"/>
+                            </svg>
+                            Three-Tier System
+                        </h3>
+                        <p>Match process rigor to feature criticality: Rapid for prototypes, Standard for production, Critical for sensitive features.</p>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                            Claude Skills Integration
+                        </h3>
+                        <p>16 Anthropic skills mapped to all agents: PDF/DOCX/XLSX generation, frontend design, webapp testing, MCP building, and more.</p>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="8.5" cy="7" r="4"/>
+                                <line x1="20" y1="8" x2="20" y2="14"/>
+                                <line x1="23" y1="11" x2="17" y2="11"/>
+                            </svg>
+                            Implementation Routing
+                        </h3>
+                        <p>Five agents (Nobara, Todo, Maki, Panda, Inumaki) route all code changes through Yuuji, ensuring TDD practices and test coverage.</p>
+                    </div>
+                </div>
+
+                <p style="margin-top: var(--space-lg);">Domain Zero Protocol creates a bounded space where specialized agents collaborate under absolute protocol authority. When you invoke the protocol, you activate <span class="highlight">Domain Zero</span>, where the goal is always ZERO: perfect code, zero compromises.</p>
+            </section>
+
+            <!-- The Nine Agents -->
+            <section id="agents" aria-labelledby="agents-heading">
+                <h2 id="agents-heading">The Nine Agents</h2>
+                <p>Each agent has a distinct role, personality, and area of expertise. They work together to achieve zero-defect code.</p>
+
+                <div class="agents-grid">
+                    <!-- Gojo -->
+                    <article class="agent-card" data-agent="gojo">
+                        <div class="agent-header">
+                            <div class="agent-avatar" aria-hidden="true">G</div>
+                            <div>
+                                <div class="agent-name">GOJO</div>
+                                <div class="agent-role">Mission Control</div>
+                            </div>
+                        </div>
+                        <p class="agent-description">Project lifecycle management, protocol guardian, and passive observation. Creates and enforces the domain where other agents operate.</p>
+                        <div class="code-block agent-invoke">
+                            <code>Read protocol/gojo.agent.md</code>
+                        </div>
+                    </article>
+
+                    <!-- Yuuji -->
+                    <article class="agent-card" data-agent="yuuji">
+                        <div class="agent-header">
+                            <div class="agent-avatar" aria-hidden="true">Y</div>
+                            <div>
+                                <div class="agent-name">YUUJI</div>
+                                <div class="agent-role">Implementation Specialist</div>
+                            </div>
+                        </div>
+                        <p class="agent-description">Test-first development and feature implementation. Enthusiastic and determined, feels the weight of protocol compliance.</p>
+                        <div class="code-block agent-invoke">
+                            <code>Read protocol/yuuji.agent.md and [task]</code>
+                        </div>
+                    </article>
+
+                    <!-- Megumi -->
+                    <article class="agent-card" data-agent="megumi">
+                        <div class="agent-header">
+                            <div class="agent-avatar" aria-hidden="true">M</div>
+                            <div>
+                                <div class="agent-name">MEGUMI</div>
+                                <div class="agent-role">Security Analyst</div>
+                            </div>
+                        </div>
+                        <p class="agent-description">OWASP Top 10 security reviews, threat modeling, and vulnerability assessment. Strategic and analytical in approach.</p>
+                        <div class="code-block agent-invoke">
+                            <code>Read protocol/megumi.agent.md and [review]</code>
+                        </div>
+                    </article>
+
+                    <!-- Nobara -->
+                    <article class="agent-card" data-agent="nobara">
+                        <div class="agent-header">
+                            <div class="agent-avatar" aria-hidden="true">N</div>
+                            <div>
+                                <div class="agent-name">NOBARA</div>
+                                <div class="agent-role">Creative Strategy & UX</div>
+                            </div>
+                        </div>
+                        <p class="agent-description">User experience design, product vision, and WCAG accessibility compliance. Bold and user-centered in creative decisions.</p>
+                        <div class="code-block agent-invoke">
+                            <code>Read protocol/nobara.agent.md and [design]</code>
+                        </div>
+                    </article>
+
+                    <!-- Todo -->
+                    <article class="agent-card" data-agent="todo">
+                        <div class="agent-header">
+                            <div class="agent-avatar" aria-hidden="true">T</div>
+                            <div>
+                                <div class="agent-name">TODO</div>
+                                <div class="agent-role">Database & Backend</div>
+                            </div>
+                        </div>
+                        <p class="agent-description">Schema design, migrations, query optimization, and ORM configuration. Intense and passionate about data integrity.</p>
+                        <div class="code-block agent-invoke">
+                            <code>Read protocol/todo.agent.md and [task]</code>
+                        </div>
+                    </article>
+
+                    <!-- Maki -->
+                    <article class="agent-card" data-agent="maki">
+                        <div class="agent-header">
+                            <div class="agent-avatar" aria-hidden="true">Ma</div>
+                            <div>
+                                <div class="agent-name">MAKI</div>
+                                <div class="agent-role">Performance Specialist</div>
+                            </div>
+                        </div>
+                        <p class="agent-description">Performance profiling, code optimization, and bundle analysis. Direct and efficient with zero-overhead focus.</p>
+                        <div class="code-block agent-invoke">
+                            <code>Read protocol/maki.agent.md and [audit]</code>
+                        </div>
+                    </article>
+
+                    <!-- Panda -->
+                    <article class="agent-card" data-agent="panda">
+                        <div class="agent-header">
+                            <div class="agent-avatar" aria-hidden="true">P</div>
+                            <div>
+                                <div class="agent-name">PANDA</div>
+                                <div class="agent-role">Build & Integration</div>
+                            </div>
+                        </div>
+                        <p class="agent-description">CI/CD pipelines, build systems, and integration testing. Cheerful and versatile across environments.</p>
+                        <div class="code-block agent-invoke">
+                            <code>Read protocol/panda.agent.md and [config]</code>
+                        </div>
+                    </article>
+
+                    <!-- Inumaki -->
+                    <article class="agent-card" data-agent="inumaki">
+                        <div class="agent-header">
+                            <div class="agent-avatar" aria-hidden="true">I</div>
+                            <div>
+                                <div class="agent-name">INUMAKI</div>
+                                <div class="agent-role">API & Communication</div>
+                            </div>
+                        </div>
+                        <p class="agent-description">REST/GraphQL/WebSocket design and OpenAPI specifications. Concise and precise in API contracts.</p>
+                        <div class="code-block agent-invoke">
+                            <code>Read protocol/inumaki.agent.md and [api]</code>
+                        </div>
+                    </article>
+
+                    <!-- Sukuna -->
+                    <article class="agent-card" data-agent="sukuna">
+                        <div class="agent-header">
+                            <div class="agent-avatar" aria-hidden="true">S</div>
+                            <div>
+                                <div class="agent-name">SUKUNA</div>
+                                <div class="agent-role">System Update Adversary</div>
+                            </div>
+                        </div>
+                        <p class="agent-description">Protocol updates, risk assessment, and red-team reviews. Adversarial-but-aligned; can only be invoked by Gojo or User.</p>
+                        <div class="code-block agent-invoke">
+                            <code>Via Gojo: engage Sukuna to [update]</code>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Agent Relationships -->
+            <section id="relationships" aria-labelledby="relationships-heading">
+                <h2 id="relationships-heading">Agent Relationships</h2>
+                <p>The agents work together in a structured hierarchy. Gojo acts as Mission Control, coordinating the seven working agents and invoking Sukuna for system updates.</p>
+
+                <div class="relationship-diagram" role="img" aria-label="Agent relationship diagram showing Gojo at the top coordinating three core agents (Yuuji, Megumi, Nobara), four extended agents (Todo, Maki, Panda, Inumaki), and Sukuna for system updates">
+                    <svg class="relationship-svg" viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background -->
+                        <rect width="700" height="500" fill="#1e293b"/>
+
+                        <!-- Domain boundary -->
+                        <rect x="50" y="80" width="600" height="360" rx="16" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="8,4"/>
+                        <text x="350" y="60" text-anchor="middle" fill="#94a3b8" font-size="14" font-weight="600">DOMAIN ZERO</text>
+
+                        <!-- Gojo (Top) -->
+                        <circle cx="350" cy="130" r="40" fill="#3B82F6"/>
+                        <text x="350" y="135" text-anchor="middle" fill="white" font-size="14" font-weight="bold">GOJO</text>
+                        <text x="350" y="185" text-anchor="middle" fill="#94a3b8" font-size="11">Mission Control</text>
+
+                        <!-- Core Three Row -->
+                        <circle cx="180" cy="260" r="35" fill="#EC4899"/>
+                        <text x="180" y="265" text-anchor="middle" fill="white" font-size="12" font-weight="bold">YUUJI</text>
+                        <text x="180" y="305" text-anchor="middle" fill="#94a3b8" font-size="10">Implementation</text>
+
+                        <circle cx="350" cy="260" r="35" fill="#8B5CF6"/>
+                        <text x="350" y="265" text-anchor="middle" fill="white" font-size="12" font-weight="bold">MEGUMI</text>
+                        <text x="350" y="305" text-anchor="middle" fill="#94a3b8" font-size="10">Security</text>
+
+                        <circle cx="520" cy="260" r="35" fill="#F59E0B"/>
+                        <text x="520" y="265" text-anchor="middle" fill="white" font-size="12" font-weight="bold">NOBARA</text>
+                        <text x="520" y="305" text-anchor="middle" fill="#94a3b8" font-size="10">UX Design</text>
+
+                        <!-- Extended Four Row -->
+                        <circle cx="115" cy="380" r="30" fill="#10B981"/>
+                        <text x="115" y="385" text-anchor="middle" fill="white" font-size="11" font-weight="bold">TODO</text>
+                        <text x="115" y="420" text-anchor="middle" fill="#94a3b8" font-size="9">Database</text>
+
+                        <circle cx="255" cy="380" r="30" fill="#EF4444"/>
+                        <text x="255" y="385" text-anchor="middle" fill="white" font-size="11" font-weight="bold">MAKI</text>
+                        <text x="255" y="420" text-anchor="middle" fill="#94a3b8" font-size="9">Performance</text>
+
+                        <circle cx="395" cy="380" r="30" fill="#14B8A6"/>
+                        <text x="395" y="385" text-anchor="middle" fill="white" font-size="11" font-weight="bold">PANDA</text>
+                        <text x="395" y="420" text-anchor="middle" fill="#94a3b8" font-size="9">Build/CI</text>
+
+                        <circle cx="535" cy="380" r="30" fill="#6366F1"/>
+                        <text x="535" y="385" text-anchor="middle" fill="white" font-size="11" font-weight="bold">INUMAKI</text>
+                        <text x="535" y="420" text-anchor="middle" fill="#94a3b8" font-size="9">API</text>
+
+                        <!-- Sukuna (Outside main flow) -->
+                        <rect x="580" y="110" width="70" height="50" rx="8" fill="#991B1B"/>
+                        <text x="615" y="140" text-anchor="middle" fill="white" font-size="11" font-weight="bold">SUKUNA</text>
+                        <text x="615" y="175" text-anchor="middle" fill="#94a3b8" font-size="9">System Updates</text>
+
+                        <!-- Connection lines -->
+                        <!-- Gojo to Core Three -->
+                        <line x1="320" y1="160" x2="200" y2="230" stroke="#475569" stroke-width="2"/>
+                        <line x1="350" y1="170" x2="350" y2="225" stroke="#475569" stroke-width="2"/>
+                        <line x1="380" y1="160" x2="500" y2="230" stroke="#475569" stroke-width="2"/>
+
+                        <!-- Core to Extended -->
+                        <line x1="160" y1="290" x2="130" y2="350" stroke="#475569" stroke-width="1" stroke-dasharray="4,2"/>
+                        <line x1="190" y1="295" x2="240" y2="350" stroke="#475569" stroke-width="1" stroke-dasharray="4,2"/>
+                        <line x1="350" y1="295" x2="395" y2="350" stroke="#475569" stroke-width="1" stroke-dasharray="4,2"/>
+                        <line x1="520" y1="295" x2="535" y2="350" stroke="#475569" stroke-width="1" stroke-dasharray="4,2"/>
+
+                        <!-- Gojo to Sukuna (special connection) -->
+                        <line x1="390" y1="130" x2="580" y2="130" stroke="#991B1B" stroke-width="2" stroke-dasharray="6,3"/>
+                        <text x="485" y="120" text-anchor="middle" fill="#991B1B" font-size="9">Gojo-invoked only</text>
+
+                        <!-- Yuuji-Megumi workflow arrow -->
+                        <path d="M 215 260 Q 265 240 315 260" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+                            </marker>
+                        </defs>
+                        <text x="265" y="235" text-anchor="middle" fill="#64748b" font-size="9">security review</text>
+                    </svg>
+                    <span class="diagram-scroll-hint">Scroll horizontally to view full diagram</span>
+                </div>
+            </section>
+
+            <!-- Tier System -->
+            <section id="tiers" aria-labelledby="tiers-heading">
+                <h2 id="tiers-heading">The Three-Tier System</h2>
+                <p>Match process rigor to feature criticality. The tier system ensures you apply the right amount of testing, security review, and documentation for each type of work.</p>
+
+                <div class="tier-diagram">
+                    <!-- Tier 1 -->
+                    <div class="tier-card" data-tier="1">
+                        <div class="tier-badge" data-tier="1">
+                            <span class="tier-number">1</span>
+                            <span class="tier-label">Rapid</span>
+                        </div>
+                        <div class="tier-content">
+                            <h3>Rapid Development</h3>
+                            <p>For prototypes, experiments, learning exercises, and throwaway code. Fast iteration without formal testing or security review.</p>
+                            <ul class="tier-features">
+                                <li>No tests required</li>
+                                <li>No security review</li>
+                                <li>Minimal documentation</li>
+                                <li>Backups still required</li>
+                            </ul>
+                            <span class="tier-time">10-15 minutes per feature</span>
+                            <div class="code-block" style="margin-top: var(--space-sm);">
+                                <span class="code-label">Invocation</span>
+                                <code>Read yuuji.agent.md --tier rapid and [task]</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tier 2 -->
+                    <div class="tier-card" data-tier="2">
+                        <div class="tier-badge" data-tier="2">
+                            <span class="tier-number">2</span>
+                            <span class="tier-label">Standard</span>
+                        </div>
+                        <div class="tier-content">
+                            <h3>Standard Development (Default)</h3>
+                            <p>For production features, client deliverables, and standard development work. Balanced quality and speed with test-driven development.</p>
+                            <ul class="tier-features">
+                                <li>Unit tests required (TDD)</li>
+                                <li>OWASP security review</li>
+                                <li>Full documentation</li>
+                                <li>Backup and rollback plan</li>
+                            </ul>
+                            <span class="tier-time">30-45 minutes per feature</span>
+                            <div class="code-block" style="margin-top: var(--space-sm);">
+                                <span class="code-label">Invocation (default)</span>
+                                <code>Read yuuji.agent.md and implement [feature]</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tier 3 -->
+                    <div class="tier-card" data-tier="3">
+                        <div class="tier-badge" data-tier="3">
+                            <span class="tier-number">3</span>
+                            <span class="tier-label">Critical</span>
+                        </div>
+                        <div class="tier-content">
+                            <h3>Critical Development</h3>
+                            <p>For authentication, payment processing, sensitive data, and compliance-regulated features. Maximum rigor with enhanced security review.</p>
+                            <ul class="tier-features">
+                                <li>Unit + Integration + E2E tests</li>
+                                <li>Enhanced security audit</li>
+                                <li>Performance benchmarking</li>
+                                <li>Multi-model review (when available)</li>
+                            </ul>
+                            <span class="tier-time">60-90 minutes per feature</span>
+                            <div class="code-block" style="margin-top: var(--space-sm);">
+                                <span class="code-label">Invocation</span>
+                                <code>Read yuuji.agent.md --tier critical and [task]</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Workflow -->
+            <section id="workflow" aria-labelledby="workflow-heading">
+                <h2 id="workflow-heading">Development Workflow</h2>
+                <p>The standard Tier 2 workflow demonstrates how agents collaborate. Yuuji implements, the user reviews, Megumi audits for security, and the cycle continues until zero issues remain.</p>
+
+                <div class="workflow-container" role="img" aria-label="Workflow diagram showing the implementation and security review cycle">
+                    <svg class="workflow-svg" viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background -->
+                        <rect width="800" height="320" fill="#1e293b"/>
+
+                        <!-- Step 1: Yuuji Implements -->
+                        <rect x="20" y="100" width="140" height="80" rx="8" fill="#EC4899" fill-opacity="0.2" stroke="#EC4899" stroke-width="2"/>
+                        <text x="90" y="130" text-anchor="middle" fill="#EC4899" font-size="12" font-weight="bold">1. YUUJI</text>
+                        <text x="90" y="150" text-anchor="middle" fill="#f8fafc" font-size="11">Implements</text>
+                        <text x="90" y="165" text-anchor="middle" fill="#94a3b8" font-size="10">(test-first)</text>
+
+                        <!-- Arrow 1-2 -->
+                        <path d="M 160 140 L 195 140" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+                        <defs>
+                            <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+                            </marker>
+                        </defs>
+
+                        <!-- Step 2: User Reviews -->
+                        <rect x="200" y="100" width="140" height="80" rx="8" fill="#64748b" fill-opacity="0.2" stroke="#64748b" stroke-width="2"/>
+                        <text x="270" y="130" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="bold">2. USER</text>
+                        <text x="270" y="150" text-anchor="middle" fill="#f8fafc" font-size="11">Reviews</text>
+                        <text x="270" y="165" text-anchor="middle" fill="#94a3b8" font-size="10">@user-review</text>
+
+                        <!-- Arrow 2-3 -->
+                        <path d="M 340 140 L 375 140" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+                        <!-- Step 3: Megumi Audits -->
+                        <rect x="380" y="100" width="140" height="80" rx="8" fill="#8B5CF6" fill-opacity="0.2" stroke="#8B5CF6" stroke-width="2"/>
+                        <text x="450" y="130" text-anchor="middle" fill="#8B5CF6" font-size="12" font-weight="bold">3. MEGUMI</text>
+                        <text x="450" y="150" text-anchor="middle" fill="#f8fafc" font-size="11">Security Audit</text>
+                        <text x="450" y="165" text-anchor="middle" fill="#94a3b8" font-size="10">OWASP review</text>
+
+                        <!-- Decision diamond -->
+                        <polygon points="600,140 640,110 680,140 640,170" fill="#334155" stroke="#64748b" stroke-width="2"/>
+                        <text x="640" y="145" text-anchor="middle" fill="#f8fafc" font-size="10">Issues?</text>
+
+                        <!-- Arrow 3-decision -->
+                        <path d="M 520 140 L 595 140" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+                        <!-- Yes path (back to Yuuji) -->
+                        <path d="M 640 170 L 640 250 L 90 250 L 90 180" stroke="#EF4444" stroke-width="2" fill="none" marker-end="url(#arrowRed)"/>
+                        <defs>
+                            <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#EF4444"/>
+                            </marker>
+                        </defs>
+                        <text x="365" y="268" text-anchor="middle" fill="#EF4444" font-size="10">YES: Remediation required</text>
+
+                        <!-- No path (Complete) -->
+                        <rect x="700" y="110" width="80" height="60" rx="8" fill="#22c55e" fill-opacity="0.2" stroke="#22c55e" stroke-width="2"/>
+                        <text x="740" y="140" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="bold">DONE</text>
+                        <text x="740" y="155" text-anchor="middle" fill="#94a3b8" font-size="10">@approved</text>
+
+                        <path d="M 680 140 L 695 140" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen)"/>
+                        <defs>
+                            <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#22c55e"/>
+                            </marker>
+                        </defs>
+                        <text x="687" y="125" text-anchor="middle" fill="#22c55e" font-size="9">NO</text>
+
+                        <!-- Labels -->
+                        <text x="400" y="40" text-anchor="middle" fill="#f8fafc" font-size="14" font-weight="600">Standard Tier 2 Workflow (Dual Workflow Mode)</text>
+                        <text x="400" y="60" text-anchor="middle" fill="#64748b" font-size="11">Implementation and security review cycle continues until zero issues</text>
+                    </svg>
+                    <span class="diagram-scroll-hint">Scroll horizontally to view full diagram</span>
+                </div>
+            </section>
+
+            <!-- Getting Started -->
+            <section id="getting-started" aria-labelledby="getting-started-heading">
+                <h2 id="getting-started-heading">Getting Started</h2>
+
+                <ol class="steps-list">
+                    <li class="step-item">
+                        <div class="step-number" aria-hidden="true"></div>
+                        <div class="step-content">
+                            <h3>Configure protocol.config.yaml</h3>
+                            <p>Open <code>protocol.config.yaml</code> and replace placeholder values with your project details: your name, contact email, project name, and repository URL.</p>
+                            <div class="code-block">
+                                <span class="code-label">Minimum configuration</span>
+                                <code>user:
+  name: "Your Name"
+  contact: "your@email.com"
+
+project:
+  name: "Your Project Name"
+  repo: "https://github.com/user/repo"</code>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="step-item">
+                        <div class="step-number" aria-hidden="true"></div>
+                        <div class="step-content">
+                            <h3>Start Mission Control</h3>
+                            <p>Initialize your session by invoking Gojo. Select Option 1 to resume an existing project or Option 2 to start a new one.</p>
+                            <div class="code-block">
+                                <code>Read protocol/gojo.agent.md</code>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="step-item">
+                        <div class="step-number" aria-hidden="true"></div>
+                        <div class="step-content">
+                            <h3>Implement Features with Yuuji</h3>
+                            <p>Request implementation of features. Yuuji uses test-driven development and follows the tier requirements for your feature type.</p>
+                            <div class="code-block">
+                                <code>Read protocol/yuuji.agent.md and implement user authentication</code>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="step-item">
+                        <div class="step-number" aria-hidden="true"></div>
+                        <div class="step-content">
+                            <h3>Review Implementation</h3>
+                            <p>Review Yuuji's implementation. Check the code changes, test coverage, and documentation. Approve to proceed or request changes.</p>
+                        </div>
+                    </li>
+
+                    <li class="step-item">
+                        <div class="step-number" aria-hidden="true"></div>
+                        <div class="step-content">
+                            <h3>Security Audit with Megumi</h3>
+                            <p>For Tier 2 and 3 features, invoke Megumi for security review. She conducts OWASP analysis and identifies vulnerabilities.</p>
+                            <div class="code-block">
+                                <code>Read protocol/megumi.agent.md and review authentication module</code>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="step-item">
+                        <div class="step-number" aria-hidden="true"></div>
+                        <div class="step-content">
+                            <h3>Iterate Until Approved</h3>
+                            <p>If Megumi finds issues, Yuuji fixes them. The cycle continues until Megumi tags <code>@approved</code> with zero security issues.</p>
+                        </div>
+                    </li>
+                </ol>
+            </section>
+
+            <!-- Protocol Files -->
+            <section id="files" aria-labelledby="files-heading">
+                <h2 id="files-heading">Key Protocol Files</h2>
+                <p>Understanding the protocol file structure helps you navigate and customize the system.</p>
+
+                <div class="table-container">
+                    <table class="files-table">
+                        <caption class="sr-only">Protocol files and their purposes</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">File</th>
+                                <th scope="col">Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>protocol/CLAUDE.md</code></td>
+                                <td>Main protocol documentation. Contains all rules, workflows, and agent specifications. Protected file.</td>
+                            </tr>
+                            <tr>
+                                <td><code>protocol/gojo.agent.md</code></td>
+                                <td>Mission Control agent. Project lifecycle, intelligence reports, protocol enforcement.</td>
+                            </tr>
+                            <tr>
+                                <td><code>protocol/yuuji.agent.md</code></td>
+                                <td>Implementation specialist. Test-first development, feature implementation.</td>
+                            </tr>
+                            <tr>
+                                <td><code>protocol/megumi.agent.md</code></td>
+                                <td>Security analyst. OWASP reviews, vulnerability assessment, security approval.</td>
+                            </tr>
+                            <tr>
+                                <td><code>protocol/nobara.agent.md</code></td>
+                                <td>UX and creative strategy. User experience design, accessibility compliance.</td>
+                            </tr>
+                            <tr>
+                                <td><code>protocol.config.yaml</code></td>
+                                <td>Central configuration. User settings, tier requirements, safety boundaries.</td>
+                            </tr>
+                            <tr>
+                                <td><code>.protocol-state/</code></td>
+                                <td>State directory. Project state, dev notes, security reviews, research summaries.</td>
+                            </tr>
+                            <tr>
+                                <td><code>.dzp-killswitch/</code></td>
+                                <td>Emergency stop state. Kill switch status, checkpoints, activation history.</td>
+                            </tr>
+                            <tr>
+                                <td><code>scripts/file-rotate.py</code></td>
+                                <td>File rotation utility. Automatically archives dev-notes.md and security-review.md at 25k characters with SHA-256 verification.</td>
+                            </tr>
+                            <tr>
+                                <td><code>protocol/skills/</code></td>
+                                <td>Skills directory. AGENT_SKILLS_MAP.yaml maps 16 Anthropic skills to agents; SKILL_REGISTRY.md tracks all active skills.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Domain Zero Protocol v8.9.0</p>
+            <p class="footer-links">
+                <a href="https://github.com/DewyHRite/Domain-Zero-Protocol" target="_blank" rel="noopener noreferrer">
+                    GitHub Repository
+                </a>
+                <span class="footer-separator">|</span>
+                <a href="../protocol/CLAUDE.md">
+                    Full Protocol Documentation
+                </a>
+                <span class="footer-separator">|</span>
+                <a href="FAQ.md">
+                    FAQ
+                </a>
+            </p>
+            <p style="margin-top: var(--space-md);">The goal is always ZERO: perfect code, zero compromises.</p>
+        </div>
+    </footer>
+</body>
+</html>

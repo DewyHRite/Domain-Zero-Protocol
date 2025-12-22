@@ -1,11 +1,11 @@
 {
   "validation_enabled": true,
-  "last_full_validation": "2025-12-06T06:54:26.331923+00:00Z",
+  "last_full_validation": "2025-12-22T17:11:42.883568+00:00Z",
   "last_validation_result": "failed",
   "state_file_integrity": {
     "project-state.json": {
-      "checksum": "8b9deeb0189f5789858f10cb5eca51de95d6e71f2aa82b26fc96dc9dadcc821a",
-      "last_validated": "2025-12-06T06:54:26.331923+00:00Z",
+      "checksum": "d3b3be084d69d76d4e444359262a6be481f508c5d6a606b82bf8379a829734b9",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
       "status": "invalid",
       "errors": [
         "'validation_state' is a required property",
@@ -16,8 +16,8 @@
       ]
     },
     "session-state.json": {
-      "checksum": "cb2e9d545a7a798ee53d4225543c3f7b03fa4a25c72f739e6e76d88e46bf3f51",
-      "last_validated": "2025-12-06T06:26:35.842816Z",
+      "checksum": "3b7d5aa09dbb9965ae528a0ad44f092f558415b5f3bca8c0c73e82721591c89e",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
       "status": "invalid",
       "errors": [
         "'session_id' is a required property",
@@ -28,15 +28,79 @@
       ]
     },
     "snapshot-manifest.json": {
-      "checksum": "ed4415bd2dc6c3daeafce32d5d0f1cd586bfe4b6e5f5cfacd61e6e2746337807",
-      "last_validated": "2025-12-06T06:26:35.842816Z",
+      "checksum": "7642a3ecc2a5bffabf4db4d607b79ab1d63e65d2428cf355495e37dca047cb4a",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
+      "status": "valid",
+      "errors": []
+    },
+    "validation-state.json": {
+      "checksum": "e582c50308b485116dfd92af8bea43b93da71d3484072aa10581dcf8509f7673",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
+      "status": "drift_detected",
+      "errors": []
+    },
+    "snapshot-2025-12-06T05-33-35Z.json.gz": {
+      "checksum": "64810b0b7d906ef7ed851d7c9fb30904f45ab42ed7e85a482ef3dcd53f6ff8d7",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
       "status": "invalid",
       "errors": [
-        "'snapshot_id' is a required property",
-        "'created_at' is a required property",
-        "'tier' is a required property",
-        "'reason' is a required property",
-        "'state_files' is a required property"
+        "'reason' is a required property"
+      ]
+    },
+    "snapshot-2025-12-06T05-33-52Z.json.gz": {
+      "checksum": "617c23e2d81190e2a6854372b833a6b5f3f0070c4357bd50ad4ae38b85f3e754",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
+      "status": "invalid",
+      "errors": [
+        "'reason' is a required property"
+      ]
+    },
+    "snapshot-2025-12-06T05-49-42Z.json.gz": {
+      "checksum": "14334f21f5b2c17769c701d6ad352838d5e5a47f3c44def99166b4b8f8aa4d39",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
+      "status": "invalid",
+      "errors": [
+        "'reason' is a required property"
+      ]
+    },
+    "snapshot-2025-12-06T05-50-08Z.json.gz": {
+      "checksum": "3e6b17d303585f21da8eef5c12d33f206f2858462d1a49190b823703a1804706",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
+      "status": "invalid",
+      "errors": [
+        "'reason' is a required property"
+      ]
+    },
+    "snapshot-2025-12-06T05-50-36Z.json.gz": {
+      "checksum": "133c00938596ca78f0e0c95ecfce5cf6a5c15b281d775b25353724787d39d496",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
+      "status": "invalid",
+      "errors": [
+        "'reason' is a required property"
+      ]
+    },
+    "snapshot-2025-12-06T06-27-01Z.json.gz": {
+      "checksum": "e8bc5fa1c5abc41be92075edd6fefc966d902fc790271254a23b829875f4717e",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
+      "status": "invalid",
+      "errors": [
+        "'reason' is a required property"
+      ]
+    },
+    "snapshot-2025-12-06T07-13-38Z.json.gz": {
+      "checksum": "9f3eaae92a5b2d255c285d48be9ca82608db1c926e011ec21835b50868a21501",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
+      "status": "invalid",
+      "errors": [
+        "'reason' is a required property"
+      ]
+    },
+    "snapshot-2025-12-06T07-32-17Z.json.gz": {
+      "checksum": "86012ebd2e4cd2fa98e6524dbb66a02844a0718e18bee26f4d6dfd874b80d3ae",
+      "last_validated": "2025-12-22T17:11:42.883568+00:00Z",
+      "status": "invalid",
+      "errors": [
+        "'reason' is a required property"
       ]
     }
   },

@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 8.8.0
+**Version**: 8.9.0
 **Status**: Production
-**Last Updated**: 2025-12-11
+**Last Updated**: 2025-12-22
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -86,7 +86,7 @@ Each patch entry follows this format:
 
 ---
 
-## 🔒 ACTIVE SECURITY PATCHES (v8.8.0)
+## 🔒 ACTIVE SECURITY PATCHES (v8.8.0+)
 
 ### PATCH-SEC-001: Cryptographic Authorization System
 **Applies To**: v8.8.0+
@@ -1061,10 +1061,11 @@ The fix is simple but critical:
 | PATCH-SEC-006 | ACTIVE | v8.8.0+ | 2025-12-16 |
 | PATCH-SEC-007 | ACTIVE | v8.8.0+ | 2025-12-16 |
 | PATCH-DOC-001 | ACTIVE | v8.8.0+ | 2025-12-19 |
+| PATCH-DOC-002 | ACTIVE | v8.9.0+ | 2025-12-22 |
 
 ---
 
-## 📋 DOCUMENTATION PATCHES (v8.8.0)
+## 📋 DOCUMENTATION PATCHES (v8.8.0+)
 
 ### PATCH-DOC-001: CLAUDE.md Optimization & Governance Enhancement
 **Applies To**: v8.8.0+
@@ -1262,6 +1263,98 @@ This optimization successfully reduces protocol bloat while **adding** critical 
 
 ---
 
+### PATCH-DOC-002: v8.9.0 Claude Skills Integration & Implementation Restrictions
+**Applies To**: v8.9.0+
+**Priority**: P1-High
+**Category**: Documentation + Enhancement
+**Status**: ACTIVE
+**Required For**: All Installations (Upgrades from v8.8.0)
+**Date Applied**: 2025-12-22
+
+**Description**: Comprehensive integration of 16 Anthropic Claude Skills across all 9 DZP agents, implementation of code change restrictions for 5 agents, file rotation system for dev-notes.md and security-review.md, and OWASP Cheatsheet Series integration for Megumi security reviews.
+
+**Authorization Details**:
+- **USER Authorization**: Explicit approval via plan mode approval (2025-12-22)
+- **Sukuna Adversarial Review**: COMPLETED (plan mode validation)
+- **Tier Level**: Tier 2 (Standard) - Protocol enhancement
+- **Change Type**: ENHANCEMENT + SECURITY
+
+**Changes Implemented**:
+
+1. **Claude Skills Integration** (16 Anthropic Skills):
+   - Document skills: pdf, docx, xlsx, pptx
+   - Development skills: frontend-design, web-artifacts-builder, webapp-testing, mcp-builder
+   - Creative skills: brand-guidelines, canvas-design, theme-factory, algorithmic-art, slack-gif-creator
+   - Collaboration skills: doc-coauthoring, internal-comms, skill-creator
+   - Mapped to all 9 agents per AGENT_SKILLS_MAP.yaml v3
+
+2. **Implementation Restrictions** (5 Agents):
+   - **Affected Agents**: Nobara, Todo, Maki, Panda, Inumaki
+   - **Removed Tools**: `edit`, `bash` for code execution
+   - **Retained Tools**: `read`, `write`, `grep`, `glob`, `skill`, `task`
+   - **Routing**: All code changes routed through Yuuji via `@implementation` handoff
+   - **Rationale**: Centralize TDD practices, ensure test coverage, maintain code quality
+
+3. **File Rotation System** (scripts/file-rotate.py):
+   - Generalized rotation for dev-notes.md and security-review.md
+   - 25k character threshold (configurable)
+   - Archives to `.protocol-state/archive/{filename}/`
+   - Retains 10 most recent archives
+   - Preserves header section on rotation
+
+4. **OWASP Cheatsheet Integration** (Megumi):
+   - Tier 1 (Critical): Authentication, Authorization, SQL Injection, XSS, CSRF, Input Validation, Password Storage, Session Management
+   - Tier 2 (High): Cryptographic Storage, Key Management, CSP, REST Security, GraphQL Security, Secrets Management
+   - Tier 3 (Context-specific): Docker, Kubernetes, Node.js, Java, Django, DotNet, Mobile Security
+   - Full index: https://cheatsheetseries.owasp.org/index.html
+
+**Files Modified** (70+ files):
+- All 9 `protocol/*.agent.md` files (version bump, skill tool, restrictions)
+- `protocol/skills/AGENT_SKILLS_MAP.yaml` (v3 with 16 Anthropic skills)
+- `protocol/skills/SKILL_REGISTRY.md` (v2.0.0 with skill tables)
+- `scripts/file-rotate.py` (NEW)
+- `docs/migration/MIGRATION_v8.8_to_v8.9.md` (NEW)
+- `VERSION.md`, `README.md`, `CHANGELOG.md`, `FAQ.md`, `IMPLEMENTATION_GUIDE.md`
+- `protocol/CLAUDE.md`, `AI_INSTRUCTIONS.md`, `protocol.config.yaml`
+
+**Validation**:
+```bash
+# Verify version bump
+grep "protocol_version" protocol/*.agent.md | grep "8.9.0"
+
+# Verify skill tool added
+grep "skill" protocol/skills/AGENT_SKILLS_MAP.yaml | head -20
+
+# Verify implementation restrictions
+grep -A 15 "^tools:" protocol/nobara.agent.md
+# Should NOT include edit
+
+# Verify file rotation script
+python scripts/file-rotate.py --list
+# Should show dev-notes and security-review as supported
+
+# Verify OWASP cheatsheet integration
+grep "OWASP" protocol/megumi.agent.md
+# Should show OWASP Cheatsheet Quick Reference section
+```
+
+**Rollback**:
+```bash
+# Restore from backup
+cp .protocol-state/backups/v8.8.0/* .
+
+# Or git revert
+git checkout v8.8.0 -- protocol/ docs/ scripts/ VERSION.md README.md CHANGELOG.md
+```
+
+**Breaking Changes**:
+- **Nobara, Todo, Maki, Panda, Inumaki** can no longer use `edit` or `bash` tools
+- These agents must invoke Yuuji via `@implementation` handoff for code changes
+
+**Migration Required**: See `docs/migration/MIGRATION_v8.8_to_v8.9.md`
+
+---
+
 ## 🔄 PATCH LIFECYCLE
 
 ### Patch States
@@ -1339,6 +1432,6 @@ This optimization successfully reduces protocol bloat while **adding** critical 
 
 **END OF SUKUNA-REPORT.md**
 
-**Last Updated**: 2025-12-16 by Sukuna (System Update Adversary)
-**Protocol Version**: 8.8.0
-**Patches Active**: 7 security patches ready for implementation
+**Last Updated**: 2025-12-22 by Sukuna (System Update Adversary)
+**Protocol Version**: 8.9.0
+**Patches Active**: 8 security patches + 2 documentation patches ready for implementation

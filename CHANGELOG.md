@@ -9,6 +9,122 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.9.0] - 2025-12-22
+
+### Added
+
+#### **Claude Skills Integration** - 16 Anthropic skills mapped to all 9 agents
+
+**Purpose**: Integrate official Claude Skills from Anthropic repository for enhanced document creation, testing, and design capabilities.
+
+1. **Anthropic Skills (16 total)**
+   - Document Skills: `pdf`, `docx`, `xlsx`, `pptx`
+   - Design Skills: `frontend-design`, `canvas-design`, `brand-guidelines`, `theme-factory`
+   - Development Skills: `web-artifacts-builder`, `webapp-testing`, `mcp-builder`
+   - Meta Skills: `skill-creator`, `doc-coauthoring`
+   - Communication: `internal-comms`, `slack-gif-creator`, `algorithmic-art`
+
+2. **Skill Mapping** (`protocol/skills/AGENT_SKILLS_MAP.yaml` v3)
+   - Gojo: skill-creator, pptx, internal-comms, doc-coauthoring
+   - Yuuji: web-artifacts-builder, webapp-testing, mcp-builder, skill-creator
+   - Megumi: pdf, webapp-testing, doc-coauthoring
+   - Nobara: pdf, docx, pptx, frontend-design, web-artifacts-builder, brand-guidelines, canvas-design, theme-factory, algorithmic-art, slack-gif-creator
+   - Todo: xlsx, doc-coauthoring
+   - Maki: xlsx, theme-factory, doc-coauthoring
+   - Panda: xlsx, mcp-builder, doc-coauthoring
+   - Inumaki: pdf, docx, internal-comms, doc-coauthoring
+   - Sukuna: skill-creator, doc-coauthoring
+
+3. **Skill Registry Update** (`protocol/skills/SKILL_REGISTRY.md` v2.0.0)
+   - Added Anthropic Skills table with all 16 skills
+   - Added Sukuna skills section
+   - Risk levels documented per skill
+
+---
+
+#### **Implementation Restrictions** - 5 agents now route code changes through Yuuji
+
+**Purpose**: Ensure code implementation is centralized through Yuuji for quality control.
+
+1. **Restricted Agents** (Cannot use Edit/Bash for code)
+   - Nobara: Removed `edit` tool (already no bash)
+   - Todo: Removed `edit`, `bash` tools
+   - Maki: Removed `edit`, `bash` tools
+   - Panda: Removed `edit`, `bash` tools
+   - Inumaki: Removed `edit`, `bash` tools
+
+2. **Allowed Actions for Restricted Agents**
+   - Create documentation and reports (Write tool)
+   - Design specifications and schemas
+   - Analyze code and provide recommendations
+   - Invoke Yuuji for implementation via `@implementation` handoff
+
+3. **Preserved Capabilities**
+   - Megumi: Original restrictions maintained (no edit, no bash)
+   - Yuuji: Full implementation access (edit, bash)
+   - Gojo: Full access for protocol management
+   - Sukuna: Full access for system updates
+
+---
+
+#### **File Rotation System** - Generalized rotation for dev-notes.md and security-review.md
+
+**Purpose**: Prevent agent state files from exceeding size limits.
+
+1. **New Script** (`scripts/file-rotate.py`)
+   - Supports dev-notes.md and security-review.md
+   - 25k character threshold (configurable)
+   - Archives to `.protocol-state/archive/{filename}/`
+   - Keeps last 10 archives
+   - Preserves header section after rotation
+
+2. **Usage**
+   - Check: `python scripts/file-rotate.py --file dev-notes --check`
+   - Rotate: `python scripts/file-rotate.py --file dev-notes --rotate`
+   - List supported files: `python scripts/file-rotate.py --list`
+
+---
+
+#### **OWASP Cheatsheet Integration** - Megumi enhanced with comprehensive security references
+
+**Purpose**: Equip Megumi with OWASP Cheatsheet Series for security reviews.
+
+1. **Tier 1 - Critical** (Always Reference)
+   - Authentication, Session Management, Password Storage
+   - SQL Injection, Input Validation, Query Parameterization
+   - XSS Prevention, DOM XSS Prevention, CSRF Prevention
+
+2. **Tier 2 - High Priority**
+   - Cryptographic Storage, Key Management, Secrets Management
+   - Content Security Policy, Clickjacking Defense
+   - REST Security, GraphQL Security
+
+3. **Tier 3 - Context-Specific**
+   - Docker Security, Kubernetes Security
+   - NodeJS, Java, Django, DotNet Security
+
+4. **Security Review Format**
+   - Findings now include OWASP cheatsheet references
+   - Direct links to relevant cheatsheets per vulnerability type
+
+---
+
+### Changed
+
+- **All 9 Agent Files**: Updated to v8.9.0, added `skill` tool
+- **Nobara, Todo, Maki, Panda, Inumaki**: Removed edit/bash tools, added implementation restriction comments
+- **AGENT_SKILLS_MAP.yaml**: Updated to v3 with complete Anthropic skill mapping
+- **SKILL_REGISTRY.md**: Updated to v2.0.0 with Anthropic skills table
+- **Megumi**: Added OWASP Cheatsheet Quick Reference section
+
+### Security
+
+- Implementation restrictions prevent unauthorized code modifications by design-focused agents
+- File rotation preserves audit trail in timestamped archives
+- OWASP cheatsheet integration provides standardized security reference
+
+---
+
 ## [8.8.0] - 2025-12-06
 
 ### Added
