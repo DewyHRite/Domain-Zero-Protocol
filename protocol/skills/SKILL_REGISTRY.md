@@ -1,17 +1,17 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
 ---
 title: "Skill Registry"
-version: "1.0.0"
-protocol_version: "8.8.0"
-last_updated: "2025-11-25"
+version: "2.0.0"
+protocol_version: "8.9.0"
+last_updated: "2025-12-22"
 status: "Production-Ready"
 ---
 
 # Domain Zero Protocol - Skill Registry
 
-**Version**: 1.0.0
-**Protocol Version**: 8.5.0
-**Last Updated**: 2025-11-24
+**Version**: 2.0.0
+**Protocol Version**: 8.9.0
+**Last Updated**: 2025-12-22
 
 ---
 
@@ -21,7 +21,32 @@ This registry tracks all skills available in the Domain Zero Protocol, their ver
 
 ---
 
-## Registry Format
+## Anthropic Skills (Official)
+
+These skills are from the official Anthropic repository: https://github.com/anthropics/skills
+
+| Skill Name | Version | Risk Level | Code Execution | Target Agents |
+|------------|---------|------------|----------------|---------------|
+| pdf | 1.0.0 | Low | No | megumi, nobara, inumaki |
+| docx | 1.0.0 | Low | No | nobara, inumaki, yuuji |
+| xlsx | 1.0.0 | Low | No | todo, maki, panda |
+| pptx | 1.0.0 | Low | No | nobara, gojo |
+| frontend-design | 1.0.0 | Low | No | nobara |
+| web-artifacts-builder | 1.0.0 | Medium | Yes | nobara, yuuji |
+| webapp-testing | 1.0.0 | Medium | Yes | yuuji, megumi |
+| mcp-builder | 1.0.0 | High | Yes | yuuji, panda |
+| skill-creator | 1.0.0 | Medium | No | gojo, yuuji, sukuna |
+| brand-guidelines | 1.0.0 | Low | No | nobara |
+| canvas-design | 1.0.0 | Low | No | nobara |
+| doc-coauthoring | 1.0.0 | Low | No | ALL |
+| internal-comms | 1.0.0 | Low | No | gojo, inumaki |
+| theme-factory | 1.0.0 | Low | No | nobara, maki |
+| algorithmic-art | 1.0.0 | Low | No | nobara |
+| slack-gif-creator | 1.0.0 | Low | No | nobara |
+
+---
+
+## Custom Skills Registry
 
 | Skill Name | Version | Owner | Risk Level | Code Execution | Last Review | Target Agents |
 |------------|---------|-------|------------|----------------|-------------|---------------|
@@ -35,6 +60,7 @@ This registry tracks all skills available in the Domain Zero Protocol, their ver
 | Skill | Description | Status |
 |-------|-------------|--------|
 | skill-builder | Create new skills with proper structure | Active |
+| skill-creator | Anthropic skill for creating skills | Active |
 
 ### Implementation Skills (Yuuji)
 | Skill | Description | Status |
@@ -105,6 +131,14 @@ This registry tracks all skills available in the Domain Zero Protocol, their ver
 | websocket-patterns | WebSocket implementation patterns | Planned |
 | api-documentation | API documentation templates | Planned |
 
+### System Update Skills (Sukuna)
+
+| Skill | Description | Status |
+|-------|-------------|--------|
+| adversarial-review | Challenge and stress-test protocol changes | Active |
+| update-validation | Validate system updates before deployment | Active |
+| protocol-stress-test | Test protocol under adversarial conditions | Active |
+
 ---
 
 ## Governance
@@ -133,6 +167,13 @@ This registry tracks all skills available in the Domain Zero Protocol, their ver
 ---
 
 ## Changelog
+
+### 2.0.0 (2025-12-22)
+- Integrated 16 Anthropic official skills from GitHub repository
+- Added Sukuna skills section (adversarial-review, update-validation, protocol-stress-test)
+- Updated protocol version to 8.9.0
+- Added Anthropic Skills table with all 16 skills mapped to agents
+- Added skill-creator as active skill for gojo, yuuji, sukuna
 
 ### 1.0.0 (2025-11-22)
 - Initial registry creation

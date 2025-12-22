@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
-# Domain Zero Protocol v8.8.0
+<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+# Domain Zero Protocol v8.9.0
 ## AI-Powered Development Framework with Security-First Approach
 
 ### "Perfect Code Through Infinite Collaboration"
 
-> **New in v8.8.0**: Phase 4 - Tier Validation System + Dual Learning Systems + **Dual-AI Meta Prompt Workflow** (IDE AI generates prompts → Claude CLI executes). See [What's New](#-version-information).
+> **New in v8.9.0**: Claude Skills Integration (16 Anthropic skills), Implementation Restrictions (5 agents route through Yuuji), File Rotation System (dev-notes.md + security-review.md), OWASP Cheatsheet Integration for Megumi. See [What's New](#-version-information).
 
 ---
 
@@ -228,7 +228,7 @@ Domain Zero is a nine-agent AI development system that provides specialized expe
 This distribution includes everything you need to deploy Domain Zero:
 
 **Core Protocol Files** (`protocol/`):
-- `CLAUDE.md` - Main protocol specification (v8.8.0)
+- `CLAUDE.md` - Main protocol specification (v8.9.0)
 - `yuuji.agent.md` - Implementation agent protocol
 - `megumi.agent.md` - Security review agent protocol
 - `gojo.agent.md` - Mission control agent protocol
@@ -501,20 +501,20 @@ Restart your AI session for changes to take effect.
 ```bash
 # Fresh Install - Copy entire protocol structure to NEW project
 mkdir -p your-project/protocol your-project/.protocol-state
-cp -r "Domain Zero Protocol v8.8.0/protocol" your-project/
-cp -r "Domain Zero Protocol v8.8.0/.protocol-state" your-project/
-cp "Domain Zero Protocol v8.8.0/protocol.config.yaml" your-project/
-cp "Domain Zero Protocol v8.8.0/.gitignore" your-project/
+cp -r "Domain Zero Protocol v8.9.0/protocol" your-project/
+cp -r "Domain Zero Protocol v8.9.0/.protocol-state" your-project/
+cp "Domain Zero Protocol v8.9.0/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol v8.9.0/.gitignore" your-project/
 ```
 
 **Windows (PowerShell)**:
 ```powershell
 # Fresh Install - Copy entire protocol structure to NEW project
 New-Item -ItemType Directory -Force -Path "your-project\protocol", "your-project\.protocol-state"
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.8.0\protocol" -Destination "your-project\"
-Copy-Item -Recurse -Force "Domain Zero Protocol v8.8.0\.protocol-state" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.8.0\protocol.config.yaml" -Destination "your-project\"
-Copy-Item -Force "Domain Zero Protocol v8.8.0\.gitignore" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.9.0\protocol" -Destination "your-project\"
+Copy-Item -Recurse -Force "Domain Zero Protocol v8.9.0\.protocol-state" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.9.0\protocol.config.yaml" -Destination "your-project\"
+Copy-Item -Force "Domain Zero Protocol v8.9.0\.gitignore" -Destination "your-project\"
 ```
 
 **Windows (Command Prompt)**:
@@ -522,10 +522,10 @@ Copy-Item -Force "Domain Zero Protocol v8.8.0\.gitignore" -Destination "your-pro
 REM Fresh Install - Copy entire protocol structure to NEW project
 mkdir "your-project\protocol" 2>nul
 mkdir "your-project\.protocol-state" 2>nul
-xcopy /E /I /Y "Domain Zero Protocol v8.8.0\protocol" "your-project\protocol"
-xcopy /E /I /Y "Domain Zero Protocol v8.8.0\.protocol-state" "your-project\.protocol-state"
-copy /Y "Domain Zero Protocol v8.8.0\protocol.config.yaml" "your-project\"
-copy /Y "Domain Zero Protocol v8.8.0\.gitignore" "your-project\"
+xcopy /E /I /Y "Domain Zero Protocol v8.9.0\protocol" "your-project\protocol"
+xcopy /E /I /Y "Domain Zero Protocol v8.9.0\.protocol-state" "your-project\.protocol-state"
+copy /Y "Domain Zero Protocol v8.9.0\protocol.config.yaml" "your-project\"
+copy /Y "Domain Zero Protocol v8.9.0\.gitignore" "your-project\"
 ```
 
 ---
@@ -547,10 +547,10 @@ echo "✅ Backup created in: $BACKUP_DIR"
 ```bash
 # Protocol artifacts - safe to overwrite
 mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch "your-project/Domain Zero Agents"
-cp -r "Domain Zero Protocol v8.8.0/protocol/"* your-project/protocol/
-cp -r "Domain Zero Protocol v8.8.0/docs/"* your-project/docs/
-cp -r "Domain Zero Protocol v8.8.0/.dzp-killswitch/"* your-project/.dzp-killswitch/
-cp -r "Domain Zero Protocol v8.8.0/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
+cp -r "Domain Zero Protocol v8.9.0/protocol/"* your-project/protocol/
+cp -r "Domain Zero Protocol v8.9.0/docs/"* your-project/docs/
+cp -r "Domain Zero Protocol v8.9.0/.dzp-killswitch/"* your-project/.dzp-killswitch/
+cp -r "Domain Zero Protocol v8.9.0/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
 ```
 
 #### Step 3: DO NOT Overwrite .protocol-state/
@@ -769,7 +769,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent
 - SUKUNA (System Update): Protocol updates, adversarial analysis (Gojo-invoked only)
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.8.0)
+- protocol/CLAUDE.md (main protocol, v8.9.0)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -793,7 +793,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol"
 1. Go to Settings → Personalization → Custom Instructions
 2. Add to "What would you like ChatGPT to know about you":
 ```
-I use the Domain Zero Protocol (v8.8.0) for development projects. This is a nine-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (v8.9.0) for development projects. This is a nine-agent AI development framework with specialized roles:
 - YUUJI: Implementation with test-first development
 - MEGUMI: Security review (OWASP Top 10)
 - NOBARA: Creative strategy and user experience design
@@ -1084,7 +1084,7 @@ your-project/
 │   ├── trigger-19.md                # Intelligence reports (Gojo, private)
 │   └── tier-system-specification.md # Tier system details
 │
-├── .dzp-domain/                     # Domain Record (Gojo/Sukuna ONLY, v8.8.0+)
+├── .dzp-domain/                     # Domain Record (Gojo/Sukuna ONLY, v8.9.0+)
 │   ├── domain.record.md             # Shared notes repository
 │   ├── archive/                     # Rotated archives (5,000 line threshold)
 │   └── .rotation-metadata.json      # Rotation history tracking
@@ -1709,11 +1709,11 @@ Domain Zero is now set up in your project.
 
 ## 📝 Version Information
 
-**Version**: 8.8.0
-**Release Date**: December 6, 2025
-**Major Enhancements**: Phase 4 - Tier Validation System + Dual Learning Systems
+**Version**: 8.9.0
+**Release Date**: December 22, 2025
+**Major Enhancements**: Claude Skills Integration + Implementation Restrictions + File Rotation System
 
-**v8.8.0 Key Features**:
+**v8.9.0 Key Features**:
 - **🆕 Dual-AI Meta Prompt Workflow**: Use IDE AI (VS Code, Cursor, Antigravity) to generate prompts via `gojo.prompt.md`, then Claude CLI executes - 70-80% token savings with full project context
 - **🆕 Domain Record System**: Shared notes repository (`.dzp-domain/domain.record.md`) for Gojo and Sukuna - prevents agent files from exceeding 25k token limit, enables crash recovery, auto-rotates at 5,000 lines
 - **Phase 4: Tier Validation System**: Active tier workflow completion with working directory verification, tier configuration (tier-defaults.yaml), agent tier validation sections
@@ -1724,7 +1724,7 @@ Domain Zero is now set up in your project.
 - **Learning Protection**: Suggestions only (never automatic actions), instant disable, no pressure tactics, privacy-first
 
 **Version History**:
-- v8.8.0 - MINOR: Phase 4 - Tier Validation System + Dual Learning Systems + Dual-AI Meta Prompt Workflow (gojo.prompt.md for IDE-to-CLI workflow)
+- v8.9.0 - MINOR: Phase 4 - Tier Validation System + Dual Learning Systems + Dual-AI Meta Prompt Workflow (gojo.prompt.md for IDE-to-CLI workflow)
 - v8.7.0 - MINOR: Nine-Agent System (Sukuna formalized as 9th agent), documentation updated across all files
 - v8.5.1 - PATCH: Sukuna System Update Agent, Cross-Agent Edit Restrictions, Token Optimization via Modular Architecture
 - v8.5.0 - MINOR: Kill Switch Protocol, User Technical Level System, Emergency Stop coordination
@@ -1746,9 +1746,9 @@ Domain Zero is now set up in your project.
 
 ---
 
-## 🔧 Self-Service Patch System (v8.8.0+)
+## 🔧 Self-Service Patch System (v8.9.0+)
 
-**NEW IN v8.8.0**: Domain Zero Protocol now includes **SUKUNA-REPORT.md** - a living patch manifest that enables AI-assisted self-service patching.
+**NEW IN v8.9.0**: Domain Zero Protocol now includes **SUKUNA-REPORT.md** - a living patch manifest that enables AI-assisted self-service patching.
 
 ### How It Works
 
@@ -1770,7 +1770,7 @@ Instead of manually updating your DZP installation for every patch, AI agents **
 
 ### Sukuna + Megumi Collaboration
 
-**NEW IN v8.8.0**: Sukuna (System Update Adversary) and Megumi (Security Analyst) now work together on all DZP development:
+**NEW IN v8.9.0**: Sukuna (System Update Adversary) and Megumi (Security Analyst) now work together on all DZP development:
 
 1. **Megumi identifies vulnerabilities** through threat modeling and security audits
 2. **Megumi creates remediation** with complete fix code and validation
@@ -1810,5 +1810,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-**Domain Zero Protocol v8.8.0** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v8.9.0** - Perfect Code Through Infinite Collaboration
 **The weight is real. The protocol is absolute. Domain Zero is active.**

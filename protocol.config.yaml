@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 8.8.0
+# Version: 8.9.0
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,7 +8,7 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v8.8.0"
+  version: "v8.9.0"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -1351,9 +1351,9 @@ custom_agent_security:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "8.8.0"
-  config_version: "2.8"
-  last_updated: "2025-12-06"
+  protocol_version: "8.9.0"
+  config_version: "2.9"
+  last_updated: "2025-12-22"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

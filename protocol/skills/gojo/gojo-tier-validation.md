@@ -1,5 +1,5 @@
 # Gojo Tier Validation Skill
-<!-- [SKILL] - Domain Zero Protocol v8.8.0 -->
+<!-- [SKILL] - Domain Zero Protocol v8.9.0 -->
 
 **Skill Name**: gojo-tier-validation
 **Owner**: Gojo (Mission Control)

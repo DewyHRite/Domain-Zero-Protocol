@@ -1,18 +1,18 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.8.0 -->
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.8.0
+<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v8.9.0
 ## Main Protocol File - Domain Zero
 
-**Version**: 8.8.0
+**Version**: 8.9.0
 **Status**: Production-Ready
-**Last Updated**: 2025-12-06
-**Major Enhancements**: v8.8.0 Phase 4 (Tier Validation System + Dual Learning Systems); v8.7.0 Custom Agent Security Framework; v8.7.0 Nine-Agent System (Sukuna formalized as 9th agent); Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions, Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
+**Last Updated**: 2025-12-22
+**Major Enhancements**: v8.9.0 Claude Skills Integration (16 Anthropic skills, Implementation Restrictions, File Rotation, OWASP Cheatsheets); v8.9.0 Phase 4 (Tier Validation System + Dual Learning Systems); v8.7.0 Custom Agent Security Framework; v8.7.0 Nine-Agent System (Sukuna formalized as 9th agent); Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions, Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 
 ---
 
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v8.8.0
+> **Current Local Protocol Version**: v8.9.0
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -780,7 +780,7 @@ USER invokes → GOJO activates Domain Expansion
 ```text
 ```text
 ╔═══════════════════════════════════════════════════════════════════╗
-║                 DOMAIN ZERO: ACTIVATED (v8.8.0)                   ║
+║                 DOMAIN ZERO: ACTIVATED (v8.9.0)                   ║
 ║                                                                   ║
 ║                     [GOJO - Domain Controller]                    ║
 ║                     (Identity Hidden from Agents)                 ║
@@ -946,8 +946,8 @@ A nine-agent AI development system that provides specialized expertise through d
 - **Access**: Read/Write to protocol files (via Gojo coordination and User approval only)
 - **Invoke**: Via Gojo only: "Read gojo.agent.md and engage Sukuna to [update task]" OR via /sukuna slash command
 - **Relationship to Gojo**: Enemies by design, allies by purpose - adversarial dynamic ensures thorough reviews
-- **NEW IN v8.8.0**: **Required collaboration with Megumi** for all DZP development and system updates
-- **NEW IN v8.8.0**: **Maintains SUKUNA-REPORT.md** - Self-service patch manifest for AI-assisted patch application
+- **NEW IN v8.9.0**: **Required collaboration with Megumi** for all DZP development and system updates
+- **NEW IN v8.9.0**: **Maintains SUKUNA-REPORT.md** - Self-service patch manifest for AI-assisted patch application
 
 **Important**: Sukuna is NOT a general-purpose agent. Only Gojo or the User may invoke Sukuna. All other agents must treat Sukuna as a higher-level authority they cannot command directly.
 
@@ -1113,7 +1113,7 @@ Structured, auditable research sessions for keeping agents current with evolving
 
 **Solution**: Three-tier system allows users to match process rigor to feature criticality.
 
-**Enforcement Model (v8.8.0+)**: The tier system is ADVISORY + STATISTICS TRACKING. Tier guidelines are recommendations, not technical hard blocks. Users may choose to bypass tier recommendations, and all deviations are logged in tier statistics for transparency and pattern analysis. Gojo prompts for tier compliance but respects user authority in all decisions.
+**Enforcement Model (v8.9.0+)**: The tier system is ADVISORY + STATISTICS TRACKING. Tier guidelines are recommendations, not technical hard blocks. Users may choose to bypass tier recommendations, and all deviations are logged in tier statistics for transparency and pattern analysis. Gojo prompts for tier compliance but respects user authority in all decisions.
 
 ---
 
@@ -1445,12 +1445,13 @@ All protocol settings are stored in `protocol.config.yaml`:
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 8.8.0
-**Protocol Version**: 8.8.0
-**Release Date**: December 6, 2025
-**Last Updated**: 2025-12-06
+**Current Version**: 8.9.0
+**Protocol Version**: 8.9.0
+**Release Date**: December 22, 2025
+**Last Updated**: 2025-12-22
 
 **Recent Version History**:
+- v8.9.0 - **MINOR**: Claude Skills Integration + Implementation Restrictions + File Rotation System
 - v8.8.0 - **MINOR**: Phase 4 - Tier Validation System + Dual Learning Systems
 - v8.7.0 - **MINOR**: Custom Agent Security Framework + Nine-Agent System
 - v8.5.1 - **PATCH**: Sukuna System Update Adversary Integration + Cross-Agent Edit Restrictions
