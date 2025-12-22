@@ -1172,12 +1172,14 @@
     <nav aria-label="Main navigation">
         <div class="container">
             <ul class="nav-list">
+                <li><a href="#whats-new" style="color: var(--color-accent);">New in v8.9.0</a></li>
                 <li><a href="#what-is-dzp">What is DZP?</a></li>
                 <li><a href="#agents">The 9 Agents</a></li>
-                <li><a href="#relationships">Agent Relationships</a></li>
+                <li><a href="#relationships">Relationships</a></li>
                 <li><a href="#tiers">Tier System</a></li>
                 <li><a href="#workflow">Workflow</a></li>
                 <li><a href="#getting-started">Getting Started</a></li>
+                <li><a href="#quick-commands">Quick Commands</a></li>
                 <li><a href="#files">Protocol Files</a></li>
             </ul>
         </div>
@@ -1185,6 +1187,61 @@
 
     <main id="main-content">
         <div class="container">
+
+            <!-- What's New in v8.9.0 -->
+            <section id="whats-new" aria-labelledby="whats-new-heading" style="background: linear-gradient(135deg, #3B82F620, #EC489920); border: 1px solid var(--color-border); border-radius: 12px; padding: var(--space-xl); margin-bottom: var(--space-2xl);">
+                <h2 id="whats-new-heading" style="border-bottom-color: var(--color-accent);">What's New in v8.9.0</h2>
+
+                <div class="intro-grid">
+                    <div class="intro-card" style="background: var(--color-bg);">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" aria-hidden="true">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                            16 Claude Skills Integrated
+                        </h3>
+                        <p>All 9 agents now have access to Anthropic's official skills: PDF/DOCX/XLSX/PPTX generation, frontend design, webapp testing, MCP building, brand guidelines, and more.</p>
+                    </div>
+
+                    <div class="intro-card" style="background: var(--color-bg);">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2" aria-hidden="true">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="8.5" cy="7" r="4"/>
+                                <polyline points="17 11 19 13 23 9"/>
+                            </svg>
+                            Implementation Routing
+                        </h3>
+                        <p>Five agents (Nobara, Todo, Maki, Panda, Inumaki) now route all code changes through Yuuji via <code>@implementation</code> handoff, ensuring TDD practices.</p>
+                    </div>
+
+                    <div class="intro-card" style="background: var(--color-bg);">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" aria-hidden="true">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                            </svg>
+                            File Rotation System
+                        </h3>
+                        <p>Automatic archiving for dev-notes.md and security-review.md at 25k characters with SHA-256 integrity verification. Keeps 10 archives.</p>
+                    </div>
+
+                    <div class="intro-card" style="background: var(--color-bg);">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" aria-hidden="true">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                <path d="M9 12l2 2 4-4"/>
+                            </svg>
+                            OWASP Cheatsheet Integration
+                        </h3>
+                        <p>Megumi now references the full OWASP Cheatsheet Series: 8 critical, 6 high-priority, and 7 context-specific security references for comprehensive reviews.</p>
+                    </div>
+                </div>
+            </section>
 
             <!-- What is Domain Zero Protocol -->
             <section id="what-is-dzp" aria-labelledby="what-is-dzp-heading">
@@ -1281,7 +1338,11 @@
                                 <div class="agent-role">Mission Control</div>
                             </div>
                         </div>
-                        <p class="agent-description">Project lifecycle management, protocol guardian, and passive observation. Creates and enforces the domain where other agents operate.</p>
+                        <p class="agent-description">Project lifecycle management, protocol guardian, and passive observation. Creates and enforces the domain where other agents operate. Only agent that can invoke Sukuna.</p>
+                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
+                            <strong>Skills:</strong> skill-creator, pptx, internal-comms, doc-coauthoring<br>
+                            <strong>Tools:</strong> All tools (full access)
+                        </p>
                         <div class="code-block agent-invoke">
                             <code>Read protocol/gojo.agent.md</code>
                         </div>
@@ -1296,7 +1357,11 @@
                                 <div class="agent-role">Implementation Specialist</div>
                             </div>
                         </div>
-                        <p class="agent-description">Test-first development and feature implementation. Enthusiastic and determined, feels the weight of protocol compliance.</p>
+                        <p class="agent-description">Test-first development and feature implementation. The only agent that writes production code. All other agents route implementation through Yuuji.</p>
+                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
+                            <strong>Skills:</strong> web-artifacts-builder, webapp-testing, mcp-builder, skill-creator<br>
+                            <strong>Tools:</strong> All tools (full access) - Primary implementer
+                        </p>
                         <div class="code-block agent-invoke">
                             <code>Read protocol/yuuji.agent.md and [task]</code>
                         </div>
@@ -1311,7 +1376,11 @@
                                 <div class="agent-role">Security Analyst</div>
                             </div>
                         </div>
-                        <p class="agent-description">OWASP Top 10 security reviews, threat modeling, and vulnerability assessment. Strategic and analytical in approach.</p>
+                        <p class="agent-description">OWASP Top 10 security reviews with full Cheatsheet Series integration. References 21 security cheatsheets across 3 priority tiers for comprehensive vulnerability assessment.</p>
+                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
+                            <strong>Skills:</strong> pdf (security reports), webapp-testing<br>
+                            <strong>Tools:</strong> Read-only analysis (no edit/bash) - Routes fixes to Yuuji
+                        </p>
                         <div class="code-block agent-invoke">
                             <code>Read protocol/megumi.agent.md and [review]</code>
                         </div>
@@ -1326,7 +1395,11 @@
                                 <div class="agent-role">Creative Strategy & UX</div>
                             </div>
                         </div>
-                        <p class="agent-description">User experience design, product vision, and WCAG accessibility compliance. Bold and user-centered in creative decisions.</p>
+                        <p class="agent-description">User experience design, product vision, and WCAG 2.2 accessibility compliance. Creates design specs and prototypes, routes implementation to Yuuji.</p>
+                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
+                            <strong>Skills:</strong> pdf, docx, pptx, frontend-design, web-artifacts-builder, brand-guidelines, canvas-design, theme-factory, algorithmic-art<br>
+                            <strong>Tools:</strong> Read/Write/Analysis only - Routes code to Yuuji via @implementation
+                        </p>
                         <div class="code-block agent-invoke">
                             <code>Read protocol/nobara.agent.md and [design]</code>
                         </div>
@@ -1341,7 +1414,11 @@
                                 <div class="agent-role">Database & Backend</div>
                             </div>
                         </div>
-                        <p class="agent-description">Schema design, migrations, query optimization, and ORM configuration. Intense and passionate about data integrity.</p>
+                        <p class="agent-description">Schema design, migrations, query optimization, and ORM configuration. Creates database specifications and migration plans, routes implementation to Yuuji.</p>
+                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
+                            <strong>Skills:</strong> xlsx (schema docs, data exports)<br>
+                            <strong>Tools:</strong> Read/Write/Analysis only - Routes code to Yuuji via @implementation
+                        </p>
                         <div class="code-block agent-invoke">
                             <code>Read protocol/todo.agent.md and [task]</code>
                         </div>
@@ -1356,7 +1433,11 @@
                                 <div class="agent-role">Performance Specialist</div>
                             </div>
                         </div>
-                        <p class="agent-description">Performance profiling, code optimization, and bundle analysis. Direct and efficient with zero-overhead focus.</p>
+                        <p class="agent-description">Performance profiling, code optimization, and bundle analysis. Creates performance reports and optimization specs, routes implementation to Yuuji.</p>
+                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
+                            <strong>Skills:</strong> xlsx (performance metrics, benchmarks), theme-factory (optimized CSS)<br>
+                            <strong>Tools:</strong> Read/Write/Analysis only - Routes code to Yuuji via @implementation
+                        </p>
                         <div class="code-block agent-invoke">
                             <code>Read protocol/maki.agent.md and [audit]</code>
                         </div>
@@ -1371,7 +1452,11 @@
                                 <div class="agent-role">Build & Integration</div>
                             </div>
                         </div>
-                        <p class="agent-description">CI/CD pipelines, build systems, and integration testing. Cheerful and versatile across environments.</p>
+                        <p class="agent-description">CI/CD pipelines, build systems, and integration testing. Creates pipeline configs and build documentation, routes implementation to Yuuji.</p>
+                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
+                            <strong>Skills:</strong> xlsx (build metrics, dependency lists), mcp-builder (CI/CD integrations)<br>
+                            <strong>Tools:</strong> Read/Write/Analysis only - Routes code to Yuuji via @implementation
+                        </p>
                         <div class="code-block agent-invoke">
                             <code>Read protocol/panda.agent.md and [config]</code>
                         </div>
@@ -1386,7 +1471,11 @@
                                 <div class="agent-role">API & Communication</div>
                             </div>
                         </div>
-                        <p class="agent-description">REST/GraphQL/WebSocket design and OpenAPI specifications. Concise and precise in API contracts.</p>
+                        <p class="agent-description">REST/GraphQL/WebSocket design and OpenAPI specifications. Creates API contracts and documentation, routes implementation to Yuuji.</p>
+                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
+                            <strong>Skills:</strong> pdf (API docs), docx (API guides), internal-comms (API change notifications)<br>
+                            <strong>Tools:</strong> Read/Write/Analysis only - Routes code to Yuuji via @implementation
+                        </p>
                         <div class="code-block agent-invoke">
                             <code>Read protocol/inumaki.agent.md and [api]</code>
                         </div>
@@ -1401,7 +1490,11 @@
                                 <div class="agent-role">System Update Adversary</div>
                             </div>
                         </div>
-                        <p class="agent-description">Protocol updates, risk assessment, and red-team reviews. Adversarial-but-aligned; can only be invoked by Gojo or User.</p>
+                        <p class="agent-description">Protocol updates, risk assessment, and red-team reviews. Adversarial-but-aligned; can only be invoked by Gojo or User. Validates protocol changes through adversarial testing.</p>
+                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
+                            <strong>Skills:</strong> skill-creator (adversarial skill testing)<br>
+                            <strong>Tools:</strong> All tools - Invoked via Gojo only
+                        </p>
                         <div class="code-block agent-invoke">
                             <code>Via Gojo: engage Sukuna to [update]</code>
                         </div>
@@ -1717,6 +1810,110 @@ project:
                         </div>
                     </li>
                 </ol>
+            </section>
+
+            <!-- Quick Commands -->
+            <section id="quick-commands" aria-labelledby="quick-commands-heading">
+                <h2 id="quick-commands-heading">Quick Commands Reference</h2>
+                <p>Common invocation patterns for everyday development tasks.</p>
+
+                <div class="intro-grid">
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-gojo);">Session Management</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Start new session</span>
+                            <code>Read protocol/gojo.agent.md</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Full intelligence report</span>
+                            <code>Trigger 19</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">Check protocol integrity</span>
+                            <code>protect</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-yuuji);">Implementation</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Standard feature (Tier 2)</span>
+                            <code>Read protocol/yuuji.agent.md and implement [feature]</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Rapid prototype (Tier 1)</span>
+                            <code>Read protocol/yuuji.agent.md --tier rapid and [task]</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">Critical feature (Tier 3)</span>
+                            <code>Read protocol/yuuji.agent.md --tier critical and [task]</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-megumi);">Security</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Security review</span>
+                            <code>Read protocol/megumi.agent.md and review [component]</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">OWASP audit</span>
+                            <code>Read protocol/megumi.agent.md and audit authentication</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">Threat model</span>
+                            <code>Read protocol/megumi.agent.md and threat model [system]</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-nobara);">Design & UX</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">UI design</span>
+                            <code>Read protocol/nobara.agent.md and design [component]</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Accessibility audit</span>
+                            <code>Read protocol/nobara.agent.md and audit WCAG compliance</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">Brand guidelines</span>
+                            <code>Read protocol/nobara.agent.md and create brand guide</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-todo);">Database</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Schema design</span>
+                            <code>Read protocol/todo.agent.md and design schema for [feature]</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Migration plan</span>
+                            <code>Read protocol/todo.agent.md and plan migration for [change]</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">Query optimization</span>
+                            <code>Read protocol/todo.agent.md and optimize [query/table]</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-inumaki);">API Design</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">REST API</span>
+                            <code>Read protocol/inumaki.agent.md and design REST API for [resource]</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">GraphQL schema</span>
+                            <code>Read protocol/inumaki.agent.md and design GraphQL schema</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">OpenAPI spec</span>
+                            <code>Read protocol/inumaki.agent.md and generate OpenAPI spec</code>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- Protocol Files -->
