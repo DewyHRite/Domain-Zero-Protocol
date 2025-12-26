@@ -1,9 +1,9 @@
 # Gojo Operational Procedures Index
-<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
 
 **Purpose**: Central index of all Gojo (Mission Control) operational procedures and implementation guides.
-**Version**: 8.9.0
-**Updated**: 2025-12-17
+**Version**: 8.10.0
+**Updated**: 2025-12-25
 
 ---
 
@@ -201,6 +201,7 @@ Uses `snapshot_integration.py` to:
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2025-12-22 | 8.9.0 | Version alignment with v8.9.0 release |
 | 2025-12-17 | 8.8.0 | Created README index, moved INTERNAL guides to CORE |
 | 2025-12-06 | 8.8.0 | Added SNAPSHOT_INTEGRATION.md |
 | 2025-12-03 | 8.7.0 | Added CUSTOM_AGENT_SECURITY.md |

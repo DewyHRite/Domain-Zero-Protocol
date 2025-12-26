@@ -9,6 +9,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.10.0] - 2025-12-25
+
+### Added
+
+#### **DZP Rules of Engagement (ROE)** - Post-compaction recovery system
+
+**Purpose**: Solve user pain point of repeatedly explaining DZP protocol rules after context compaction. Provides single-command context restoration.
+
+1. **DZP ROE Skill** (`protocol/skills/dzp-roe.md`)
+   - 9-step workflow for complete protocol recovery
+   - Step 1: Read current project state
+   - Step 2: Output DZP protocol summary (9 agents, roles, restrictions)
+   - Step 3: Update project-state.json (compaction recovery tracking)
+   - Step 4: Log to domain.record.md (Gojo/Sukuna only)
+   - Step 5: Update dev-notes.md (continuity note)
+   - Step 6: Run protocol validation (scripts/validate-protocol.py)
+   - Step 7: Verify agent compliance (all 9 agents)
+   - Step 8: Output parallel workflow guidance
+   - Step 9: **Prompt agent to continue tasks** with proper DZP workflow
+
+2. **Slash Command** (`.claude/commands/dzp-roe.md`)
+   - User-invocable via `/dzp-roe`
+   - Optional context argument: `/dzp-roe working on authentication`
+   - Invokes dzp-roe skill programmatically
+
+3. **State Schema Update** (`.protocol-state/project-state.json`)
+   - Added `compaction_recovery` top-level key
+   - Fields: `last_recovery_timestamp`, `recovery_count`, `recovery_history[]`
+   - Tracks all ROE invocations with timestamps and context
+
+4. **Skill Registry Updates**
+   - `SKILL_REGISTRY.md` v3.0.0 - Added dzp-roe to Custom Skills Registry and Meta Skills category
+   - `AGENT_SKILLS_MAP.yaml` v4 - Mapped dzp-roe to ALL 9 agents (gojo, yuuji, megumi, nobara, todo, maki, panda, inumaki, sukuna)
+
+5. **Task Continuation Feature**
+   - Step 9 extracts last 10 dev-notes.md entries to provide context
+   - Prompts agent to resume previous work
+   - Provides implementation routing guidance (5 agents → Yuuji)
+   - Reinforces parallel vs sequential workflow patterns
+
+### Changed
+
+- `project-state.json`: Protocol version 8.9.0 → 8.10.0
+- All skill-related files updated to reference v8.10.0
+
+### Documentation
+
+- `VERSION.md`: Updated to v8.10.0 with release summary
+- `CHANGELOG.md`: This entry
+- `README.md`: Added `/dzp-roe` to key features
+- `SLASH_COMMANDS_INSTALLATION.md`: Added `/dzp-roe` installation instructions
+- `AI_INSTRUCTIONS.md`: Added post-compaction recovery workflow
+- `SUKUNA-REPORT.md`: Documented UPDATE-2025-12-25-002
+
+---
+
 ## [8.9.0] - 2025-12-22
 
 ### Added
@@ -2150,4 +2206,4 @@ EOF
 
 **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 **Maintainer**: Protocol Guardians
-**Last Updated**: 2025-12-03
+**Last Updated**: 2025-12-25

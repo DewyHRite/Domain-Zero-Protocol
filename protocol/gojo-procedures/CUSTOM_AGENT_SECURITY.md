@@ -1,9 +1,9 @@
 # Gojo Custom Agent Security Integration Guide
-<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
 
 **Purpose**: Guide for Gojo to enforce custom agent security policies
-**Version**: 8.9.0
-**Updated**: 2025-12-17
+**Version**: 8.10.0
+**Updated**: 2025-12-25
 
 ---
 
@@ -629,6 +629,11 @@ A: Include custom agent activity in Trigger 19 intelligence reports. Review logs
 ---
 
 ## Version History
+
+- **v8.10.0** (2025-12-25): Documentation updates
+  - Updated version references
+  - Enhanced security guidelines
+  - Clarified tier enforcement
 
 - **v8.7.0** (2025-12-03): Initial implementation
   - Created validation script

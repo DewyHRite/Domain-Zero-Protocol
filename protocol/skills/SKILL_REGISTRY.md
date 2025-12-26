@@ -1,17 +1,17 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
 ---
 title: "Skill Registry"
-version: "2.0.0"
-protocol_version: "8.9.0"
-last_updated: "2025-12-22"
+version: "3.0.0"
+protocol_version: "8.10.0"
+last_updated: "2025-12-25"
 status: "Production-Ready"
 ---
 
 # Domain Zero Protocol - Skill Registry
 
-**Version**: 2.0.0
-**Protocol Version**: 8.9.0
-**Last Updated**: 2025-12-22
+**Version**: 3.0.0
+**Protocol Version**: 8.10.0
+**Last Updated**: 2025-12-25
 
 ---
 
@@ -51,6 +51,7 @@ These skills are from the official Anthropic repository: https://github.com/anth
 | Skill Name | Version | Owner | Risk Level | Code Execution | Last Review | Target Agents |
 |------------|---------|-------|------------|----------------|-------------|---------------|
 | skill-builder | 1.0.0 | gojo | Low | No | 2025-11-22 | gojo |
+| dzp-roe | 1.0.0 | ALL | Low | No | 2025-12-25 | ALL (gojo, yuuji, megumi, nobara, todo, maki, panda, inumaki, sukuna) |
 
 ---
 
@@ -61,6 +62,7 @@ These skills are from the official Anthropic repository: https://github.com/anth
 |-------|-------------|--------|
 | skill-builder | Create new skills with proper structure | Active |
 | skill-creator | Anthropic skill for creating skills | Active |
+| dzp-roe | Post-compaction recovery: Reinforce DZP rules of engagement | Active |
 
 ### Implementation Skills (Yuuji)
 | Skill | Description | Status |
@@ -167,6 +169,12 @@ These skills are from the official Anthropic repository: https://github.com/anth
 ---
 
 ## Changelog
+
+### 3.0.0 (2025-12-25)
+- Added **dzp-roe** skill (DZP Rules of Engagement) for post-compaction recovery
+- Skill available to ALL agents for context restoration after compaction
+- Updated protocol version to 8.10.0
+- Added Meta Skills category entry for dzp-roe
 
 ### 2.0.0 (2025-12-22)
 - Integrated 16 Anthropic official skills from GitHub repository

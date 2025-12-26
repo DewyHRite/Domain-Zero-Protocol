@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 8.9.0 | **Last Updated**: 2025-12-22
+**Version**: 8.10.0 | **Last Updated**: 2025-12-25
 **Purpose**: Complete installation and verification guide for AI assistants
 
 ---
@@ -32,7 +32,42 @@
 
 ---
 
-## What's New in v8.9.0
+## What's New in v8.10.0
+
+### DZP Rules of Engagement (Post-Compaction Recovery)
+**Problem**: After context compaction, agents forget DZP rules (agent roles, implementation routing, domain record access, tier workflows).
+
+**Solution**: `/dzp-roe` slash command + skill for instant protocol recovery:
+- **Skill file**: `protocol/skills/dzp-roe.md` (510 lines, 9-step workflow)
+- **Slash command**: `.claude/commands/dzp-roe.md`
+- **Available to**: ALL 9 agents
+- **State tracking**: Updates project-state.json with `compaction_recovery` schema
+
+**9-Step Workflow**:
+1. Read current project state
+2. Output complete DZP protocol summary (9 agents, restrictions, workflows)
+3. Update compaction recovery tracking in project-state.json
+4. Log to domain.record.md (Gojo/Sukuna only)
+5. Update dev-notes.md with continuity note
+6. Run protocol validation (`scripts/validate-protocol.py`)
+7. Verify agent compliance (9 agent files, implementation restrictions)
+8. Output parallel workflow guidance
+9. **Prompt agent to continue tasks with proper DZP workflow** (extracts last 10 dev-notes entries)
+
+**Invocation**:
+```bash
+/dzp-roe
+```
+Or:
+```bash
+skill: "dzp-roe"
+
+Context: Just recovered from compaction
+```
+
+---
+
+## Previous Release: v8.9.0
 
 ### Claude Skills Integration
 16 Anthropic skills from <https://github.com/anthropics/skills> mapped to all 9 agents:
@@ -74,6 +109,7 @@ Megumi updated with comprehensive OWASP Cheatsheet Series references:
 8. [New Installation Procedure](#8-new-installation-procedure)
 9. [Troubleshooting Missing Files](#9-troubleshooting-missing-files)
 10. [Agent Invocation](#10-agent-invocation)
+11. [Validation Requirements & Schema Governance](#11-validation-requirements--schema-governance)
 
 ---
 
@@ -757,7 +793,7 @@ cp .protocol-state/*.json .protocol-state/backups/pre-upgrade_$timestamp/ 2>/dev
 
 ```bash
 # Identify source directory
-ls core-files-v8.9.0/  # Example for v8.8.0
+ls core-files-v8.10.0/  # Example for v8.8.0
 
 # Verify it exists
 # If not, download from: https://github.com/DewyHRite/Domain-Zero-Protocol/releases
@@ -768,30 +804,30 @@ ls core-files-v8.9.0/  # Example for v8.8.0
 ```bash
 # Copy CORE files only (NOT .protocol-state/*.json)
 # Windows PowerShell
-Copy-Item -Path "core-files-v8.9.0/protocol/*" -Destination "protocol/" -Recurse -Force
-Copy-Item -Path "core-files-v8.9.0/docs/*" -Destination "docs/" -Recurse -Force
-Copy-Item -Path "core-files-v8.9.0/*.md" -Destination "." -Force
-Copy-Item -Path "core-files-v8.9.0/protocol.config.yaml" -Destination "." -Force
+Copy-Item -Path "core-files-v8.10.0/protocol/*" -Destination "protocol/" -Recurse -Force
+Copy-Item -Path "core-files-v8.10.0/docs/*" -Destination "docs/" -Recurse -Force
+Copy-Item -Path "core-files-v8.10.0/*.md" -Destination "." -Force
+Copy-Item -Path "core-files-v8.10.0/protocol.config.yaml" -Destination "." -Force
 
 # Copy state TEMPLATES only (NOT actual state files)
-Copy-Item -Path "core-files-v8.9.0/.protocol-state/*.template.*" -Destination ".protocol-state/" -Force
-Copy-Item -Path "core-files-v8.9.0/.protocol-state/*.example.*" -Destination ".protocol-state/" -Force
-Copy-Item -Path "core-files-v8.9.0/.protocol-state/*.py" -Destination ".protocol-state/" -Force
+Copy-Item -Path "core-files-v8.10.0/.protocol-state/*.template.*" -Destination ".protocol-state/" -Force
+Copy-Item -Path "core-files-v8.10.0/.protocol-state/*.example.*" -Destination ".protocol-state/" -Force
+Copy-Item -Path "core-files-v8.10.0/.protocol-state/*.py" -Destination ".protocol-state/" -Force
 # Copy .md files EXCEPT user-maintained artifacts (dev-notes.md, security-review.md, trigger-19.md)
-Get-ChildItem -Path "core-files-v8.9.0/.protocol-state/*.md" | Where-Object { $_.Name -notin @("dev-notes.md","security-review.md","trigger-19.md") } | Copy-Item -Destination ".protocol-state/" -Force
+Get-ChildItem -Path "core-files-v8.10.0/.protocol-state/*.md" | Where-Object { $_.Name -notin @("dev-notes.md","security-review.md","trigger-19.md") } | Copy-Item -Destination ".protocol-state/" -Force
 
 # Linux/Mac
-cp -r core-files-v8.9.0/protocol/* protocol/
-cp -r core-files-v8.9.0/docs/* docs/
-cp core-files-v8.9.0/*.md .
-cp core-files-v8.9.0/protocol.config.yaml .
+cp -r core-files-v8.10.0/protocol/* protocol/
+cp -r core-files-v8.10.0/docs/* docs/
+cp core-files-v8.10.0/*.md .
+cp core-files-v8.10.0/protocol.config.yaml .
 
 # Copy templates only
-cp core-files-v8.9.0/.protocol-state/*.template.* .protocol-state/
-cp core-files-v8.9.0/.protocol-state/*.example.* .protocol-state/
-cp core-files-v8.9.0/.protocol-state/*.py .protocol-state/
+cp core-files-v8.10.0/.protocol-state/*.template.* .protocol-state/
+cp core-files-v8.10.0/.protocol-state/*.example.* .protocol-state/
+cp core-files-v8.10.0/.protocol-state/*.py .protocol-state/
 # Copy .md files EXCEPT user-maintained artifacts
-for file in core-files-v8.9.0/.protocol-state/*.md; do
+for file in core-files-v8.10.0/.protocol-state/*.md; do
   filename=$(basename "$file")
   if [[ "$filename" != "dev-notes.md" && "$filename" != "security-review.md" && "$filename" != "trigger-19.md" ]]; then
     cp "$file" .protocol-state/
@@ -865,7 +901,7 @@ Read protocol/SUKUNA-REPORT.md
 
 ```bash
 # Check core files directory exists
-ls core-files-v8.9.0/
+ls core-files-v8.10.0/
 
 # If missing, download from:
 # https://github.com/DewyHRite/Domain-Zero-Protocol/releases
@@ -875,10 +911,10 @@ ls core-files-v8.9.0/
 
 ```bash
 # Windows PowerShell
-Copy-Item -Path "core-files-v8.9.0/*" -Destination "." -Recurse -Force
+Copy-Item -Path "core-files-v8.10.0/*" -Destination "." -Recurse -Force
 
 # Linux/Mac
-cp -r core-files-v8.9.0/* .
+cp -r core-files-v8.10.0/* .
 ```
 
 #### Step 3: Create Required Directories
@@ -983,8 +1019,8 @@ cat missing-files-report.txt
 #### Solution
 
 ```bash
-cp core-files-v8.9.0/protocol/yuuji.agent.md protocol/
-cp core-files-v8.9.0/protocol/megumi.agent.md protocol/
+cp core-files-v8.10.0/protocol/yuuji.agent.md protocol/
+cp core-files-v8.10.0/protocol/megumi.agent.md protocol/
 ```
 
 #### Issue 2: Missing Protocol Modules
@@ -998,7 +1034,7 @@ cp core-files-v8.9.0/protocol/megumi.agent.md protocol/
 
 ```bash
 mkdir -p protocol/modules
-cp core-files-v8.9.0/protocol/modules/* protocol/modules/
+cp core-files-v8.10.0/protocol/modules/* protocol/modules/
 ```
 
 #### Issue 3: Missing State Files
@@ -1011,8 +1047,8 @@ cp core-files-v8.9.0/protocol/modules/* protocol/modules/
 #### Solution for Issue 3
 
 ```bash
-cp core-files-v8.9.0/.protocol-state/session_monitor.py .protocol-state/
-cp core-files-v8.9.0/.protocol-state/work-session-alert.template.md .protocol-state/
+cp core-files-v8.10.0/.protocol-state/session_monitor.py .protocol-state/
+cp core-files-v8.10.0/.protocol-state/work-session-alert.template.md .protocol-state/
 ```
 
 #### Issue 4: Missing Subfolders
@@ -1025,7 +1061,7 @@ Directory not found: protocol/skills
 
 ```bash
 mkdir -p protocol/skills
-cp core-files-v8.9.0/protocol/skills/* protocol/skills/
+cp core-files-v8.10.0/protocol/skills/* protocol/skills/
 ```
 
 ### 9.3 Mass Recovery (Copy Everything)
@@ -1034,10 +1070,10 @@ cp core-files-v8.9.0/protocol/skills/* protocol/skills/
 
 ```bash
 # Windows PowerShell
-Copy-Item -Path "core-files-v8.9.0/*" -Destination "." -Recurse -Force -Exclude "*.json"
+Copy-Item -Path "core-files-v8.10.0/*" -Destination "." -Recurse -Force -Exclude "*.json"
 
 # Linux/Mac
-rsync -av --exclude='*.json' core-files-v8.9.0/ ./
+rsync -av --exclude='*.json' core-files-v8.10.0/ ./
 ```
 
 **Then verify**:
@@ -1111,6 +1147,241 @@ Read protocol/inumaki.agent.md and [API task]
 
 ---
 
+## 11. Validation Requirements & Schema Governance
+
+**NEW IN v8.10.0**: Protocol validation compliance requirements and schema governance policy to prevent state file drift.
+
+### 11.1 Validation Overview
+
+Domain Zero Protocol uses JSON schema validation to ensure state file integrity:
+- **Validation Rules**: Defined in `protocol/validation-rules.yaml`
+- **Validation Script**: `scripts/validate-protocol.py`
+- **State Files**: All files in `.protocol-state/` directory
+
+**Why Validation Matters**:
+- Detects data corruption in state files
+- Ensures safety features (session monitoring) function correctly
+- Prevents schema drift and compliance violations
+- Maintains audit trail integrity
+
+### 11.2 Running Validation
+
+```bash
+# Validate all state files
+python scripts/validate-protocol.py --check
+
+# Expected output:
+# ✅ project-state.json: VALID
+# ✅ session-state.json: VALID
+# ⚠️  snapshot-*.json.gz: 8 files missing "reason" field
+#
+# Summary: 2 VALID, 0 ERRORS, 8 WARNINGS
+
+# Validate specific file
+python scripts/validate-protocol.py --check .protocol-state/project-state.json
+
+# Strict mode (treat warnings as errors)
+python scripts/validate-protocol.py --check --strict
+```
+
+### 11.3 Schema Governance Policy
+
+**Principle**: Schemas are contracts, not documentation.
+
+**When Implementation and Schema Disagree**:
+1. Determine which is authoritative:
+   - If implementation provides critical features → Update schema
+   - If schema enforces safety requirements → Update implementation
+2. Document decision in SUKUNA-REPORT.md
+3. Apply changes following protocol update process
+
+**Adding New Fields to State Files**:
+1. Update schema FIRST in `protocol/validation-rules.yaml`
+2. Document field purpose and constraints
+3. Implement in state file
+4. Run validation to verify compliance
+5. Document in CHANGELOG.md
+
+**Schema Versioning**:
+- Use semver for schema versions (e.g., validation-rules.yaml v2.0.0)
+- Breaking changes increment major version
+- Non-breaking additions increment minor version
+- Document all schema changes in version header
+
+### 11.4 Compliance Status (v8.10.0)
+
+**Current Compliance** (as of PATCH-COMP-001):
+- ✅ `project-state.json`: COMPLIANT (fixed in PATCH-COMP-001)
+- ✅ `session-state.json`: COMPLIANT (schema updated - validation-rules.yaml v2.0.0)
+- ✅ Snapshot files: COMPLIANT (backfilled using scripts/backfill-snapshot-reason.py)
+
+**All State Files**: ✅ 100% COMPLIANT (0 validation errors)
+
+**Resolved Issues**:
+1. **session-state.json Schema Mismatch** (✅ RESOLVED):
+   - Schema updated to match work session monitoring implementation
+   - Now validates safety features: break enforcement, high-risk operation blocking
+   - Validation rules version upgraded to v2.0.0
+   - **Reference**: `protocol/validation-rules.yaml` (lines 160-373)
+
+2. **Snapshot "reason" Field** (✅ RESOLVED):
+   - 8 snapshots from 2025-12-06 backfilled using automated script
+   - Script: `scripts/backfill-snapshot-reason.py`
+   - Mapped from existing "trigger" field to new "reason" field
+   - Result: 7 updated, 1 already had field, 0 errors
+
+### 11.5 Validation Enforcement (✅ IMPLEMENTED)
+
+**Pre-Commit Hook** (✅ Active at `.git/hooks/pre-commit`):
+- Automatically runs validation before every commit
+- Blocks commits with validation errors
+- Can be bypassed with `git commit --no-verify` (not recommended)
+
+```bash
+#!/bin/sh
+# Domain Zero Protocol - Pre-commit Hook
+echo "Running Domain Zero Protocol validation..."
+python scripts/validate-protocol.py --check
+
+if [ $? -ne 0 ]; then
+    echo "❌ COMMIT BLOCKED: Protocol validation failed"
+    exit 1
+fi
+
+echo "✅ Protocol validation passed - proceeding with commit"
+exit 0
+```
+
+**GitHub Actions Workflow** (✅ Active at `.github/workflows/validate-protocol.yml`):
+- Runs on all pushes and pull requests
+- Python 3.12 with pyyaml and jsonschema
+- Uploads validation report as artifact (30-day retention)
+- Comments on PRs with validation failures
+- Can be manually triggered via workflow_dispatch
+
+```yaml
+name: Domain Zero Protocol Validation
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate State Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyyaml jsonschema
+      - run: python scripts/validate-protocol.py --check --verbose
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-report
+          path: .protocol-state/validation/validation-report.md
+          retention-days: 30
+```
+
+**Manual Validation** (Run anytime):
+```bash
+# Check all state files
+python scripts/validate-protocol.py --check
+
+# Check specific file
+python scripts/validate-protocol.py --check --file .protocol-state/project-state.json
+
+# Verbose output
+python scripts/validate-protocol.py --check --verbose
+```
+
+### 11.6 Red Team Analysis
+
+**Compliance Red Team Report**: `.protocol-state/red-team-validation-analysis.md`
+
+This report documents adversarial analysis of validation issues:
+- Attack vector assessment (can tampering bypass safety features?)
+- Data integrity impact
+- Systemic process gaps
+- Remediation recommendations
+
+**Key Findings** (PATCH-COMP-001):
+- No immediate security vulnerabilities
+- Data integrity concerns (validation can't detect session-state corruption)
+- Schema drift indicates lack of enforcement
+- Validation without enforcement is "security theater"
+
+**Critical Insight**:
+> "Safety features unvalidated are safety features unprotected."
+> - Ryomen Sukuna, System Update Adversary
+
+### 11.7 Troubleshooting Validation Errors
+
+#### Error: Missing Required Field
+```bash
+# Example: project-state.json missing "enabled" field in validation_state
+# Fix: Add missing field with appropriate default value
+{
+  "validation_state": {
+    "enabled": true,
+    "last_validation": null,
+    "drift_detected": false
+  }
+}
+```
+
+#### Error: Type Mismatch
+```bash
+# Example: Field expects integer but has string
+# Fix: Convert to correct type
+# WRONG: "tier": "2"
+# RIGHT: "tier": 2
+```
+
+#### Error: Drift Detected
+```bash
+# File changed since last validation (checksum mismatch)
+# This is expected after legitimate changes
+# Fix: Re-run validation to update baseline
+python scripts/validate-protocol.py --check
+```
+
+#### Error: Validation Script Missing
+```bash
+# Fix: Reinstall from core-files or download from repository
+cp core-files-v8.10.0/scripts/validate-protocol.py scripts/
+python scripts/validate-protocol.py --check
+```
+
+### 11.8 Best Practices
+
+**For AI Agents**:
+- ✅ Run validation after modifying state files
+- ✅ Check schema before adding new fields
+- ✅ Document schema changes in commit messages
+- ✅ Reference PATCH-COMP-001 for compliance guidance
+- ❌ Never modify state files without understanding schema requirements
+
+**For Users**:
+- ✅ Run validation weekly as part of maintenance
+- ✅ Review validation errors before committing
+- ✅ Keep schema and implementation synchronized
+- ✅ Document deviations in SUKUNA-REPORT.md
+- ❌ Don't ignore validation warnings (they indicate future errors)
+
+**For Protocol Maintainers**:
+- ✅ Update schemas before implementation changes
+- ✅ Version schemas with semver
+- ✅ Document all schema changes
+- ✅ Enforce validation in CI/CD
+- ✅ Conduct red team analysis for compliance issues
+
+---
+
 ## Protocol Files
 
 **After installation is verified**, read these files in order:
@@ -1124,7 +1395,7 @@ Read protocol/inumaki.agent.md and [API task]
 ## Canonical Source
 
 > **Repository**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Version**: 8.9.0
+> **Version**: 8.10.0
 > **Canonical File**: `protocol/CLAUDE.md`
 
 All protocol updates originate from the canonical source.
@@ -1152,5 +1423,5 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**Domain Zero Protocol v8.9.0 - Complete Installation Guide**
-**Updated**: 2025-12-22 (Claude Skills + Implementation Restrictions + File Rotation)
+**Domain Zero Protocol v8.10.0 - Complete Installation Guide**
+**Updated**: 2025-12-25 (DZP Rules of Engagement - Post-Compaction Recovery)

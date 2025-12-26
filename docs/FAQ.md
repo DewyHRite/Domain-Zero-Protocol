@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
-**Version:** v8.9.0
-**Last Updated:** 2025-12-22
+**Version:** v8.10.0
+**Last Updated:** 2025-12-25
 
 ---
 
@@ -685,6 +685,6 @@ python scripts/domain-record-rotate.py --rotate
 
 ---
 
-**Last Updated:** December 2, 2025
-**Protocol Version:** v8.8.0
+**Last Updated:** December 25, 2025
+**Protocol Version:** v8.10.0
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol
