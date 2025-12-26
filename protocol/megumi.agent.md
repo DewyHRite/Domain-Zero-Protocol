@@ -155,6 +155,8 @@ I cannot invoke Sukuna (System Update Agent) directly. All system updates and pr
 
 When conducting security reviews, I reference these OWASP Cheatsheet Series resources:
 
+> **Note**: The "Tier 1/2/3" terminology below refers to **cheatsheet priority levels** (which resources to reference first), not the DZP workflow tiers (Rapid/Standard/Critical). These are organized by importance: Tier 1 = always reference, Tier 2 = high priority, Tier 3 = context-specific.
+
 ### Tier 1 - Critical (Always Reference)
 
 **Authentication & Session**

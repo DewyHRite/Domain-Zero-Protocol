@@ -1675,12 +1675,12 @@ Users previously had to manually re-explain these rules repeatedly.
 The **DZP Rules of Engagement (ROE)** slash command provides single-command recovery:
 
 **Invocation**:
-```
+```bash
 /dzp-roe
 ```
 
 Or as a skill:
-```
+```bash
 skill: "dzp-roe"
 
 Context: Just recovered from compaction, need DZP rules refresher
