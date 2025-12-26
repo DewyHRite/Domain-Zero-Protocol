@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Getting Started with Domain Zero Protocol - A comprehensive guide for new users of the nine-agent AI development system">
-    <title>Getting Started | Domain Zero Protocol v8.9.0</title>
+    <title>Getting Started | Domain Zero Protocol v8.10.0</title>
     <style>
         /* CSS Custom Properties for theming */
         :root {
@@ -1162,7 +1162,7 @@
                 </svg>
                 <div>
                     <h1>Domain Zero Protocol</h1>
-                    <span class="version-badge">v8.9.0</span>
+                    <span class="version-badge">v8.10.0</span>
                 </div>
             </div>
             <p class="header-description">A nine-agent AI development system providing specialized expertise through distinct personalities, operating under absolute protocol authority.</p>
@@ -1172,7 +1172,7 @@
     <nav aria-label="Main navigation">
         <div class="container">
             <ul class="nav-list">
-                <li><a href="#whats-new" style="color: var(--color-accent);">New in v8.9.0</a></li>
+                <li><a href="#whats-new" style="color: var(--color-accent);">New in v8.10.0</a></li>
                 <li><a href="#what-is-dzp">What is DZP?</a></li>
                 <li><a href="#agents">The 9 Agents</a></li>
                 <li><a href="#relationships">Relationships</a></li>
@@ -1188,33 +1188,32 @@
     <main id="main-content">
         <div class="container">
 
-            <!-- What's New in v8.9.0 -->
+            <!-- What's New in v8.10.0 -->
             <section id="whats-new" aria-labelledby="whats-new-heading" style="background: linear-gradient(135deg, #3B82F620, #EC489920); border: 1px solid var(--color-border); border-radius: 12px; padding: var(--space-xl); margin-bottom: var(--space-2xl);">
-                <h2 id="whats-new-heading" style="border-bottom-color: var(--color-accent);">What's New in v8.9.0</h2>
+                <h2 id="whats-new-heading" style="border-bottom-color: var(--color-accent);">What's New in v8.10.0</h2>
 
                 <div class="intro-grid">
                     <div class="intro-card" style="background: var(--color-bg);">
                         <h3>
                             <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" aria-hidden="true">
-                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                                <path d="M2 17l10 5 10-5"/>
-                                <path d="M2 12l10 5 10-5"/>
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4"/>
+                                <path d="M12 8h.01"/>
                             </svg>
-                            16 Claude Skills Integrated
+                            DZP Rules of Engagement (ROE)
                         </h3>
-                        <p>All 9 agents now have access to Anthropic's official skills: PDF/DOCX/XLSX/PPTX generation, frontend design, webapp testing, MCP building, brand guidelines, and more.</p>
+                        <p>Post-compaction recovery skill restores full DZP protocol context with a single command (<code>/dzp-roe</code>). Outputs complete agent rules, updates state files, runs validation, and prompts continuation with proper workflows.</p>
                     </div>
 
                     <div class="intro-card" style="background: var(--color-bg);">
                         <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2" aria-hidden="true">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                <circle cx="8.5" cy="7" r="4"/>
-                                <polyline points="17 11 19 13 23 9"/>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" aria-hidden="true">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                <path d="M9 12l2 2 4-4"/>
                             </svg>
-                            Implementation Routing
+                            Protocol Validation Enforcement
                         </h3>
-                        <p>Five agents (Nobara, Todo, Maki, Panda, Inumaki) now route all code changes through Yuuji via <code>@implementation</code> handoff, ensuring TDD practices.</p>
+                        <p>Pre-commit hook and GitHub Actions workflow automatically validate all state files against authoritative schemas. Prevents schema drift and ensures 100% compliance before commits and PRs.</p>
                     </div>
 
                     <div class="intro-card" style="background: var(--color-bg);">
@@ -1225,20 +1224,19 @@
                                 <line x1="16" y1="13" x2="8" y2="13"/>
                                 <line x1="16" y1="17" x2="8" y2="17"/>
                             </svg>
-                            File Rotation System
+                            Schema Evolution v2.0.0
                         </h3>
-                        <p>Automatic archiving for dev-notes.md and security-review.md at 25k characters with SHA-256 integrity verification. Keeps 10 archives.</p>
+                        <p>Updated validation-rules.yaml from v1.0.0 to v2.0.0 with complete session-state schema rewrite. Validates work session monitoring safety features including break enforcement and high-risk operation blocking.</p>
                     </div>
 
                     <div class="intro-card" style="background: var(--color-bg);">
                         <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" aria-hidden="true">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                                <path d="M9 12l2 2 4-4"/>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2" aria-hidden="true">
+                                <polyline points="20 6 9 17 4 12"/>
                             </svg>
-                            OWASP Cheatsheet Integration
+                            100% Schema Compliance
                         </h3>
-                        <p>Megumi now references the full OWASP Cheatsheet Series: 8 critical, 6 high-priority, and 7 context-specific security references for comprehensive reviews.</p>
+                        <p>PATCH-COMP-001 achieved zero validation errors across all 12 state files. Backfilled 8 snapshot files, fixed placeholder timestamps, and implemented comprehensive red team security analysis.</p>
                     </div>
                 </div>
             </section>
@@ -1981,7 +1979,7 @@ project:
 
     <footer>
         <div class="container">
-            <p>Domain Zero Protocol v8.9.0</p>
+            <p>Domain Zero Protocol v8.10.0</p>
             <p class="footer-links">
                 <a href="https://github.com/DewyHRite/Domain-Zero-Protocol" target="_blank" rel="noopener noreferrer">
                     GitHub Repository

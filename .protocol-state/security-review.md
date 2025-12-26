@@ -1,5 +1,5 @@
 
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
 
 # SECURITY REVIEW LOG
 ## Security Findings - Megumi Fushiguro

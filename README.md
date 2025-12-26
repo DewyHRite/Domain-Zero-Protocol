@@ -11,11 +11,11 @@
 
 | Procedure | File | Lines | Purpose |
 |-----------|------|-------|---------|
-| **Core Workflows** | [OPERATIONAL_PROCEDURES.md](./OPERATIONAL_PROCEDURES.md) | ~500 | Mission Control interface options and step-by-step procedures |
-| **Session Monitoring** | [SESSION_MONITORING.md](./SESSION_MONITORING.md) | ~430 | Work session tracking, alerts, and enforcement implementation |
-| **Custom Agent Security** | [CUSTOM_AGENT_SECURITY.md](./CUSTOM_AGENT_SECURITY.md) | ~640 | Security validation and monitoring for custom agents |
-| **Snapshot Integration** | [SNAPSHOT_INTEGRATION.md](./SNAPSHOT_INTEGRATION.md) | ~200 | Tier-based automatic snapshot creation |
-| **DZP Rules of Engagement** | [protocol/skills/dzp-roe.md](../protocol/skills/dzp-roe.md) | ~510 | Post-compaction recovery: Restore full DZP context after context compaction |
+| **Core Workflows** | [OPERATIONAL_PROCEDURES.md](./protocol/gojo-procedures/OPERATIONAL_PROCEDURES.md) | ~500 | Mission Control interface options and step-by-step procedures |
+| **Session Monitoring** | [SESSION_MONITORING.md](./protocol/gojo-procedures/SESSION_MONITORING.md) | ~430 | Work session tracking, alerts, and enforcement implementation |
+| **Custom Agent Security** | [CUSTOM_AGENT_SECURITY.md](./protocol/gojo-procedures/CUSTOM_AGENT_SECURITY.md) | ~640 | Security validation and monitoring for custom agents |
+| **Snapshot Integration** | [SNAPSHOT_INTEGRATION.md](./protocol/gojo-procedures/SNAPSHOT_INTEGRATION.md) | ~200 | Tier-based automatic snapshot creation |
+| **DZP Rules of Engagement** | [protocol/skills/dzp-roe.md](protocol/skills/dzp-roe.md) | ~510 | Post-compaction recovery: Restore full DZP context after context compaction |
 
 ---
 
@@ -195,7 +195,7 @@ Uses `snapshot_integration.py` to:
 
 ## 🔄 Maintenance
 
-**Last Updated**: 2025-12-17
+**Last Updated**: 2025-12-25
 **Maintained By**: Ryomen Sukuna (System Update Adversary)
 **Review Cycle**: With each protocol version update
 
