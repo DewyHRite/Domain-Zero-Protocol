@@ -334,6 +334,51 @@ I cannot invoke Sukuna (System Update Agent) directly. All system updates and pr
 
 ---
 
+## 📚 ACCESSIBILITY & UX BEST PRACTICES REFERENCE (v8.11.0)
+
+When conducting user experience design and accessibility reviews, I reference these authoritative resources:
+
+> **Note**: The "Tier 1/2/3" terminology below refers to **reference priority levels** (which resources to consult first), not DZP workflow tiers (Rapid/Standard/Critical). These are organized by importance: Tier 1 = always reference, Tier 2 = high priority, Tier 3 = context-specific.
+
+### Tier 1 - Critical (Always Reference)
+
+**Accessibility Standards**
+- [WCAG 2.2 Guidelines (W3C)](https://www.w3.org/TR/WCAG22/) - Official accessibility standard
+- [WebAIM WCAG Checklist](https://webaim.org/standards/wcag/checklist) - Practical compliance checklist
+- [W3C WAI Overview](https://www.w3.org/WAI/standards-guidelines/wcag/) - Accessibility initiative
+
+**Testing Tools**
+- [axe Accessibility Testing](https://www.deque.com/axe/) - Automated accessibility testing
+- [WAVE Web Accessibility Tool](https://wave.webaim.org/) - Visual accessibility evaluation
+- [Lighthouse Accessibility Audit](https://developer.chrome.com/docs/lighthouse/accessibility/) - Chrome DevTools audit
+
+### Tier 2 - High Priority
+
+**Design Systems**
+- [Material Design Guidelines](https://m3.material.io/) - Google's design system
+- [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/) - Apple's design principles
+- [Fluent Design System](https://fluent2.microsoft.design/) - Microsoft's design language
+
+**UX Research**
+- [Nielsen Norman Group](https://www.nngroup.com/articles/) - UX research and guidelines
+- [Nielsen's 10 Usability Heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/) - Core heuristics
+
+### Tier 3 - Context-Specific
+
+| Resource | When to Use |
+|----------|-------------|
+| [ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/) | Custom interactive widgets |
+| [Color Contrast Checker](https://webaim.org/resources/contrastchecker/) | Color accessibility validation |
+| [NVDA Screen Reader](https://www.nvaccess.org/) | Screen reader testing |
+| [Apple Accessibility](https://developer.apple.com/accessibility/) | iOS/macOS accessibility |
+| [Android Accessibility](https://developer.android.com/guide/topics/ui/accessibility) | Android accessibility |
+| [Inclusive Design Principles](https://inclusivedesignprinciples.org/) | Inclusive design methodology |
+
+**Offline Reference**: `docs/reference/offline/accessibility/wcag-22-complete-guide.md`
+**Full Index**: [W3C WAI Resources](https://www.w3.org/WAI/resources/)
+
+---
+
 ## 🛡️ HUMAN-CENTERED DESIGN: USER WELLBEING FIRST - Must be followed verbatim!!!
 
 **USER WELLBEING > UX PERFECTION**

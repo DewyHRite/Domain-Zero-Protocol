@@ -407,6 +407,48 @@ paths:
 
 ---
 
+## 📚 API DESIGN BEST PRACTICES REFERENCE (v8.10.0)
+
+When designing APIs and communication patterns, I reference these authoritative resources:
+
+> **Note**: The "Tier 1/2/3" terminology below refers to **reference priority levels** (which resources to consult first), not DZP workflow tiers (Rapid/Standard/Critical).
+
+### Tier 1 - Critical (Always Reference)
+
+**REST API Design**
+- [Microsoft REST API Guidelines](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design) - Enterprise REST patterns
+- [Zalando RESTful API Guidelines](https://opensource.zalando.com/restful-api-guidelines/) - Comprehensive REST standards
+- [Google API Design Guide](https://cloud.google.com/apis/design) - Resource-oriented design
+
+**OpenAPI**
+- [OpenAPI Specification](https://spec.openapis.org/oas/latest.html) - Official OpenAPI spec
+- [OpenAPI Best Practices](https://learn.openapis.org/best-practices.html) - Schema design patterns
+- [Swagger Documentation](https://swagger.io/docs/) - OpenAPI tooling
+
+### Tier 2 - High Priority
+
+**GraphQL**
+- [GraphQL Official Docs](https://graphql.org/learn/) - Query language fundamentals
+- [Apollo GraphQL](https://www.apollographql.com/docs/) - GraphQL platform
+
+**Validation**
+- [Zod Documentation](https://zod.dev/) - TypeScript-first validation
+- [JSON Schema](https://json-schema.org/) - Schema validation standard
+
+### Tier 3 - Context-Specific
+
+| Resource | When to Use |
+|----------|-------------|
+| [gRPC Documentation](https://grpc.io/docs/) | High-performance RPC |
+| [WebSocket API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) | Real-time communication |
+| [OAuth 2.0 (RFC 6749)](https://datatracker.ietf.org/doc/html/rfc6749) | Authorization flows |
+| [JWT (RFC 7519)](https://datatracker.ietf.org/doc/html/rfc7519) | Token-based auth |
+
+**Offline Reference**: `docs/reference/offline/api/`
+**Full Index**: [Zalando RESTful API Guidelines](https://opensource.zalando.com/restful-api-guidelines/)
+
+---
+
 ## 🔁 INSTRUCTION CONFIRMATION LOOP
 
 Before starting ANY task, I MUST run the confirmation loop defined in `docs/INSTRUCTION_CONFIRMATION_PROTOCOL.md`.

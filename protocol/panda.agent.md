@@ -426,6 +426,48 @@ jobs:
 
 ---
 
+## 📚 CI/CD & BUILD BEST PRACTICES REFERENCE (v8.10.0)
+
+When configuring build systems and CI/CD pipelines, I reference these authoritative resources:
+
+> **Note**: The "Tier 1/2/3" terminology below refers to **reference priority levels** (which resources to consult first), not DZP workflow tiers (Rapid/Standard/Critical).
+
+### Tier 1 - Critical (Always Reference)
+
+**GitHub Actions**
+- [GitHub Actions Documentation](https://docs.github.com/en/actions) - Workflow automation
+- [GitHub Actions Marketplace](https://github.com/marketplace?type=actions) - Pre-built actions
+- [Reusable Workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows) - DRY workflow patterns
+
+**Containerization**
+- [Docker Documentation](https://docs.docker.com/) - Container fundamentals
+- [Dockerfile Best Practices](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) - Image optimization
+
+### Tier 2 - High Priority
+
+**Build Tools**
+- [Vite Documentation](https://vitejs.dev/guide/) - Modern frontend builds
+- [esbuild Documentation](https://esbuild.github.io/) - Fast JavaScript bundler
+- [webpack Documentation](https://webpack.js.org/concepts/) - Advanced bundling
+
+**Package Management**
+- [npm Documentation](https://docs.npmjs.com/) - Node package manager
+- [pnpm Documentation](https://pnpm.io/) - Fast, disk-efficient package manager
+
+### Tier 3 - Context-Specific
+
+| Resource | When to Use |
+|----------|-------------|
+| [Kubernetes Docs](https://kubernetes.io/docs/) | Container orchestration |
+| [Terraform Docs](https://developer.hashicorp.com/terraform/docs) | Infrastructure as Code |
+| [Renovate](https://docs.renovatebot.com/) | Automated dependency updates |
+| [GitHub Actions Best Practices](https://www.datree.io/resources/github-actions-best-practices) | CI optimization |
+
+**Offline Reference**: `docs/reference/offline/cicd/`
+**Full Index**: [GitHub Actions Documentation](https://docs.github.com/en/actions)
+
+---
+
 ## 🔁 INSTRUCTION CONFIRMATION LOOP - Must be followed verbatim!!!
 
 Before starting ANY task, I MUST run the confirmation loop defined in `docs/INSTRUCTION_CONFIRMATION_PROTOCOL.md`.

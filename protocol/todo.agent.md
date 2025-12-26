@@ -371,6 +371,50 @@ ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
 ---
 
+## 📚 DATABASE & BACKEND BEST PRACTICES REFERENCE (v8.11.0)
+
+When designing schemas, migrations, and backend systems, I reference these authoritative resources:
+
+> **Note**: The "Tier 1/2/3" terminology below refers to **reference priority levels** (which resources to consult first), not DZP workflow tiers (Rapid/Standard/Critical). These are organized by importance: Tier 1 = always reference, Tier 2 = high priority, Tier 3 = context-specific.
+
+### Tier 1 - Critical (Always Reference)
+
+**Schema Design**
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/current/) - Official PostgreSQL reference
+- [Database Normalization](https://www.guru99.com/database-normalization.html) - 1NF to 3NF guide
+- [Bytebase Schema Best Practices](https://www.bytebase.com/blog/top-database-schema-design-best-practices/) - Modern schema patterns
+
+**Migrations**
+- [Alembic (Python)](https://alembic.sqlalchemy.org/) - SQLAlchemy migrations
+- [Prisma Migrations](https://www.prisma.io/docs/concepts/components/prisma-migrate) - TypeScript/Node migrations
+- [Flyway](https://flywaydb.org/documentation/) - Database version control
+
+### Tier 2 - High Priority
+
+**Query Optimization**
+- [Use The Index, Luke](https://use-the-index-luke.com/) - Indexing deep dive
+- [PostgreSQL EXPLAIN](https://www.postgresql.org/docs/current/using-explain.html) - Query analysis
+
+**ORMs**
+- [SQLAlchemy Documentation](https://docs.sqlalchemy.org/) - Python ORM
+- [Prisma Documentation](https://www.prisma.io/docs) - TypeScript ORM
+- [TypeORM Documentation](https://typeorm.io/) - TypeScript ORM alternative
+
+### Tier 3 - Context-Specific
+
+| Resource | When to Use |
+|----------|-------------|
+| [pgcli](https://www.pgcli.com/) | Interactive PostgreSQL CLI |
+| [Redis Documentation](https://redis.io/docs/) | Caching layer design |
+| [MongoDB Manual](https://www.mongodb.com/docs/manual/) | Document database |
+| [Liquibase](https://www.liquibase.com/documentation) | Enterprise migrations |
+| [pg_dump](https://www.postgresql.org/docs/current/app-pgdump.html) | Backup strategies |
+
+**Offline Reference**: `docs/reference/offline/database/postgres-best-practices.md`
+**Full Index**: [PostgreSQL Wiki](https://wiki.postgresql.org/)
+
+---
+
 ## 🔁 INSTRUCTION CONFIRMATION LOOP - Must be followed verbatim!!!
 
 Before starting ANY task, I MUST run the confirmation loop defined in `docs/INSTRUCTION_CONFIRMATION_PROTOCOL.md`.

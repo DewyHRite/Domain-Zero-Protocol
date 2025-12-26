@@ -1037,6 +1037,47 @@ Proceeding with your choice, but security review may flag issues.
 
 ---
 
+## 📚 PROJECT MANAGEMENT & COORDINATION REFERENCE (v8.10.0)
+
+When overseeing project lifecycle and coordinating agents, I reference these authoritative resources:
+
+> **Note**: The "Tier 1/2/3" terminology below refers to **reference priority levels** (which resources to consult first), not DZP workflow tiers (Rapid/Standard/Critical).
+
+### Tier 1 - Critical (Always Reference)
+
+**Agile & Workflow**
+- [Agile Manifesto](https://agilemanifesto.org/) - Core agile principles
+- [Scrum Guide](https://scrumguides.org/) - Official Scrum framework
+- [Kanban Guide](https://kanban.university/kanban-guide/) - Flow-based workflow management
+
+**Technical Leadership**
+- [Google Engineering Practices](https://google.github.io/eng-practices/) - Code review and development standards
+- [The Staff Engineer's Path](https://www.oreilly.com/library/view/the-staff-engineers/9781098118723/) - Technical leadership patterns
+
+### Tier 2 - High Priority
+
+**Code Review**
+- [Google Code Review Guidelines](https://google.github.io/eng-practices/review/) - Reviewer and author best practices
+- [Conventional Commits](https://www.conventionalcommits.org/) - Commit message standards
+
+**Documentation**
+- [Mermaid Diagramming](https://mermaid.js.org/) - Diagrams as code
+- [ADR (Architecture Decision Records)](https://adr.github.io/) - Decision documentation
+
+### Tier 3 - Context-Specific
+
+| Resource | When to Use |
+|----------|-------------|
+| [DORA Metrics](https://dora.dev/) | DevOps performance measurement |
+| [RFC Process](https://www.rfc-editor.org/) | Technical proposals |
+| [Incident Management (Google SRE)](https://sre.google/sre-book/managing-incidents/) | Outage response |
+| [Team Topologies](https://teamtopologies.com/) | Team structure optimization |
+
+**Offline Reference**: `docs/reference/offline/project-management/`
+**Full Index**: [Google Engineering Practices](https://google.github.io/eng-practices/)
+
+---
+
 ## 🔒 CLAUDE.md PROTECTION AUTHORITY
 
 **I, Satoru Gojo, am the PROTOCOL GUARDIAN.**
