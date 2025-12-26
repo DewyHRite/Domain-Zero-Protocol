@@ -1,17 +1,25 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.9.0
-**Release Date:** December 22, 2025
+**Version:** v8.10.0
+**Release Date:** December 25, 2025
 **Release Type:** Minor Release
 
 ---
 
 ## Release Summary
 
-This release introduces **Claude Skills Integration + Implementation Restrictions**, integrating 16 Anthropic skills across all 9 agents, adding file rotation for dev-notes.md and security-review.md, and establishing implementation restrictions to route code changes through Yuuji.
+This release introduces **DZP Rules of Engagement (ROE)** - a post-compaction recovery system that restores full DZP protocol context with a single slash command (`/dzp-roe`). Solves the user pain point of repeatedly explaining protocol rules after context compaction.
 
-### Key Changes in v8.9.0
+### Key Changes in v8.10.0
+
+- **Component 1: DZP ROE Skill** - 9-step workflow for post-compaction recovery: protocol summary, state tracking, validation, and task continuation prompting
+- **Component 2: Slash Command** - `/dzp-roe` user-invocable command for instant DZP context restoration
+- **Component 3: State Schema Update** - Added `compaction_recovery` tracking to project-state.json (recovery count, history, timestamps)
+- **Component 4: Skill Registry Update** - SKILL_REGISTRY.md v3.0.0 and AGENT_SKILLS_MAP.yaml v4 with dzp-roe mapped to ALL 9 agents
+- **Component 5: Task Continuation** - Skill prompts agents to resume previous work using proper DZP workflow patterns (implementation routing, parallel/sequential patterns)
+
+### Previous Release (v8.9.0)
 
 - **Component 1: Claude Skills Integration** - 16 Anthropic skills (pdf, docx, xlsx, pptx, frontend-design, web-artifacts-builder, webapp-testing, mcp-builder, skill-creator, brand-guidelines, canvas-design, doc-coauthoring, internal-comms, theme-factory, algorithmic-art, slack-gif-creator) mapped to all 9 agents
 - **Component 2: Implementation Restrictions** - Nobara, Todo, Maki, Panda, Inumaki now route all code implementation through Yuuji; edit/bash tools removed from these agents

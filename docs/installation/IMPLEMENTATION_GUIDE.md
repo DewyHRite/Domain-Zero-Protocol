@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
-**Version**: 8.9.0
-**Last Updated**: December 2025
+**Version**: 8.10.0
+**Last Updated**: December 25, 2025
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
 
 ---
@@ -1657,6 +1657,53 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
 
 ---
 
+## Context Compaction Recovery (v8.10.0+)
+
+### The Problem
+
+After context compaction in Claude Code, agents lose critical DZP protocol context including:
+- Agent roles and restrictions
+- Implementation routing (5 agents route through Yuuji)
+- Domain record access (Gojo/Sukuna only)
+- Tier validation workflows
+- Parallel workflow patterns
+
+Users previously had to manually re-explain these rules repeatedly.
+
+### The Solution: /dzp-roe
+
+The **DZP Rules of Engagement (ROE)** slash command provides single-command recovery:
+
+**Invocation**:
+```
+/dzp-roe
+```
+
+Or as a skill:
+```
+skill: "dzp-roe"
+
+Context: Just recovered from compaction, need DZP rules refresher
+```
+
+**What It Does**:
+1. Outputs complete DZP protocol summary (9 agents, restrictions, patterns)
+2. Updates state tracking (project-state.json, domain.record.md, dev-notes.md)
+3. Runs protocol validation
+4. Prompts agent to continue previous work with proper DZP workflow
+
+**When to Use**:
+- Immediately after context compaction
+- When agents forget implementation routing rules
+- When agents forget domain record access restrictions
+- When agents need reminder of tier validation requirements
+
+**File**: `protocol/skills/dzp-roe.md` (510 lines, 9-step workflow)
+**Slash Command**: `.claude/commands/dzp-roe.md`
+**Available To**: ALL 9 agents (gojo, yuuji, megumi, nobara, todo, maki, panda, inumaki, sukuna)
+
+---
+
 ## Quick Reference Card
 
 ### Agent Invocation
@@ -1667,6 +1714,15 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
 | Megumi | `Read protocol/megumi.agent.md and [task]` | Security review |
 | Nobara | `Read protocol/nobara.agent.md and [task]` | UX/Creative |
 | Gojo | `Read protocol/gojo.agent.md` | Mission Control |
+
+### Slash Commands (v8.10.0+)
+
+| Command | Purpose | Availability |
+|---------|---------|--------------|
+| `/dzp-roe` | Post-compaction DZP rules recovery | ALL agents |
+| `/gojo` | Mission Control activation | gojo |
+| `/yuuji` | Implementation specialist activation | yuuji |
+| `/sukuna` | System update (Gojo-invoked only) | sukuna |
 
 ### Tier Flags
 

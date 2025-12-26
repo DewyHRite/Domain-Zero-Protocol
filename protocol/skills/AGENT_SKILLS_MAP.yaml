@@ -1,11 +1,11 @@
-# Domain Zero - Agent Skills Mapping (v3)
+# Domain Zero - Agent Skills Mapping (v4)
 # Purpose: Map Claude Skills (Anthropic + custom) to each DZP agent
 # Reference: https://github.com/anthropics/skills/tree/main/skills
-# Updated for v8.9.0 Claude Skills Integration
+# Updated for v8.10.0 - DZP ROE skill added to all agents
 
-version: 3
-updated: 2025-12-22
-protocol_version: "8.9.0"
+version: 4
+updated: 2025-12-25
+protocol_version: "8.10.0"
 
 canonical_reference:
   overview: https://claude.com/blog/skills
@@ -41,6 +41,7 @@ agents:
     document_skills:
       - pptx
     custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
       - skill-builder        # Create new skills rapidly
       - protocol-verify      # Protocol validation
       - release-briefing     # Release documentation
@@ -59,6 +60,7 @@ agents:
       - docx
       - pdf
     custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
       - codegen-standards
       - tdd-checklist
       - async-patterns
@@ -73,6 +75,7 @@ agents:
     document_skills:
       - pdf
     custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
       - owasp-checklist      # OWASP Top 10 verification
       - threat-modeling      # Threat model creation
       - jwt-audit            # JWT security review
@@ -98,6 +101,7 @@ agents:
       - docx
       - pptx
     custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
       - ux-writing           # UX copy and microcopy
       - a11y-review          # Accessibility audit
       - onboarding-flows     # User onboarding design
@@ -111,6 +115,7 @@ agents:
     document_skills:
       - xlsx
     custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
       - schema-design        # Database schema design
       - migration-planner    # Data migration planning
       - query-optimization   # SQL/NoSQL optimization
@@ -126,6 +131,7 @@ agents:
     document_skills:
       - xlsx
     custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
       - lighthouse-audit     # Web performance auditing
       - bundle-analysis      # Bundle optimization
       - profiling-tools      # Profiler usage
@@ -141,6 +147,7 @@ agents:
     document_skills:
       - xlsx
     custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
       - github-actions       # GitHub Actions workflows
       - vite-config          # Vite configuration
       - docker-builds        # Docker containerization
@@ -158,6 +165,7 @@ agents:
       - pdf
       - docx
     custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
       - openapi-design       # OpenAPI 3.0 specification
       - graphql-schema       # GraphQL design
       - rest-patterns        # RESTful API patterns
@@ -171,6 +179,7 @@ agents:
       - doc-coauthoring      # Update documentation
     document_skills: []
     custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
       - adversarial-review   # Challenge protocol changes
       - update-validation    # Validate system updates
       - protocol-stress-test # Test protocol under stress

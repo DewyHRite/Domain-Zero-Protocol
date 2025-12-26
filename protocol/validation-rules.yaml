@@ -129,9 +129,11 @@ schemas:
             type: boolean
             description: "Whether validation is enabled"
           last_validation:
-            type: string
-            format: date-time
-            description: "Last validation run timestamp (ISO 8601)"
+            oneOf:
+              - type: string
+                format: date-time
+              - type: "null"
+            description: "Last validation run timestamp (ISO 8601) or null if never validated"
           drift_detected:
             type: boolean
             description: "Whether drift was detected in last validation"
@@ -158,89 +160,219 @@ schemas:
                 description: "Last time agent was invoked (ISO 8601)"
 
   # =============================================================================
-  # Schema 2: session-state.json
+  # Schema 2: session-state.json (UPDATED v8.10.0 - PATCH-COMP-001)
   # =============================================================================
   session-state:
     $schema: "http://json-schema.org/draft-07/schema#"
     $id: "dzp://schemas/session-state.json"
     title: "Session State Schema"
-    description: "Validates session-state.json - current session configuration and active task tracking"
+    description: "Validates session-state.json - work session monitoring with safety features (break enforcement, high-risk operation blocking)"
     type: object
     required:
-      - session_id
-      - started_at
-      - active_tier
-      - current_agent
-      - task_queue
-      - last_validation_timestamp
+      - _comment
+      - current_session
+      - session_metrics
+      - thresholds
+      - session_history
+      - last_updated
+      - protocol_version
     properties:
-      session_id:
+      _comment:
         type: string
-        format: uuid
-        description: "Unique session identifier (UUID)"
+        description: "File comment describing purpose and version"
 
-      started_at:
-        type: string
-        format: date-time
-        description: "Session start timestamp (ISO 8601)"
+      current_session:
+        type: object
+        description: "Active work session tracking with alert escalation"
+        required:
+          - session_id
+          - session_active
+          - start_time
+          - last_interaction_time
+          - last_alert_time
+          - alert_count
+          - escalation_level
+          - user_last_choice
+          - break_acknowledged
+          - high_risk_operations_blocked
+        properties:
+          session_id:
+            oneOf:
+              - type: string
+              - type: "null"
+            description: "Unique session identifier (UUID) or null if no active session"
 
-      active_tier:
-        type: integer
-        minimum: 1
-        maximum: 3
-        description: "Current active tier (1, 2, or 3)"
+          session_active:
+            type: boolean
+            description: "Whether a work session is currently active"
 
-      current_agent:
-        type: string
-        pattern: '^[a-z]+$'
-        description: "Currently active agent name (lowercase)"
+          start_time:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: "null"
+            description: "Session start timestamp (ISO 8601) or null if inactive"
 
-      task_queue:
+          last_interaction_time:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: "null"
+            description: "Last user interaction timestamp (ISO 8601) or null"
+
+          last_alert_time:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: "null"
+            description: "Last work session alert timestamp (ISO 8601) or null"
+
+          alert_count:
+            type: integer
+            minimum: 0
+            description: "Number of alerts issued in current session"
+
+          escalation_level:
+            type: integer
+            minimum: 0
+            maximum: 3
+            description: "Alert escalation level (0=none, 1=initial, 2=escalated, 3=critical)"
+
+          user_last_choice:
+            oneOf:
+              - type: string
+                enum:
+                  - continue
+                  - break
+              - type: "null"
+            description: "User's last response to work session alert or null"
+
+          break_acknowledged:
+            type: boolean
+            description: "Whether user acknowledged break requirement"
+
+          high_risk_operations_blocked:
+            type: boolean
+            description: "Whether high-risk operations are blocked due to extended session (safety feature)"
+
+      session_metrics:
+        type: object
+        description: "Cumulative session metrics and user response tracking"
+        required:
+          - total_duration_minutes
+          - continuous_work_minutes
+          - break_timestamps
+          - total_breaks
+          - alerts_issued
+          - alerts_ignored
+          - continues_chosen
+          - breaks_chosen
+        properties:
+          total_duration_minutes:
+            type: number
+            minimum: 0
+            description: "Total session duration in minutes"
+
+          continuous_work_minutes:
+            type: number
+            minimum: 0
+            description: "Continuous work duration without breaks"
+
+          break_timestamps:
+            type: array
+            items:
+              type: string
+              format: date-time
+            description: "Array of break timestamps (ISO 8601)"
+
+          total_breaks:
+            type: integer
+            minimum: 0
+            description: "Total number of breaks taken"
+
+          alerts_issued:
+            type: integer
+            minimum: 0
+            description: "Total work session alerts issued"
+
+          alerts_ignored:
+            type: integer
+            minimum: 0
+            description: "Number of alerts ignored (user chose 'continue')"
+
+          continues_chosen:
+            type: integer
+            minimum: 0
+            description: "Number of times user chose to continue working"
+
+          breaks_chosen:
+            type: integer
+            minimum: 0
+            description: "Number of times user chose to take a break"
+
+      thresholds:
+        type: object
+        description: "Work session monitoring thresholds (user-configurable via protocol.config.yaml)"
+        required:
+          - initial_alert_minutes
+          - escalated_alert_minutes
+          - critical_session_minutes
+          - max_continuous_minutes
+          - late_night_hour
+          - minimum_break_minutes
+        properties:
+          initial_alert_minutes:
+            type: integer
+            minimum: 60
+            maximum: 480
+            description: "Minutes before initial alert (default: 240 = 4 hours)"
+
+          escalated_alert_minutes:
+            type: integer
+            minimum: 30
+            maximum: 120
+            description: "Minutes before escalated alert after initial (default: 45 minutes)"
+
+          critical_session_minutes:
+            type: integer
+            minimum: 180
+            maximum: 720
+            description: "Minutes before critical session alert (default: 360 = 6 hours)"
+
+          max_continuous_minutes:
+            type: integer
+            minimum: 240
+            maximum: 1440
+            description: "Maximum continuous work minutes before forced break (default: 480 = 8 hours)"
+
+          late_night_hour:
+            type: integer
+            minimum: 20
+            maximum: 23
+            description: "Hour (24h format) when late-night alerts trigger (default: 22:00)"
+
+          minimum_break_minutes:
+            type: integer
+            minimum: 5
+            maximum: 60
+            description: "Minimum break duration in minutes (default: 15 minutes)"
+
+      session_history:
         type: array
-        description: "Queue of pending and active tasks"
+        description: "Historical session records (array of session objects)"
         items:
           type: object
-          required:
-            - task_id
-            - tier
-            - status
-          properties:
-            task_id:
-              type: string
-              description: "Unique task identifier"
-            description:
-              type: string
-              description: "Task description"
-            tier:
-              type: integer
-              minimum: 1
-              maximum: 3
-              description: "Task tier (1, 2, or 3)"
-            status:
-              type: string
-              enum:
-                - pending
-                - in_progress
-                - completed
-                - failed
-              description: "Task status"
-            assigned_agent:
-              type: string
-              pattern: '^[a-z]+$'
-              description: "Agent assigned to task"
-            created_at:
-              type: string
-              format: date-time
-              description: "Task creation timestamp (ISO 8601)"
-            completed_at:
-              type: string
-              format: date-time
-              description: "Task completion timestamp (ISO 8601)"
+          description: "Past session record with metrics"
 
-      last_validation_timestamp:
+      last_updated:
         type: string
         format: date-time
-        description: "Last validation check timestamp (ISO 8601)"
+        description: "Last state file update timestamp (ISO 8601)"
+
+      protocol_version:
+        type: string
+        pattern: '^\d+\.\d+\.\d+$'
+        description: "Domain Zero Protocol version (semantic versioning)"
 
   # =============================================================================
   # Schema 3: validation-state.json
@@ -560,10 +692,11 @@ schemas:
 # Validation Rules Metadata
 # =============================================================================
 metadata:
-  version: "1.0.0"
+  version: "2.0.0"
   created: "2025-12-05"
+  last_updated: "2025-12-25"
   schema_count: 5
-  framework_version: "8.8.0"
+  framework_version: "8.10.0"
   description: "JSON Schema validation rules for Domain Zero Protocol state files"
 
   # Schema-to-file mapping
@@ -581,3 +714,22 @@ metadata:
     - validation-state
     - snapshot-manifest
     - snapshot
+
+  # Changelog
+  changelog:
+    - version: "2.0.0"
+      date: "2025-12-25"
+      changes:
+        - "BREAKING: session-state schema updated to match work session monitoring implementation (PATCH-COMP-001)"
+        - "Replaced flat task queue structure with nested work session monitoring structure"
+        - "Added validation for safety features: break enforcement, high-risk operation blocking"
+        - "Added validation for alert escalation, session metrics, and configurable thresholds"
+        - "Ensures work session monitoring safety features are validated and protected"
+      patch_reference: "protocol/SUKUNA-REPORT.md#PATCH-COMP-001"
+
+    - version: "1.0.0"
+      date: "2025-12-05"
+      changes:
+        - "Initial validation framework for DZP v8.8.0"
+        - "Created schemas for project-state, session-state, validation-state, snapshot-manifest, snapshot"
+        - "Established schema-to-file mapping and validation order"

@@ -1,5 +1,5 @@
 # Domain Record - Mission Control & System Adversary Notes
-<!-- [INTERNAL] - Domain Zero Protocol v8.9.0 -->
+<!-- [INTERNAL] - Domain Zero Protocol v8.10.0 -->
 <!-- ACCESS: Gojo + Sukuna ONLY - All other agents DENIED -->
 
 **File Purpose**: Shared notes repository for Gojo (Mission Control) and Sukuna (System Update Adversary) to prevent agent file bloat and enable crash recovery.
@@ -42,7 +42,7 @@
 ## 🔄 PROTOCOL UPDATE TRACKING
 
 **Format**: Each update should include:
-- **Version**: Protocol version (e.g., v8.8.0 → v8.9.0)
+- **Version**: Protocol version (e.g., v8.9.0 → v8.10.0)
 - **Date**: ISO-8601 timestamp
 - **Changes**: Summary of changes
 - **Migration Notes**: Breaking changes, required actions

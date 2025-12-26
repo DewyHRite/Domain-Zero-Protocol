@@ -1,9 +1,9 @@
 # Gojo Operational Procedures Index
-<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
 
 **Purpose**: Central index of all Gojo (Mission Control) operational procedures and implementation guides.
-**Version**: 8.9.0
-**Updated**: 2025-12-17
+**Version**: 8.10.0
+**Updated**: 2025-12-25
 
 ---
 
@@ -15,6 +15,7 @@
 | **Session Monitoring** | [SESSION_MONITORING.md](./SESSION_MONITORING.md) | ~430 | Work session tracking, alerts, and enforcement implementation |
 | **Custom Agent Security** | [CUSTOM_AGENT_SECURITY.md](./CUSTOM_AGENT_SECURITY.md) | ~640 | Security validation and monitoring for custom agents |
 | **Snapshot Integration** | [SNAPSHOT_INTEGRATION.md](./SNAPSHOT_INTEGRATION.md) | ~200 | Tier-based automatic snapshot creation |
+| **DZP Rules of Engagement** | [protocol/skills/dzp-roe.md](../protocol/skills/dzp-roe.md) | ~510 | Post-compaction recovery: Restore full DZP context after context compaction |
 
 ---
 
@@ -58,6 +59,15 @@
 - Show last checkpoint
 - Present continuation options
 - **When to use**: Returning after break
+
+### Slash Command: /dzp-roe (DZP Rules of Engagement)
+- Restore full DZP protocol context after compaction
+- Output complete 9-agent system rules
+- Update state tracking (project-state.json, domain.record.md, dev-notes.md)
+- Run protocol validation
+- Prompt agent to continue previous work
+- **When to use**: Immediately after context compaction when agents forget DZP rules
+- **Invocation**: `/dzp-roe` or `skill: "dzp-roe"`
 
 ---
 
@@ -201,6 +211,7 @@ Uses `snapshot_integration.py` to:
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2025-12-25 | 8.10.0 | Added DZP Rules of Engagement (dzp-roe skill + slash command) for post-compaction recovery |
 | 2025-12-17 | 8.8.0 | Created README index, moved INTERNAL guides to CORE |
 | 2025-12-06 | 8.8.0 | Added SNAPSHOT_INTEGRATION.md |
 | 2025-12-03 | 8.7.0 | Added CUSTOM_AGENT_SECURITY.md |

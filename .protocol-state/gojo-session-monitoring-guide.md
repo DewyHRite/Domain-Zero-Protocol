@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
 # Gojo's Work Session Monitoring Implementation Guide
 
 **Purpose:** Provide Gojo with ACTUAL implementation instructions for work session monitoring.

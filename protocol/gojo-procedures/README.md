@@ -1,9 +1,9 @@
 # Gojo Operational Procedures Index
-<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
 
 **Purpose**: Central index of all Gojo (Mission Control) operational procedures and implementation guides.
-**Version**: 8.9.0
-**Updated**: 2025-12-17
+**Version**: 8.10.0
+**Updated**: 2025-12-25
 
 ---
 

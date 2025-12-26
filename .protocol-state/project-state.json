@@ -1,10 +1,14 @@
 {
-  "protocol_version": "8.9.0",
+  "protocol_version": "8.10.0",
+  "compaction_recovery": {
+    "last_recovery_timestamp": null,
+    "recovery_count": 0,
+    "recovery_history": []
+  },
   "validation_state": {
-    "last_validated": null,
-    "is_valid": true,
-    "errors": [],
-    "warnings": []
+    "enabled": true,
+    "last_validation": null,
+    "drift_detected": false
   },
   "agent_registry": {
     "gojo": { "status": "active", "last_invoked": null },
@@ -127,21 +131,10 @@
     "notes": "Work session monitoring enforced by Gojo. Alerts at 4+ hours continuous work, late night (after 22:00), and extended sessions (6+ hours). User can configure thresholds in protocol.config.yaml."
   },
   "tier_usage_statistics": {
-    "tier_1_rapid": {
-      "total_features": 0,
-      "avg_time_minutes": 0,
-      "last_used": null
-    },
-    "tier_2_standard": {
-      "total_features": 0,
-      "avg_time_minutes": 0,
-      "last_used": null
-    },
-    "tier_3_critical": {
-      "total_features": 0,
-      "avg_time_minutes": 0,
-      "last_used": null
-    }
+    "tier_1_tasks": 0,
+    "tier_2_tasks": 1,
+    "tier_3_tasks": 0,
+    "last_updated": "2025-12-06T17:28:09.383545Z"
   },
   "current_feature_tier": "none",
   "current_state": "STANDBY",
