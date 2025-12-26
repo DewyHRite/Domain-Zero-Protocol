@@ -310,5 +310,10 @@ protocol.config.local.yaml
 
 # Snyk Security Extension - AI Rules (auto-generated)
 .cursor/rules/snyk_rules.mdc
-.dzp-domain/
+
+# Domain Record System - track templates, ignore runtime data
+# (mirrors .dzp-killswitch/ pattern where templates are tracked)
+.dzp-domain/domain.record.md
+.dzp-domain/archive/
+
 .protocol-state/validation/validation-state.json
