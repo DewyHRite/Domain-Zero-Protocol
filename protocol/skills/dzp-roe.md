@@ -40,14 +40,14 @@ This skill provides a single-command recovery mechanism that:
 
 ## Quick Invocation
 
-```
+```bash
 skill: "dzp-roe"
 
 Context: Just recovered from compaction, need DZP rules refresher
 ```
 
 Or via slash command:
-```
+```bash
 /dzp-roe
 ```
 

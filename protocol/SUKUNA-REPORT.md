@@ -85,11 +85,11 @@ Single-command recovery via `/dzp-roe` slash command that:
 4. Prompts agent to continue previous work with proper DZP workflow
 
 **Invocation**:
-```
+```bash
 /dzp-roe
 ```
 Or:
-```
+```bash
 skill: "dzp-roe"
 
 Context: Just recovered from compaction, need DZP rules refresher

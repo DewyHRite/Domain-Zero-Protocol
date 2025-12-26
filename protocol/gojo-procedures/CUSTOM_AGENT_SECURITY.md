@@ -630,6 +630,11 @@ A: Include custom agent activity in Trigger 19 intelligence reports. Review logs
 
 ## Version History
 
+- **v8.10.0** (2025-12-25): Documentation updates
+  - Updated version references
+  - Enhanced security guidelines
+  - Clarified tier enforcement
+
 - **v8.7.0** (2025-12-03): Initial implementation
   - Created validation script
   - Created monitoring system

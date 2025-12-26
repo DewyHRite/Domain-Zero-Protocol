@@ -55,11 +55,11 @@
 9. **Prompt agent to continue tasks with proper DZP workflow** (extracts last 10 dev-notes entries)
 
 **Invocation**:
-```
+```bash
 /dzp-roe
 ```
 Or:
-```
+```bash
 skill: "dzp-roe"
 
 Context: Just recovered from compaction
@@ -1321,7 +1321,7 @@ This report documents adversarial analysis of validation issues:
 
 ### 11.7 Troubleshooting Validation Errors
 
-**Error: Missing Required Field**
+#### Error: Missing Required Field
 ```bash
 # Example: project-state.json missing "enabled" field in validation_state
 # Fix: Add missing field with appropriate default value
@@ -1334,7 +1334,7 @@ This report documents adversarial analysis of validation issues:
 }
 ```
 
-**Error: Type Mismatch**
+#### Error: Type Mismatch
 ```bash
 # Example: Field expects integer but has string
 # Fix: Convert to correct type
@@ -1342,7 +1342,7 @@ This report documents adversarial analysis of validation issues:
 # RIGHT: "tier": 2
 ```
 
-**Error: Drift Detected**
+#### Error: Drift Detected
 ```bash
 # File changed since last validation (checksum mismatch)
 # This is expected after legitimate changes
@@ -1350,7 +1350,7 @@ This report documents adversarial analysis of validation issues:
 python scripts/validate-protocol.py --check
 ```
 
-**Error: Validation Script Missing**
+#### Error: Validation Script Missing
 ```bash
 # Fix: Reinstall from core-files or download from repository
 cp core-files-v8.10.0/scripts/validate-protocol.py scripts/

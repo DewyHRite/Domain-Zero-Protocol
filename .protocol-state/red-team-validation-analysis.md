@@ -109,7 +109,9 @@ The state file implementation evolved to include richer metadata tracking (featu
 }
 ```
 
-**Data Loss Assessment**:
+#### Data Loss Impact
+
+**Assessment**:
 - Lost granular tier usage metrics (avg_time_minutes, last_used timestamps)
 - Simplified to basic task counters
 - **Recommendation**: Update schema to preserve richer metrics or migrate data to alternative storage
