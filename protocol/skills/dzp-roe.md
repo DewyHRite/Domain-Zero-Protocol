@@ -396,8 +396,8 @@ git add . && git commit -m "feat: add authentication" && git push
 git add . & git commit -m "..." & git push  # DON'T DO THIS
 ```
 
-**Example 2: File Creation Then Read**
-```
+#### Example 2: File Creation Then Read
+```text
 Step 1: Write new file
 Step 2: Read file to verify (depends on Step 1 completing)
 ```

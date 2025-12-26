@@ -220,19 +220,19 @@ The file has **6 validation errors** due to a **complete structural mismatch** b
 
 #### Recommended Remediation Path
 
-**OPTION A: Update Schema to Match Implementation** (RECOMMENDED)
+### OPTION A: Update Schema to Match Implementation (RECOMMENDED)
 - Preserve rich work session monitoring features
 - Add comprehensive validation for all nested objects
 - Define schema for `session_history` entries
 - Validate threshold ranges (prevent manipulation)
 
-**OPTION B: Restructure Implementation to Match Schema**
+### OPTION B: Restructure Implementation to Match Schema
 - Massive data loss (all session metrics, thresholds, history)
 - Breaks SESSION_MONITORING.md documented procedures
 - Removes safety features (break enforcement, high-risk blocking)
 - **NOT RECOMMENDED**
 
-**OPTION C: Split Into Two Files**
+### OPTION C: Split Into Two Files
 - `session-task-state.json` - Matches current schema (task queue system)
 - `session-work-monitoring.json` - Current implementation (work session monitoring)
 - Requires updating all consumers
@@ -297,7 +297,7 @@ reason:
 
 #### Recommended Remediation
 
-**OPTION A: Backfill "reason" Field** (RECOMMENDED)
+### OPTION A: Backfill "reason" Field (RECOMMENDED)
 - Analyze snapshot timestamps against git history, dev-notes.md, domain.record.md
 - Infer reason from context:
   - Tier changes in project-state.json
@@ -306,13 +306,13 @@ reason:
 - Decompress `.json.gz`, add field, recompress
 - Preserve original timestamps
 
-**OPTION B: Grandfather Clause**
+### OPTION B: Grandfather Clause
 - Update schema to make `reason` optional with `minVersion: "8.9.0"`
 - Add schema evolution rules (fields added after creation date)
 - Documents known limitation
 - Simpler but loses audit trail benefits
 
-**OPTION C: Delete Non-Compliant Snapshots**
+### OPTION C: Delete Non-Compliant Snapshots
 - Removes compliance violations
 - **DESTRUCTIVE** - loses historical state data
 - **NOT RECOMMENDED** without backup
