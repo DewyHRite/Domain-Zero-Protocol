@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
-**Version**: 8.11.0
-**Last Updated**: December 28, 2025
+**Version**: 8.12.0
+**Last Updated**: December 29, 2025
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
 
 ---
@@ -27,7 +27,7 @@
 ## Quick Start (5 Minutes)
 
 **Prerequisites**:
-- Downloaded the v8.11.0 release package
+- Downloaded the v8.12.0 release package
 - Access to Claude.ai, Claude Code, GitHub Copilot, or another AI assistant
 
 ---

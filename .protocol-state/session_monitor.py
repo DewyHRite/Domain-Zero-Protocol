@@ -13,8 +13,10 @@ Usage:
 """
 
 import json
+import os
 import shutil
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -35,6 +37,7 @@ class SessionMonitor:
         self.state_file = self.protocol_root / ".protocol-state" / "session-state.json"
         self.template_file = self.protocol_root / ".protocol-state" / "work-session-alert.template.md"
         self.config_file = self.protocol_root / "protocol.config.yaml"
+        self.invocation_tracker_file = self.protocol_root / ".protocol-state" / "agent-invocation-tracker.json"
 
         # Load high-risk operation literals (no regex, safer and faster)
         self._high_risk_literals = self._load_high_risk_literals()
@@ -104,11 +107,61 @@ class SessionMonitor:
         # Fall back to defaults if config unavailable or empty
         return default_literals
 
+    def _load_debounce_config(self, cli_override: int = None) -> int:
+        """
+        Load debounce threshold from config file or CLI argument.
+
+        Debounce prevents alert spam by skipping alerts if last alert was < threshold ago.
+        v8.12.0 - PATCH-SESSION-004
+
+        Args:
+            cli_override: CLI --debounce argument (takes precedence)
+
+        Returns:
+            Debounce threshold in minutes (default: 30, range: 15-60)
+        """
+        # CLI argument takes precedence
+        if cli_override is not None:
+            # Validate range
+            if 15 <= cli_override <= 60:
+                return cli_override
+            else:
+                print(f"[!] Invalid debounce value {cli_override}. Must be 15-60 minutes.")
+                print(f"    Falling back to default: 30 minutes")
+                return 30
+
+        # Try to load from config file
+        if self.config_file.exists():
+            try:
+                import yaml
+                with open(self.config_file, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f)
+
+                safety_config = config.get('safety', {})
+                session_tracking = safety_config.get('session_tracking', {})
+                debounce_threshold = session_tracking.get('debounce_threshold_minutes')
+
+                if debounce_threshold is not None:
+                    # Validate range
+                    if 15 <= debounce_threshold <= 60:
+                        return debounce_threshold
+                    else:
+                        print(f"[!] Invalid debounce_threshold_minutes in config: {debounce_threshold}")
+                        print(f"    Must be 15-60. Falling back to default: 30 minutes")
+                        return 30
+
+            except Exception as e:
+                # Silent fallback to default
+                pass
+
+        # Default fallback
+        return 30
+
     def _ensure_state_file(self):
         """Ensure session state file exists with proper schema."""
         if not self.state_file.exists():
-            print(f"⚠️  Session state file not found at {self.state_file}")
-            print("Creating default session state...")
+            print(f"[!] Session state file not found at {self.state_file}")
+            print("    Creating default session state...")
             try:
                 self.state_file.parent.mkdir(parents=True, exist_ok=True)
                 with open(self.state_file, 'w') as f:
@@ -161,17 +214,34 @@ class SessionMonitor:
             with open(self.state_file, 'r') as f:
                 return json.load(f)
         except FileNotFoundError:
-            print(f"⚠️  Session state file not found. Returning default state.")
+            print(f"[!] Session state file not found. Returning default state.")
             return self._default_state()
         except json.JSONDecodeError as e:
-            print(f"⚠️  Corrupted session state file: {e}. Returning default state.")
+            print(f"[!] Corrupted session state file: {e}. Returning default state.")
             return self._default_state()
 
     def save_state(self, state: Dict):
-        """Save session state to JSON."""
+        """Save session state to JSON with atomic write (SEC-002 FIX)."""
         state['last_updated'] = datetime.now().isoformat()
-        with open(self.state_file, 'w') as f:
-            json.dump(state, f, indent=2)
+
+        # Atomic write pattern
+        try:
+            with tempfile.NamedTemporaryFile('w', encoding='utf-8', delete=False,
+                                              dir=self.state_file.parent,
+                                              suffix='.tmp') as tmp_file:
+                json.dump(state, tmp_file, indent=2)
+                tmp_path = tmp_file.name
+
+            # Atomic replace (POSIX rename guarantees atomicity)
+            os.replace(tmp_path, self.state_file)
+        except (IOError, OSError) as e:
+            # If atomic write fails, try cleanup and re-raise
+            try:
+                if 'tmp_path' in locals() and Path(tmp_path).exists():
+                    os.unlink(tmp_path)
+            except:
+                pass
+            raise IOError(f"Failed to save session state: {e}")
 
     def start_session(self, session_id: Optional[str] = None) -> Dict:
         """
@@ -190,18 +260,18 @@ class SessionMonitor:
                 gap_minutes = (now - last_time).total_seconds() / 60
             except (ValueError, TypeError):
                 # Invalid timestamp format - treat as expired session
-                print(f"⚠️  Invalid timestamp in session state. Starting new session.")
+                print(f"[!] Invalid timestamp in session state. Starting new session.")
                 gap_minutes = float('inf')
 
             if gap_minutes < 30:
                 # Continue existing session
-                print(f"📊 Continuing active session (gap: {gap_minutes:.1f} minutes)")
+                print(f"[STATUS] Continuing active session (gap: {gap_minutes:.1f} minutes)")
                 state['current_session']['last_interaction_time'] = now.isoformat()
                 self.save_state(state)
                 return state
             else:
                 # Session expired, archive it
-                print(f"⏸️  Previous session expired ({gap_minutes:.1f} min gap). Starting new session.")
+                print(f"[PAUSED] Previous session expired ({gap_minutes:.1f} min gap). Starting new session.")
                 self._archive_session(state)
 
         # Start new session
@@ -222,7 +292,7 @@ class SessionMonitor:
 
         state['session_metrics'] = self._default_state()['session_metrics']
 
-        print(f"✅ New session started: {session_id}")
+        print(f"[OK] New session started: {session_id}")
         self.save_state(state)
         return state
 
@@ -258,7 +328,7 @@ class SessionMonitor:
         # Calculate duration
         start_time = state['current_session'].get('start_time')
         if not start_time:
-            print("⚠️  Session start_time is missing. Resetting session.")
+            print("[!] Session start_time is missing. Resetting session.")
             try:
                 return self.update_interaction(_retry_count=_retry_count + 1, _max_retries=_max_retries)
             except Exception as e:
@@ -267,7 +337,7 @@ class SessionMonitor:
         try:
             start = datetime.fromisoformat(start_time)
         except (ValueError, TypeError):
-            print("⚠️  Invalid session start_time format. Resetting session.")
+            print("[!] Invalid session start_time format. Resetting session.")
             try:
                 return self.update_interaction(_retry_count=_retry_count + 1, _max_retries=_max_retries)
             except Exception as e:
@@ -288,9 +358,12 @@ class SessionMonitor:
         self.save_state(state)
         return state
 
-    def check_alert_needed(self) -> Tuple[bool, str, Dict]:
+    def check_alert_needed(self, debounce_override: int = None) -> Tuple[bool, str, Dict]:
         """
         Check if a work session alert should be issued.
+
+        Args:
+            debounce_override: CLI --debounce argument (v8.12.0)
 
         Returns:
             (should_alert, alert_level, alert_context)
@@ -304,16 +377,33 @@ class SessionMonitor:
         now = datetime.now()
         start_time = state['current_session'].get('start_time')
         if not start_time:
-            print("⚠️  Session start_time is missing. Cannot check alert.")
+            print("[!] Session start_time is missing. Cannot check alert.")
             return False, None, {}
 
         try:
             start = datetime.fromisoformat(start_time)
         except (ValueError, TypeError):
-            print("⚠️  Invalid session start_time format. Cannot check alert.")
+            print("[!] Invalid session start_time format. Cannot check alert.")
             return False, None, {}
 
         duration_minutes = (now - start).total_seconds() / 60
+
+        # Debounce check (v8.12.0 - PATCH-SESSION-004)
+        # Skip alert if last alert was too recent (prevents spam during rapid prototyping)
+        debounce_threshold = self._load_debounce_config(cli_override=debounce_override)
+        last_alert_time = state['current_session'].get('last_alert_time')
+
+        if last_alert_time:
+            try:
+                last_alert = datetime.fromisoformat(last_alert_time)
+                minutes_since_last_alert = (now - last_alert).total_seconds() / 60
+
+                if minutes_since_last_alert < debounce_threshold:
+                    # Alert debounced - too soon since last alert
+                    return False, None, {}
+            except (ValueError, TypeError):
+                # Invalid timestamp format - proceed with alert check
+                pass
 
         thresholds = state['thresholds']
         escalation_level = state['current_session']['escalation_level']
@@ -374,7 +464,7 @@ class SessionMonitor:
         if not self.template_file.exists():
             # Return minimal fallback template
             return f"""
-⚠️ Extended Work Session Detected
+[!] Extended Work Session Detected
 
 **Duration:** {context.get('duration_formatted', 'Unknown')}
 **Project:** {self._get_project_name()}
@@ -399,8 +489,8 @@ Template file not found at: {self.template_file}
             '{DATE}': now.strftime('%Y-%m-%d %H:%M'),
             '{DURATION}': context.get('duration_formatted', 'Unknown'),
             '{PROJECT_NAME}': self._get_project_name(),
-            '{LATE_NIGHT_FLAG}': '🌙 YES - Late night work detected' if context.get('is_late_night') else '☀️ No',
-            '{CONTINUOUS_FLAG}': f"⚠️ {context.get('continuous_minutes', 0)} minutes without break" if context.get('continuous_minutes', 0) > 120 else '✅ Recent breaks taken',
+            '{LATE_NIGHT_FLAG}': '[LATE] YES - Late night work detected' if context.get('is_late_night') else '[DAY] No',
+            '{CONTINUOUS_FLAG}': f"[!] {context.get('continuous_minutes', 0)} minutes without break" if context.get('continuous_minutes', 0) > 120 else '[OK] Recent breaks taken',
             '{BREAK_RECOMMENDATION}': self._get_break_recommendation(context),
             '{LATE_NIGHT_THRESHOLD}': f"{state['thresholds']['late_night_hour']}:00"
         }
@@ -474,7 +564,7 @@ Template file not found at: {self.template_file}
         if duration_minutes and duration_minutes >= state['thresholds']['minimum_break_minutes']:
             state['current_session']['high_risk_operations_blocked'] = False
 
-        print(f"✅ Break recorded at {now.strftime('%H:%M')}")
+        print(f"[OK] Break recorded at {now.strftime('%H:%M')}")
         self.save_state(state)
         return state
 
@@ -489,7 +579,7 @@ Template file not found at: {self.template_file}
 
         if state['current_session']['session_active']:
             self._archive_session(state)
-            print("✅ Session ended and archived")
+            print("[OK] Session ended and archived")
 
         self.save_state(state)
         return state
@@ -540,13 +630,13 @@ Template file not found at: {self.template_file}
 
         # Check if 8-hour maximum continuous work threshold reached - BLOCK ALL OPERATIONS
         if duration_minutes >= thresholds['max_continuous_minutes']:
-            reason = f"🛑 MAXIMUM WORK LIMIT REACHED: {duration_minutes} minutes ({duration_minutes // 60}+ hours). You MUST take a break. Session is now read-only."
+            reason = f"[BLOCKED] MAXIMUM WORK LIMIT REACHED: {duration_minutes} minutes ({duration_minutes // 60}+ hours). You MUST take a break. Session is now read-only."
             return True, reason
 
         # Check if 6-hour critical threshold reached - block high-risk operations only
         if state['current_session']['high_risk_operations_blocked']:
             if self.is_high_risk_operation(operation):
-                reason = f"🛑 High-risk operation blocked: Extended session ({duration_minutes} min). Take a break first."
+                reason = f"[BLOCKED] High-risk operation blocked: Extended session ({duration_minutes} min). Take a break first."
                 return True, reason
 
         return False, ""
@@ -569,7 +659,7 @@ Template file not found at: {self.template_file}
         # Validate start_time exists
         start_time = current.get('start_time')
         if not start_time:
-            return "⚠️ Session state corrupted: start_time missing"
+            return "[!] Session state corrupted: start_time missing"
 
         try:
             start_formatted = datetime.fromisoformat(start_time).strftime('%Y-%m-%d %H:%M')
@@ -577,14 +667,14 @@ Template file not found at: {self.template_file}
             start_formatted = "Invalid timestamp"
 
         summary = f"""
-📊 **Work Session Summary**
+[STATUS] **Work Session Summary**
 
 **Duration:** {self._format_duration(metrics['total_duration_minutes'])}
 **Continuous Work:** {self._format_duration(metrics['continuous_work_minutes'])} since last break
 **Breaks Taken:** {metrics['total_breaks']}
 **Alerts Issued:** {metrics['alerts_issued']}
 **Escalation Level:** {current['escalation_level']}
-**High-Risk Blocking:** {'🛑 ENABLED' if current['high_risk_operations_blocked'] else '✅ Disabled'}
+**High-Risk Blocking:** {'[BLOCKED] ENABLED' if current['high_risk_operations_blocked'] else '[OK] Disabled'}
 
 **Session ID:** {current['session_id']}
 **Started:** {start_formatted}
@@ -633,15 +723,110 @@ Template file not found at: {self.template_file}
         is_late = context.get('is_late_night', False)
 
         if duration >= 360:  # 6+ hours
-            return "🛑 STRONGLY RECOMMENDED - End session and rest"
+            return "[STOP] STRONGLY RECOMMENDED - End session and rest"
         elif duration >= 300:  # 5 hours
-            return "⚠️ Take 15-minute break minimum"
+            return "[!] Take 15-minute break minimum"
         elif duration >= 240:  # 4 hours
-            return "💡 5-10 minute break suggested"
+            return "[TIP] 5-10 minute break suggested"
         elif is_late:
-            return "🌙 Late night work - consider ending session"
+            return "[LATE] Late night work - consider ending session"
         else:
             return "Continue with awareness"
+
+    def record_agent_invocation(self, agent_name: str, is_direct: bool = True) -> Dict:
+        """
+        Record an agent invocation for bypass detection.
+
+        v8.12.0 - PATCH-SESSION-004 Component 5
+
+        Args:
+            agent_name: Name of agent invoked (gojo, yuuji, megumi, etc.)
+            is_direct: True if direct invocation, False if routed via Gojo
+
+        Returns:
+            Updated invocation tracker state
+        """
+        # Validate agent name
+        valid_agents = ['gojo', 'yuuji', 'megumi', 'nobara', 'todo', 'maki', 'panda', 'inumaki', 'sukuna']
+        agent_name_lower = agent_name.lower()
+
+        if agent_name_lower not in valid_agents:
+            raise ValueError(f"Invalid agent name: {agent_name}. Must be one of: {', '.join(valid_agents)}")
+
+        # Load tracker state
+        if not self.invocation_tracker_file.exists():
+            print(f"[!] Agent invocation tracker not found at {self.invocation_tracker_file}")
+            print("    Using default schema")
+            # File should exist from PATCH-SESSION-004, but handle gracefully
+            return {}
+
+        try:
+            with open(self.invocation_tracker_file, 'r', encoding='utf-8') as f:
+                tracker = json.load(f)
+        except (IOError, json.JSONDecodeError) as e:
+            print(f"[ERROR] Cannot read invocation tracker: {e}")
+            return {}
+
+        if not tracker.get('tracking_enabled', True):
+            # Tracking disabled, silently skip
+            return tracker
+
+        # Update invocation counts
+        now = datetime.now().isoformat()
+        agent_data = tracker['invocations'].get(agent_name_lower, {})
+
+        agent_data['total_count'] = agent_data.get('total_count', 0) + 1
+        agent_data['last_invocation'] = now
+
+        if agent_name_lower != 'gojo':
+            # Track direct vs routed for non-Gojo agents
+            if is_direct:
+                agent_data['direct_invocations'] = agent_data.get('direct_invocations', 0) + 1
+            else:
+                agent_data['routed_invocations'] = agent_data.get('routed_invocations', 0) + 1
+
+        tracker['invocations'][agent_name_lower] = agent_data
+        tracker['_last_updated'] = now
+
+        # Bypass detection (direct invocations of non-Gojo agents)
+        if agent_name_lower != 'gojo' and is_direct and tracker.get('bypass_detection', {}).get('enabled', True):
+            # Get current session duration
+            session_state = self.load_state()
+            if session_state.get('current_session', {}).get('session_active'):
+                start_time_str = session_state['current_session'].get('start_time')
+                if start_time_str:
+                    try:
+                        start_time = datetime.fromisoformat(start_time_str)
+                        duration_minutes = int((datetime.now() - start_time).total_seconds() / 60)
+
+                        # Detect bypass if session is long-running (>= threshold)
+                        threshold = tracker.get('bypass_detection', {}).get('threshold_minutes', 30)
+                        if duration_minutes >= threshold:
+                            bypass_alert = {
+                                "timestamp": now,
+                                "agent": agent_name_lower,
+                                "session_duration_minutes": duration_minutes,
+                                "message": f"Direct {agent_name_lower} invocation during {duration_minutes}-minute session (bypasses Gojo monitoring)"
+                            }
+                            tracker['bypass_detection']['bypass_alerts'].append(bypass_alert)
+                    except (ValueError, TypeError):
+                        pass  # Invalid timestamp, skip bypass detection
+
+        # Save updated tracker (SEC-001 FIX: atomic write)
+        try:
+            # Atomic write pattern
+            with tempfile.NamedTemporaryFile('w', encoding='utf-8', delete=False,
+                                              dir=self.invocation_tracker_file.parent,
+                                              suffix='.tmp') as tmp_file:
+                json.dump(tracker, tmp_file, indent=2)
+                tmp_path = tmp_file.name
+
+            # Atomic replace (POSIX rename guarantees atomicity)
+            os.replace(tmp_path, self.invocation_tracker_file)
+        except (IOError, OSError) as e:
+            print(f"[ERROR] Cannot save invocation tracker: {e}")
+
+        return tracker
 
 
 def main():
@@ -659,29 +844,36 @@ def main():
     try:
         monitor = SessionMonitor(protocol_root)
     except Exception as e:
-        print(f"❌ Error: Failed to initialize SessionMonitor: {e}", file=sys.stderr)
+        print(f"[ERROR] Failed to initialize SessionMonitor: {e}", file=sys.stderr)
         sys.exit(1)
 
     if len(sys.argv) < 2:
         print("Usage: python session_monitor.py <command>")
         print("")
         print("Session Management:")
-        print("  start, new-session   Start a new work session")
-        print("  update               Record an interaction (updates duration)")
-        print("  end                  End the current session")
-        print("  reset                Reset session state (clear all data)")
+        print("  start, new-session         Start a new work session")
+        print("  update                     Record an interaction (updates duration)")
+        print("  end                        End the current session")
+        print("  reset                      Reset session state (clear all data)")
         print("")
         print("Monitoring & Alerts:")
-        print("  check                Check if alert is needed")
-        print("  status, summary      Show current session summary")
+        print("  check                      Check if alert is needed")
+        print("  check --debounce=N         Check with custom debounce threshold (15-60 min)")
+        print("  check-and-record           Check for alert AND auto-record if detected")
+        print("  record-choice <choice>     Record user's alert response (save_and_break|continue)")
+        print("  status, summary            Show current session summary")
         print("")
         print("Break Management:")
-        print("  break [minutes]      Record a break (default: 15 minutes)")
-        print("  continue, resume     Resume work after break")
+        print("  break [minutes]            Record a break (default: 15 minutes)")
+        print("  continue, resume           Resume work after break")
+        print("")
+        print("Agent Invocation Tracking (v8.12.0):")
+        print("  record-invocation <agent>  Record agent invocation for bypass detection")
+        print("                             Use --routed flag if invocation was routed via Gojo")
         print("")
         print("Utilities:")
-        print("  test                 Test alert rendering")
-        print("  help                 Show this help message")
+        print("  test                       Test alert rendering")
+        print("  help                       Show this help message")
         sys.exit(1)
 
     command = sys.argv[1].lower()
@@ -692,12 +884,24 @@ def main():
         state = monitor.update_interaction()
         print(f"Session updated: {state['session_metrics']['total_duration_minutes']} minutes")
     elif command == "check":
-        needed, level, context = monitor.check_alert_needed()
+        # v8.12.0 - PATCH-SESSION-004: Support --debounce CLI argument
+        debounce_override = None
+        if len(sys.argv) > 2 and sys.argv[2].startswith('--debounce'):
+            try:
+                # Parse --debounce=15 or --debounce 15
+                if '=' in sys.argv[2]:
+                    debounce_override = int(sys.argv[2].split('=')[1])
+                elif len(sys.argv) > 3:
+                    debounce_override = int(sys.argv[3])
+            except (ValueError, IndexError):
+                print("[!] Invalid --debounce format. Use: --debounce=15 or --debounce 15")
+
+        needed, level, context = monitor.check_alert_needed(debounce_override=debounce_override)
         if needed:
-            print(f"⚠️  Alert needed: {level}")
+            print(f"[!] Alert needed: {level}")
             print(monitor.render_alert(context))
         else:
-            print("✅ No alert needed")
+            print("[OK] No alert needed")
     elif command == "summary" or command == "status":
         # 'status' is an alias for 'summary' (industry standard expectation)
         print(monitor.get_session_summary())
@@ -712,13 +916,13 @@ def main():
                 duration = int(sys.argv[2])
                 if duration < MIN_BREAK_DURATION or duration > MAX_BREAK_DURATION:
                     print(
-                        f"❌ Break duration must be between {MIN_BREAK_DURATION}-{MAX_BREAK_DURATION} minutes",
+                        f"[ERROR] Break duration must be between {MIN_BREAK_DURATION}-{MAX_BREAK_DURATION} minutes",
                         file=sys.stderr
                     )
-                    print(f"   You requested: {duration} minutes", file=sys.stderr)
+                    print(f"        You requested: {duration} minutes", file=sys.stderr)
                     sys.exit(1)
             except ValueError:
-                print(f"❌ Invalid duration: {sys.argv[2]} (must be a number)", file=sys.stderr)
+                print(f"[ERROR] Invalid duration: {sys.argv[2]} (must be a number)", file=sys.stderr)
                 sys.exit(1)
         monitor.record_break(duration)
     elif command == "continue" or command == "resume":
@@ -727,11 +931,11 @@ def main():
         try:
             state = monitor.update_interaction()
             timestamp = datetime.now().strftime('%H:%M')
-            print(f"✅ Work resumed at {timestamp}")
-            print(f"   Total session time: {state['session_metrics']['total_duration_minutes']} minutes")
+            print(f"[OK] Work resumed at {timestamp}")
+            print(f"    Total session time: {state['session_metrics']['total_duration_minutes']} minutes")
         except Exception as e:
-            print(f"❌ Failed to resume session: {e}", file=sys.stderr)
-            print(f"   Try starting a new session with 'start' or 'new-session'", file=sys.stderr)
+            print(f"[ERROR] Failed to resume session: {e}", file=sys.stderr)
+            print(f"        Try starting a new session with 'start' or 'new-session'", file=sys.stderr)
             sys.exit(1)
     elif command == "reset":
         # Reset session state completely
@@ -754,7 +958,7 @@ def main():
                 with open(backup_path, 'r', encoding='utf-8') as f:
                     json.load(f)  # Will raise exception if corrupted
 
-                print(f"✅ Backup created and verified: {backup_filename}")
+                print(f"[OK] Backup created and verified: {backup_filename}")
 
                 # PATCH-SEC-007 (SEC-003): Clean up old backups (keep last 10)
                 backup_pattern = monitor.state_file.parent.glob('session-state.backup.*.json')
@@ -762,31 +966,109 @@ def main():
                 if len(backups) > 10:
                     for old_backup in backups[:-10]:
                         old_backup.unlink()
-                    print(f"ℹ️  Cleaned up {len(backups) - 10} old backup(s)")
+                    print(f"[INFO] Cleaned up {len(backups) - 10} old backup(s)")
 
                 # Only delete after verified backup exists
                 monitor.state_file.unlink()
-                print(f"🗑️  Removed: {monitor.state_file.name}")
+                print(f"[DELETE] Removed: {monitor.state_file.name}")
 
                 # Recreate with default state
                 monitor._ensure_state_file()
-                print("✅ Session state reset successfully")
-                print(f"   New state file created at: {monitor.state_file}")
+                print("[OK] Session state reset successfully")
+                print(f"     New state file created at: {monitor.state_file}")
 
             except (IOError, OSError, PermissionError) as e:
-                print(f"❌ Backup failed: {e}", file=sys.stderr)
-                print(f"   Session state NOT reset (original preserved)", file=sys.stderr)
+                print(f"[ERROR] Backup failed: {e}", file=sys.stderr)
+                print(f"        Session state NOT reset (original preserved)", file=sys.stderr)
                 sys.exit(1)
             except json.JSONDecodeError as e:
-                print(f"❌ Backup verification failed: Invalid JSON ({e})", file=sys.stderr)
-                print(f"   Session state NOT reset (original preserved)", file=sys.stderr)
+                print(f"[ERROR] Backup verification failed: Invalid JSON ({e})", file=sys.stderr)
+                print(f"        Session state NOT reset (original preserved)", file=sys.stderr)
                 # Clean up corrupted backup
                 if backup_path.exists():
                     backup_path.unlink()
                 sys.exit(1)
         else:
-            print("ℹ️  No session state file found (already reset)")
-            print("   Use 'start' or 'new-session' to begin a new work session")
+            print("[INFO] No session state file found (already reset)")
+            print("       Use 'start' or 'new-session' to begin a new work session")
+    elif command == "record-choice":
+        # PATCH-SESSION-003: Record user's alert response choice
+        # Enables Gojo to record user decisions via CLI
+        if len(sys.argv) < 3:
+            print("Usage: python session_monitor.py record-choice <save_and_break|continue>", file=sys.stderr)
+            print("", file=sys.stderr)
+            print("This command records the user's response to a work session alert.", file=sys.stderr)
+            print("It increments alert counters and updates escalation state.", file=sys.stderr)
+            sys.exit(1)
+
+        choice = sys.argv[2]
+        try:
+            state = monitor.record_user_choice(choice)
+            print(f"[OK] User choice '{choice}' recorded successfully")
+            print(f"    Alert count: {state['current_session']['alert_count']}")
+            print(f"    Escalation level: {state['current_session']['escalation_level']}")
+            if state['current_session']['high_risk_operations_blocked']:
+                print("[!] High-risk operations now blocked (6+ hours with 'continue')")
+        except ValueError as e:
+            print(f"[ERROR] {e}", file=sys.stderr)
+            sys.exit(1)
+    elif command == "check-and-record":
+        # PATCH-SESSION-003: Check for alert AND auto-record if detected
+        # Provides defense-in-depth (alerts recorded even if user choice workflow fails)
+        needed, level, context = monitor.check_alert_needed()
+        if needed:
+            # Auto-increment alert counters when alert detected
+            state = monitor.load_state()
+            state['current_session']['alert_count'] += 1
+            state['current_session']['last_alert_time'] = datetime.now().isoformat()
+            state['session_metrics']['alerts_issued'] += 1
+            monitor.save_state(state)
+
+            print(f"[!] Alert detected and recorded: {level}")
+            print(f"    Alert count: {state['current_session']['alert_count']}")
+            print("")
+            print(monitor.render_alert(context))
+        else:
+            print("[OK] No alert needed")
+    elif command == "record-invocation":
+        # PATCH-SESSION-004 Component 5: Record agent invocation for bypass detection
+        if len(sys.argv) < 3:
+            print("Usage: python session_monitor.py record-invocation <agent_name> [--routed]", file=sys.stderr)
+            print("", file=sys.stderr)
+            print("This command records agent invocations for bypass detection.", file=sys.stderr)
+            print("", file=sys.stderr)
+            print("Arguments:", file=sys.stderr)
+            print("  agent_name    Name of agent (gojo, yuuji, megumi, nobara, todo, maki, panda, inumaki, sukuna)", file=sys.stderr)
+            print("  --routed      Flag to indicate invocation was routed via Gojo (default: direct)", file=sys.stderr)
+            print("", file=sys.stderr)
+            print("Examples:", file=sys.stderr)
+            print("  python session_monitor.py record-invocation yuuji", file=sys.stderr)
+            print("  python session_monitor.py record-invocation yuuji --routed", file=sys.stderr)
+            sys.exit(1)
+
+        agent_name = sys.argv[2]
+        is_direct = "--routed" not in sys.argv
+
+        try:
+            tracker = monitor.record_agent_invocation(agent_name, is_direct=is_direct)
+            invocation_type = "direct" if is_direct else "routed"
+            print(f"[OK] Recorded {invocation_type} invocation of {agent_name}")
+
+            # Show current stats
+            agent_data = tracker.get('invocations', {}).get(agent_name.lower(), {})
+            print(f"    Total invocations: {agent_data.get('total_count', 0)}")
+            if agent_name.lower() != 'gojo':
+                print(f"    Direct: {agent_data.get('direct_invocations', 0)}, Routed: {agent_data.get('routed_invocations', 0)}")
+
+            # Check for bypass alerts
+            bypass_alerts = tracker.get('bypass_detection', {}).get('bypass_alerts', [])
+            if bypass_alerts:
+                recent_alerts = [a for a in bypass_alerts if a.get('agent') == agent_name.lower()][-3:]
+                if recent_alerts:
+                    print(f"    [!] Recent bypass alerts: {len(recent_alerts)}")
+        except ValueError as e:
+            print(f"[ERROR] {e}", file=sys.stderr)
+            sys.exit(1)
     elif command == "test":
         # Test alert rendering
         test_context = {
@@ -800,34 +1082,43 @@ def main():
         print(monitor.render_alert(test_context))
     elif command == "help" or command == "--help" or command == "-h":
         # Show help
-        print("Domain Zero Protocol - Work Session Monitor v8.8.0")
+        print("Domain Zero Protocol - Work Session Monitor v8.12.0")
         print("")
         print("Usage: python session_monitor.py <command>")
         print("")
         print("Session Management:")
-        print("  start, new-session   Start a new work session")
-        print("  update               Record an interaction (updates duration)")
-        print("  end                  End the current session")
-        print("  reset                Reset session state (clear all data)")
+        print("  start, new-session         Start a new work session")
+        print("  update                     Record an interaction (updates duration)")
+        print("  end                        End the current session")
+        print("  reset                      Reset session state (clear all data)")
         print("")
         print("Monitoring & Alerts:")
-        print("  check                Check if alert is needed")
-        print("  status, summary      Show current session summary")
+        print("  check                      Check if alert is needed")
+        print("  check --debounce=N         Check with custom debounce threshold (15-60 min)")
+        print("  check-and-record           Check for alert AND auto-record if detected")
+        print("  record-choice <choice>     Record user's alert response (save_and_break|continue)")
+        print("  status, summary            Show current session summary")
         print("")
         print("Break Management:")
-        print("  break [minutes]      Record a break (default: 15 minutes)")
-        print("  continue, resume     Resume work after break")
+        print("  break [minutes]            Record a break (default: 15 minutes)")
+        print("  continue, resume           Resume work after break")
+        print("")
+        print("Agent Invocation Tracking (v8.12.0):")
+        print("  record-invocation <agent>  Record agent invocation for bypass detection")
+        print("                             Use --routed flag if invocation was routed via Gojo")
         print("")
         print("Utilities:")
-        print("  test                 Test alert rendering")
-        print("  help                 Show this help message")
+        print("  test                       Test alert rendering")
+        print("  help                       Show this help message")
         print("")
         print("Examples:")
         print("  python session_monitor.py start              # Start new session")
         print("  python session_monitor.py status             # Check current status")
         print("  python session_monitor.py check              # Check for alerts")
+        print("  python session_monitor.py check --debounce=20  # Check with 20-min debounce")
         print("  python session_monitor.py break 15           # Take 15-min break")
         print("  python session_monitor.py continue           # Resume after break")
+        print("  python session_monitor.py record-invocation yuuji  # Record Yuuji invocation")
         print("  python session_monitor.py end                # End session")
     else:
         print(f"Unknown command: {command}")

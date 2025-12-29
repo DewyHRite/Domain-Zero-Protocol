@@ -1,17 +1,26 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.11.0
+**Version:** v8.12.0
 **Release Date:** December 29, 2025
-**Release Type:** Minor Release
+**Release Type:** Patch Release (Security & Monitoring Enhancement)
 
 ---
 
 ## Release Summary
 
-This release introduces **Session Management** and **TS Troubleshooting Tier System** - two major skills that unify work session tracking and bug resolution workflows. Also includes DZP ROE v2.0.0 refactoring (40% size reduction) and enhanced state schemas.
+This release closes a critical session monitoring coverage gap (70-85% → 85-90%) identified through adversarial analysis. PATCH-SESSION-004 implements 5 defensive layers to prevent context compaction and agent bypass from disabling safety systems.
 
-### Key Changes in v8.11.0
+### Key Changes in v8.12.0
+
+- **Component 1: Configurable Debounce** - Adjustable alert frequency (15-60 min range) via protocol.config.yaml + CLI `--debounce` flag to prevent alert spam during rapid prototyping
+- **Component 2: Compaction-Resistant Markers** - HTML comments protect AUTO-INVOKED section in gojo.agent.md from context compaction removal (5-10% coverage gap closed)
+- **Component 3: Alert Tracking Dashboard** - `.protocol-state/session-monitoring-report.py` detects alert undercount and verifies AUTO-INVOKED section integrity
+- **Component 4: Verification Script** - `scripts/verify-auto-invoked.py` for CI/CD validation (exit code 0/1) to prevent safety system removal
+- **Component 5: Invocation Tracking** - Tracks agent bypass patterns (direct vs routed invocations) to detect 10-15% coverage gap from agent invocation without Gojo
+- **Bug Fix: Windows Compatibility** - Replaced Unicode emojis with ASCII equivalents in session_monitor.py (20+ instances) for full Windows cmd support
+
+### Previous Release (v8.11.0)
 
 - **Component 1: Session Management Skill** - 6 commands (`/session start|status|update|break|continue|end`) for unified work session lifecycle with checkpoint file syncing (dev-notes, project-state, domain.record, security-review, session-state)
 - **Component 2: TS Troubleshooting Tier System** - 9 commands across 5-tier hybrid bug resolution workflow with auto-escalation (`/ts_tier1|tier2|tier3|tier4|codered|status|history|escalate|complete`)

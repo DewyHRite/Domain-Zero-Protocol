@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
 # Creating Claude Agents - Domain Zero Guide
 
-**Domain Zero Protocol v8.11.0**
+**Domain Zero Protocol v8.12.0**
 
 Learn to create custom Claude agents using the **`/agents` command** in Claude Code, inspired by the Domain Zero four-agent system: Yuuji (Implementation), Megumi (Security), Nobara (Creative Strategy), and Gojo (Mission Control).
 
@@ -188,7 +188,7 @@ When you run `/agents`, you'll see:
 
 ### Agent Storage Locations and Priority
 
-**Where agents are stored**:
+#### Where Agents Are Stored
 
 | Location | Path | Priority | Use Case |
 |----------|------|----------|----------|
@@ -196,17 +196,20 @@ When you run `/agents`, you'll see:
 | **CLI-defined** | `--agents` flag | Medium | Temporary or custom paths |
 | **User-level** | `~/.claude/agents/` | Lowest | Personal tools used across all projects |
 
-**Priority Resolution**:
+#### Priority Resolution
+
 When multiple agents have the same name, Claude Code uses this priority order:
 1. Project-level (`.claude/agents/`) - Takes precedence
 2. CLI-defined (`--agents` flag) - Overrides user-level
 3. User-level (`~/.claude/agents/`) - Fallback
 
-**Version Control**:
+#### Version Control
+
 - ✅ **Project-level agents**: Commit to version control (team collaboration)
 - ❌ **User-level agents**: Personal tools, not shared with team
 
-**Example**:
+#### Example
+
 ```bash
 # Project has .claude/agents/yuuji.agent.md
 # User has ~/.claude/agents/yuuji.agent.md
@@ -399,7 +402,7 @@ Test-first development specialist for Tier 1/2/3 features. Creates backups, writ
 ☑ askuserquestion
 ```
 
-**Tool Guidelines by Agent Type**:
+#### Tool Guidelines by Agent Type
 
 | Agent | Tools | Reasoning |
 |-------|-------|-----------|
@@ -432,7 +435,7 @@ Test-first development specialist for Tier 1/2/3 features. Creates backups, writ
 1. Sonnet
 ```
 
-**Model Selection Guide**:
+#### Model Selection Guide
 
 | Model | Use For | Example Agents |
 |-------|---------|----------------|
@@ -798,7 +801,8 @@ I never:
 
 ## CLAUDE.md Protection
 
-**Authorization Hierarchy**:
+#### Authorization Hierarchy
+
 - USER: Full control (can edit manually)
 - GOJO: Can modify ONLY with USER authorization
 - Yuuji/Megumi/Nobara: READ ONLY (zero write permissions)
@@ -1691,7 +1695,7 @@ Use Domain Zero agents as templates when creating new agents via `/agents`.
 ---
 
 **Version**: 3.2.0 (Comprehensive Tool Support)
-**Protocol Version**: 8.11.0
+**Protocol Version**: 8.12.0
 **Last Updated**: 2025-12-29
 
 **Changelog v3.2.0** (MINOR):

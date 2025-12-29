@@ -1,7 +1,7 @@
 # Domain Zero Protocol
-<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
 
-**Version**: 8.11.0 | **Last Updated**: 2025-12-28
+**Version**: 8.12.0 | **Last Updated**: 2025-12-29
 
 A nine-agent AI development system inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
 
@@ -185,7 +185,7 @@ Read protocol/yuuji.agent.md and implement payment processing --tier critical
 
 ## 🛠️ Skills System
 
-**Active Skills** (v8.11.0):
+**Active Skills** (v8.12.0):
 
 | Skill | Commands | Purpose | Owner |
 |-------|----------|---------|-------|
@@ -291,7 +291,25 @@ See [SKILL_REGISTRY.md](protocol/skills/SKILL_REGISTRY.md) for all skills.
 
 ---
 
-## 📦 What's New in v8.11.0
+## 📦 What's New in v8.12.0
+
+### PATCH-SESSION-004: Session Monitoring Enhancement
+Closes critical coverage gap (70-85% → 85-90%) identified through adversarial analysis. PATCH-SESSION-003 was vulnerable to context compaction, agent bypass, and prompt non-compliance.
+
+**5 Defensive Layers**:
+1. **Configurable Debounce** - Adjustable alert frequency (15-60 min range) via `protocol.config.yaml` + CLI `--debounce` flag
+2. **Compaction-Resistant Markers** - HTML comments protect AUTO-INVOKED section in `gojo.agent.md` from context compaction removal
+3. **Alert Tracking Dashboard** - `session-monitoring-report.py` detects alert undercount and verifies section integrity
+4. **Verification Script** - `scripts/verify-auto-invoked.py` for CI/CD validation (exit codes 0/1)
+5. **Invocation Tracking** - Tracks agent bypass patterns (direct vs routed invocations), detects 10-15% coverage gap
+
+**Bug Fix**: Windows compatibility - replaced 20+ Unicode emojis with ASCII equivalents in `session_monitor.py` (resolves `UnicodeEncodeError` on Windows cmd.exe).
+
+See [CHANGELOG.md](CHANGELOG.md#8120---2025-12-29) for full details.
+
+---
+
+## 📦 What's New in v8.11.0 (Previous Release)
 
 ### Session Management Skill
 Unified interface for work session tracking via `/session` slash command:
@@ -351,6 +369,6 @@ Contributions welcome! Please read the contribution guidelines and submit pull r
 
 ---
 
-**Domain Zero Protocol v8.11.0**
+**Domain Zero Protocol v8.12.0**
 **AI-Assisted Development Done Right**
 

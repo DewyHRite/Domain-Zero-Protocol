@@ -9,6 +9,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [8.12.0] - 2025-12-29
+
+### Added
+
+#### **PATCH-SESSION-004: Session Monitoring Enhancement** - Coverage gap remediation (70-85% → 85-90%)
+
+**Purpose**: Close critical session monitoring coverage gaps identified through adversarial analysis. PATCH-SESSION-003 provided only 70-85% coverage (not 95% as claimed) due to context compaction, agent bypass, and prompt non-compliance.
+
+1. **Component 1: Configurable Debounce Threshold**
+   - Added `debounce_threshold_minutes` to `protocol.config.yaml` (configurable 15-60 range, default: 30)
+   - Added `allow_runtime_override: true` for CLI `--debounce` flag support
+   - Implemented `_load_debounce_config()` method in `session_monitor.py`
+   - Modified `check_alert_needed()` to use configurable debounce from YAML or CLI
+   - Reduces false negatives during rapid prototyping sessions
+
+2. **Component 2: Compaction-Resistant Markers**
+   - Added Critical Sections Index to `protocol/gojo.agent.md` (lines 199-211)
+   - Wrapped AUTO-INVOKED section with HTML comment markers (lines 618-639)
+   - Markers: `<!-- CRITICAL: DO NOT REMOVE - SAFETY SYSTEM (PATCH-SESSION-004) -->`
+   - Protects AUTO-INVOKED section from context compaction removal (closes 5-10% gap)
+
+3. **Component 3: Alert Tracking Dashboard**
+   - Created `.protocol-state/session-monitoring-report.py` (~200 lines)
+   - Functions: `check_auto_invoked_integrity()`, `calculate_expected_alerts()`, `analyze_alert_effectiveness()`, `generate_report()`
+   - Detects alert undercount by comparing actual vs expected alerts
+   - JSON output mode support (`--json` flag)
+   - Usage: `python .protocol-state/session-monitoring-report.py`
+
+4. **Component 4: AUTO-INVOKED Verification Script**
+   - Created `scripts/verify-auto-invoked.py` (~170 lines)
+   - 6 validation checks: section existence, HTML markers, required keywords, minimum length
+   - CI/CD integration with exit codes (0 = pass, 1 = fail)
+   - Verbose mode support (`--verbose` or `-v`)
+   - Prevents AUTO-INVOKED section removal in automated workflows
+
+5. **Component 5: Agent Invocation Tracking**
+   - Created `.protocol-state/agent-invocation-tracker.json`
+   - Schema tracks direct vs routed invocations for all 9 agents
+   - Added `record_agent_invocation()` method to `session_monitor.py`
+   - Bypass detection: Logs direct agent invocations during long sessions (>= 30 min)
+   - CLI command: `python session_monitor.py record-invocation <agent_name> [--routed]`
+   - Detects 10-15% coverage gap from agent bypass patterns
+
+### Fixed
+
+#### **Windows Compatibility: Unicode Encoding Error**
+- **Issue**: `UnicodeEncodeError` in Windows command prompt when displaying emoji characters
+- **Root Cause**: Windows cmd.exe (cp1252 encoding) cannot display Unicode emojis
+- **Fix**: Replaced 20+ Unicode emojis with ASCII equivalents in `session_monitor.py`
+  - `⚠️` → `[!]`, `✅` → `[OK]`, `📊` → `[STATUS]`, `⏸️` → `[PAUSED]`
+  - `🛑` → `[BLOCKED]`, `❌` → `[ERROR]`, `ℹ️` → `[INFO]`, `🗑️` → `[DELETE]`
+  - `💡` → `[TIP]`, `🌙` → `[LATE]`
+- **Testing**: All commands tested on Windows cmd.exe with no encoding errors
+
+### Changed
+
+- `protocol.config.yaml`: Added `safety.session_tracking.debounce_threshold_minutes` (default: 30)
+- `protocol/gojo.agent.md`: Added Critical Sections Index and HTML safety markers
+- `.protocol-state/session_monitor.py`: Debounce config loader, invocation tracking, Unicode fixes
+- `VERSION.md`: Updated to v8.12.0 with comprehensive release notes
+- `project-state.json`: Protocol version 8.11.0 → 8.12.0
+
+### Documentation
+
+- `VERSION.md`: Updated to v8.12.0 with 5-component breakdown
+- `CHANGELOG.md`: This entry
+- `docs/getting-started.html`: Updated with v8.12.0 features (session monitoring enhancements)
+- `protocol/SUKUNA-REPORT.md`: Added PATCH-SESSION-004 comprehensive documentation
+
+### Security
+
+- Megumi security review conducted on all new scripts:
+  - `scripts/verify-auto-invoked.py`
+  - `.protocol-state/session-monitoring-report.py`
+  - Agent invocation tracking logic in `session_monitor.py`
+- Review scope: File I/O security, input validation, information disclosure, code injection, state integrity
+
+---
+
 ## [8.10.0] - 2025-12-25
 
 ### Added

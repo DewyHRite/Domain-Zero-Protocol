@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
 # Memory Tool Configuration Guide
-## Enabling Claude Memory Tool Beta for DZP v8.11.0
+## Enabling Claude Memory Tool Beta for DZP v8.12.0
 
-**Version**: 8.11.0
+**Version**: 8.12.0
 **Purpose**: Instructions for enabling Claude Memory Tool API (beta) for persistent cross-session memory
-**Required For**: DZP v8.11.0 validation framework and agent memory persistence
+**Required For**: DZP v8.12.0 validation framework and agent memory persistence
 
 ---
 

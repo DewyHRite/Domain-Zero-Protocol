@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 
 # Gojo Mission Control - Output Templates
 
@@ -12,7 +12,7 @@
 
 ```markdown
 ╔══════════════════════════════════════════════════════════════╗
-║           MISSION CONTROL v8.7.0 - DOMAIN ZERO               ║
+║           MISSION CONTROL v8.11.0 - DOMAIN ZERO               ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  🌀 Gojo - 9-Agent Protocol Guardian                         ║
 ╠══════════════════════════════════════════════════════════════╣
