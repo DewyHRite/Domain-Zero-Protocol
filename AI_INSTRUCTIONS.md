@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 8.11.0 | **Last Updated**: 2025-12-28
+**Version**: 8.12.0 | **Last Updated**: 2025-12-29
 **Purpose**: Complete installation and verification guide for AI assistants
 
 ---
@@ -32,7 +32,35 @@
 
 ---
 
-## What's New in v8.11.0
+## What's New in v8.12.0
+
+### PATCH-SESSION-004: Session Monitoring Enhancement
+Closes critical coverage gap (70-85% → 85-90%) identified through adversarial analysis.
+
+**5 Defensive Layers**:
+1. **Configurable Debounce** - Adjustable alert frequency (15-60 min) via `protocol.config.yaml` + CLI `--debounce` flag
+2. **Compaction-Resistant Markers** - HTML comments protect AUTO-INVOKED section in `gojo.agent.md`
+3. **Alert Tracking Dashboard** - `session-monitoring-report.py` detects alert undercount
+4. **Verification Script** - `scripts/verify-auto-invoked.py` for CI/CD validation (exit codes 0/1)
+5. **Invocation Tracking** - Tracks agent bypass patterns via `agent-invocation-tracker.json`
+
+**Bug Fix**: Windows compatibility - replaced 20+ Unicode emojis with ASCII equivalents (resolves `UnicodeEncodeError`).
+
+**Files Modified**:
+- `protocol.config.yaml` (debounce config)
+- `protocol/gojo.agent.md` (HTML markers)
+- `.protocol-state/session_monitor.py` (debounce, tracking, Unicode fixes)
+- `scripts/verify-auto-invoked.py` (NEW)
+- `.protocol-state/session-monitoring-report.py` (NEW)
+- `.protocol-state/agent-invocation-tracker.json` (NEW)
+
+**Protocol Version**: 8.12.0
+
+See [CHANGELOG.md](CHANGELOG.md#8120---2025-12-29) for full details.
+
+---
+
+## Previous Release: v8.11.0
 
 ### Session Management Skill
 Unified interface for work session tracking via `/session` slash command:

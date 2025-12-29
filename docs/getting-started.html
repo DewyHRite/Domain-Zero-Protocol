@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Getting Started with Domain Zero Protocol - A comprehensive guide for new users of the nine-agent AI development system">
-    <title>Getting Started | Domain Zero Protocol v8.11.0</title>
+    <title>Getting Started | Domain Zero Protocol v8.12.0</title>
     <style>
         /* CSS Custom Properties for theming */
         :root {
@@ -1162,7 +1162,7 @@
                 </svg>
                 <div>
                     <h1>Domain Zero Protocol</h1>
-                    <span class="version-badge">v8.11.0</span>
+                    <span class="version-badge">v8.12.0</span>
                 </div>
             </div>
             <p class="header-description">A nine-agent AI development system providing specialized expertise through distinct personalities, operating under absolute protocol authority.</p>
@@ -1172,7 +1172,7 @@
     <nav aria-label="Main navigation">
         <div class="container">
             <ul class="nav-list">
-                <li><a href="#whats-new" style="color: var(--color-accent);">New in v8.11.0</a></li>
+                <li><a href="#whats-new" style="color: var(--color-accent);">New in v8.12.0</a></li>
                 <li><a href="#what-is-dzp">What is DZP?</a></li>
                 <li><a href="#agents">The 9 Agents</a></li>
                 <li><a href="#relationships">Relationships</a></li>
@@ -1188,9 +1188,99 @@
     <main id="main-content">
         <div class="container">
 
-            <!-- What's New in v8.11.0 -->
+            <!-- What's New in v8.12.0 -->
             <section id="whats-new" aria-labelledby="whats-new-heading" style="background: linear-gradient(135deg, #3B82F620, #EC489920); border: 1px solid var(--color-border); border-radius: 12px; padding: var(--space-xl); margin-bottom: var(--space-2xl);">
-                <h2 id="whats-new-heading" style="border-bottom-color: var(--color-accent);">What's New in v8.11.0</h2>
+                <h2 id="whats-new-heading" style="border-bottom-color: var(--color-accent);">What's New in v8.12.0</h2>
+
+                <div class="intro-grid">
+                    <div class="intro-card" style="background: var(--color-bg);">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" aria-hidden="true">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            Session Monitoring Enhancement
+                        </h3>
+                        <p><strong>PATCH-SESSION-004</strong> closes critical coverage gap (70-85% → 85-90%). Adversarial analysis revealed PATCH-SESSION-003 was vulnerable to context compaction, agent bypass, and prompt non-compliance. <strong>5 defensive layers</strong> added to prevent safety system removal.</p>
+                    </div>
+
+                    <div class="intro-card" style="background: var(--color-bg);">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" aria-hidden="true">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                            Configurable Debounce
+                        </h3>
+                        <p><strong>Component 1:</strong> Adjustable alert frequency (15-60 min range) via <code>protocol.config.yaml</code> + CLI <code>--debounce</code> flag. Prevents alert spam during rapid prototyping while maintaining safety coverage.</p>
+                        <div class="code-block" style="margin-top: var(--space-sm);">
+                            <code>debounce_threshold_minutes: 30
+python session_monitor.py check --debounce 15</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card" style="background: var(--color-bg);">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" aria-hidden="true">
+                                <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm10-10V7a4 4 0 0 0-8 0v4h8z"/>
+                            </svg>
+                            Compaction Protection
+                        </h3>
+                        <p><strong>Component 2:</strong> HTML comment markers protect AUTO-INVOKED section in <code>gojo.agent.md</code> from context compaction removal. Critical Sections Index added. Closes 5-10% coverage gap from silent safety system removal.</p>
+                        <div class="code-block" style="margin-top: var(--space-sm);">
+                            <code>&lt;!-- CRITICAL: DO NOT REMOVE - SAFETY SYSTEM --&gt;</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card" style="background: var(--color-bg);">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" aria-hidden="true">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="9" y1="9" x2="15" y2="9"/>
+                                <line x1="9" y1="15" x2="15" y2="15"/>
+                            </svg>
+                            Alert Dashboard & Verification
+                        </h3>
+                        <p><strong>Components 3 & 4:</strong> New <code>session-monitoring-report.py</code> detects alert undercount. <code>verify-auto-invoked.py</code> provides CI/CD validation (exit codes 0/1) to block deployments that remove safety systems.</p>
+                        <div class="code-block" style="margin-top: var(--space-sm);">
+                            <code>python session-monitoring-report.py
+python scripts/verify-auto-invoked.py</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card" style="background: var(--color-bg);">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" stroke-width="2" aria-hidden="true">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                            Bypass Detection
+                        </h3>
+                        <p><strong>Component 5:</strong> Agent invocation tracking detects direct Yuuji/Megumi invocations that bypass Gojo Mission Control. <code>agent-invocation-tracker.json</code> logs patterns and generates bypass alerts. Closes 10-15% coverage gap.</p>
+                        <div class="code-block" style="margin-top: var(--space-sm);">
+                            <code>python session_monitor.py record-invocation yuuji --routed</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card" style="background: var(--color-bg);">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" aria-hidden="true">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <line x1="10" y1="9" x2="8" y2="9"/>
+                            </svg>
+                            Windows Compatibility Fix
+                        </h3>
+                        <p><strong>Bug Fix:</strong> Replaced 20+ Unicode emojis with ASCII equivalents in <code>session_monitor.py</code>. Resolves <code>UnicodeEncodeError</code> on Windows cmd.exe (cp1252 encoding). All commands tested and working.</p>
+                        <div class="code-block" style="margin-top: var(--space-sm);">
+                            <code>⚠️ → [!]   ✅ → [OK]   📊 → [STATUS]</code>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- What's New in v8.11.0 -->
+            <section id="whats-new-811" aria-labelledby="whats-new-811-heading" style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 12px; padding: var(--space-xl); margin-bottom: var(--space-2xl);">
+                <h2 id="whats-new-811-heading" style="border-bottom-color: var(--color-accent);">What's New in v8.11.0</h2>
 
                 <div class="intro-grid">
                     <div class="intro-card" style="background: var(--color-bg);">
@@ -2101,7 +2191,7 @@ project:
 
     <footer>
         <div class="container">
-            <p>Domain Zero Protocol v8.11.0</p>
+            <p>Domain Zero Protocol v8.12.0</p>
             <p class="footer-links">
                 <a href="https://github.com/DewyHRite/Domain-Zero-Protocol" target="_blank" rel="noopener noreferrer">
                     GitHub Repository

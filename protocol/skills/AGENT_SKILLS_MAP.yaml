@@ -3,9 +3,9 @@
 # Reference: https://github.com/anthropics/skills/tree/main/skills
 # Updated for v8.10.0 - DZP ROE skill added to all agents
 
-version: 4
-updated: 2025-12-25
-protocol_version: "8.10.0"
+version: 5
+updated: 2025-12-29
+protocol_version: "8.12.0"
 
 canonical_reference:
   overview: https://claude.com/blog/skills
@@ -47,6 +47,17 @@ agents:
       - release-briefing     # Release documentation
       - version-audit        # Version consistency check
       - work-session-monitoring
+      - validate-protocol    # Protocol integrity verification
+      - verify-installation  # Installation completeness check
+      - dependency-scanner   # Security vulnerability scanning
+      - file-rotate          # Rotate dev-notes/security-review
+      - verify-auto-invoked  # CI/CD AUTO-INVOKED validation (v8.12.0)
+      - validate-custom-agents  # Custom agent security validation
+      - verify-working-directory  # Tier system pwd validation
+      - create-snapshot      # State snapshot creation
+      - restore-snapshot     # State snapshot restoration
+      - domain-record-rotate # Domain record archival
+      - memory-path-validator  # Memory tool path validation
 
   yuuji:
     role: "Implementation Specialist"

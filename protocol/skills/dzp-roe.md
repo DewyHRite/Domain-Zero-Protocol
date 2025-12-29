@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
 # DZP Rules of Engagement (ROE)
 ## Post-Compaction Protocol Recovery (Gojo)
 
@@ -26,7 +26,7 @@ Read `.protocol-state/project-state.json` for project metadata. **Escape**: Use 
 ### 2. Output DZP Protocol Summary
 
 ```markdown
-## 🎯 DZP RULES OF ENGAGEMENT (v8.11.0)
+## 🎯 DZP RULES OF ENGAGEMENT (v8.12.0)
 
 ### 9-Agent System
 

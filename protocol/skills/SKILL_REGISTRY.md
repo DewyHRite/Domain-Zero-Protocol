@@ -1,16 +1,16 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
 ---
 title: "Skill Registry"
-version: "3.2.1"
-protocol_version: "8.11.0"
+version: "3.2.2"
+protocol_version: "8.12.0"
 last_updated: "2025-12-29"
 status: "Production-Ready"
 ---
 
 # Domain Zero Protocol - Skill Registry
 
-**Version**: 3.2.1
-**Protocol Version**: 8.11.0
+**Version**: 3.2.2
+**Protocol Version**: 8.12.0
 **Last Updated**: 2025-12-29
 
 ---
@@ -55,6 +55,17 @@ These skills are from the official Anthropic repository: https://github.com/anth
 | session | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-28 | gojo |
 | session-check | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
 | ts | 1.0.0 | gojo | Medium | No | 2025-12-28 | gojo |
+| validate-protocol | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
+| verify-installation | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
+| dependency-scanner | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-29 | gojo |
+| file-rotate | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-29 | gojo |
+| verify-auto-invoked | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
+| validate-custom-agents | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-29 | gojo |
+| verify-working-directory | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
+| create-snapshot | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-29 | gojo |
+| restore-snapshot | 1.0.0 | gojo | High | Yes (Python) | 2025-12-29 | gojo |
+| domain-record-rotate | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
+| memory-path-validator | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
 
 ---
 
