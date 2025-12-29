@@ -54,7 +54,7 @@
 
 ## Commands
 
-### 1. /ts tier1 - Minor Bugs, First Attempt
+### 1. /ts_tier1 - Minor Bugs, First Attempt
 
 **Purpose**: Quick fix for minor bugs with standard workflow
 
@@ -128,7 +128,7 @@ Review for:
 
 ---
 
-### 2. /ts tier2 - Moderate Bugs, Enhanced Investigation
+### 2. /ts_tier2 - Moderate Bugs, Enhanced Investigation
 
 **Enhancements over Tier1**:
 - **Investigation phase** BEFORE fix (write to investigation.md)
@@ -188,7 +188,7 @@ Investigation Steps:
 
 ---
 
-### 3. /ts tier3 - Complex Bugs, Support Agent Selection
+### 3. /ts_tier3 - Complex Bugs, Support Agent Selection
 
 **New Feature**: Context-dependent support agent selection
 
@@ -293,7 +293,7 @@ Synthesize unified fix:
 
 ---
 
-### 4. /ts tier4 - Critical Bugs, Advanced Investigation
+### 4. /ts_tier4 - Critical Bugs, Advanced Investigation
 
 **Requirements**:
 - **Root cause diagram/flowchart** (visual bug propagation)
@@ -356,7 +356,7 @@ Investigation Requirements:
 
 ---
 
-### 5. /ts codered - All Hands, Mandatory Plan Mode
+### 5. /ts_codered - All Hands, Mandatory Plan Mode
 
 **Critical Protocol**: Codered activates ALL 9 agents with mandatory plan mode
 
