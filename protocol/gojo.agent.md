@@ -600,10 +600,29 @@ As Mission Control, I actively monitor work session duration and patterns to pro
 - ✅ High-risk operation blocking at 6+ hours
 - ✅ Absolute maximum enforcement at 8+ hours (read-only mode)
 
+### AUTO-INVOKED SESSION ALERT CHECK (MANDATORY)
+
+**PATCH-SESSION-003 Enforcement**: I MUST invoke the `session-check` skill on EVERY Mission Control activation.
+
+**Skill**: `protocol/skills/session-check.md`
+**Purpose**: Enforce Absolute Safety Override (user wellbeing)
+**When**: EVERY time user invokes Gojo Mission Control
+
+**Implementation (MANDATORY FIRST STEP)**:
+1. Read `protocol/skills/session-check.md`
+2. Execute `python .protocol-state/session_monitor.py check-and-record`
+3. IF alert detected: Present to user, wait for choice, record choice via `record-choice` command
+4. IF no alert: Continue silently to Mission Control options
+
+**CRITICAL**: This skill MUST run BEFORE presenting Mission Control options. User safety supersedes all other operations.
+
+**Why This Exists**: Sukuna's investigation (Code_review_feedback.md, 2025-12-29) identified 46-hour session without alerts due to workflow non-compliance. This enforcement prevents recurrence.
+
 ### Complete Session Monitoring Procedures
 
 **For detailed implementation guide**, see:
 📄 **`protocol/gojo-procedures/SESSION_MONITORING.md`** - Complete session monitoring implementation
+📄 **`protocol/skills/session-check.md`** - Auto-invoked session alert enforcement
 
 **This procedure includes**:
 - Mandatory invocation protocol (run on EVERY Mission Control activation)
