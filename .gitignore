@@ -313,7 +313,7 @@ protocol.config.local.yaml
 
 # Domain Record System - track templates, ignore runtime data
 # (mirrors .dzp-killswitch/ pattern where templates are tracked)
-.dzp-domain/domain.record.md
+# domain.record.md now tracked for template distribution
 .dzp-domain/archive/
 
 .protocol-state/validation/validation-state.json
