@@ -2634,6 +2634,177 @@ cp .protocol-state/backups/patch-session-003_20251229_102931/* <original-locatio
 
 ---
 
+## 🚨 PATCH-SESSION-004: Session Monitoring v8.12.0 Configuration Enhancements (2025-12-29)
+
+**Patch ID**: PATCH-SESSION-004
+**Date**: 2025-12-29
+**Priority**: P1-HIGH (Usability & Production Hardening)
+**Type**: FEATURE_ENHANCEMENT (Configuration + Security Remediation)
+**Status**: COMPLETED
+**Applies To**: v8.11.0+ (all installations with PATCH-SESSION-003)
+**Implemented By**: Yuuji (Implementation) + Megumi (Security Review)
+
+### Problem Statement
+
+PATCH-SESSION-003 provided session monitoring enforcement but lacked configuration flexibility:
+1. **Hardcoded thresholds**: Initial alert at 4h, critical at 6h, max at 8h (not customizable)
+2. **Generic alert messages**: No company/team-specific context possible
+3. **All-or-nothing enforcement**: No master toggle to disable monitoring when needed
+4. **Non-atomic file writes**: SEC-001/SEC-002 (MEDIUM severity) - risk of state file corruption
+
+### Solution (4 Components)
+
+#### Component 1: Configurable Alert Thresholds
+**File**: `protocol.config.yaml` (lines 93-102)
+
+**Enables**:
+- Customizable initial alert timing (2-12 hours, default: 4h)
+- Customizable critical session threshold (4-16 hours, default: 6h)
+- Customizable maximum continuous work (6-24 hours, default: 8h)
+- Customizable escalated alert interval (15-120 minutes, default: 45min)
+
+**Implementation**:
+```yaml
+alert_thresholds:
+  initial_alert_hours: 4              # First alert (range: 2-12)
+  critical_session_hours: 6           # Critical threshold (range: 4-16)
+  max_continuous_hours: 8             # Maximum work (range: 6-24)
+  escalated_alert_minutes: 45         # After "continue" choice (range: 15-120)
+```
+
+**Validation**: Range checks in [session_monitor.py:_load_alert_thresholds()](c:\Users\Dewy\OneDrive\Documents\Personal_IT_Projects\Domain_Zero\.protocol-state\session_monitor.py#L199-L277) with fallback to defaults on invalid values.
+
+#### Component 2: Alert Message Customization
+**File**: `protocol.config.yaml` (lines 107-115)
+
+**Enables**:
+- Custom company policy messages
+- Custom break recommendations
+- Custom late-night warnings
+- Custom critical warnings (supports `{hours}` placeholder)
+
+**Implementation**:
+```yaml
+alert_customization:
+  company_policy: null  # "Our team follows 4-hour deep work policy"
+  break_recommendation: null  # "Take a 15-minute walk"
+  late_night_warning: null  # "Late-night coding increases bug rates"
+  critical_warning: null  # "CRITICAL: {hours} hours worked"
+```
+
+**Injection**: Custom messages injected via [session_monitor.py:_inject_custom_messages()](c:\Users\Dewy\OneDrive\Documents\Personal_IT_Projects\Domain_Zero\.protocol-state\session_monitor.py#L318-L373)
+
+#### Component 3: Session Monitoring Master Toggle
+**File**: `protocol.config.yaml` (line 71)
+
+**Enables**:
+- Disable entire monitoring system when needed (research mode, presentations, etc.)
+- Early-return guards in 8 critical methods
+
+**Implementation**:
+```yaml
+safety:
+  session_tracking:
+    enabled: true  # Master toggle (default: true)
+```
+
+**Enforcement**: Guards in all public methods including [should_block_operation()](c:\Users\Dewy\OneDrive\Documents\Personal_IT_Projects\Domain_Zero\.protocol-state\session_monitor.py#L835-L867) (added 2025-12-29 per CodeRabbit review)
+
+#### Component 4: SEC-001 & SEC-002 Remediation (Production Hardening)
+**Files**: `.protocol-state/session_monitor.py`
+
+**Issue**: Non-atomic file writes risk state corruption during interrupted writes
+**Severity**: MEDIUM (P2)
+**Status**: ✅ REMEDIATED
+
+**SEC-001 Fix** - [record_agent_invocation():1076-1085](c:\Users\Dewy\OneDrive\Documents\Personal_IT_Projects\Domain_Zero\.protocol-state\session_monitor.py#L1076-L1085):
+```python
+# Atomic write pattern
+with tempfile.NamedTemporaryFile('w', encoding='utf-8', delete=False,
+                                  dir=self.invocation_tracker_file.parent,
+                                  suffix='.tmp') as tmp_file:
+    json.dump(tracker, tmp_file, indent=2)
+    tmp_path = tmp_file.name
+
+# Atomic replace (POSIX rename guarantees atomicity)
+os.replace(tmp_path, self.invocation_tracker_file)
+```
+
+**SEC-002 Fix** - [save_state():398-407](c:\Users\Dewy\OneDrive\Documents\Personal_IT_Projects\Domain_Zero\.protocol-state\session_monitor.py#L398-L407):
+```python
+# Same atomic write pattern for session state JSON
+```
+
+**Verification**: Megumi security review completed - **@approved** (0 CRITICAL, 0 HIGH, 0 MEDIUM findings)
+
+### Files Modified
+
+**CORE Files** (committed to git):
+1. `protocol.config.yaml` - Added alert_thresholds (lines 93-102), alert_customization (lines 107-115)
+2. `protocol/gojo-procedures/SESSION_MONITORING.md` - Added configuration documentation (~200 lines)
+3. `.protocol-state/security-review-v8.12.0.md` - Megumi's security analysis (@approved)
+
+**INTERNAL Files** (not committed):
+1. `.protocol-state/session_monitor.py` - 3 config loaders, 8 method guards, atomic writes (~300 lines)
+
+### Testing
+
+- ✅ Configuration examples tested (default, custom thresholds, disabled)
+- ✅ Range validation working (invalid values rejected, fallback to defaults)
+- ✅ Early-return guards preventing execution when disabled
+- ✅ Atomic file writes tested (no corruption under interruption simulation)
+- ✅ Custom message injection working (`{hours}` placeholder replacement)
+
+### Security Review
+
+**Reviewer**: Megumi (Security Analyst)
+**Date**: 2025-12-29
+**Result**: @approved
+
+**Findings**:
+- 0 CRITICAL
+- 0 HIGH
+- 0 MEDIUM (after SEC-001/SEC-002 remediation)
+- 4 LOW (SEC-003, SEC-004 accepted as low-risk)
+
+### Backward Compatibility
+
+✅ **Fully backward compatible**:
+- All new configuration optional (uses safe defaults)
+- Existing installations work without protocol.config.yaml changes
+- No breaking changes to CLI interface
+
+### Rollback Procedure
+
+**If PATCH-SESSION-004 causes issues**, revert using:
+
+**Time**: 3-5 minutes
+
+```bash
+# 1. Restore protocol.config.yaml (remove lines 93-115, lines 107-115)
+git show HEAD~1:protocol.config.yaml > protocol.config.yaml
+
+# 2. Restore SESSION_MONITORING.md (remove config docs)
+git show HEAD~1:protocol/gojo-procedures/SESSION_MONITORING.md > protocol/gojo-procedures/SESSION_MONITORING.md
+
+# 3. Restore session_monitor.py (remove config loaders, keep atomic writes)
+# NOTE: Keep SEC-001/SEC-002 fixes (atomic writes), only revert config loaders
+git show HEAD~1:.protocol-state/session_monitor.py > .protocol-state/session_monitor.py
+
+# 4. Verify rollback
+python .protocol-state/session_monitor.py check
+```
+
+**What Rolls Back**:
+- ✅ Configurable alert thresholds (reverts to hardcoded 4h/6h/8h)
+- ✅ Alert message customization (reverts to default messages)
+- ✅ Master toggle (reverts to always-enabled)
+- ⚠️ **KEEP**: Atomic file writes (SEC-001/SEC-002 fixes should NOT be reverted)
+
+**Result**: Reverts to PATCH-SESSION-003 behavior with hardcoded thresholds but retains production hardening (atomic writes).
+
+---
+
 ## 🎯 REMAINING PATCHES (To Be Added)
 
 ### High Priority (P1)
