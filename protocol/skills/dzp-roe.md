@@ -288,7 +288,7 @@ After 5 steps:
 ## Changelog
 
 ### 2.0.0 (2025-12-28)
-- **BREAKING**: 50% size reduction (510 → ~250 lines)
+- **BREAKING**: 40% size reduction (510 → 306 lines)
 - **NEW**: Parallel workflow ENFORCEMENT (validation checklist, imperative language)
 - **NEW**: Anti-pattern examples (show what NOT to do)
 - **CHANGED**: 9-step → 5-step streamlined workflow

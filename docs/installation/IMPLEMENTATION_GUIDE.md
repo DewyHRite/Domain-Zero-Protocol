@@ -102,7 +102,7 @@ cp -r v8.11.0/.dzp-killswitch/* your-project/.dzp-killswitch/
 # cp -r v8.11.0/.protocol-state/* your-project/.protocol-state/  # WRONG!
 
 # ✓ Instead, manually update protocol_version in project-state.json:
-# Open .protocol-state/project-state.json and update "protocol_version": "8.8.0"
+# Open .protocol-state/project-state.json and update "protocol_version": "8.11.0"
 ```
 
 #### Step 4: Verify Your Project State
@@ -325,7 +325,7 @@ Create `.protocol-state/project-state.json`:
 
 ```json
 {
-  "protocol_version": "8.9.0",
+  "protocol_version": "8.11.0",
   "project_metadata": {
     "name": "YOUR_PROJECT_NAME",
     "description": "Your project description",
@@ -335,7 +335,7 @@ Create `.protocol-state/project-state.json`:
   "current_feature_tier": "none",
   "current_state": "STANDBY",
   "active_role": "None",
-  "version": "8.9.0"
+  "version": "8.11.0"
 }
 ```
 
@@ -971,7 +971,7 @@ Read protocol.config.yaml and tell me:
 
 **Solutions**:
 1. Verify you're using v8.11.0 files
-2. Check `protocol.config.yaml` → `protocol_version` is "8.9.0" (not earlier versions)
+2. Check `protocol.config.yaml` → `protocol_version` is "8.11.0" (not earlier versions)
 3. Re-upload all protocol files
 4. Clear conversation and start fresh
 
