@@ -1,5 +1,5 @@
 # OWASP Top 10 Security Guide
-<!-- Domain Zero Protocol v8.10.0 - Offline Reference -->
+<!-- Domain Zero Protocol v8.11.0 - Offline Reference -->
 
 **Agent**: Megumi (Security Analyst)
 **Last Updated**: 2025-12-26

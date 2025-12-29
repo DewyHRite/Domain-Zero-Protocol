@@ -171,7 +171,7 @@ Mid-implementation, user requested: "the dzp_roe should prompt agent continue ta
 **Components Delivered**:
 1. **Session Skill** (`protocol/skills/session.md`) - Unified session management (6 commands)
 2. **TS Tier Skill** (`protocol/skills/ts.md`) - 5-tier troubleshooting system (9 commands)
-3. **DZP ROE Refactor** (`protocol/skills/dzp-roe.md` v1.0.0 → v2.0.0) - 46.9% size reduction, parallel enforcement
+3. **DZP ROE Refactor** (`protocol/skills/dzp-roe.md` v1.0.0 → v2.0.0) - 40% size reduction, parallel enforcement
 4. **State Schema Updates** (project-state.json, troubleshooting-history.json)
 5. **Skill Registry Update** (SKILL_REGISTRY.md v3.1.0 → v3.2.0)
 
@@ -212,7 +212,7 @@ User selects support agents based on bug domain:
 - Full documentation sync (6 files): project-state, dev-notes, investigation, security-review, domain.record, troubleshooting-history
 
 **DZP ROE v2.0.0 Refactor**:
-- **46.9% size reduction** (510 → 307 lines) for faster post-compaction reference
+- **40% size reduction** (510 → 306 lines) for faster post-compaction reference
 - **Parallel workflow enforcement** (validation checklist, imperative MUST/MUST NOT language)
 - **Anti-pattern examples** (show what NOT to do: sequential file reads, placeholder values)
 - **Gojo-owned** (changed from ALL agents due to domain.record.md write access)
@@ -259,7 +259,7 @@ Bug: Payment processing silently failing
   - `protocol/skills/ts.md` (828 lines, ~30KB)
   - `.protocol-state/troubleshooting-history.json` (empty sessions array)
 - **CORE files (5)**:
-  - `protocol/skills/dzp-roe.md` (510 → 307 lines, 46.9% reduction)
+  - `protocol/skills/dzp-roe.md` (510 → 306 lines, 40% reduction)
   - `protocol/skills/SKILL_REGISTRY.md` (v3.1.0 → v3.2.0)
   - `protocol/SUKUNA-REPORT.md` (this file - added UPDATE-2025-12-28-001)
   - `AI_INSTRUCTIONS.md` (added v8.11.0 changelog)
