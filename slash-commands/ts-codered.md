@@ -17,6 +17,6 @@ Read protocol/skills/ts.md and execute `/ts_codered` command.
 - Full system analysis
 
 **Agents Deployed**: ALL 9 (Gojo + Yuuji + Megumi + Nobara + Todo + Maki + Panda + Inumaki + Sukuna)
-**Estimated Resolution**: 8+ hours
+**Estimated Resolution**: 4-6 hours
 **Deliverable**: Comprehensive incident report + system-wide remediation plan
 **Note**: Only use for truly catastrophic failures

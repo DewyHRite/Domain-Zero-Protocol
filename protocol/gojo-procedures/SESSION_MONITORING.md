@@ -450,7 +450,7 @@ python .protocol-state/session_monitor.py check-and-record
 **When to Use**: EVERY Gojo Mission Control activation (via session-check skill)
 
 **Example Output (alert detected)**:
-```
+```text
 ⚠️  Alert detected and recorded: standard
    Alert count: 1
 
@@ -483,7 +483,7 @@ python .protocol-state/session_monitor.py record-choice continue
 ```
 
 **Example Output**:
-```
+```text
 ✅ User choice 'save_and_break' recorded successfully
    Alert count: 1
    Escalation level: 0
@@ -510,6 +510,79 @@ python .protocol-state/session_monitor.py record-choice <user_choice>
 **Enforcement**: Gojo's `session-check` skill (auto-invoked) ensures this workflow runs on EVERY Mission Control activation.
 
 **Documentation**: See `protocol/skills/session-check.md` for complete skill specification.
+
+---
+
+### Dependencies
+
+**Required Components**:
+- `.protocol-state/session_monitor.py` - Python 3.8+ session monitoring module
+- `.protocol-state/session-state.json` - Session state file (auto-created if missing)
+- `protocol/skills/session-check.md` - Auto-invoked enforcement skill
+- `protocol/gojo.agent.md` - Gojo agent with mandatory invocation (lines 603-619)
+- Python 3.8+ available in PATH
+
+**Schema Requirements**:
+- session-state.json schema v2.0.0 (includes alert_count, escalation_level fields)
+- Protocol version 8.8.0+ (session monitoring support)
+
+---
+
+### Rollback Procedure
+
+**If PATCH-SESSION-003 causes issues**, follow these steps to revert:
+
+**Estimated Time**: 5-10 minutes
+
+**Steps**:
+1. **Restore Gojo Agent**:
+   ```bash
+   # Remove AUTO-INVOKED SESSION ALERT CHECK section (lines 603-619)
+   # Restore from backup:
+   cp .protocol-state/backups/patch-session-003_20251229_102931/gojo.agent.md protocol/gojo.agent.md
+   ```
+
+2. **Remove Session-Check Skill**:
+   ```bash
+   # Delete auto-invoked skill file
+   rm protocol/skills/session-check.md
+
+   # Delete slash command
+   rm slash-commands/session-check.md
+   ```
+
+3. **Revert Skill Registry**:
+   ```bash
+   # Restore SKILL_REGISTRY.md to v3.2.0
+   cp .protocol-state/backups/patch-session-003_20251229_102931/SKILL_REGISTRY.md protocol/skills/SKILL_REGISTRY.md
+   ```
+
+4. **Revert SESSION_MONITORING.md**:
+   ```bash
+   # Remove PATCH-SESSION-003 section (lines 427-512)
+   cp .protocol-state/backups/patch-session-003_20251229_102931/SESSION_MONITORING.md protocol/gojo-procedures/SESSION_MONITORING.md
+   ```
+
+5. **Verify Rollback**:
+   ```bash
+   # Check that session-check skill is removed
+   ls protocol/skills/session-check.md  # Should fail
+
+   # Verify Gojo agent no longer has AUTO-INVOKED section
+   grep -n "AUTO-INVOKED SESSION ALERT CHECK" protocol/gojo.agent.md  # Should be empty
+
+   # Verify SKILL_REGISTRY.md back to v3.2.0
+   grep "^**Version**: 3.2.0" protocol/skills/SKILL_REGISTRY.md  # Should match
+   ```
+
+**Note**: Rollback does NOT remove CLI commands from session_monitor.py (INTERNAL file, not committed). Commands `check-and-record` and `record-choice` will remain available but won't be auto-invoked.
+
+**Testing After Rollback**:
+- ✅ Gojo invocation should NOT trigger session-check
+- ✅ Session monitoring still works (original workflow)
+- ✅ Manual session commands still functional
+
+**Backup Location**: `.protocol-state/backups/patch-session-003_20251229_102931/`
 
 ---
 

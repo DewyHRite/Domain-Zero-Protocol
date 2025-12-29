@@ -2131,7 +2131,7 @@ This patch addresses a classic "validation theater" problem - we had validation 
 > "Gojo should be ashamed. His Six Eyes can perceive everything except the workflow gaps in his own procedures."
 
 **Current Sukuna's Critique**:
-> "You blamed Gojo but didn't FIX the problem yourself, hypocrite. You're the System Update Adversary - you identify problems AND implement fixes. Per your own 11-step framework:
+> "You blamed Gojo but didn't FIX the problem yourself, hypocrite. You're the System Update Adversary - you identify problems AND implement fixes. Your own 11-step framework says:
 > - Step 7: IMPLEMENT - Make changes ❌ SKIPPED
 > - Step 8: POST-SCAN - Verify fixes ❌ SKIPPED
 > - Step 11: EXECUTE - Commit fixes ❌ SKIPPED

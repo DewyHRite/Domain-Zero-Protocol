@@ -224,6 +224,53 @@ if should_block:
 
 ---
 
+## Rollback Procedure
+
+**If auto-invocation causes issues**, follow these steps to disable:
+
+**Estimated Time**: 3-5 minutes
+
+**Steps**:
+1. **Disable Auto-Invocation in Gojo Agent**:
+   - Edit `protocol/gojo.agent.md`
+   - Remove or comment out lines 603-619 (AUTO-INVOKED SESSION ALERT CHECK section)
+   - Save changes
+
+2. **Verify Skill Still Exists** (manual invocation remains available):
+   ```bash
+   ls protocol/skills/session-check.md  # Should exist
+   ```
+
+3. **Test Manual Invocation** (optional):
+   ```bash
+   # Skill can still be called manually if needed
+   skill: "session-check"
+   ```
+
+4. **Verification Checklist**:
+   - [ ] Gojo invocation does NOT auto-trigger session-check
+   - [ ] Skill file still exists for manual use
+   - [ ] Session monitoring still works (original workflow)
+   - [ ] No errors on Gojo invocation
+
+**To Fully Remove Skill**:
+```bash
+# Delete skill file
+rm protocol/skills/session-check.md
+
+# Delete slash command
+rm slash-commands/session-check.md
+
+# Update SKILL_REGISTRY.md (remove session-check entry)
+# Revert version from 3.2.1 → 3.2.0
+```
+
+**Backup Location**: `.protocol-state/backups/patch-session-003_20251229_102931/`
+
+**Note**: Disabling auto-invocation restores pre-PATCH-SESSION-003 behavior where session alerts depend on manual Gojo workflow compliance.
+
+---
+
 ## Related Documentation
 
 - **Investigation Report**: `internal-docs/Code_review_feedback.md` (Sukuna's root cause analysis)
