@@ -1197,23 +1197,49 @@
                         <h3>
                             <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" aria-hidden="true">
                                 <circle cx="12" cy="12" r="10"/>
-                                <path d="M12 16v-4"/>
-                                <path d="M12 8h.01"/>
+                                <path d="M12 6v6l4 2"/>
                             </svg>
-                            DZP Rules of Engagement (ROE)
+                            Session Management Skill
                         </h3>
-                        <p>Post-compaction recovery skill restores full DZP protocol context with a single command (<code>/dzp-roe</code>). Outputs complete agent rules, updates state files, runs validation, and prompts continuation with proper workflows.</p>
+                        <p>Unified interface for work session tracking via <code>/session</code> slash command. 6 commands: start, status, update, break, continue, end. Checkpoint file syncing across dev-notes, project-state, domain.record, security-review, and session-state.</p>
+                        <div class="code-block" style="margin-top: var(--space-sm);">
+                            <code>/session start
+/session status
+/session update</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card" style="background: var(--color-bg);">
+                        <h3>
+                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" aria-hidden="true">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            TS Troubleshooting Tier System
+                        </h3>
+                        <p>5-tier hybrid bug resolution workflow via <code>/ts</code> slash command. Tier 1-4: Progressive escalation with support agent selection. Tier 5 (Codered): All 9 agents, mandatory plan mode. Hybrid escalation: severity-based initial tier + auto-escalation after failed attempts.</p>
+                        <div class="code-block" style="margin-top: var(--space-sm);">
+                            <code>/ts tier1  (minor bugs)
+/ts tier2  (moderate)
+/ts tier3  (complex)
+/ts tier4  (critical)
+/ts codered (all hands)</code>
+                        </div>
                     </div>
 
                     <div class="intro-card" style="background: var(--color-bg);">
                         <h3>
                             <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" aria-hidden="true">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                                <path d="M9 12l2 2 4-4"/>
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
                             </svg>
-                            Protocol Validation Enforcement
+                            DZP ROE v2.0.0 (Refactored)
                         </h3>
-                        <p>Pre-commit hook and GitHub Actions workflow automatically validate all state files against authoritative schemas. Prevents schema drift and ensures 100% compliance before commits and PRs.</p>
+                        <p>46.9% size reduction (15KB → 8.5KB) for faster post-compaction reference. Added parallel workflow enforcement with validation checklist, imperative MUST/MUST NOT language, and anti-pattern examples. Gojo-owned skill (was ALL agents).</p>
+                        <div class="code-block" style="margin-top: var(--space-sm);">
+                            <code>/dzp-roe</code>
+                        </div>
                     </div>
 
                     <div class="intro-card" style="background: var(--color-bg);">
@@ -1221,22 +1247,118 @@
                             <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" aria-hidden="true">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                                 <polyline points="14 2 14 8 20 8"/>
-                                <line x1="16" y1="13" x2="8" y2="13"/>
-                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <line x1="12" y1="11" x2="12" y2="17"/>
+                                <polyline points="9 14 12 17 15 14"/>
                             </svg>
-                            Schema Evolution v2.0.0
+                            Protocol-Wide Version Update
                         </h3>
-                        <p>Updated validation-rules.yaml from v1.0.0 to v2.0.0 with complete session-state schema rewrite. Validates work session monitoring safety features including break enforcement and high-risk operation blocking.</p>
+                        <p>All 42 CORE files updated to v8.11.0 for version consistency. Includes all 9 agent files, 7 protocol modules, 5 gojo-procedures, main protocol files, root documentation, and protocol state templates. README overhauled to cover entire DZP system.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- v8.11.0 Slash Commands -->
+            <section id="new-commands" aria-labelledby="new-commands-heading" style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 12px; padding: var(--space-xl); margin-bottom: var(--space-2xl);">
+                <h2 id="new-commands-heading" style="border-bottom-color: var(--color-accent);">New Slash Commands (v8.11.0)</h2>
+                <p>Quick reference for all new v8.11.0 slash commands. These are Gojo-owned skills accessible via Claude Code slash command syntax.</p>
+
+                <div class="intro-grid">
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-gojo);">Session Management</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/session start</span>
+                            <code>Begin new work session</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/session status</span>
+                            <code>View duration, breaks, alerts</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/session update</span>
+                            <code>Checkpoint files (5 files)</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/session break [minutes]</span>
+                            <code>Record break (1-480 min)</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/session continue</span>
+                            <code>Resume after break</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">/session end</span>
+                            <code>Close and archive session</code>
+                        </div>
                     </div>
 
-                    <div class="intro-card" style="background: var(--color-bg);">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2" aria-hidden="true">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            100% Schema Compliance
-                        </h3>
-                        <p>PATCH-COMP-001 achieved zero validation errors across all 12 state files. Backfilled 8 snapshot files, fixed placeholder timestamps, and implemented comprehensive red team security analysis.</p>
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-megumi);">Troubleshooting Tiers</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/ts tier1</span>
+                            <code>Minor bugs (Yuuji + Megumi, 30-45 min)</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/ts tier2</span>
+                            <code>Moderate bugs (enhanced investigation)</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/ts tier3</span>
+                            <code>Complex bugs (+ support agents)</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/ts tier4</span>
+                            <code>Critical bugs (full investigation)</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">/ts codered</span>
+                            <code>All hands (9 agents, plan mode)</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-yuuji);">TS Session Management</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/ts status</span>
+                            <code>Show current troubleshooting session</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/ts history</span>
+                            <code>Show recent sessions (from archive)</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-xs);">
+                            <span class="code-label">/ts escalate</span>
+                            <code>Manual tier escalation</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">/ts complete</span>
+                            <code>Close and archive session</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-nobara);">Protocol Recovery</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">/dzp-roe</span>
+                            <code>Post-compaction protocol recovery</code>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-top: var(--space-sm);">
+                            Restores full DZP context after conversation compaction. Outputs 5-step workflow, updates state files, runs validation, and prompts continuation with proper workflows.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--color-bg-tertiary); border-radius: 8px; border-left: 4px solid var(--color-accent);">
+                    <p style="font-size: 0.9rem; color: var(--color-text); margin-bottom: var(--space-xs);"><strong>Example Usage:</strong></p>
+                    <div class="code-block">
+                        <code>User: /ts tier1
+Gojo: Initializing Tier 1 troubleshooting session...
+      What bug are you investigating?
+
+User: Database query timeout after migration
+
+Gojo: [Briefs Yuuji for TDD workflow]
+      [Briefs Megumi for security review]
+      [Coordinates investigation]</code>
                     </div>
                 </div>
             </section>
