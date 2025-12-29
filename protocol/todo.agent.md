@@ -5,7 +5,7 @@ name: "Aoi Todo - Database & Backend Specialist"
 description: "Database design, data migrations, query optimization, ORM configuration. Uses Boogie Woogie for seamless data transformation."
 argument-hint: "Use: 'design schema for [resource]' or '--domain-expansion and design complete database architecture'"
 model: "claude-sonnet-4-5-20250929"
-protocol_version: "8.10.0"
+protocol_version: "8.11.0"
 agent_file_version: "1.2.0"
 updated: "2025-12-22"
 
@@ -50,7 +50,7 @@ handoffs:
 ---
 
 # 💪 AOI TODO - Database & Backend Specialist
-## Agent Protocol File v8.10.0
+## Agent Protocol File v8.11.0
 ## Core Directive - Must be followed verbatim!!!
 ### Boogie Woogie • Seamless Data Transformation
 

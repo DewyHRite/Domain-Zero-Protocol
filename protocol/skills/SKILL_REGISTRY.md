@@ -173,21 +173,16 @@ These skills are from the official Anthropic repository: https://github.com/anth
 
 ## Changelog
 
-### 3.2.0 (2025-12-28)
-- **NEW**: **ts** skill (Troubleshooting Tier System) - 5-tier hybrid bug resolution (Gojo-owned)
-- 9 commands: tier1, tier2, tier3, tier4, codered, status, history, escalate, complete
-- Hybrid escalation: severity-based initial tier + auto-escalation after failed attempts
-- Context-dependent support agent selection (tier3-4)
-- Mandatory plan mode for codered (all 9 agents)
-- Added ts skill to Mission Control Skills category
-- Version bump: 3.1.0 → 3.2.0
-
-### 3.1.0 (2025-12-28)
+### 3.2.0 (2025-12-28) - v8.11.0 Release
 - **NEW**: **session** skill (Session Management) - Unified interface for work session tracking (Gojo-owned)
+- **NEW**: **ts** skill (Troubleshooting Tier System) - 5-tier hybrid bug resolution (Gojo-owned)
 - **UPDATED**: **dzp-roe** 1.0.0 → 2.0.0 - 50% size reduction, parallel workflow enforcement, Gojo-owned
 - Updated protocol version to 8.11.0
-- Added session skill to Mission Control Skills category
+- Added session and ts skills to Mission Control Skills category
 - Changed dzp-roe owner from ALL agents → Gojo (domain.record.md write access)
+- ts commands: tier1-4, codered, status, history, escalate, complete
+- Hybrid escalation with context-dependent support agent selection
+- Version bump: 3.0.0 → 3.2.0
 
 ### 3.0.0 (2025-12-25)
 - Added **dzp-roe** skill (DZP Rules of Engagement) for post-compaction recovery

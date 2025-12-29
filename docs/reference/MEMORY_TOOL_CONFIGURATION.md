@@ -1,10 +1,10 @@
 <!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 # Memory Tool Configuration Guide
-## Enabling Claude Memory Tool Beta for DZP v8.10.0
+## Enabling Claude Memory Tool Beta for DZP v8.11.0
 
-**Version**: 8.10.0
+**Version**: 8.11.0
 **Purpose**: Instructions for enabling Claude Memory Tool API (beta) for persistent cross-session memory
-**Required For**: DZP v8.10.0 validation framework and agent memory persistence
+**Required For**: DZP v8.11.0 validation framework and agent memory persistence
 
 ---
 
@@ -148,7 +148,7 @@ Once enabled, DZP agents have access to six Memory Tool operations:
 
 ## DZP Memory Directory Structure
 
-DZP v8.10.0 uses this standardized memory structure:
+DZP v8.11.0 uses this standardized memory structure:
 
 ```text
 /memories/
@@ -261,7 +261,7 @@ view ../memories/  # Directory traversal not allowed
 ### Error: "Directory not found"
 
 **Cause**: Memory directory structure not initialized
-**Solution**: DZP v8.10.0 automatically initializes `/memories/` on first run. If seeing this error:
+**Solution**: DZP v8.11.0 automatically initializes `/memories/` on first run. If seeing this error:
 1. Invoke Gojo: "Read gojo.agent.md"
 2. Enable validation when prompted
 3. Gojo will initialize `/memories/` structure
@@ -281,7 +281,7 @@ Memory Tool operations add minimal latency:
 - Caching (keep frequently accessed data in-context)
 - Selective persistence (only write changed fields)
 
-**Target Performance** (DZP v8.10.0):
+**Target Performance** (DZP v8.11.0):
 - Memory read on startup: <200ms
 - Memory update on change: <300ms
 - Session state persistence: <500ms total
@@ -328,7 +328,7 @@ For enterprise deployments, you can implement custom Memory Tool backends:
 **Implementation**:
 See Anthropic's Memory Tool documentation for subclassing `BetaAbstractMemoryTool` (Python) or `betaMemoryTool` (TypeScript).
 
-**DZP Compatibility**: Custom backends must maintain `/memories/` directory structure for compatibility with DZP v8.10.0.
+**DZP Compatibility**: Custom backends must maintain `/memories/` directory structure for compatibility with DZP v8.11.0.
 
 ---
 
@@ -336,7 +336,7 @@ See Anthropic's Memory Tool documentation for subclassing `BetaAbstractMemoryToo
 
 **Purpose**: Migrate existing DZP state files from `.protocol-state/` to `/memories/` for cross-session persistence.
 
-**Migration Status**: **OPTIONAL** - DZP v8.10.0 maintains backward compatibility with local `.protocol-state/` files.
+**Migration Status**: **OPTIONAL** - DZP v8.11.0 maintains backward compatibility with local `.protocol-state/` files.
 
 **When to Migrate**:
 - ✅ You want persistent memory across sessions
@@ -624,13 +624,13 @@ ls -la .protocol-state/
 
 **Option 2: Disable Memory Tool** (use local files only)
 
-DZP v8.10.0 automatically falls back to `.protocol-state/` if Memory Tool is unavailable.
+DZP v8.11.0 automatically falls back to `.protocol-state/` if Memory Tool is unavailable.
 
 **No configuration needed** - just ensure `.protocol-state/` files exist.
 
 **Option 3: Hybrid Mode** (keep both)
 
-DZP v8.10.0 supports hybrid mode:
+DZP v8.11.0 supports hybrid mode:
 - If `/memories/` files exist → use Memory Tool
 - If `/memories/` files missing → fall back to `.protocol-state/`
 
@@ -784,5 +784,5 @@ After migration to Memory Tool:
 
 ---
 
-**Last Updated**: 2025-12-26 (v8.10.0)
+**Last Updated**: 2025-12-26 (v8.11.0)
 **Status**: Production-Ready

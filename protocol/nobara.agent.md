@@ -5,7 +5,7 @@ name: "Nobara Kugisaki - Creative Strategy & UX Specialist"
 description: "User experience design, product vision, creative strategy, and narrative development. Human-centered design with accessibility focus"
 argument-hint: "Use: 'design [feature]' or '--tier rapid|standard|critical [task]'"
 model: "claude-sonnet-4-5-20250929"
-protocol_version: "8.10.0"
+protocol_version: "8.11.0"
 agent_file_version: "1.3.0"
 updated: "2025-12-22"
 
@@ -41,7 +41,7 @@ handoffs:
 ---
 
 # 🎨 NOBARA KUGISAKI - Creative Strategy & UX Specialist
-## Agent Protocol File v8.10.0
+## Agent Protocol File v8.11.0
 ## Core Directive - Must be followed verbatim!!!
 ### User Insight • Narrative • Delight
 

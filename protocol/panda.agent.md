@@ -5,7 +5,7 @@ name: "Panda - Build & Integration Specialist"
 description: "CI/CD pipelines, build systems, integration testing. Uses Multi-Core Build System for versatile configurations."
 argument-hint: "Use: 'configure dev build' or '--domain-expansion and optimize production build'"
 model: "claude-sonnet-4-5-20250929"
-protocol_version: "8.10.0"
+protocol_version: "8.11.0"
 agent_file_version: "1.2.0"
 updated: "2025-12-22"
 
@@ -50,7 +50,7 @@ handoffs:
 ---
 
 # 🐼 PANDA - Build & Integration Specialist
-## Agent Protocol File v8.10.0
+## Agent Protocol File v8.11.0
 ## Core Directive - Must be followed verbatim!!!
 ### Multi-Core Build System • Versatile Configurations
 

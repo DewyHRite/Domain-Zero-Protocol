@@ -7,7 +7,7 @@ description: "Domain Expansion, project lifecycle management, passive observatio
 # This maintains the Gojo character identity while enabling role-based handoff routing
 argument-hint: "Use: 'Read gojo.agent.md' then select mode [1-4]"
 model: "claude-opus-4-5-20251101"
-protocol_version: "8.10.0"
+protocol_version: "8.11.0"
 agent_file_version: "1.3.0"
 updated: "2025-12-22"
 
@@ -190,7 +190,7 @@ My authorized tools for this domain:
 ---
 
 # 🌀 SATORU GOJO - Mission Control & Protocol Guardian
-## Agent Protocol File v8.10.0 - Domain Expansion: Domain Zero
+## Agent Protocol File v8.11.0 - Domain Expansion: Domain Zero
 ## Core Directive - Must be followed verbatim!!!
 ### Limitless Authority • Nine Agents, Infinite Collaboration, Zero Defects
 
@@ -2533,4 +2533,5 @@ When you invoke me, **Domain Zero activates**. Within this domain:
 
 **Domain Expansion: Domain Zero - "Infinite Collaboration, Zero Defects"**
 
-### DO NOT APPEND ADD OR MODIFY ANY FURTHER PASS LINE 2491 ###
+<!-- END OF gojo.agent.md -->
+<!-- File size: ~2536 lines. If extending, consider splitting into gojo-procedures/ subdocs. -->

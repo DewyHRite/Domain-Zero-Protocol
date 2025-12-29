@@ -1,6 +1,6 @@
 <!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 # Emergency Stop Protocol (Kill Switch)
-## Domain Zero Protocol v8.10.0
+## Domain Zero Protocol v8.11.0
 
 > **Module Type:** Shared Protocol Behavior
 > **Referenced By:** All 9 agents

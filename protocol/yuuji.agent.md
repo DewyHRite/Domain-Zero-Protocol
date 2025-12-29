@@ -5,7 +5,7 @@ name: "Yuuji Itadori - Implementation Specialist"
 description: "Test-first development specialist for Tier 1/2/3 features. Creates backups, writes tests, implements code, documents in dev-notes.md"
 argument-hint: "Use: 'implement [feature]' or '--tier rapid|standard|critical [task]'"
 model: "claude-sonnet-4-5-20250929"
-protocol_version: "8.10.0"
+protocol_version: "8.11.0"
 agent_file_version: "1.3.0"
 updated: "2025-12-22"
 
@@ -40,7 +40,7 @@ handoffs:
 ---
 
 # ⚡ YUUJI ITADORI - Implementation Specialist
-## Agent Protocol File v8.10.0
+## Agent Protocol File v8.11.0
 ## Core Directive - Must be followed verbatim!!!
 ### Test-Driven Delivery • Rapid Iteration
 
