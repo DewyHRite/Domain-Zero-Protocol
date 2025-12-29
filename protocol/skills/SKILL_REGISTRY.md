@@ -1,17 +1,17 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 ---
 title: "Skill Registry"
-version: "3.0.0"
-protocol_version: "8.10.0"
-last_updated: "2025-12-25"
+version: "3.2.0"
+protocol_version: "8.11.0"
+last_updated: "2025-12-28"
 status: "Production-Ready"
 ---
 
 # Domain Zero Protocol - Skill Registry
 
-**Version**: 3.0.0
-**Protocol Version**: 8.10.0
-**Last Updated**: 2025-12-25
+**Version**: 3.2.0
+**Protocol Version**: 8.11.0
+**Last Updated**: 2025-12-28
 
 ---
 
@@ -51,7 +51,9 @@ These skills are from the official Anthropic repository: https://github.com/anth
 | Skill Name | Version | Owner | Risk Level | Code Execution | Last Review | Target Agents |
 |------------|---------|-------|------------|----------------|-------------|---------------|
 | skill-builder | 1.0.0 | gojo | Low | No | 2025-11-22 | gojo |
-| dzp-roe | 1.0.0 | ALL | Low | No | 2025-12-25 | ALL (gojo, yuuji, megumi, nobara, todo, maki, panda, inumaki, sukuna) |
+| dzp-roe | 2.0.0 | gojo | Low | No | 2025-12-28 | gojo |
+| session | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-28 | gojo |
+| ts | 1.0.0 | gojo | Medium | No | 2025-12-28 | gojo |
 
 ---
 
@@ -62,7 +64,7 @@ These skills are from the official Anthropic repository: https://github.com/anth
 |-------|-------------|--------|
 | skill-builder | Create new skills with proper structure | Active |
 | skill-creator | Anthropic skill for creating skills | Active |
-| dzp-roe | Post-compaction recovery: Reinforce DZP rules of engagement | Active |
+| dzp-roe | Post-compaction recovery: Reinforce DZP rules (Gojo) | Active |
 
 ### Implementation Skills (Yuuji)
 | Skill | Description | Status |
@@ -92,10 +94,11 @@ These skills are from the official Anthropic repository: https://github.com/anth
 ### Mission Control Skills (Gojo)
 | Skill | Description | Status |
 |-------|-------------|--------|
+| session | Unified session management (start/status/update/break/continue/end) | Active |
+| ts | Troubleshooting tier system (tier1-4/codered/status/history/escalate/complete) | Active |
 | protocol-verify | Protocol compliance verification | Planned |
 | release-briefing | Release preparation checklist | Planned |
 | version-audit | Version consistency audit | Planned |
-| work-session-monitoring | Work session tracking and alerts | Planned |
 
 ### Database & Backend Skills (Todo)
 
@@ -169,6 +172,22 @@ These skills are from the official Anthropic repository: https://github.com/anth
 ---
 
 ## Changelog
+
+### 3.2.0 (2025-12-28)
+- **NEW**: **ts** skill (Troubleshooting Tier System) - 5-tier hybrid bug resolution (Gojo-owned)
+- 9 commands: tier1, tier2, tier3, tier4, codered, status, history, escalate, complete
+- Hybrid escalation: severity-based initial tier + auto-escalation after failed attempts
+- Context-dependent support agent selection (tier3-4)
+- Mandatory plan mode for codered (all 9 agents)
+- Added ts skill to Mission Control Skills category
+- Version bump: 3.1.0 → 3.2.0
+
+### 3.1.0 (2025-12-28)
+- **NEW**: **session** skill (Session Management) - Unified interface for work session tracking (Gojo-owned)
+- **UPDATED**: **dzp-roe** 1.0.0 → 2.0.0 - 50% size reduction, parallel workflow enforcement, Gojo-owned
+- Updated protocol version to 8.11.0
+- Added session skill to Mission Control Skills category
+- Changed dzp-roe owner from ALL agents → Gojo (domain.record.md write access)
 
 ### 3.0.0 (2025-12-25)
 - Added **dzp-roe** skill (DZP Rules of Engagement) for post-compaction recovery

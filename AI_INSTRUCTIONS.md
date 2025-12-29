@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 8.10.0 | **Last Updated**: 2025-12-25
+**Version**: 8.11.0 | **Last Updated**: 2025-12-28
 **Purpose**: Complete installation and verification guide for AI assistants
 
 ---
@@ -32,7 +32,61 @@
 
 ---
 
-## What's New in v8.10.0
+## What's New in v8.11.0
+
+### Session Management Skill
+Unified interface for work session tracking via `/session` slash command:
+- **`/session start`** - Begin new work session
+- **`/session status`** - View duration, breaks, alerts
+- **`/session update`** - Checkpoint files (dev-notes, project-state, domain.record, security-review, session-state)
+- **`/session break [minutes]`** - Record break (1-480 min)
+- **`/session continue`** - Resume after break
+- **`/session end`** - Close and archive session
+
+**Gojo-owned skill** with domain.record.md write access for strategic context logging.
+
+**File**: [`protocol/skills/session.md`](protocol/skills/session.md)
+
+### TS Troubleshooting Tier System
+5-tier hybrid bug resolution workflow via `/ts` slash command:
+- **Tier 1**: Minor bugs, first attempt (Yuuji + Megumi, 30-45 min)
+- **Tier 2**: Moderate bugs, enhanced investigation (60-90 min)
+- **Tier 3**: Complex bugs, support agent selection (user picks Todo/Panda/Maki/Inumaki/Nobara)
+- **Tier 4**: Critical bugs, advanced investigation (root cause diagram, multi-hypothesis testing)
+- **Tier 5 (Codered)**: All hands, mandatory plan mode (9 agents, full documentation sync)
+
+**Hybrid Escalation**: Start tier based on severity, auto-escalate after failed attempts.
+
+**File**: [`protocol/skills/ts.md`](protocol/skills/ts.md)
+
+**Example Invocation**:
+```bash
+/ts tier1
+
+Bug: Database query timeout after migration
+Affected files: src/db/queries.ts
+```
+
+### DZP ROE v2.0.0 (Refactored)
+- **46.9% size reduction** (15KB → 8.5KB) for faster post-compaction reference
+- **Parallel workflow enforcement** (validation checklist, imperative MUST/MUST NOT language)
+- **Anti-pattern examples** (show what NOT to do)
+- **Gojo-owned** (was ALL agents)
+
+**File**: [`protocol/skills/dzp-roe.md`](protocol/skills/dzp-roe.md)
+
+### Installation
+Fresh installations include all three skills automatically. In-place upgrades:
+1. Read [`protocol/skills/session.md`](protocol/skills/session.md), [`protocol/skills/ts.md`](protocol/skills/ts.md), [`protocol/skills/dzp-roe.md`](protocol/skills/dzp-roe.md)
+2. Update `.protocol-state/project-state.json` with troubleshooting schemas
+3. Invoke `/session start` and `/ts tier1` to test
+
+**Protocol Version**: 8.11.0
+**Compatible With**: Claude Code, GitHub Copilot, all AI assistants
+
+---
+
+## Previous Release: v8.10.0
 
 ### DZP Rules of Engagement (Post-Compaction Recovery)
 **Problem**: After context compaction, agents forget DZP rules (agent roles, implementation routing, domain record access, tier workflows).

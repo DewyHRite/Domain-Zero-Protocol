@@ -160,6 +160,201 @@ Mid-implementation, user requested: "the dzp_roe should prompt agent continue ta
 
 ---
 
+### UPDATE-2025-12-28-001: Session Skill + TS Troubleshooting Tier System (v8.11.0)
+
+**Release Date**: 2025-12-28
+**Update ID**: UPDATE-2025-12-28-001
+**Branch**: feature/session-ts-skills-v8.11.0
+**Status**: COMPLETED
+**Violation Flag**: false (followed System Update Framework)
+
+**Components Delivered**:
+1. **Session Skill** (`protocol/skills/session.md`) - Unified session management (6 commands)
+2. **TS Tier Skill** (`protocol/skills/ts.md`) - 5-tier troubleshooting system (9 commands)
+3. **DZP ROE Refactor** (`protocol/skills/dzp-roe.md` v1.0.0 → v2.0.0) - 46.9% size reduction, parallel enforcement
+4. **State Schema Updates** (project-state.json, troubleshooting-history.json)
+5. **Skill Registry Update** (SKILL_REGISTRY.md v3.1.0 → v3.2.0)
+
+**Problem Solved**:
+- **Session monitoring scattered**: Manual session_monitor.py commands → Unified `/session` skill interface
+- **No structured troubleshooting**: Ad-hoc debugging → 5-tier hybrid escalation system
+- **DZP ROE too verbose**: 15KB (510 lines) post-compaction reference → Compressed to 8.5KB (307 lines)
+
+**Solution Implemented**:
+
+**Session Skill** (`/session`):
+- `start` - Begin new work session
+- `status` - View duration, breaks, alert count
+- `update` - Checkpoint files (dev-notes, project-state, domain.record, security-review, session-state)
+- `break [minutes]` - Record break (1-480 min)
+- `continue` - Resume after break
+- `end` - Close and archive session
+
+**TS Troubleshooting Tier System** (`/ts`):
+- **Tier 1**: Minor bugs, first attempt (Yuuji + Megumi, 30-45 min)
+- **Tier 2**: Moderate bugs, enhanced investigation (60-90 min)
+- **Tier 3**: Complex bugs, support agent selection (user picks Todo/Panda/Maki/Inumaki/Nobara)
+- **Tier 4**: Critical bugs, advanced investigation (root cause diagram, multi-hypothesis testing)
+- **Tier 5 (Codered)**: All hands, mandatory plan mode (9 agents, full documentation sync)
+
+**Hybrid Escalation**:
+- Initial tier based on bug severity (user selects)
+- Auto-escalation after 2 failed attempts per tier
+- Manual escalation via `/ts escalate` anytime
+
+**Context-Dependent Agent Selection** (tier3-4):
+User selects support agents based on bug domain:
+- Todo (Database), Panda (CI/CD), Maki (Performance), Inumaki (API), Nobara (UX)
+
+**Codered Specifics**:
+- Mandatory plan mode (outputs recommendation if not active)
+- All 9 DZP agents deployed (Gojo coordinates)
+- Full documentation sync (6 files): project-state, dev-notes, investigation, security-review, domain.record, troubleshooting-history
+
+**DZP ROE v2.0.0 Refactor**:
+- **46.9% size reduction** (510 → 307 lines) for faster post-compaction reference
+- **Parallel workflow enforcement** (validation checklist, imperative MUST/MUST NOT language)
+- **Anti-pattern examples** (show what NOT to do: sequential file reads, placeholder values)
+- **Gojo-owned** (changed from ALL agents due to domain.record.md write access)
+
+**Invocation Examples**:
+```bash
+# Session management
+/session start
+/session status
+/session update
+/session break 15
+/session end
+
+# Troubleshooting
+/ts tier1
+Bug: Button onClick handler not firing
+Affected files: src/components/Button.tsx
+
+/ts tier3
+Bug: Database migration fails
+[User selects: Todo + Maki for investigation]
+
+/ts codered
+Bug: Payment processing silently failing
+[System checks plan mode, briefs all 9 agents]
+
+/ts status
+/ts history
+/ts complete
+```
+
+**Files Modified (12 files)**:
+- **Created (3)**:
+  - `protocol/skills/session.md` (355 lines, 8.2KB)
+  - `protocol/skills/ts.md` (828 lines, ~30KB)
+  - `.protocol-state/troubleshooting-history.json` (empty sessions array)
+- **CORE files (5)**:
+  - `protocol/skills/dzp-roe.md` (510 → 307 lines, 46.9% reduction)
+  - `protocol/skills/SKILL_REGISTRY.md` (v3.1.0 → v3.2.0)
+  - `protocol/SUKUNA-REPORT.md` (this file - added UPDATE-2025-12-28-001)
+  - `AI_INSTRUCTIONS.md` (added v8.11.0 changelog)
+  - `docs/installation/IMPLEMENTATION_GUIDE.md` (added v8.11.0 changelog)
+  - `docs/getting-started.html` (v8.10.0 → v8.11.0)
+- **INTERNAL files (4)**:
+  - `.protocol-state/project-state.json` (protocol_version: 8.11.0, troubleshooting schemas)
+  - `.protocol-state/system-update-framework/plan-documentation.md` (added UPDATE-2025-12-28-001)
+  - `.protocol-state/backups/skill-updates_20251228_200432/` (backups created)
+  - `.protocol-state/backups/v8.11.0-implementation_{timestamp}/` (backups created)
+
+**Verification**:
+```bash
+# Verify skill files exist
+ls -l protocol/skills/{session,ts,dzp-roe}.md
+
+# Verify state files
+ls -l .protocol-state/{troubleshooting-history.json,project-state.json}
+
+# Test session skill
+/session start
+/session status
+
+# Test ts tier1
+/ts tier1
+Bug: Example bug
+Affected files: src/example.ts
+
+# Test dzp-roe refactored version
+/dzp-roe
+
+# Expected outputs:
+# - Session skill: Session tracking with checkpoint updates
+# - TS tier1: Yuuji + Megumi briefing for TDD + security
+# - DZP ROE: Compressed protocol summary with parallel enforcement
+```
+
+**Rollback Procedure**:
+```bash
+# Restore from backups
+cp .protocol-state/backups/v8.11.0-implementation_{timestamp}/*.md protocol/skills/
+cp .protocol-state/backups/v8.11.0-implementation_{timestamp}/project-state.json .protocol-state/
+
+# Remove new skill files
+rm protocol/skills/{session,ts}.md
+rm .protocol-state/troubleshooting-history.json
+
+# Revert SKILL_REGISTRY.md to v3.1.0
+git checkout HEAD~1 -- protocol/skills/SKILL_REGISTRY.md
+
+# Remove troubleshooting schemas from project-state.json
+# (restore from backup or manual edit)
+
+# Verify rollback
+cat protocol/SUKUNA-REPORT.md | grep "8.10.0"  # Should be latest version
+```
+
+**Migration Notes for Users**:
+- **Fresh installations**: All 3 skills (session, ts, dzp-roe v2.0.0) included automatically
+- **In-place upgrades**:
+  1. Pull latest protocol files
+  2. Update project-state.json with troubleshooting schemas (see schema below)
+  3. Test: `/session start`, `/ts tier1`, `/dzp-roe`
+
+**State Schema Addition** (project-state.json):
+```json
+{
+  "troubleshooting_session": {
+    "session_id": null,
+    "active": false,
+    "current_tier": null,
+    "attempts_count": 0,
+    "bug_description": null,
+    "affected_files": [],
+    "selected_support_agents": [],
+    "escalation_history": [],
+    "agent_completion_status": {},
+    "plan_mode_active": false,
+    "started_at": null
+  },
+  "troubleshooting_statistics": {
+    "total_sessions": 0,
+    "sessions_by_tier": {"tier1": 0, "tier2": 0, "tier3": 0, "tier4": 0, "codered": 0},
+    "sessions_by_outcome": {"resolved": 0, "mitigated": 0, "deferred": 0, "cannot_reproduce": 0},
+    "average_resolution_minutes": {"tier1": 0, "tier2": 0, "tier3": 0, "tier4": 0, "codered": 0},
+    "auto_escalation_count": 0,
+    "manual_escalation_count": 0
+  }
+}
+```
+
+**Applies To Version**: 8.10.0 and higher
+**Required For**: All installations using session monitoring or troubleshooting workflows
+**Testing Checklist**:
+- [ ] Session commands functional (start, status, update, break, continue, end)
+- [ ] TS tier1-4 escalation works (auto + manual)
+- [ ] Support agent selection (tier3) prompts for Todo/Panda/Maki/Inumaki/Nobara
+- [ ] Codered plan mode recommendation displays correctly
+- [ ] State files persist between invocations
+- [ ] troubleshooting-history.json archives sessions on completion
+- [ ] DZP ROE v2.0.0 outputs compressed protocol summary with parallel enforcement
+
+---
+
 ## 📋 PATCH MANIFEST STRUCTURE
 
 Each patch entry follows this format:

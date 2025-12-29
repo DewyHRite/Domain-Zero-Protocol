@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
-**Version**: 8.10.0
-**Last Updated**: December 25, 2025
+**Version**: 8.11.0
+**Last Updated**: December 28, 2025
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
 
 ---
@@ -1701,6 +1701,116 @@ Context: Just recovered from compaction, need DZP rules refresher
 **File**: `protocol/skills/dzp-roe.md` (510 lines, 9-step workflow)
 **Slash Command**: `.claude/commands/dzp-roe.md`
 **Available To**: ALL 9 agents (gojo, yuuji, megumi, nobara, todo, maki, panda, inumaki, sukuna)
+
+---
+
+## Changelog
+
+### v8.11.0 (2025-12-28)
+
+#### New Features
+1. **Session Management Skill** (`/session`) - Unified session lifecycle interface
+   - Commands: start, status, update, break, continue, end
+   - Checkpoint file syncing (dev-notes, project-state, domain.record, security-review, session-state)
+   - Gojo-owned skill with domain.record.md write access
+   - File: `protocol/skills/session.md`
+
+2. **TS Troubleshooting Tier System** (`/ts`) - 5-tier hybrid bug resolution
+   - Tier 1-4: Progressive escalation (Yuuji + Megumi, then + support agents)
+   - Tier 5 (Codered): All 9 agents, mandatory plan mode
+   - Hybrid escalation: severity-based initial tier + auto-escalation after failed attempts
+   - Context-dependent support agent selection (Todo/Panda/Maki/Inumaki/Nobara)
+   - Commands: tier1, tier2, tier3, tier4, codered, status, history, escalate, complete
+   - File: `protocol/skills/ts.md`
+
+3. **DZP ROE v2.0.0** - Refactored for brevity (46.9% smaller) with parallel enforcement
+   - 510 lines → 307 lines (46.9% reduction)
+   - Added parallel workflow validation checklist
+   - Added MUST/MUST NOT imperative language
+   - Added anti-pattern examples
+   - Changed ownership from ALL agents to Gojo only
+   - File: `protocol/skills/dzp-roe.md`
+
+#### Installation Instructions
+
+**Fresh Install**:
+Skills auto-installed via protocol/ directory. Verify with:
+```bash
+ls protocol/skills/
+# Should show: session.md, ts.md, dzp-roe.md, SKILL_REGISTRY.md
+```
+
+**In-Place Upgrade**:
+1. **Backup current state**:
+   ```bash
+   cp .protocol-state/project-state.json .protocol-state/backups/project-state-$(date +%Y%m%d).json
+   ```
+
+2. **Update protocol files** (pull latest from repo or copy from release):
+   ```bash
+   cp -r v8.11.0/protocol/skills/* protocol/skills/
+   ```
+
+3. **Update project-state.json** (manual or via script):
+   ```json
+   {
+     "protocol_version": "8.11.0",
+     "troubleshooting_session": {
+       "session_id": null,
+       "active": false,
+       "current_tier": 0,
+       "attempts_count": 0,
+       "bug_description": "",
+       "affected_files": [],
+       "selected_support_agents": [],
+       "escalation_history": [],
+       "plan_mode_active": false,
+       "started_at": null
+     },
+     "troubleshooting_statistics": {
+       "total_sessions": 0,
+       "sessions_by_tier": {
+         "tier1": 0,
+         "tier2": 0,
+         "tier3": 0,
+         "tier4": 0,
+         "codered": 0
+       },
+       "average_resolution_minutes": {
+         "tier1": 0,
+         "tier2": 0,
+         "tier3": 0,
+         "tier4": 0,
+         "codered": 0
+       },
+       "total_escalations": 0,
+       "auto_escalations": 0,
+       "manual_escalations": 0
+     }
+   }
+   ```
+
+4. **Test skills**:
+   ```bash
+   /session start
+   /ts tier1
+   /dzp-roe
+   ```
+
+#### Breaking Changes
+None. All changes are additive. DZP ROE v2.0.0 is breaking for skill structure but non-breaking for usage.
+
+#### Deprecations
+None.
+
+---
+
+### v8.10.0 (2025-12-25)
+
+#### New Features
+- DZP Rules of Engagement (dzp-roe) skill for post-compaction recovery
+- Context restoration after Claude Code compaction
+- State tracking for compaction recovery
 
 ---
 
