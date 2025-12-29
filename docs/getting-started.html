@@ -1218,13 +1218,13 @@
                             </svg>
                             TS Troubleshooting Tier System
                         </h3>
-                        <p>5-tier hybrid bug resolution workflow via <code>/ts</code> slash command. Tier 1-4: Progressive escalation with support agent selection. Tier 5 (Codered): All 9 agents, mandatory plan mode. Hybrid escalation: severity-based initial tier + auto-escalation after failed attempts.</p>
+                        <p>5-tier hybrid bug resolution workflow via <code>/ts_*</code> slash commands. Tier 1-4: Progressive escalation with support agent selection. Tier 5 (Codered): All 9 agents, mandatory plan mode. Hybrid escalation: severity-based initial tier + auto-escalation after failed attempts.</p>
                         <div class="code-block" style="margin-top: var(--space-sm);">
-                            <code>/ts tier1  (minor bugs)
-/ts tier2  (moderate)
-/ts tier3  (complex)
-/ts tier4  (critical)
-/ts codered (all hands)</code>
+                            <code>/ts_tier1  (minor bugs)
+/ts_tier2  (moderate)
+/ts_tier3  (complex)
+/ts_tier4  (critical)
+/ts_codered (all hands)</code>
                         </div>
                     </div>
 
@@ -1294,23 +1294,23 @@
                     <div class="intro-card">
                         <h3 style="color: var(--color-megumi);">Troubleshooting Tiers</h3>
                         <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts tier1</span>
+                            <span class="code-label">/ts_tier1</span>
                             <code>Minor bugs (Yuuji + Megumi, 30-45 min)</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts tier2</span>
+                            <span class="code-label">/ts_tier2</span>
                             <code>Moderate bugs (enhanced investigation)</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts tier3</span>
+                            <span class="code-label">/ts_tier3</span>
                             <code>Complex bugs (+ support agents)</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts tier4</span>
+                            <span class="code-label">/ts_tier4</span>
                             <code>Critical bugs (full investigation)</code>
                         </div>
                         <div class="code-block">
-                            <span class="code-label">/ts codered</span>
+                            <span class="code-label">/ts_codered</span>
                             <code>All hands (9 agents, plan mode)</code>
                         </div>
                     </div>
@@ -1318,19 +1318,19 @@
                     <div class="intro-card">
                         <h3 style="color: var(--color-yuuji);">TS Session Management</h3>
                         <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts status</span>
+                            <span class="code-label">/ts_status</span>
                             <code>Show current troubleshooting session</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts history</span>
+                            <span class="code-label">/ts_history</span>
                             <code>Show recent sessions (from archive)</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts escalate</span>
+                            <span class="code-label">/ts_escalate</span>
                             <code>Manual tier escalation</code>
                         </div>
                         <div class="code-block">
-                            <span class="code-label">/ts complete</span>
+                            <span class="code-label">/ts_complete</span>
                             <code>Close and archive session</code>
                         </div>
                     </div>
@@ -1350,7 +1350,7 @@
                 <div style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--color-bg-tertiary); border-radius: 8px; border-left: 4px solid var(--color-accent);">
                     <p style="font-size: 0.9rem; color: var(--color-text); margin-bottom: var(--space-xs);"><strong>Example Usage:</strong></p>
                     <div class="code-block">
-                        <code>User: /ts tier1
+                        <code>User: /ts_tier1
 Gojo: Initializing Tier 1 troubleshooting session...
       What bug are you investigating?
 
