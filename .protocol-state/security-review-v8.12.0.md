@@ -307,7 +307,7 @@ if self.config_file.exists():
 
 ## COMPLIANCE CHECKLIST
 
-- ✅ No critical or high severity findings
+- ✅ No critical or high-severity findings
 - ✅ No OWASP Top 10 violations
 - ✅ Secure coding practices followed
 - ✅ Input validation implemented

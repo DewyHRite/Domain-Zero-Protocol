@@ -842,6 +842,10 @@ Template file not found at: {self.template_file}
         Returns:
             (should_block, reason) - reason is empty string if not blocked
         """
+        # Early return if session monitoring is disabled (v8.12.0)
+        if not self.enabled:
+            return False, ""
+
         state = self.load_state()
 
         if not state['current_session']['session_active']:
