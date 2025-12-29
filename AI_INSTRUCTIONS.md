@@ -36,7 +36,7 @@
 
 ### Session Management Skill
 Unified interface for work session tracking via `/session` slash command:
-- **`/session start`** - Begin new work session
+- **`/session start`** - Begin new work session and activate DZP (reads protocol/CLAUDE.md)
 - **`/session status`** - View duration, breaks, alerts
 - **`/session update`** - Checkpoint files (dev-notes, project-state, domain.record, security-review, session-state)
 - **`/session break [minutes]`** - Record break (1-480 min)
@@ -44,6 +44,8 @@ Unified interface for work session tracking via `/session` slash command:
 - **`/session end`** - Close and archive session
 
 **Gojo-owned skill** with domain.record.md write access for strategic context logging.
+
+**DZP Activation**: `/session start` automatically reads protocol/CLAUDE.md to activate full Domain Zero Protocol context for all agents.
 
 **File**: [`protocol/skills/session.md`](protocol/skills/session.md)
 

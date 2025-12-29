@@ -1201,9 +1201,9 @@
                             </svg>
                             Session Management Skill
                         </h3>
-                        <p>Unified interface for work session tracking via <code>/session</code> slash command. 6 commands: start, status, update, break, continue, end. Checkpoint file syncing across dev-notes, project-state, domain.record, security-review, and session-state.</p>
+                        <p>Unified interface for work session tracking via <code>/session</code> slash command. <strong>/session start</strong> activates full DZP by reading protocol/CLAUDE.md. 6 commands: start, status, update, break, continue, end. Checkpoint file syncing across dev-notes, project-state, domain.record, security-review, and session-state.</p>
                         <div class="code-block" style="margin-top: var(--space-sm);">
-                            <code>/session start
+                            <code>/session start  (+ DZP activation)
 /session status
 /session update</code>
                         </div>
@@ -1267,7 +1267,7 @@
                         <h3 style="color: var(--color-gojo);">Session Management</h3>
                         <div class="code-block" style="margin-bottom: var(--space-xs);">
                             <span class="code-label">/session start</span>
-                            <code>Begin new work session</code>
+                            <code>Begin new work session + activate DZP</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-xs);">
                             <span class="code-label">/session status</span>

@@ -40,18 +40,29 @@ Provides unified skill interface for session_monitor.py operations with integrat
 
 ### /session start
 
-**Action**: Start new work session
+**Action**: Start new work session and activate Domain Zero Protocol
 
 **Implementation**:
 ```bash
+# Step 1: Start session monitoring
 python .protocol-state/session_monitor.py start
+
+# Step 2: Activate Domain Zero Protocol
+Read protocol/CLAUDE.md
 ```
 
-**Output**: Session ID and start timestamp
+**Output**:
+- Session ID and start timestamp
+- Full DZP protocol activation (all agent rules, restrictions, workflows)
 
 **State Updates**:
 - `session-state.json`: Creates/updates current session
 - `domain.record.md`: Logs session start (Gojo only)
+
+**Workflow**:
+1. Initialize session monitoring (Python script)
+2. Read protocol/CLAUDE.md to load complete DZP context
+3. Agents now have full protocol awareness for the session
 
 ---
 
