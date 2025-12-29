@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 # Gojo Snapshot Integration Guide
 
 **Version**: 1.1.0
 **Created**: 2025-12-06
 **Updated**: 2025-12-25
-**Part of**: DZP v8.10.0 Validation Framework - Phase 2
+**Part of**: DZP v8.11.0 Validation Framework - Phase 2
 
 ## Purpose
 

@@ -1,0 +1,92 @@
+{
+  "total_snapshots": 8,
+  "last_snapshot_created": "2025-12-06T07:32:17.165416Z",
+  "retention_policy": {
+    "tier_1_max": 10,
+    "tier_2_max": 30,
+    "tier_3_max": 50,
+    "cleanup_strategy": "oldest_first"
+  },
+  "snapshots": [
+    {
+      "snapshot_id": "e77c6c31-395e-4658-bcc8-75737168bb1b",
+      "created_at": "2025-12-06T05:33:35.460254Z",
+      "tier": 2,
+      "reason": "manual",
+      "file_path": "snapshot-2025-12-06T05-33-35Z.json.gz",
+      "size_bytes": 2329,
+      "description": "Phase 2 initial test snapshot",
+      "tagged": false
+    },
+    {
+      "snapshot_id": "6bf43cd8-de82-4820-a78e-c3d000e41ad9",
+      "created_at": "2025-12-06T05:33:52.383083Z",
+      "tier": 2,
+      "reason": "manual",
+      "file_path": "snapshot-2025-12-06T05-33-52Z.json.gz",
+      "size_bytes": 2331,
+      "description": "Phase 2 initial test snapshot",
+      "tagged": false
+    },
+    {
+      "snapshot_id": "41b7b869-2715-4cb1-8a65-bbb2809c377f",
+      "created_at": "2025-12-06T05:49:42.190140Z",
+      "tier": 2,
+      "reason": "operation_count",
+      "file_path": "snapshot-2025-12-06T05-49-42Z.json.gz",
+      "size_bytes": 2409,
+      "description": "Test operation 10",
+      "tagged": false
+    },
+    {
+      "snapshot_id": "51dc1fbd-19e6-4bb7-9c24-7d0f0ef9bda6",
+      "created_at": "2025-12-06T05:50:08.973688Z",
+      "tier": 2,
+      "reason": "tier_change",
+      "file_path": "snapshot-2025-12-06T05-50-08Z.json.gz",
+      "size_bytes": 2424,
+      "description": "Tier change: 2 \u2192 3",
+      "tagged": false
+    },
+    {
+      "snapshot_id": "6a973827-ec30-4ada-9a70-5fe8bf138e9c",
+      "created_at": "2025-12-06T05:50:36.085994Z",
+      "tier": 3,
+      "reason": "operation_count",
+      "file_path": "snapshot-2025-12-06T05-50-36Z.json.gz",
+      "size_bytes": 2413,
+      "description": "Tier 3 test operation",
+      "tagged": false
+    },
+    {
+      "snapshot_id": "e6bc6941-7d84-42a2-b47c-d4c1414b51d5",
+      "created_at": "2025-12-06T06:27:01.344260Z",
+      "tier": 3,
+      "reason": "manual",
+      "file_path": "snapshot-2025-12-06T06-27-01Z.json.gz",
+      "size_bytes": 2878,
+      "description": "Integration test: Before modifying SKILL_REGISTRY.md (dependency scanner workflow)",
+      "tagged": false
+    },
+    {
+      "snapshot_id": "98b07e4f-5aaf-4b45-ac4a-a706fde9acff",
+      "created_at": "2025-12-06T07:13:38.284677Z",
+      "tier": 2,
+      "reason": "manual",
+      "file_path": "snapshot-2025-12-06T07-13-38Z.json.gz",
+      "size_bytes": 2849,
+      "description": "Phase 2 completion test",
+      "tagged": false
+    },
+    {
+      "snapshot_id": "848ccedd-a90b-41f1-b3b5-aa215dd2a376",
+      "created_at": "2025-12-06T07:32:17.165416Z",
+      "tier": 3,
+      "reason": "manual",
+      "file_path": "snapshot-2025-12-06T07-32-17Z.json.gz",
+      "size_bytes": 2906,
+      "description": "SAFETY SNAPSHOT: Before Phase 4 Component 1 (Tier Validation System) - Rollback point for maximum safety protocol",
+      "tagged": false
+    }
+  ]
+}

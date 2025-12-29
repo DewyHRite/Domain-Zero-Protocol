@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 # Security Policy
 
 ## Scope
@@ -30,8 +30,10 @@ We provide security updates for the following versions:
 
 | Version | Supported          | Status |
 | ------- | ------------------ | ------ |
-| 8.8.0   | :white_check_mark: | Current stable release |
-| 8.6.x   | :white_check_mark: | Previous stable release (still supported) |
+| 8.11.0  | :white_check_mark: | Current stable release |
+| 8.10.0  | :white_check_mark: | Previous stable release (still supported) |
+| 8.8.0   | :white_check_mark: | Maintenance mode (critical fixes only) |
+| 8.6.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
 | 8.5.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
 | 8.4.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
 | 8.3.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
@@ -39,7 +41,7 @@ We provide security updates for the following versions:
 | 6.x     | :x:                | End of life (EOL) |
 | < 6.0   | :x:                | End of life (EOL) |
 
-**Upgrade Recommendation**: Users on unsupported versions should upgrade to v8.8.0 immediately.
+**Upgrade Recommendation**: Users on unsupported versions should upgrade to v8.11.0 immediately.
 
 ---
 
@@ -286,8 +288,8 @@ When reporting, please indicate:
 
 This security policy is versioned alongside the Domain Zero Protocol:
 
-- **Current Version**: 1.3.0 (matches Domain Zero Protocol v8.8.0)
-- **Last Updated**: December 3, 2025
+- **Current Version**: 1.4.0 (matches Domain Zero Protocol v8.11.0)
+- **Last Updated**: December 29, 2025
 - **Next Review**: January 2026 (or upon major protocol update)
 
 Changes to this policy will be documented in `CHANGELOG.md` and announced via GitHub releases.

@@ -1,5 +1,5 @@
 {
-  "protocol_version": "8.10.0",
+  "protocol_version": "8.11.0",
   "compaction_recovery": {
     "last_recovery_timestamp": null,
     "recovery_count": 0,
@@ -199,5 +199,52 @@
         "compliance": true
       }
     ]
+  },
+  "troubleshooting_session": {
+    "session_id": null,
+    "active": false,
+    "current_tier": null,
+    "attempts_count": 0,
+    "bug_description": null,
+    "affected_files": [],
+    "expected_behavior": null,
+    "actual_behavior": null,
+    "reproduction_steps": [],
+    "selected_support_agents": [],
+    "support_agent_deliverables": {},
+    "escalation_history": [],
+    "agent_completion_status": {},
+    "plan_mode_active": false,
+    "codered_active": false,
+    "started_at": null,
+    "last_updated": null
+  },
+  "troubleshooting_statistics": {
+    "total_sessions": 0,
+    "sessions_by_tier": {
+      "tier1": 0,
+      "tier2": 0,
+      "tier3": 0,
+      "tier4": 0,
+      "codered": 0
+    },
+    "sessions_by_outcome": {
+      "resolved": 0,
+      "mitigated": 0,
+      "deferred": 0,
+      "cannot_reproduce": 0
+    },
+    "average_resolution_minutes": {
+      "tier1": 0,
+      "tier2": 0,
+      "tier3": 0,
+      "tier4": 0,
+      "codered": 0
+    },
+    "auto_escalation_count": 0,
+    "manual_escalation_count": 0,
+    "most_common_escalation_path": null,
+    "total_tests_added": 0,
+    "last_updated": null
   }
 }

@@ -1,23 +1,23 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.10.0
-**Release Date:** December 25, 2025
+**Version:** v8.11.0
+**Release Date:** December 29, 2025
 **Release Type:** Minor Release
 
 ---
 
 ## Release Summary
 
-This release introduces **DZP Rules of Engagement (ROE)** - a post-compaction recovery system that restores full DZP protocol context with a single slash command (`/dzp-roe`). Solves the user pain point of repeatedly explaining protocol rules after context compaction.
+This release introduces **Session Management** and **TS Troubleshooting Tier System** - two major skills that unify work session tracking and bug resolution workflows. Also includes DZP ROE v2.0.0 refactoring (46.9% size reduction) and enhanced state schemas.
 
-### Key Changes in v8.10.0
+### Key Changes in v8.11.0
 
-- **Component 1: DZP ROE Skill** - 9-step workflow for post-compaction recovery: protocol summary, state tracking, validation, and task continuation prompting
-- **Component 2: Slash Command** - `/dzp-roe` user-invocable command for instant DZP context restoration
-- **Component 3: State Schema Update** - Added `compaction_recovery` tracking to project-state.json (recovery count, history, timestamps)
-- **Component 4: Skill Registry Update** - SKILL_REGISTRY.md v3.0.0 and AGENT_SKILLS_MAP.yaml v4 with dzp-roe mapped to ALL 9 agents
-- **Component 5: Task Continuation** - Skill prompts agents to resume previous work using proper DZP workflow patterns (implementation routing, parallel/sequential patterns)
+- **Component 1: Session Management Skill** - 6 commands (`/session start|status|update|break|continue|end`) for unified work session lifecycle with checkpoint file syncing (dev-notes, project-state, domain.record, security-review, session-state)
+- **Component 2: TS Troubleshooting Tier System** - 9 commands across 5-tier hybrid bug resolution workflow with auto-escalation (`/ts_tier1|tier2|tier3|tier4|codered|status|history|escalate|complete`)
+- **Component 3: DZP ROE v2.0.0** - 40% size reduction (510→306 lines), streamlined to 5-step workflow with parallel enforcement, anti-pattern examples
+- **Component 4: State Schema Updates** - Added troubleshooting_session and troubleshooting_statistics to project-state.json, new troubleshooting-history.json for session archival
+- **Component 5: Skill Registry Update** - SKILL_REGISTRY.md v3.0.0 → v3.2.0 with session and ts skills (both Gojo-owned with domain.record.md write access)
 
 ### Previous Release (v8.9.0)
 

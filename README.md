@@ -1,223 +1,356 @@
-# Gojo Operational Procedures Index
-<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
+# Domain Zero Protocol
+<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 
-**Purpose**: Central index of all Gojo (Mission Control) operational procedures and implementation guides.
-**Version**: 8.10.0
-**Updated**: 2025-12-25
+**Version**: 8.11.0 | **Last Updated**: 2025-12-28
 
----
-
-## 📚 Available Procedures
-
-| Procedure | File | Lines | Purpose |
-|-----------|------|-------|---------|
-| **Core Workflows** | [OPERATIONAL_PROCEDURES.md](./protocol/gojo-procedures/OPERATIONAL_PROCEDURES.md) | ~500 | Mission Control interface options and step-by-step procedures |
-| **Session Monitoring** | [SESSION_MONITORING.md](./protocol/gojo-procedures/SESSION_MONITORING.md) | ~430 | Work session tracking, alerts, and enforcement implementation |
-| **Custom Agent Security** | [CUSTOM_AGENT_SECURITY.md](./protocol/gojo-procedures/CUSTOM_AGENT_SECURITY.md) | ~640 | Security validation and monitoring for custom agents |
-| **Snapshot Integration** | [SNAPSHOT_INTEGRATION.md](./protocol/gojo-procedures/SNAPSHOT_INTEGRATION.md) | ~200 | Tier-based automatic snapshot creation |
-| **DZP Rules of Engagement** | [protocol/skills/dzp-roe.md](protocol/skills/dzp-roe.md) | ~510 | Post-compaction recovery: Restore full DZP context after context compaction |
+A nine-agent AI development system inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
 
 ---
 
-## 🔄 Core Workflows (OPERATIONAL_PROCEDURES.md)
+## 🎯 What is Domain Zero Protocol?
 
-### Procedure 1: Resume Current Project
-- Load context from project-state.json
-- Compile mission briefs for all agents
-- Deploy agents based on current status
-- **When to use**: Daily startup, returning to work
+Domain Zero Protocol (DZP) is a structured framework for AI-assisted development using specialized agents, each with distinct roles and expertise. The protocol enforces test-first development, security reviews, and collaborative workflows while maintaining safety through escape paths and emergency stops.
 
-### Procedure 2: New Project Initialization
-- PSD-guided setup
-- Create complete folder structure
-- Initialize state management
-- Brief team on mission
-- **When to use**: Starting new projects
-
-### Procedure 3: Trigger 19 Intelligence Report
-- Compile passive observations
-- Agent performance analysis
-- Strategic recommendations
-- Protocol compliance status
-- **When to use**: Weekly reviews, effectiveness assessment
-
-### Procedure 4: Resume from Emergency Stop
-- Load checkpoint from kill switch
-- Show what was in progress
-- Clear protection mode after confirmation
-- **When to use**: After kill switch activation
-
-### Procedure 5: Save & Break Protocol
-- Create session snapshot
-- Update dev-notes.md with checkpoint
-- Commit partial work (WIP commit)
-- Record break in session state
-- **When to use**: Extended sessions, before risky operations
-
-### Procedure 6: Resume Protocol
-- Resume session and check status
-- Show last checkpoint
-- Present continuation options
-- **When to use**: Returning after break
-
-### Slash Command: /dzp-roe (DZP Rules of Engagement)
-- Restore full DZP protocol context after compaction
-- Output complete 9-agent system rules
-- Update state tracking (project-state.json, domain.record.md, dev-notes.md)
-- Run protocol validation
-- Prompt agent to continue previous work
-- **When to use**: Immediately after context compaction when agents forget DZP rules
-- **Invocation**: `/dzp-roe` or `skill: "dzp-roe"`
+**Key Features**:
+- 🤖 Nine specialized agents with clear responsibilities
+- 🔐 Built-in security reviews (OWASP Top 10)
+- ✅ Test-driven development (TDD) workflows
+- 🎨 UX and accessibility focus (WCAG 2.2)
+- 📊 Three-tier workflow system
+- 🛡️ Safety-first design with escape paths
+- 🔄 Session monitoring and fatigue detection
+- 📝 Skills system for common operations
 
 ---
 
-## ⏰ Session Monitoring (SESSION_MONITORING.md)
+## 👥 The Nine Agents
 
-### Implementation Guide
-Complete technical guide for integrating `session_monitor.py` with real-time tracking:
-- Session initialization and state management
-- Alert trigger logic (4h, 6h, 8h thresholds)
-- User choice handling (save & break vs continue)
-- High-risk operation blocking
-- Session lifecycle management
+### Core Four
 
-### Key Features
-- ✅ Real-time tracking via `session_monitor.py`
-- ✅ Persistent state in `session-state.json`
-- ✅ Template rendering with actual data
-- ✅ High-risk operation blocking enforcement
-- ✅ Integration with Passive Observer
+**Satoru Gojo** - Mission Control
+[`protocol/gojo.agent.md`](protocol/gojo.agent.md)
+- Project lifecycle management
+- Protocol guardian and coordination
+- Session monitoring and checkpoints
+- Passive observation and intelligence reports
 
-### When to Reference
-- On every Gojo invocation (mandatory session check)
-- Before high-risk operations
-- When extended sessions detected
-- For Trigger 19 session metrics
+**Yuuji Itadori** - Implementation Specialist
+[`protocol/yuuji.agent.md`](protocol/yuuji.agent.md)
+- Test-first development (TDD)
+- ALL code implementation routes through Yuuji
+- Feature implementation across all tiers
+- Dev notes and documentation
 
----
+**Megumi Fushiguro** - Security Analyst
+[`protocol/megumi.agent.md`](protocol/megumi.agent.md)
+- OWASP Top 10 security reviews
+- Threat modeling and SEC-ID tracking
+- Security-review.md documentation
+- Routes remediation to Yuuji via @remediation-required
 
-## 🛡️ Custom Agent Security (CUSTOM_AGENT_SECURITY.md)
+**Nobara Kugisaki** - Creative Strategy & UX
+[`protocol/nobara.agent.md`](protocol/nobara.agent.md)
+- User experience design
+- Product vision and strategy
+- Accessibility (WCAG 2.2)
+- Routes implementation to Yuuji via @implement-design
 
-### Security Components
-1. **validate-custom-agents.py** - Pre-invocation validation
-2. **custom_agent_monitor.py** - Runtime monitoring and enforcement
-3. **protocol.config.yaml** - Security policy configuration
-4. **Audit logs** - Tamper-evident activity tracking
+### Extended Four
 
-### Validation Checks
-- Namespace protection (custom-* pattern)
-- YAML sanitization (forbidden patterns)
-- Tool permissions (allowed tools only)
-- File integrity (size, format)
+**Aoi Todo** - Database & Backend Specialist
+[`protocol/todo.agent.md`](protocol/todo.agent.md)
+- Schema design and migrations
+- Query optimization and ORM configuration
+- Database architecture decisions
+- Routes implementation to Yuuji via @implementation
 
-### Monitoring Features
-- Quarantine status checks
-- Rate limiting (10 invocations/minute)
-- Invocation registration
-- Anomaly detection
+**Maki Zenin** - Performance Optimization Specialist
+[`protocol/maki.agent.md`](protocol/maki.agent.md)
+- Profiling and bundle analysis
+- Zero-overhead optimization philosophy
+- Performance audits and recommendations
+- Routes implementation to Yuuji via @implementation
 
-### When to Reference
-- Before custom agent invocation
-- When validation fails
-- For security policy enforcement
-- During quarantine operations
+**Panda** - Build & Integration Specialist
+[`protocol/panda.agent.md`](protocol/panda.agent.md)
+- CI/CD pipelines (GitHub Actions, GitLab CI)
+- Build system optimization
+- Docker and containerization
+- Routes implementation to Yuuji via @implementation
 
----
+**Toge Inumaki** - API & Communication Specialist
+[`protocol/inumaki.agent.md`](protocol/inumaki.agent.md)
+- REST, GraphQL, WebSocket design
+- OpenAPI specifications
+- Cursed Speech for declarative contracts
+- Routes implementation to Yuuji via @implementation
 
-## 📸 Snapshot Integration (SNAPSHOT_INTEGRATION.md)
+### Special Agent
 
-### Tier-Based Automation
-- **Tier 1**: Manual snapshots only
-- **Tier 2**: Automatic snapshot every 10 operations
-- **Tier 3**: Automatic snapshot after EACH operation
-- **All Tiers**: Automatic snapshot on tier changes
-
-### Integration Pattern
-Uses `snapshot_integration.py` to:
-1. Record operations
-2. Check snapshot thresholds
-3. Create snapshots automatically
-4. Track operation counts
-
-### When Operations Should Be Recorded
-- ✅ Feature implementation complete
-- ✅ Security review complete
-- ✅ Design work finished
-- ✅ Database operations done
-- ✅ Major milestones reached
-
-### When to Reference
-- After agent task completion
-- When tier changes
-- For snapshot policy enforcement
-- During feature delivery
+**Ryomen Sukuna** - System Update Adversary
+[`protocol/sukuna.agent.md`](protocol/sukuna.agent.md)
+- Protocol updates and version migrations (Gojo-invoked only)
+- Adversarial review and red-team analysis
+- Stress-testing changes and rollback verification
+- System integrity challenges
 
 ---
 
-## 🔗 Cross-References
+## 🚀 Quick Start
 
-### Related Files
-- **gojo.agent.md** - Main agent file (references procedures)
-- **protocol/skills/gojo/** - Optional/complex Gojo skills
-- **protocol.config.yaml** - Configuration for all procedures
-- **.protocol-state/session-state.json** - Session tracking state
-- **.protocol-state/project-state.json** - Project and tier state
+### 1. Installation
 
-### Integration Points
-- Procedures → Called from gojo.agent.md operational modes
-- Session Monitoring → Mandatory first invoke on Gojo activation
-- Custom Agent Security → Referenced during custom agent invocation
-- Snapshot Integration → Triggered after agent task completion
+**Fresh Install**:
+```bash
+# Clone or download release
+git clone https://github.com/DewyHRite/Domain-Zero-Protocol.git
+cd Domain-Zero-Protocol
 
----
+# Verify installation
+python scripts/verify-installation.py
 
-## 📖 Usage Guidelines
+# Sync templates
+python scripts/sync-templates.py
 
-### For Gojo (Mission Control)
-1. **Always reference** SESSION_MONITORING.md on first invoke
-2. **Consult** OPERATIONAL_PROCEDURES.md for workflow steps
-3. **Enforce** CUSTOM_AGENT_SECURITY.md for custom agents
-4. **Apply** SNAPSHOT_INTEGRATION.md after task completion
+# Read main protocol
+Read protocol/CLAUDE.md
+```
 
-### For Other Agents
-- ❌ **READ-ONLY** access to all procedures
-- ✅ Can reference procedures for context
-- ✅ Cannot modify procedures
-- ✅ Escalate to Gojo for procedural guidance
+**In-Place Upgrade**:
+See [IMPLEMENTATION_GUIDE.md](docs/installation/IMPLEMENTATION_GUIDE.md) for upgrade procedures.
 
-### For Users
-- ✅ Read procedures to understand Gojo's behavior
-- ✅ Reference procedures for troubleshooting
-- ✅ Modify with explicit authorization (USER authority)
-- ✅ Suggest improvements via protocol updates
+### 2. Invoke Your First Agent
 
----
+```bash
+# Mission Control (project initialization)
+Read protocol/gojo.agent.md
 
-## 🔄 Maintenance
+# Implementation (test-first development)
+Read protocol/yuuji.agent.md and implement user authentication tier 2
 
-**Last Updated**: 2025-12-25
-**Maintained By**: Ryomen Sukuna (System Update Adversary)
-**Review Cycle**: With each protocol version update
+# Security Review (OWASP Top 10)
+Read protocol/megumi.agent.md and review authentication module
 
-**Update Triggers**:
-- Protocol version increment
-- Sukuna security review findings
-- Gojo workflow enhancements
-- User feedback integration
+# Creative/UX (design and accessibility)
+Read protocol/nobara.agent.md and design login flow WCAG 2.2
+```
 
----
+### 3. Using Slash Commands (Optional)
 
-## 📝 Change Log
-
-| Date | Version | Changes |
-|------|---------|---------|
-| 2025-12-25 | 8.10.0 | Added DZP Rules of Engagement (dzp-roe skill + slash command) for post-compaction recovery |
-| 2025-12-17 | 8.8.0 | Created README index, moved INTERNAL guides to CORE |
-| 2025-12-06 | 8.8.0 | Added SNAPSHOT_INTEGRATION.md |
-| 2025-12-03 | 8.7.0 | Added CUSTOM_AGENT_SECURITY.md |
-| 2025-12-03 | 8.7.0 | Added SESSION_MONITORING.md (Sukuna's fix) |
-| 2025-12-02 | 8.6.0 | Created OPERATIONAL_PROCEDURES.md |
+If using Claude Code with slash commands installed:
+```bash
+/gojo              # Mission Control
+/yuuji             # Implementation
+/megumi            # Security
+/nobara            # Creative/UX
+/dzp-roe           # Post-compaction recovery
+/session start     # Begin work session
+/ts tier1          # Troubleshooting tier 1
+```
 
 ---
 
-**For detailed implementation, see individual procedure files.**
+## 📊 Three-Tier Workflow System
+
+| Tier | Name | Testing | Security | Use Cases |
+|------|------|---------|----------|-----------|
+| **Tier 1** | Rapid | None | None | Prototypes, experiments, learning |
+| **Tier 2** | Standard | TDD (unit + integration) | OWASP review | Production features [DEFAULT] |
+| **Tier 3** | Critical | Enhanced (TDD + E2E) | Multi-model review | Auth, payments, sensitive data |
+
+**Flag Usage**:
+```bash
+Read protocol/yuuji.agent.md and implement payment processing --tier critical
+```
+
+---
+
+## 🔑 Key Restrictions
+
+**Implementation Routing**:
+- ❌ **Nobara, Todo, Maki, Panda, Inumaki CANNOT write code**
+- ✅ **MUST route through Yuuji** via `@implementation` handoff
+- ✅ **Only Yuuji, Gojo, Sukuna have Edit/Write/Bash for code**
+
+**Domain Record Access**:
+- ✅ **Gojo + Sukuna ONLY** have READ/WRITE `.dzp-domain/domain.record.md`
+- ❌ **All other 7 agents DENIED**
+
+**Agent File Protection**:
+- ❌ **No agent** may edit another agent's `.agent.md` file
+- ✅ **READ-ONLY** access for study
+- ✅ **Changes require** User direct edit OR Gojo coordination
+
+---
+
+## 🛠️ Skills System
+
+**Active Skills** (v8.11.0):
+
+| Skill | Commands | Purpose | Owner |
+|-------|----------|---------|-------|
+| **session** | start, status, update, break, continue, end | Work session management | Gojo |
+| **ts** | tier1-4, codered, status, history, escalate, complete | Troubleshooting tiers | Gojo |
+| **dzp-roe** | N/A | Post-compaction recovery | Gojo |
+
+**Invocation**:
+```bash
+skill: "session"
+args: "start"
+
+# Or via slash command
+/session start
+/ts tier1
+/dzp-roe
+```
+
+See [SKILL_REGISTRY.md](protocol/skills/SKILL_REGISTRY.md) for all skills.
+
+---
+
+## 📚 Documentation Structure
+
+### Core Protocol
+- **[protocol/CLAUDE.md](protocol/CLAUDE.md)** - Main protocol file (START HERE)
+- **[AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md)** - Complete installation guide for AI assistants
+- **[protocol.config.yaml](protocol.config.yaml)** - Configuration settings
+
+### Agent Files
+- **[protocol/*.agent.md](protocol/)** - Individual agent specifications (9 files)
+
+### Procedures & Modules
+- **[protocol/gojo-procedures/](protocol/gojo-procedures/)** - Mission Control operational procedures
+- **[protocol/modules/](protocol/modules/)** - Shared protocol modules (safety, escape paths, etc.)
+
+### Skills
+- **[protocol/skills/](protocol/skills/)** - Skill definitions and registry
+
+### Documentation
+- **[docs/guides/](docs/guides/)** - Usage guides and tutorials
+- **[docs/installation/](docs/installation/)** - Installation and implementation guides
+- **[docs/reference/](docs/reference/)** - Reference documentation
+
+### State Management
+- **[.protocol-state/](/.protocol-state/)** - Runtime state files (JSON, logs, checkpoints)
+- **[.dzp-domain/](/.dzp-domain/)** - Domain record (Gojo + Sukuna only)
+
+---
+
+## 🔄 Workflow Example
+
+**Implementing a New Feature** (Tier 2 - Standard):
+
+1. **Start Session**:
+   ```bash
+   /session start
+   ```
+
+2. **Invoke Yuuji for Implementation**:
+   ```bash
+   Read protocol/yuuji.agent.md and implement password reset feature tier 2
+   ```
+
+3. **Yuuji's TDD Workflow**:
+   - Writes failing tests first
+   - Implements feature to pass tests
+   - Routes to Megumi for security review via `@security-review`
+
+4. **Megumi's Security Review**:
+   - Reviews against OWASP Top 10
+   - Documents findings in security-review.md
+   - Routes remediation to Yuuji via `@remediation-required` if issues found
+
+5. **Completion**:
+   - Tests pass, security clean
+   - Dev notes updated
+   - Session checkpoint via `/session update`
+
+---
+
+## 🛡️ Safety Features
+
+**Emergency Stop Protocol**:
+- Immediate work halt on user command
+- State preservation in `.dzp-killswitch/`
+- Resume from last checkpoint
+
+**Escape Paths**:
+- All agents have fallback strategies
+- Never hang or fail silently
+- Always ask rather than guess
+
+**Session Monitoring**:
+- 4-hour initial alert
+- 6-hour critical threshold (high-risk operation blocking)
+- 8-hour maximum (read-only mode enforcement)
+
+**Validation**:
+- Protocol validation via `scripts/validate-protocol.py`
+- Pre-commit hooks for state file schema compliance
+- GitHub Actions workflow for CI validation
+
+---
+
+## 📦 What's New in v8.11.0
+
+### Session Management Skill
+Unified interface for work session tracking via `/session` slash command:
+- 6 commands: start, status, update, break, continue, end
+- Checkpoint file syncing (dev-notes, project-state, domain.record, security-review, session-state)
+- Gojo-owned skill with domain.record.md write access
+
+### TS Troubleshooting Tier System
+5-tier hybrid bug resolution workflow via `/ts` slash command:
+- Tier 1-4: Progressive escalation (Yuuji + Megumi, then + support agents)
+- Tier 5 (Codered): All 9 agents, mandatory plan mode
+- Hybrid escalation: severity-based initial tier + auto-escalation after failed attempts
+- 9 commands: tier1, tier2, tier3, tier4, codered, status, history, escalate, complete
+
+### DZP ROE v2.0.0 (Refactored)
+- 46.9% size reduction (15KB → 8.5KB) for faster post-compaction reference
+- Parallel workflow enforcement (validation checklist, imperative MUST/MUST NOT language)
+- Anti-pattern examples (show what NOT to do)
+- Gojo-owned (was ALL agents)
+
+See [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md#whats-new-in-v8110) for full changelog.
+
+---
+
+## 🔗 Links & Resources
+
+**Canonical Source**: https://github.com/DewyHRite/Domain-Zero-Protocol
+
+**Documentation**:
+- [Installation Guide](docs/installation/IMPLEMENTATION_GUIDE.md)
+- [Quick Start](PROTOCOL_QUICKSTART.md)
+- [FAQ](docs/FAQ.md)
+- [Security Policy](SECURITY.md)
+
+**Agent Specifications**:
+- [Gojo (Mission Control)](protocol/gojo.agent.md)
+- [Yuuji (Implementation)](protocol/yuuji.agent.md)
+- [Megumi (Security)](protocol/megumi.agent.md)
+- [Nobara (Creative/UX)](protocol/nobara.agent.md)
+- [Todo (Database)](protocol/todo.agent.md)
+- [Maki (Performance)](protocol/maki.agent.md)
+- [Panda (Build/CI)](protocol/panda.agent.md)
+- [Inumaki (API)](protocol/inumaki.agent.md)
+- [Sukuna (System Updates)](protocol/sukuna.agent.md)
+
+---
+
+## 📜 License
+
+Domain Zero Protocol is released under the MIT License. See [LICENSE](LICENSE) for details.
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please read the contribution guidelines and submit pull requests to the canonical repository.
+
+---
+
+**Domain Zero Protocol v8.11.0**
+**AI-Assisted Development Done Right**
+
