@@ -87,6 +87,33 @@ safety:
     debounce_threshold_minutes: 30
     allow_runtime_override: true  # Enable CLI --debounce flag
 
+    # Alert Thresholds (v8.12.0 - Configuration Enhancement)
+    # Customize when session alerts are issued
+    # All values in hours unless specified
+    alert_thresholds:
+      initial_alert_hours: 4              # First alert after this many hours (default: 4)
+      critical_session_hours: 6           # Session becomes critical after this many hours (default: 6)
+      max_continuous_hours: 8             # Maximum recommended continuous work (default: 8)
+      escalated_alert_minutes: 45         # Alert interval after "continue" choice (default: 45)
+      # Valid ranges (enforced in session_monitor.py):
+      # - initial_alert_hours: 2-12
+      # - critical_session_hours: 4-16
+      # - max_continuous_hours: 6-24
+      # - escalated_alert_minutes: 15-120
+
+    # Alert Message Customization (v8.12.0 - Configuration Enhancement)
+    # Customize alert messages for company/team context
+    # Leave null to use default messages
+    alert_customization:
+      company_policy: null
+        # Example: "Our team follows a 4-hour deep work policy with mandatory breaks."
+      break_recommendation: null
+        # Example: "Take a 15-minute walk, grab a coffee, or do some stretches."
+      late_night_warning: null
+        # Example: "Late-night coding increases bug rates by 3x. Consider resuming tomorrow."
+      critical_warning: null
+        # Example: "CRITICAL: You've been working for {hours} hours. Company policy requires immediate break."
+
     # High-risk operation patterns (configurable)
     # NOTE: These patterns override session_monitor.py defaults when present.
     # Keep this list comprehensive to match test coverage expectations.

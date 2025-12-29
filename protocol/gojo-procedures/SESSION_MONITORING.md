@@ -586,13 +586,201 @@ python .protocol-state/session_monitor.py record-choice <user_choice>
 
 ---
 
+## ⚙️ CONFIGURATION OPTIONS (v8.12.0)
+
+Session monitoring is highly configurable via `protocol.config.yaml`. Below are the v8.12.0 configuration enhancements that allow customization of alert timing, messages, and behavior.
+
+### 1. Configurable Alert Thresholds
+
+**Location**: `protocol.config.yaml` → `safety.session_tracking.alert_thresholds`
+
+Customize when session alerts are issued:
+
+```yaml
+safety:
+  session_tracking:
+    alert_thresholds:
+      initial_alert_hours: 4              # First alert after this many hours (range: 2-12)
+      critical_session_hours: 6           # Session becomes critical (range: 4-16)
+      max_continuous_hours: 8             # Maximum recommended work (range: 6-24)
+      escalated_alert_minutes: 45         # Alert interval after "continue" (range: 15-120)
+```
+
+**Validation**: All values are validated with safe fallbacks. Invalid values trigger warnings and use defaults.
+
+**Use Cases**:
+- **Short Sessions**: Set `initial_alert_hours: 2` for rapid feedback
+- **Deep Work**: Set `initial_alert_hours: 6` for longer focus periods
+- **Team Policy**: Set `critical_session_hours: 4` for strict work limits
+
+### 2. Alert Message Customization
+
+**Location**: `protocol.config.yaml` → `safety.session_tracking.alert_customization`
+
+Customize alert messages for company/team context:
+
+```yaml
+safety:
+  session_tracking:
+    alert_customization:
+      company_policy: "Our team follows a 4-hour deep work policy with mandatory breaks."
+      break_recommendation: "Take a 15-minute walk, grab a coffee, or do some stretches."
+      late_night_warning: "Late-night coding increases bug rates by 3x. Consider resuming tomorrow."
+      critical_warning: "CRITICAL: You've been working for {hours} hours. Company policy requires immediate break."
+```
+
+**Placeholders**:
+- `{hours}` - Replaced with actual session duration (in critical_warning only)
+
+**Default Behavior**: If `null`, built-in messages are used.
+
+**Use Cases**:
+- **Company Branding**: Custom messages matching company culture
+- **Remote Teams**: Localized messages for different time zones
+- **Health Initiatives**: Custom wellness messaging
+
+### 3. Session Monitoring Enable/Disable Flag
+
+**Location**: `protocol.config.yaml` → `safety.session_tracking.enabled`
+
+Master toggle for the entire session monitoring system:
+
+```yaml
+safety:
+  session_tracking:
+    enabled: true  # Set to false to disable all monitoring
+```
+
+**Behavior When Disabled**:
+- ✅ All session tracking methods return immediately
+- ✅ No state files modified
+- ✅ No alerts issued
+- ✅ High-risk operation blocking disabled
+- ⚠️  **Security implications**: Safety features inactive
+
+**Default**: `true` (monitoring enabled)
+
+**Use Cases**:
+- **Testing**: Disable during automated test runs
+- **CI/CD**: Disable in non-interactive environments
+- **User Preference**: Honor user's explicit opt-out
+
+**⚠️  Security Note**: Disabling monitoring removes safety protections. See Megumi's security review (SEC-LOW-002).
+
+### 4. Debounce Threshold (v8.12.0 - PATCH-SESSION-004)
+
+**Location**: `protocol.config.yaml` → `safety.session_tracking.debounce_threshold_minutes`
+
+Prevent alert spam during rapid interactions:
+
+```yaml
+safety:
+  session_tracking:
+    debounce_threshold_minutes: 30      # Range: 15-60 (default: 30)
+    allow_runtime_override: true        # Enable CLI --debounce flag
+```
+
+**CLI Override**:
+```bash
+python session_monitor.py check --debounce 15  # Override to 15 minutes
+```
+
+**Use Cases**:
+- **Rapid Prototyping**: Higher debounce (45-60 min) to reduce interruptions
+- **Critical Work**: Lower debounce (15-20 min) for frequent check-ins
+
+---
+
+## 📖 CONFIGURATION EXAMPLES
+
+### Example 1: Strict Team Policy (2-hour sessions)
+
+```yaml
+safety:
+  session_tracking:
+    enabled: true
+    alert_thresholds:
+      initial_alert_hours: 2              # Alert after 2 hours
+      critical_session_hours: 4           # Critical at 4 hours
+      max_continuous_hours: 6             # Hard limit at 6 hours
+      escalated_alert_minutes: 30         # Re-alert every 30 min
+    alert_customization:
+      company_policy: "Our team policy requires breaks every 2 hours."
+      critical_warning: "You've worked {hours} hours. Take a break immediately."
+```
+
+### Example 2: Flexible Deep Work (6-hour sessions)
+
+```yaml
+safety:
+  session_tracking:
+    enabled: true
+    alert_thresholds:
+      initial_alert_hours: 6              # Alert after 6 hours
+      critical_session_hours: 10          # Critical at 10 hours
+      max_continuous_hours: 12            # Hard limit at 12 hours
+      escalated_alert_minutes: 60         # Re-alert every hour
+    alert_customization:
+      company_policy: null                # Use defaults
+      break_recommendation: "Long session detected. Take a 20-minute break."
+```
+
+### Example 3: Disabled for CI/CD
+
+```yaml
+safety:
+  session_tracking:
+    enabled: false  # All monitoring disabled
+```
+
+---
+
+## 🔍 TROUBLESHOOTING CONFIGURATION
+
+### Issue: Alerts Not Firing
+
+**Possible Causes**:
+1. `enabled: false` - Monitoring disabled
+2. Debounce threshold too high - Alerts suppressed
+3. Invalid threshold values - Falling back to defaults silently
+
+**Diagnosis**:
+```bash
+# Check enabled flag
+grep "enabled:" protocol.config.yaml | grep session_tracking
+
+# Check thresholds
+grep -A 4 "alert_thresholds:" protocol.config.yaml
+
+# Test configuration
+python session_monitor.py check --verbose
+```
+
+### Issue: Custom Messages Not Appearing
+
+**Possible Causes**:
+1. Messages set to `null` - Using defaults
+2. YAML syntax error - Config not loading
+
+**Diagnosis**:
+```bash
+# Validate YAML syntax
+python -c "import yaml; yaml.safe_load(open('protocol.config.yaml'))"
+
+# Check custom messages
+grep -A 5 "alert_customization:" protocol.config.yaml
+```
+
+---
+
 **Questions? Check:**
 - `session_monitor.py` source code (fully documented)
 - `protocol.config.yaml` safety section
+- Megumi's security review: `.protocol-state/security-review-v8.12.0.md`
 - Sukuna's red team report (shows what was broken, what's fixed)
 - `protocol/skills/session-check.md` - Auto-invoked enforcement skill
 - `internal-docs/Code_review_feedback.md` - PATCH-SESSION-003 investigation
 
 **Last Updated:** 2025-12-29
 **Maintained By:** Ryomen Sukuna (System Update Adversary)
-**Authority:** v8.7.0 Work Session Monitoring Fix + PATCH-SESSION-003 Enforcement
+**Authority:** v8.7.0 Work Session Monitoring Fix + PATCH-SESSION-003 Enforcement + v8.12.0 Configuration Enhancements

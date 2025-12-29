@@ -42,6 +42,11 @@ class SessionMonitor:
         # Load high-risk operation literals (no regex, safer and faster)
         self._high_risk_literals = self._load_high_risk_literals()
 
+        # Load configuration (v8.12.0 - Configuration Enhancements)
+        self.enabled = self._load_enabled_flag()
+        self.alert_thresholds = self._load_alert_thresholds()
+        self.alert_customization = self._load_alert_customization()
+
         self._ensure_state_file()
 
     def _load_high_risk_literals(self) -> List[str]:
@@ -157,6 +162,171 @@ class SessionMonitor:
         # Default fallback
         return 30
 
+    def _load_enabled_flag(self) -> bool:
+        """
+        Load session monitoring enabled flag from protocol.config.yaml.
+
+        v8.12.0 - Configuration Enhancement
+        Master toggle for session monitoring system.
+
+        Returns:
+            True if session monitoring is enabled, False otherwise (default: True)
+        """
+        # Default: enabled
+        default = True
+
+        # Try to load from config file
+        if self.config_file.exists():
+            try:
+                import yaml
+                with open(self.config_file, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f)
+
+                safety_config = config.get('safety', {})
+                session_tracking = safety_config.get('session_tracking', {})
+                enabled = session_tracking.get('enabled')
+
+                if enabled is not None:
+                    return bool(enabled)
+
+            except Exception as e:
+                # Silent fallback to default
+                pass
+
+        # Default fallback
+        return default
+
+    def _load_alert_thresholds(self) -> Dict:
+        """
+        Load alert threshold configuration from protocol.config.yaml.
+
+        v8.12.0 - Configuration Enhancement
+        Allows customization of when session alerts are issued.
+
+        Returns:
+            Dict with threshold values in minutes:
+            {
+                'initial_alert_minutes': 240,      # 4 hours
+                'critical_session_minutes': 360,   # 6 hours
+                'max_continuous_minutes': 480,     # 8 hours
+                'escalated_alert_minutes': 45      # 45 minutes
+            }
+        """
+        # Default thresholds (fallback if config unavailable)
+        defaults = {
+            'initial_alert_minutes': 240,      # 4 hours
+            'critical_session_minutes': 360,   # 6 hours
+            'max_continuous_minutes': 480,     # 8 hours
+            'escalated_alert_minutes': 45      # 45 minutes
+        }
+
+        # Try to load from config file
+        if self.config_file.exists():
+            try:
+                import yaml
+                with open(self.config_file, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f)
+
+                safety_config = config.get('safety', {})
+                session_tracking = safety_config.get('session_tracking', {})
+                alert_thresholds = session_tracking.get('alert_thresholds', {})
+
+                if alert_thresholds:
+                    # Extract and validate each threshold
+                    result = {}
+
+                    # initial_alert_hours (2-12 range)
+                    initial_hours = alert_thresholds.get('initial_alert_hours', 4)
+                    if 2 <= initial_hours <= 12:
+                        result['initial_alert_minutes'] = initial_hours * 60
+                    else:
+                        print(f"[!] Invalid initial_alert_hours: {initial_hours}. Must be 2-12. Using default: 4")
+                        result['initial_alert_minutes'] = 240
+
+                    # critical_session_hours (4-16 range)
+                    critical_hours = alert_thresholds.get('critical_session_hours', 6)
+                    if 4 <= critical_hours <= 16:
+                        result['critical_session_minutes'] = critical_hours * 60
+                    else:
+                        print(f"[!] Invalid critical_session_hours: {critical_hours}. Must be 4-16. Using default: 6")
+                        result['critical_session_minutes'] = 360
+
+                    # max_continuous_hours (6-24 range)
+                    max_hours = alert_thresholds.get('max_continuous_hours', 8)
+                    if 6 <= max_hours <= 24:
+                        result['max_continuous_minutes'] = max_hours * 60
+                    else:
+                        print(f"[!] Invalid max_continuous_hours: {max_hours}. Must be 6-24. Using default: 8")
+                        result['max_continuous_minutes'] = 480
+
+                    # escalated_alert_minutes (15-120 range)
+                    escalated_mins = alert_thresholds.get('escalated_alert_minutes', 45)
+                    if 15 <= escalated_mins <= 120:
+                        result['escalated_alert_minutes'] = escalated_mins
+                    else:
+                        print(f"[!] Invalid escalated_alert_minutes: {escalated_mins}. Must be 15-120. Using default: 45")
+                        result['escalated_alert_minutes'] = 45
+
+                    return result
+
+            except Exception as e:
+                # Silent fallback to defaults
+                pass
+
+        # Default fallback
+        return defaults
+
+    def _load_alert_customization(self) -> Dict:
+        """
+        Load custom alert messages from protocol.config.yaml.
+
+        v8.12.0 - Configuration Enhancement
+        Allows customization of alert messages for company/team context.
+
+        Returns:
+            Dict with custom messages (None values mean use defaults):
+            {
+                'company_policy': str or None,
+                'break_recommendation': str or None,
+                'late_night_warning': str or None,
+                'critical_warning': str or None
+            }
+        """
+        # Default: all None (use built-in messages)
+        defaults = {
+            'company_policy': None,
+            'break_recommendation': None,
+            'late_night_warning': None,
+            'critical_warning': None
+        }
+
+        # Try to load from config file
+        if self.config_file.exists():
+            try:
+                import yaml
+                with open(self.config_file, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f)
+
+                safety_config = config.get('safety', {})
+                session_tracking = safety_config.get('session_tracking', {})
+                customization = session_tracking.get('alert_customization', {})
+
+                if customization:
+                    # Extract custom messages (preserving None for unset values)
+                    return {
+                        'company_policy': customization.get('company_policy'),
+                        'break_recommendation': customization.get('break_recommendation'),
+                        'late_night_warning': customization.get('late_night_warning'),
+                        'critical_warning': customization.get('critical_warning')
+                    }
+
+            except Exception as e:
+                # Silent fallback to defaults
+                pass
+
+        # Default fallback
+        return defaults
+
     def _ensure_state_file(self):
         """Ensure session state file exists with proper schema."""
         if not self.state_file.exists():
@@ -170,9 +340,9 @@ class SessionMonitor:
                 raise RuntimeError(f"Failed to create session state file at {self.state_file}: {e}")
 
     def _default_state(self) -> Dict:
-        """Return default session state structure."""
+        """Return default session state structure (v8.12.0 - uses loaded thresholds)."""
         return {
-            "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.8.0)",
+            "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.12.0)",
             "current_session": {
                 "session_id": None,
                 "session_active": False,
@@ -196,16 +366,16 @@ class SessionMonitor:
                 "breaks_chosen": 0
             },
             "thresholds": {
-                "initial_alert_minutes": 240,
-                "escalated_alert_minutes": 45,
-                "critical_session_minutes": 360,
-                "max_continuous_minutes": 480,
+                "initial_alert_minutes": self.alert_thresholds['initial_alert_minutes'],
+                "escalated_alert_minutes": self.alert_thresholds['escalated_alert_minutes'],
+                "critical_session_minutes": self.alert_thresholds['critical_session_minutes'],
+                "max_continuous_minutes": self.alert_thresholds['max_continuous_minutes'],
                 "late_night_hour": 22,
                 "minimum_break_minutes": 15
             },
             "session_history": [],
             "last_updated": None,
-            "protocol_version": "8.8.0"
+            "protocol_version": "8.12.0"
         }
 
     def load_state(self) -> Dict:
@@ -247,9 +417,15 @@ class SessionMonitor:
         """
         Start a new work session or continue existing one.
 
+        v8.12.0 - Respects enabled flag
+
         Returns:
-            Updated state with session initialized
+            Updated state with session initialized, or default state if disabled
         """
+        # Early return if session monitoring is disabled (v8.12.0)
+        if not self.enabled:
+            return self._default_state()
+
         state = self.load_state()
         now = datetime.now()
 
@@ -300,16 +476,22 @@ class SessionMonitor:
         """
         Record a new interaction in the current session.
 
+        v8.12.0 - Respects enabled flag
+
         Args:
             _retry_count: Internal retry counter (do not set manually)
             _max_retries: Maximum retries for session reset (default: 1)
 
         Returns:
-            Updated state with interaction timestamp
+            Updated state with interaction timestamp, or default state if disabled
 
         Raises:
             RuntimeError: If session cannot be started/reset after max retries
         """
+        # Early return if session monitoring is disabled (v8.12.0)
+        if not self.enabled:
+            return self._default_state()
+
         if _retry_count > _max_retries:
             raise RuntimeError("Exceeded maximum retries to reset session. Session state may be corrupted.")
 
@@ -362,6 +544,8 @@ class SessionMonitor:
         """
         Check if a work session alert should be issued.
 
+        v8.12.0 - Respects enabled flag
+
         Args:
             debounce_override: CLI --debounce argument (v8.12.0)
 
@@ -369,6 +553,10 @@ class SessionMonitor:
             (should_alert, alert_level, alert_context)
             alert_level: "standard", "escalated", "critical"
         """
+        # Early return if session monitoring is disabled (v8.12.0)
+        if not self.enabled:
+            return False, None, {}
+
         state = self.load_state()
 
         if not state['current_session']['session_active']:
@@ -455,21 +643,25 @@ class SessionMonitor:
         """
         Render work session alert with actual data.
 
+        v8.12.0 - Enhanced with custom message injection
+
         Args:
             context: Alert context from check_alert_needed()
 
         Returns:
-            Rendered alert text with placeholders replaced
+            Rendered alert text with placeholders replaced and custom messages injected
         """
         if not self.template_file.exists():
-            # Return minimal fallback template
+            # Return minimal fallback template with custom messages
+            custom_msg = self._inject_custom_messages(context)
+
             return f"""
 [!] Extended Work Session Detected
 
 **Duration:** {context.get('duration_formatted', 'Unknown')}
 **Project:** {self._get_project_name()}
 
-You have been working for an extended period. Consider taking a break to maintain productivity and reduce errors.
+{custom_msg if custom_msg else 'You have been working for an extended period. Consider taking a break to maintain productivity and reduce errors.'}
 
 **Options:**
 1. Save progress and take a break (recommended)
@@ -500,18 +692,30 @@ Template file not found at: {self.template_file}
         for placeholder, value in replacements.items():
             rendered = rendered.replace(placeholder, str(value))
 
+        # Inject custom messages (v8.12.0)
+        custom_msg = self._inject_custom_messages(context)
+        if custom_msg:
+            # Append custom messages after the standard template
+            rendered += f"\n\n---\n\n{custom_msg}"
+
         return rendered
 
     def record_user_choice(self, choice: str) -> Dict:
         """
         Record user's response to work session alert.
 
+        v8.12.0 - Respects enabled flag
+
         Args:
             choice: "save_and_break" or "continue"
 
         Returns:
-            Updated state
+            Updated state, or default state if disabled
         """
+        # Early return if session monitoring is disabled (v8.12.0)
+        if not self.enabled:
+            return self._default_state()
+
         # Validate input
         if choice not in ["save_and_break", "continue"]:
             raise ValueError(f"Invalid choice '{choice}'. Must be 'save_and_break' or 'continue'.")
@@ -543,12 +747,18 @@ Template file not found at: {self.template_file}
         """
         Record that user took a break.
 
+        v8.12.0 - Respects enabled flag
+
         Args:
             duration_minutes: Reported break duration (optional)
 
         Returns:
-            Updated state
+            Updated state, or default state if disabled
         """
+        # Early return if session monitoring is disabled (v8.12.0)
+        if not self.enabled:
+            return self._default_state()
+
         state = self.load_state()
         now = datetime.now()
 
@@ -572,9 +782,15 @@ Template file not found at: {self.template_file}
         """
         End the current work session and archive it.
 
+        v8.12.0 - Respects enabled flag
+
         Returns:
-            Updated state with session ended
+            Updated state with session ended, or default state if disabled
         """
+        # Early return if session monitoring is disabled (v8.12.0)
+        if not self.enabled:
+            return self._default_state()
+
         state = self.load_state()
 
         if state['current_session']['session_active']:
@@ -588,14 +804,20 @@ Template file not found at: {self.template_file}
         """
         Check if a command is considered high-risk using literal string matching.
 
+        v8.12.0 - Respects enabled flag
+
         Non-string or empty commands are treated as not high-risk.
 
         Args:
             command: Command string to check (None or empty treated as non-high-risk)
 
         Returns:
-            True if command is high-risk
+            True if command is high-risk, False if disabled or non-high-risk
         """
+        # Early return if session monitoring is disabled (v8.12.0)
+        if not self.enabled:
+            return False
+
         # Guard: Treat None, non-string, or empty/whitespace as non-high-risk
         if not isinstance(command, str) or not command.strip():
             return False
@@ -719,6 +941,11 @@ Template file not found at: {self.template_file}
 
     def _get_break_recommendation(self, context: Dict) -> str:
         """Generate break recommendation based on context."""
+        # Use custom message if configured (v8.12.0)
+        if self.alert_customization['break_recommendation']:
+            return self.alert_customization['break_recommendation']
+
+        # Default recommendations
         duration = context.get('duration_minutes', 0)
         is_late = context.get('is_late_night', False)
 
@@ -732,6 +959,39 @@ Template file not found at: {self.template_file}
             return "[LATE] Late night work - consider ending session"
         else:
             return "Continue with awareness"
+
+    def _inject_custom_messages(self, context: Dict) -> str:
+        """
+        Inject custom alert messages from configuration.
+
+        v8.12.0 - Configuration Enhancement
+
+        Args:
+            context: Alert context with duration_minutes, is_late_night, etc.
+
+        Returns:
+            Formatted custom message string, or empty string if no custom messages
+        """
+        messages = []
+        duration_hours = context.get('duration_minutes', 0) / 60
+        is_late = context.get('is_late_night', False)
+        is_critical = duration_hours >= (self.alert_thresholds['critical_session_minutes'] / 60)
+
+        # Company policy message
+        if self.alert_customization['company_policy']:
+            messages.append(f"**Company Policy:** {self.alert_customization['company_policy']}")
+
+        # Late night warning
+        if is_late and self.alert_customization['late_night_warning']:
+            messages.append(f"**Late Night Alert:** {self.alert_customization['late_night_warning']}")
+
+        # Critical warning (overrides break recommendation if critical)
+        if is_critical and self.alert_customization['critical_warning']:
+            # Replace {hours} placeholder
+            critical_msg = self.alert_customization['critical_warning'].replace('{hours}', f"{duration_hours:.1f}")
+            messages.append(f"**CRITICAL:** {critical_msg}")
+
+        return "\n\n".join(messages) if messages else ""
 
     def record_agent_invocation(self, agent_name: str, is_direct: bool = True) -> Dict:
         """
