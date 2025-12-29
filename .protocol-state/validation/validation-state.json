@@ -1,0 +1,81 @@
+{
+  "validation_enabled": true,
+  "last_full_validation": "2025-12-29T03:11:21.553062+00:00Z",
+  "last_validation_result": "failed",
+  "state_file_integrity": {
+    "project-state.json": {
+      "checksum": "86679d1f5e949d8482361b5a505c90863a48abcbeac0544acc8510efe3015313",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "valid",
+      "errors": []
+    },
+    "session-state.json": {
+      "checksum": "61ce8b1252fffbab69bfbcf79ad1d0d4309404a6c2e10b913f7ff11e5986d8a0",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "valid",
+      "errors": []
+    },
+    "snapshot-manifest.json": {
+      "checksum": "7642a3ecc2a5bffabf4db4d607b79ab1d63e65d2428cf355495e37dca047cb4a",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "valid",
+      "errors": []
+    },
+    "validation-state.json": {
+      "checksum": "904c777a7b3db6c62e83d103c6177eac3ed8c1c108d4df095a1fac625681a68e",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "drift_detected",
+      "errors": []
+    },
+    "snapshot-2025-12-06T05-33-35Z.json.gz": {
+      "checksum": "e70ab1ace09d87ff8767cf4a822e7957fbafd21d102d8c88f866e740a33f17a6",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "valid",
+      "errors": []
+    },
+    "snapshot-2025-12-06T05-33-52Z.json.gz": {
+      "checksum": "9f4960f401e0b0ff13ecda585d41b7439b8841eadfffb78231ac1ef544d004d3",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "valid",
+      "errors": []
+    },
+    "snapshot-2025-12-06T05-49-42Z.json.gz": {
+      "checksum": "f6cfc9c6cf976f94271d6e5e81d768079c42aeea359d19c3b621ca72f5aa9732",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "valid",
+      "errors": []
+    },
+    "snapshot-2025-12-06T05-50-08Z.json.gz": {
+      "checksum": "0147990fe7d1260c61a7ba650b7c2319d6663a16fa2cf86787a0ccf15ac9efa3",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "valid",
+      "errors": []
+    },
+    "snapshot-2025-12-06T05-50-36Z.json.gz": {
+      "checksum": "ffcce6eee8298844a6a66fe4715354bc94ab28621881e0efe36ac5371600b4cf",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "valid",
+      "errors": []
+    },
+    "snapshot-2025-12-06T06-27-01Z.json.gz": {
+      "checksum": "05ee083e4cb1989ee004e7935a55e2d7cdadb0580ece6556b9e08f336cb9e560",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "valid",
+      "errors": []
+    },
+    "snapshot-2025-12-06T07-13-38Z.json.gz": {
+      "checksum": "a671ce60a4c30797ed315e04c4b1615b3d07e005debf4cdc7bcddb6f812a746a",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "valid",
+      "errors": []
+    },
+    "snapshot-2025-12-06T07-32-17Z.json.gz": {
+      "checksum": "6be024c51944d9a40699690db252360e0ddbc76b7594929fa9adfd3803856e89",
+      "last_validated": "2025-12-29T03:11:21.553062+00:00Z",
+      "status": "valid",
+      "errors": []
+    }
+  },
+  "drift_alerts": [],
+  "auto_fix_history": []
+}
