@@ -2,9 +2,9 @@
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 8.10.0
+**Version**: 8.11.0
 **Status**: Production
-**Last Updated**: 2025-12-25
+**Last Updated**: 2025-12-29
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -2444,6 +2444,193 @@ $ ls -la protocol/skills/session-check.md
 **Implemented By**: Ryomen Sukuna (System Update Adversary)
 **Verified By**: Ryomen Sukuna (Self-Review + Adversarial Cross-Review)
 **Approval**: User-authorized (Option C selected)
+
+---
+
+### 🔄 ROLLBACK PROCEDURE
+
+**If PATCH-SESSION-003 causes issues**, follow these steps to revert all changes:
+
+**Estimated Total Time**: 5-10 minutes (with git history); 20-25 minutes (manual edits)
+
+**Prerequisites Before Rollback**:
+- [ ] Git history available for affected files
+- [ ] Backup location verified: `.protocol-state/backups/patch-session-003_20251229_102931/`
+- [ ] Current session state backed up (optional, to preserve user data)
+
+#### Step-by-Step Rollback Instructions
+
+**1. Remove Session-Check Skill** (1 min)
+```bash
+# Remove auto-invoked skill file
+rm protocol/skills/session-check.md
+
+# Verify removal
+ls protocol/skills/session-check.md 2>/dev/null && echo "❌ Still exists" || echo "✅ Removed"
+```
+
+**2. Remove Session-Check Slash Command** (30 sec)
+```bash
+# Remove slash command
+rm slash-commands/session-check.md
+
+# Verify removal
+ls slash-commands/session-check.md 2>/dev/null && echo "❌ Still exists" || echo "✅ Removed"
+```
+
+**3. Revert Gojo Agent** (1-2 min)
+```bash
+# Option A: Git revert (if commit hash known)
+git checkout <commit-before-patch> -- protocol/gojo.agent.md
+
+# Option B: Restore from backup
+cp .protocol-state/backups/patch-session-003_20251229_102931/gojo.agent.md protocol/gojo.agent.md
+
+# Option C: Manual edit - Remove lines 603-619 (AUTO-INVOKED SESSION ALERT CHECK section)
+
+# Verify removal
+grep -n "AUTO-INVOKED SESSION ALERT CHECK" protocol/gojo.agent.md && echo "❌ Still present" || echo "✅ Removed"
+```
+
+**4. Revert Skill Registry** (1 min)
+```bash
+# Option A: Git revert
+git checkout <commit-before-patch> -- protocol/skills/SKILL_REGISTRY.md
+
+# Option B: Restore from backup
+cp .protocol-state/backups/patch-session-003_20251229_102931/SKILL_REGISTRY.md protocol/skills/SKILL_REGISTRY.md
+
+# Verify version reverted to 3.2.0
+grep "^**Version**: 3.2.0" protocol/skills/SKILL_REGISTRY.md && echo "✅ Version reverted" || echo "❌ Still 3.2.1"
+```
+
+**5. Revert SESSION_MONITORING.md** (1 min)
+```bash
+# Option A: Git revert
+git checkout <commit-before-patch> -- protocol/gojo-procedures/SESSION_MONITORING.md
+
+# Option B: Restore from backup
+cp .protocol-state/backups/patch-session-003_20251229_102931/SESSION_MONITORING.md protocol/gojo-procedures/SESSION_MONITORING.md
+
+# Verify PATCH-SESSION-003 section removed
+grep "PATCH-SESSION-003" protocol/gojo-procedures/SESSION_MONITORING.md && echo "❌ Still present" || echo "✅ Removed"
+```
+
+**6. Revert session_monitor.py CLI Commands** (1-2 min)
+```bash
+# NOTE: This is an INTERNAL file (not committed to git)
+# Option A: Git revert (if in git history)
+git checkout <commit-before-patch> -- .protocol-state/session_monitor.py
+
+# Option B: Restore from backup
+cp .protocol-state/backups/patch-session-003_20251229_102931/session_monitor.py .protocol-state/session_monitor.py
+
+# Option C: Manual edit - Remove lines 790-828 (check-and-record and record-choice commands)
+
+# Verify commands removed
+python .protocol-state/session_monitor.py help | grep "check-and-record" && echo "❌ Still present" || echo "✅ Removed"
+```
+
+**7. Verification Checklist** (1-2 min)
+```bash
+# Run all verification checks
+echo "=== Rollback Verification ==="
+
+# Check 1: Session-check skill removed
+ls protocol/skills/session-check.md 2>/dev/null && echo "❌ Skill file still exists" || echo "✅ Skill file removed"
+
+# Check 2: Slash command removed
+ls slash-commands/session-check.md 2>/dev/null && echo "❌ Slash command still exists" || echo "✅ Slash command removed"
+
+# Check 3: Gojo agent reverted
+grep -q "AUTO-INVOKED SESSION ALERT CHECK" protocol/gojo.agent.md && echo "❌ Gojo agent still has auto-invocation" || echo "✅ Gojo agent reverted"
+
+# Check 4: Skill registry version reverted
+grep -q "^**Version**: 3.2.0" protocol/skills/SKILL_REGISTRY.md && echo "✅ SKILL_REGISTRY version 3.2.0" || echo "❌ SKILL_REGISTRY not reverted"
+
+# Check 5: SESSION_MONITORING.md reverted
+grep -q "PATCH-SESSION-003" protocol/gojo-procedures/SESSION_MONITORING.md && echo "❌ SESSION_MONITORING still has patch section" || echo "✅ SESSION_MONITORING reverted"
+
+# Check 6: CLI commands removed
+python .protocol-state/session_monitor.py help | grep -q "check-and-record" && echo "❌ CLI commands still present" || echo "✅ CLI commands removed"
+
+echo "=== End Verification ==="
+```
+
+#### Post-Rollback Testing
+
+**Test 1: Session Monitoring Still Works** (Original Workflow)
+```bash
+# Start a session
+python .protocol-state/session_monitor.py start
+
+# Check session status
+python .protocol-state/session_monitor.py summary
+
+# Verify check command works (without check-and-record)
+python .protocol-state/session_monitor.py check
+
+# End session
+python .protocol-state/session_monitor.py end
+```
+**Expected**: Original session monitoring commands work without errors.
+
+**Test 2: Gojo Invocation No Longer Auto-Triggers Session-Check**
+- Invoke Gojo Mission Control
+- **Expected**: No automatic session-check invocation before Mission Control options
+- **Expected**: Session monitoring requires manual workflow compliance (pre-patch behavior)
+
+**Test 3: Skill Registry Consistency**
+```bash
+# Verify session-check not in registry
+grep "session-check" protocol/skills/SKILL_REGISTRY.md && echo "❌ Still in registry" || echo "✅ Not in registry"
+```
+
+#### Dependencies Required for Rollback
+
+1. **Git repository** (for Option A rollback method)
+2. **Backup files** at `.protocol-state/backups/patch-session-003_20251229_102931/`:
+   - `gojo.agent.md`
+   - `SKILL_REGISTRY.md`
+   - `SESSION_MONITORING.md`
+   - `session_monitor.py`
+3. **Python 3.8+** (for verification tests)
+4. **Bash shell** (for verification scripts)
+
+#### Rollback Risk Assessment
+
+**Risk Level**: LOW
+- No database changes
+- No state file format changes
+- Session state (session-state.json) remains compatible
+- Rollback is non-destructive
+
+**Failure Scenarios**:
+- If backup files missing: Use manual edit (Option C) - adds 15 minutes
+- If git history unavailable: Use backup files (Option B)
+- If both unavailable: Contact user for guidance
+
+**Recovery from Failed Rollback**:
+```bash
+# If rollback fails, restore from patch backup
+cp .protocol-state/backups/patch-session-003_20251229_102931/* <original-locations>
+```
+
+#### What Remains After Rollback
+
+**Session Monitoring Still Functional**:
+- ✅ Original `check` command works
+- ✅ `start`, `end`, `summary` commands work
+- ✅ Session state tracking functional
+- ✅ Alert detection logic intact
+
+**What's Lost**:
+- ❌ Auto-invoked session-check on Gojo activation
+- ❌ `check-and-record` command (defense-in-depth)
+- ❌ `record-choice` command (CLI user choice recording)
+- ❌ Strong enforcement at agent level
+
+**Result**: Reverts to pre-PATCH-SESSION-003 behavior where session alerts depend on manual Gojo workflow compliance (documented, not enforced).
 
 ---
 

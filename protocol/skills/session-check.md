@@ -59,7 +59,7 @@ python .protocol-state/session_monitor.py check-and-record
 ```
 
 **Output (if alert detected)**:
-```
+```text
 ⚠️  Alert detected and recorded: standard
    Alert count: 1
 
@@ -194,7 +194,7 @@ if should_block:
 
 ## Integration with Gojo Agent
 
-**gojo.agent.md Section: AUTO-INVOKED SKILLS**
+### gojo.agent.md Section: AUTO-INVOKED SKILLS
 
 ```markdown
 ### Session Alert Check (MANDATORY - Auto-Invoked on EVERY Mission Control Activation)
