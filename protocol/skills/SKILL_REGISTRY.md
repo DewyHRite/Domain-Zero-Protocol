@@ -1,17 +1,17 @@
 <!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 ---
 title: "Skill Registry"
-version: "3.2.0"
+version: "3.2.1"
 protocol_version: "8.11.0"
-last_updated: "2025-12-28"
+last_updated: "2025-12-29"
 status: "Production-Ready"
 ---
 
 # Domain Zero Protocol - Skill Registry
 
-**Version**: 3.2.0
+**Version**: 3.2.1
 **Protocol Version**: 8.11.0
-**Last Updated**: 2025-12-28
+**Last Updated**: 2025-12-29
 
 ---
 
@@ -53,6 +53,7 @@ These skills are from the official Anthropic repository: https://github.com/anth
 | skill-builder | 1.0.0 | gojo | Low | No | 2025-11-22 | gojo |
 | dzp-roe | 2.0.0 | gojo | Low | No | 2025-12-28 | gojo |
 | session | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-28 | gojo |
+| session-check | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
 | ts | 1.0.0 | gojo | Medium | No | 2025-12-28 | gojo |
 
 ---
@@ -95,6 +96,7 @@ These skills are from the official Anthropic repository: https://github.com/anth
 | Skill | Description | Status |
 |-------|-------------|--------|
 | session | Unified session management (start/status/update/break/continue/end) | Active |
+| session-check | AUTO-INVOKED: Session alert enforcement (PATCH-SESSION-003) | Active |
 | ts | Troubleshooting tier system (tier1-4/codered/status/history/escalate/complete) | Active |
 | protocol-verify | Protocol compliance verification | Planned |
 | release-briefing | Release preparation checklist | Planned |
@@ -172,6 +174,13 @@ These skills are from the official Anthropic repository: https://github.com/anth
 ---
 
 ## Changelog
+
+### 3.2.1 (2025-12-29) - PATCH-SESSION-003
+- **NEW**: **session-check** skill (Auto-Invoked Session Alert Enforcement) - Gojo-owned
+- **Purpose**: Prevents recurrence of 46-hour session without alerts incident
+- **Auto-Invoked**: YES (on EVERY Gojo Mission Control activation)
+- **Remediation**: Enforces check-and-record + record-choice workflow
+- Version bump: 3.2.0 → 3.2.1
 
 ### 3.2.0 (2025-12-28) - v8.11.0 Release
 - **NEW**: **session** skill (Session Management) - Unified interface for work session tracking (Gojo-owned)

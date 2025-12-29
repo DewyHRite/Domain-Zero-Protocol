@@ -424,11 +424,102 @@ session_summary = monitor.get_session_summary()
 
 ---
 
+## 🔧 PATCH-SESSION-003: New CLI Commands (2025-12-29)
+
+**Problem Solved**: Alert detection worked, but alert recording didn't (46-hour session with 0 alerts).
+
+**Root Cause**: Workflow compliance failure - Gojo didn't call `record_user_choice()` after presenting alerts.
+
+**Solution**: Added two new CLI commands + auto-invoked session-check skill.
+
+### New Command: `check-and-record`
+
+**Purpose**: Check for alerts AND auto-record if detected (defense-in-depth)
+
+**Usage**:
+```bash
+python .protocol-state/session_monitor.py check-and-record
+```
+
+**What It Does**:
+1. Checks current session duration against thresholds
+2. **IF alert needed**: Auto-increments `alert_count` and `alerts_issued` counters
+3. Renders alert text for presentation to user
+4. **IF no alert needed**: Returns "✅ No alert needed"
+
+**When to Use**: EVERY Gojo Mission Control activation (via session-check skill)
+
+**Example Output (alert detected)**:
+```
+⚠️  Alert detected and recorded: standard
+   Alert count: 1
+
+🔔 WORK SESSION ALERT: Standard Notification
+[Full alert text...]
+```
+
+### New Command: `record-choice`
+
+**Purpose**: Record user's alert response choice
+
+**Usage**:
+```bash
+python .protocol-state/session_monitor.py record-choice <save_and_break|continue>
+```
+
+**What It Does**:
+1. Records user's choice in `session-state.json`
+2. Increments appropriate counter (`breaks_chosen` OR `continues_chosen`)
+3. Updates escalation level (increases if `continue` chosen)
+4. Enables high-risk operation blocking if at 6+ hours with `continue`
+
+**Examples**:
+```bash
+# User chose to save and break
+python .protocol-state/session_monitor.py record-choice save_and_break
+
+# User chose to continue
+python .protocol-state/session_monitor.py record-choice continue
+```
+
+**Example Output**:
+```
+✅ User choice 'save_and_break' recorded successfully
+   Alert count: 1
+   Escalation level: 0
+```
+
+### Complete Workflow (PATCH-SESSION-003)
+
+**On EVERY Gojo Mission Control activation**:
+
+```bash
+# STEP 1: Auto-check and record alerts
+python .protocol-state/session_monitor.py check-and-record
+
+# STEP 2: IF alert detected, present to user
+# (check-and-record outputs alert text)
+
+# STEP 3: Wait for user response
+# User chooses: save_and_break OR continue
+
+# STEP 4: Record user's choice
+python .protocol-state/session_monitor.py record-choice <user_choice>
+```
+
+**Enforcement**: Gojo's `session-check` skill (auto-invoked) ensures this workflow runs on EVERY Mission Control activation.
+
+**Documentation**: See `protocol/skills/session-check.md` for complete skill specification.
+
+---
+
 **Questions? Check:**
 - `session_monitor.py` source code (fully documented)
 - `protocol.config.yaml` safety section
 - Sukuna's red team report (shows what was broken, what's fixed)
+- `protocol/skills/session-check.md` - Auto-invoked enforcement skill
+- `internal-docs/Code_review_feedback.md` - PATCH-SESSION-003 investigation
 
-**Last Updated:** 2025-12-17
+**Last Updated:** 2025-12-29
 **Maintained By:** Ryomen Sukuna (System Update Adversary)
-**Authority:** v8.7.0 Work Session Monitoring Fix
+**Authority:** v8.7.0 Work Session Monitoring Fix + PATCH-SESSION-003 Enforcement
