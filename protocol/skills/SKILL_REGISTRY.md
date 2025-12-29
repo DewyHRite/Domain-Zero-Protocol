@@ -51,7 +51,7 @@ These skills are from the official Anthropic repository: https://github.com/anth
 | Skill Name | Version | Owner | Risk Level | Code Execution | Last Review | Target Agents |
 |------------|---------|-------|------------|----------------|-------------|---------------|
 | skill-builder | 1.0.0 | gojo | Low | No | 2025-11-22 | gojo |
-| dzp-roe | 2.0.0 | gojo | Low | No | 2025-12-28 | ALL |
+| dzp-roe | 2.0.0 | gojo | Low | No | 2025-12-28 | gojo |
 | session | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-28 | gojo |
 | ts | 1.0.0 | gojo | Medium | No | 2025-12-28 | gojo |
 

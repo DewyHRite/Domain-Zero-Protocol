@@ -217,6 +217,15 @@ User selects support agents based on bug domain:
 - **Anti-pattern examples** (show what NOT to do: sequential file reads, placeholder values)
 - **Gojo-owned** (changed from ALL agents due to domain.record.md write access)
 
+**CLARIFICATION - Target Agents Field Semantics**:
+The SKILL_REGISTRY.md "Target Agents" column indicates the **skill owner** (agent responsible for invoking/managing the skill), NOT all agents who can use it.
+
+- **dzp-roe Target Agents = "gojo"**: Gojo owns and invokes the skill
+- **dzp-roe works for all 9 agents**: After Gojo invokes it, the skill output benefits all agents (provides DZP context recovery)
+- **Distinction**: Owner (gojo) ≠ Beneficiaries (all 9 agents)
+
+This clarification applies to all custom skills in SKILL_REGISTRY.md where "works for all agents" does NOT mean Target Agents = "ALL".
+
 **Invocation Examples**:
 ```bash
 # Session management
