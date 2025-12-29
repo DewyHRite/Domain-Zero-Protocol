@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 # Domain Zero Protocol - Quick Start Guide
 
 ## Get Up and Running with Domain Zero in 2 Minutes

@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 # Gojo Snapshot Integration Guide
 
 **Version**: 1.1.0

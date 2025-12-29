@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
 # Agent Binding Oath
 ## Domain Zero Protocol v8.10.0
 
