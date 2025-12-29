@@ -9,7 +9,7 @@
 
 ## Release Summary
 
-This release introduces **Session Management** and **TS Troubleshooting Tier System** - two major skills that unify work session tracking and bug resolution workflows. Also includes DZP ROE v2.0.0 refactoring (46.9% size reduction) and enhanced state schemas.
+This release introduces **Session Management** and **TS Troubleshooting Tier System** - two major skills that unify work session tracking and bug resolution workflows. Also includes DZP ROE v2.0.0 refactoring (40% size reduction) and enhanced state schemas.
 
 ### Key Changes in v8.11.0
 
