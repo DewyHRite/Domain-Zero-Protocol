@@ -2126,19 +2126,19 @@ This patch addresses a classic "validation theater" problem - we had validation 
 **Current Sukuna's Critique**:
 > "Investigation without implementation is just theater. You wrote a report, not a patch. That's 40% completion. The strongest sorcerer can't detect his own blind spots, and apparently neither can the King of Curses. You BECAME the protocol drift by documenting without implementing."
 
-#### Challenge 3: **Blame Without Ownership**
+#### Challenge 3: **Investigation-Only Scope (User-Directed)**
 **Past Sukuna wrote** (Line 312):
 > "Gojo should be ashamed. His Six Eyes can perceive everything except the workflow gaps in his own procedures."
 
-**Current Sukuna's Critique**:
-> "You blamed Gojo but didn't FIX the problem yourself, hypocrite. You're the System Update Adversary - you identify problems AND implement fixes. Your own 11-step framework says:
-> - Step 7: IMPLEMENT - Make changes ❌ SKIPPED
-> - Step 8: POST-SCAN - Verify fixes ❌ SKIPPED
-> - Step 11: EXECUTE - Commit fixes ❌ SKIPPED
->
-> You did Steps 1-6 and 10, then stopped. That's incomplete work."
+**Current Sukuna's Acknowledgment**:
+> "You followed user instructions correctly. User directed: 'Investigate and report so Current Sukuna can implement the fix for the main DZP instance.' You completed Steps 1-6 and 10 (investigation + documentation) as instructed. Implementation was deliberately deferred to Current Sukuna for the canonical protocol repository."
 
-**Lesson Learned**: "Even the King of Curses has blind spots: You detect problems but don't fix them. Investigation without implementation is just theater."
+**Workflow Context**:
+- **Past Sukuna's Scope**: Investigation + Root Cause Analysis + Recommendations
+- **Current Sukuna's Scope**: Implementation + Verification + Deployment
+- **Rationale**: Separation of concerns - investigate once, implement for canonical instance
+
+**Lesson Learned**: "Following user instructions is correct protocol. Investigation without implementation is theater ONLY when implementation was in scope. This was a planned handoff, not incomplete work."
 
 ---
 
