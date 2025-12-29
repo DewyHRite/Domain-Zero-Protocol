@@ -1,5 +1,5 @@
 # Core Web Vitals & Performance Optimization Guide
-<!-- Domain Zero Protocol v8.10.0 - Offline Reference -->
+<!-- Domain Zero Protocol v8.11.0 - Offline Reference -->
 
 **Agent**: Maki (Performance Optimization Specialist)
 **Last Updated**: 2025-12-26
