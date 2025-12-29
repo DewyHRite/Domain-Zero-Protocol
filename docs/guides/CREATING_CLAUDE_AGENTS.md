@@ -188,7 +188,7 @@ When you run `/agents`, you'll see:
 
 ### Agent Storage Locations and Priority
 
-**Where agents are stored**:
+#### Where Agents Are Stored
 
 | Location | Path | Priority | Use Case |
 |----------|------|----------|----------|
@@ -196,17 +196,20 @@ When you run `/agents`, you'll see:
 | **CLI-defined** | `--agents` flag | Medium | Temporary or custom paths |
 | **User-level** | `~/.claude/agents/` | Lowest | Personal tools used across all projects |
 
-**Priority Resolution**:
+#### Priority Resolution
+
 When multiple agents have the same name, Claude Code uses this priority order:
 1. Project-level (`.claude/agents/`) - Takes precedence
 2. CLI-defined (`--agents` flag) - Overrides user-level
 3. User-level (`~/.claude/agents/`) - Fallback
 
-**Version Control**:
+#### Version Control
+
 - ✅ **Project-level agents**: Commit to version control (team collaboration)
 - ❌ **User-level agents**: Personal tools, not shared with team
 
-**Example**:
+#### Example
+
 ```bash
 # Project has .claude/agents/yuuji.agent.md
 # User has ~/.claude/agents/yuuji.agent.md
@@ -399,7 +402,7 @@ Test-first development specialist for Tier 1/2/3 features. Creates backups, writ
 ☑ askuserquestion
 ```
 
-**Tool Guidelines by Agent Type**:
+#### Tool Guidelines by Agent Type
 
 | Agent | Tools | Reasoning |
 |-------|-------|-----------|
@@ -432,7 +435,7 @@ Test-first development specialist for Tier 1/2/3 features. Creates backups, writ
 1. Sonnet
 ```
 
-**Model Selection Guide**:
+#### Model Selection Guide
 
 | Model | Use For | Example Agents |
 |-------|---------|----------------|
@@ -798,7 +801,8 @@ I never:
 
 ## CLAUDE.md Protection
 
-**Authorization Hierarchy**:
+#### Authorization Hierarchy
+
 - USER: Full control (can edit manually)
 - GOJO: Can modify ONLY with USER authorization
 - Yuuji/Megumi/Nobara: READ ONLY (zero write permissions)

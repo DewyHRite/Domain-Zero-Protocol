@@ -30,6 +30,14 @@ class AutoInvokedVerifier:
         self.gojo_file = self.protocol_root / "protocol" / "gojo.agent.md"
         self.verbose = "--verbose" in sys.argv or "-v" in sys.argv
 
+        # Validate protocol root
+        if not (self.protocol_root / "protocol").is_dir():
+            raise FileNotFoundError(
+                f"Protocol root validation failed: {self.protocol_root}\n"
+                f"Expected 'protocol/' directory not found.\n"
+                f"Please run this script from the Domain Zero Protocol root directory."
+            )
+
         # Expected markers and keywords (PATCH-SESSION-004)
         self.opening_marker = "<!-- CRITICAL: DO NOT REMOVE - SAFETY SYSTEM"
         self.closing_marker = "<!-- END CRITICAL SAFETY SYSTEM SECTION -->"
@@ -43,7 +51,9 @@ class AutoInvokedVerifier:
             "CRITICAL",
         ]
 
-        self.min_section_length = 1000  # chars (originally 2000, reduced for 22-line section)
+        # Minimum section length (raised from 1000 to 1136 per CodeRabbit review)
+        # Actual section is ~2200 chars as of v8.12.0
+        self.min_section_length = 1136
 
     def verify(self) -> Tuple[bool, List[str]]:
         """
@@ -89,36 +99,54 @@ class AutoInvokedVerifier:
                 print(f"[OK] Section header found")
 
         # Check 5: Extract protected section and validate length
-        try:
-            opening_idx = content.index(self.opening_marker)
-            closing_idx = content.index(self.closing_marker) + len(self.closing_marker)
-            protected_section = content[opening_idx:closing_idx]
+        # Improved error handling for marker extraction edge cases
+        if self.opening_marker in content and self.closing_marker in content:
+            try:
+                opening_idx = content.index(self.opening_marker)
+                closing_idx = content.index(self.closing_marker) + len(self.closing_marker)
 
-            section_length = len(protected_section)
-            if section_length < self.min_section_length:
-                errors.append(
-                    f"ERROR: Protected section too short ({section_length} chars, minimum {self.min_section_length})"
-                )
-            else:
-                if self.verbose:
-                    print(f"[OK] Protected section length: {section_length} chars (>= {self.min_section_length})")
+                # Validate marker order
+                if opening_idx >= closing_idx:
+                    errors.append(
+                        f"ERROR: Marker order invalid (opening at {opening_idx}, closing at {closing_idx})"
+                    )
+                else:
+                    protected_section = content[opening_idx:closing_idx]
 
-            # Check 6: All required keywords present in protected section
-            missing_keywords = []
-            for keyword in self.required_keywords:
-                if keyword not in protected_section:
-                    missing_keywords.append(keyword)
+                    section_length = len(protected_section)
+                    if section_length < self.min_section_length:
+                        errors.append(
+                            f"ERROR: Protected section too short ({section_length} chars, minimum {self.min_section_length})"
+                        )
+                    else:
+                        if self.verbose:
+                            print(f"[OK] Protected section length: {section_length} chars (>= {self.min_section_length})")
 
-            if missing_keywords:
-                errors.append(f"ERROR: Missing required keywords in protected section: {', '.join(missing_keywords)}")
-            else:
-                if self.verbose:
-                    print(f"[OK] All required keywords present: {', '.join(self.required_keywords)}")
+                    # Check 6: All required keywords present in protected section
+                    missing_keywords = []
+                    for keyword in self.required_keywords:
+                        if keyword not in protected_section:
+                            missing_keywords.append(keyword)
 
-        except ValueError as e:
-            # Marker not found (already reported in checks 2-3)
-            if not errors:  # Only report if not already caught
-                errors.append(f"ERROR: Could not extract protected section: {e}")
+                    if missing_keywords:
+                        errors.append(f"ERROR: Missing required keywords in protected section: {', '.join(missing_keywords)}")
+                    else:
+                        if self.verbose:
+                            print(f"[OK] All required keywords present: {', '.join(self.required_keywords)}")
+
+            except ValueError as e:
+                errors.append(f"ERROR: Unexpected error extracting protected section: {e}")
+        elif self.opening_marker not in content and self.closing_marker not in content:
+            # Both markers missing (already reported in checks 2-3)
+            pass
+        elif self.opening_marker in content:
+            # Only opening marker present (closing already reported missing in check 3)
+            if self.verbose:
+                print("[WARN] Opening marker found but closing marker missing - cannot extract section")
+        else:
+            # Only closing marker present (opening already reported missing in check 2)
+            if self.verbose:
+                print("[WARN] Closing marker found but opening marker missing - cannot extract section")
 
         # Summary
         all_passed = len(errors) == 0
@@ -166,10 +194,23 @@ def main():
     """Command-line entry point."""
     protocol_root = Path.cwd()
 
-    verifier = AutoInvokedVerifier(protocol_root)
-    exit_code = verifier.run()
-
-    sys.exit(exit_code)
+    try:
+        verifier = AutoInvokedVerifier(protocol_root)
+        exit_code = verifier.run()
+        sys.exit(exit_code)
+    except FileNotFoundError as e:
+        print("=" * 60)
+        print("AUTO-INVOKED Section Integrity Verification")
+        print("Domain Zero Protocol v8.12.0 (PATCH-SESSION-004)")
+        print("=" * 60)
+        print()
+        print("[ERROR] Protocol root validation failed")
+        print()
+        print(str(e))
+        print()
+        print("Current directory:", protocol_root)
+        print()
+        sys.exit(1)
 
 
 if __name__ == "__main__":

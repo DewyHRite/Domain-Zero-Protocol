@@ -4,7 +4,7 @@
 **Purpose**: Comprehensive offline documentation for DZP agents to reference authoritative best practices without requiring internet access.
 
 **Version**: 8.12.0
-**Last Updated**: 2025-12-26
+**Last Updated**: 2025-12-29
 
 ---
 
@@ -169,6 +169,8 @@ All offline documents follow this structure:
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2025-12-29 | 8.12.0 | Updated protocol version to v8.12.0 (PATCH-SESSION-004 session monitoring enhancements) |
+| 2025-12-27 | 8.11.0 | Updated protocol version to v8.11.0 (session management + troubleshooting tier system) |
 | 2025-12-26 | 8.10.0 | Initial creation of comprehensive offline documentation |
 
 ---
