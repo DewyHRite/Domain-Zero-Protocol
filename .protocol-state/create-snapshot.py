@@ -135,6 +135,7 @@ def discover_state_files() -> Dict[str, Any]:
         - Nested dicts of agent → {relative_path → Path} for "agent_memories".
     """
     state_files = {}
+    _state_manager_failed = False  # Initialize flag to avoid undefined variable error
 
     # PATCH-STATE-001: Use ProjectStateManager if available for consolidated state
     if _state_manager:
@@ -161,7 +162,7 @@ def discover_state_files() -> Dict[str, Any]:
         _state_manager_failed = True
 
     # Legacy file I/O (backward compatibility)
-    if not _state_manager or '_state_manager_failed' in locals():
+    if not _state_manager or _state_manager_failed:
         core_files = {
             "project_state": STATE_DIR / "project-state.json",
             "session_state": STATE_DIR / "session-state.json",

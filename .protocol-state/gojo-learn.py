@@ -218,7 +218,7 @@ class GojoLearning:
             with open(self.kill_switch_path, 'r', encoding='utf-8') as f:
                 state = json.load(f)
                 return state.get("active", False)
-        except:
+        except (OSError, json.JSONDecodeError):
             return False
 
     def _contains_sensitive_data(self, text: str) -> bool:

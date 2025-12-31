@@ -466,8 +466,8 @@ class SessionMonitor:
             try:
                 if 'tmp_path' in locals() and Path(tmp_path).exists():
                     os.unlink(tmp_path)
-            except:
-                pass
+            except OSError:
+                pass  # Cleanup failure is non-critical
             raise IOError(f"Failed to save session state: {e}")
 
     def start_session(self, session_id: Optional[str] = None) -> Dict:

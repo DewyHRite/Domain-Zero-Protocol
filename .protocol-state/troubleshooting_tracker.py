@@ -139,8 +139,8 @@ class TroubleshootingTracker:
             try:
                 if 'tmp_path' in locals() and Path(tmp_path).exists():
                     os.unlink(tmp_path)
-            except:
-                pass
+            except OSError:
+                pass  # Cleanup failure is non-critical
             raise IOError(f"Failed to save troubleshooting history: {e}")
 
     def start_session(self, tier: int, description: str, affected_files: Optional[str] = None) -> Dict:
@@ -368,8 +368,8 @@ class TroubleshootingTracker:
                         end = datetime.fromisoformat(s['completed_at'])
                         duration = int((end - start).total_seconds() / 60)
                         durations.append(duration)
-                    except:
-                        pass
+                    except (ValueError, KeyError):
+                        pass  # Skip sessions with invalid timestamps
 
                 avg_duration = sum(durations) / len(durations) if durations else 0
                 escalations = sum(len(s.get('escalations', [])) for s in tier_sessions)
@@ -429,8 +429,8 @@ class TroubleshootingTracker:
 - **{session['session_id']}** (Tier {session['tier']})
   Duration: {self._format_duration(duration)} | Resolution: {session.get('resolution', 'Unknown')[:50]}...
 """
-                except:
-                    pass
+                except (ValueError, KeyError):
+                    pass  # Skip sessions with invalid timestamps
 
         # Insights
         stats += "\n## Insights\n"
@@ -454,8 +454,8 @@ class TroubleshootingTracker:
                 end = datetime.fromisoformat(session['completed_at'])
                 duration = int((end - start).total_seconds() / 60)
                 all_durations.append(duration)
-            except:
-                pass
+            except (ValueError, KeyError):
+                pass  # Skip sessions with invalid timestamps
 
         if all_durations:
             avg_overall = sum(all_durations) / len(all_durations)

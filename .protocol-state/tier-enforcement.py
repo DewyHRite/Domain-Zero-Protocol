@@ -473,7 +473,10 @@ Original Plan Alignment:
             can_bypass, reason, status = can_bypass_tier_warning()
             print(f"\n{reason}\n")
             if can_bypass:
-                print(f"✅ Status: {status['remaining']}/{status['max_bypasses']} bypasses remaining for {status['current_month']}")
+                # status contains: current_month, bypass_count, last_bypass, month_rolled_over
+                bypass_count = status.get('bypass_count', 0)
+                current_month = status.get('current_month', 'N/A')
+                print(f"✅ Status: {bypass_count} bypasses recorded for {current_month} (statistics only, no limit enforced)")
                 sys.exit(0)
             else:
                 print(f"🚫 BLOCKED until {get_next_month()}-01")
