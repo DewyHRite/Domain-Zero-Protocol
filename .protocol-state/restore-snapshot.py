@@ -356,12 +356,39 @@ def restore_snapshot(snapshot_id: str, skip_backup: bool = False) -> bool:
                     "files_restored": restored_count
                 }
 
-                with open(session_state_path, 'w', encoding='utf-8') as f:
+                # Atomic write using tempfile
+                temp_path = session_state_path.with_suffix('.tmp')
+                with open(temp_path, 'w', encoding='utf-8') as f:
                     json.dump(session_state, f, indent=2)
+                temp_path.replace(session_state_path)
 
                 print("   ✅ Session state updated (legacy mode)")
         except Exception as legacy_error:
             print(f"   ⚠️  Session state update skipped: {legacy_error}", file=sys.stderr)
+
+            # Critical: Write restoration metadata to recovery file
+            try:
+                recovery_data = {
+                    "snapshot_id": snapshot_id,
+                    "restored_at": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+                    "files_restored": restored_count,
+                    "error": str(legacy_error),
+                    "state_manager_available": False,
+                    "legacy_fallback_failed": True
+                }
+
+                recovery_path = STATE_DIR / "snapshot-restore-recovery.json"
+                temp_recovery = recovery_path.with_suffix('.tmp')
+                with open(temp_recovery, 'w', encoding='utf-8') as f:
+                    json.dump(recovery_data, f, indent=2)
+                temp_recovery.replace(recovery_path)
+
+                print(f"   ⚠️  Restoration metadata saved to recovery file: {recovery_path}", file=sys.stderr)
+                print(f"   ⚠️  WARNING: System may be in inconsistent state - manual verification recommended", file=sys.stderr)
+            except Exception as recovery_error:
+                print(f"   ❌ CRITICAL: Recovery file write failed: {recovery_error}", file=sys.stderr)
+                print(f"   ❌ Snapshot restored but metadata lost - manual state verification required", file=sys.stderr)
+                return False  # Exit with failure if recovery also fails
 
     # Calculate restore time
     restore_time = time.time() - start_time
