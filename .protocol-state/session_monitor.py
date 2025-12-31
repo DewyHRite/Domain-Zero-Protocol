@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Domain Zero Protocol - Work Session Monitoring System
-Version: 8.8.0
+Version: 8.12.0
 Purpose: Actual implementation of work session tracking and safety alerts
 
 This module provides REAL enforcement of work session monitoring, replacing
@@ -17,7 +17,7 @@ import os
 import shutil
 import sys
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -440,7 +440,7 @@ class SessionMonitor:
         PATCH-STATE-001: Uses ProjectStateManager when available for unified state access.
         Falls back to legacy file I/O for backward compatibility.
         """
-        state['last_updated'] = datetime.now().isoformat()
+        state['last_updated'] = datetime.now(timezone.utc).isoformat()
 
         # PATCH-STATE-001: Use ProjectStateManager if available
         if self.state_manager:
@@ -484,7 +484,7 @@ class SessionMonitor:
             return self._default_state()
 
         state = self.load_state()
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
 
         # Check if there's an active session from < 30 minutes ago
         if state['current_session']['session_active']:
@@ -561,7 +561,7 @@ class SessionMonitor:
             except Exception as e:
                 raise RuntimeError(f"Failed to start session: {e}")
 
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         state['current_session']['last_interaction_time'] = now.isoformat()
 
         # Calculate duration
@@ -622,7 +622,7 @@ class SessionMonitor:
         if not state['current_session']['session_active']:
             return False, None, {}
 
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         start_time = state['current_session'].get('start_time')
         if not start_time:
             print("[!] Session start_time is missing. Cannot check alert.")
@@ -733,7 +733,7 @@ Template file not found at: {self.template_file}
         with open(self.template_file, 'r', encoding='utf-8') as f:
             template = f.read()
 
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         state = self.load_state()
 
         # Build replacement values
@@ -781,7 +781,7 @@ Template file not found at: {self.template_file}
             raise ValueError(f"Invalid choice '{choice}'. Must be 'save_and_break' or 'continue'.")
 
         state = self.load_state()
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
 
         state['current_session']['user_last_choice'] = choice
         state['current_session']['last_alert_time'] = now.isoformat()
@@ -820,7 +820,7 @@ Template file not found at: {self.template_file}
             return self._default_state()
 
         state = self.load_state()
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
 
         state['session_metrics']['break_timestamps'].append(now.isoformat())
         state['session_metrics']['total_breaks'] += 1
@@ -971,7 +971,7 @@ Template file not found at: {self.template_file}
         # Fixes bug where status command showed 0 minutes for long-running sessions
         current_duration = self._calculate_current_duration(state)
         current_continuous = self._calculate_current_continuous_work(state)
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        current_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
         summary = f"""
 [STATUS] **Work Session Summary**
@@ -996,7 +996,7 @@ Template file not found at: {self.template_file}
             # Fixes bug where archived sessions showed 0 minutes duration
             try:
                 start = datetime.fromisoformat(state['current_session']['start_time'])
-                end = datetime.now()
+                end = datetime.now(timezone.utc)
                 actual_duration = int((end - start).total_seconds() / 60)
             except (ValueError, TypeError):
                 # Fallback to stored value if timestamp invalid (shouldn't happen)
@@ -1005,7 +1005,7 @@ Template file not found at: {self.template_file}
             archived = {
                 "session_id": state['current_session']['session_id'],
                 "start_time": state['current_session']['start_time'],
-                "end_time": datetime.now().isoformat(),
+                "end_time": datetime.now(timezone.utc).isoformat(),
                 "total_duration_minutes": actual_duration,
                 "total_breaks": state['session_metrics']['total_breaks'],
                 "alerts_issued": state['session_metrics']['alerts_issued'],
@@ -1053,7 +1053,7 @@ Template file not found at: {self.template_file}
 
         try:
             start = datetime.fromisoformat(start_time)
-            now = datetime.now()
+            now = datetime.now(timezone.utc)
             return int((now - start).total_seconds() / 60)
         except (ValueError, TypeError):
             return 0  # Fallback on error
@@ -1079,7 +1079,7 @@ Template file not found at: {self.template_file}
                 last_break = datetime.fromisoformat(
                     state['session_metrics']['break_timestamps'][-1]
                 )
-                now = datetime.now()
+                now = datetime.now(timezone.utc)
                 return int((now - last_break).total_seconds() / 60)
             except (ValueError, TypeError, IndexError):
                 return self._calculate_current_duration(state)
@@ -1193,7 +1193,7 @@ Template file not found at: {self.template_file}
             return tracker
 
         # Update invocation counts
-        now = datetime.now().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         agent_data = tracker['invocations'].get(agent_name_lower, {})
 
         agent_data['total_count'] = agent_data.get('total_count', 0) + 1
@@ -1218,7 +1218,7 @@ Template file not found at: {self.template_file}
                 if start_time_str:
                     try:
                         start_time = datetime.fromisoformat(start_time_str)
-                        duration_minutes = int((datetime.now() - start_time).total_seconds() / 60)
+                        duration_minutes = int((datetime.now(timezone.utc) - start_time).total_seconds() / 60)
 
                         # Detect bypass if session is long-running (>= threshold)
                         threshold = tracker.get('bypass_detection', {}).get('threshold_minutes', 30)
@@ -1307,7 +1307,7 @@ Template file not found at: {self.template_file}
         Args:
             session_data: Archived session data
         """
-        dev_notes_file = self.protocol_root / "dev-notes.md"
+        dev_notes_file = self.protocol_root / ".protocol-state" / "dev-notes.md"
 
         if not dev_notes_file.exists():
             print(f"[WARN] dev-notes.md not found at {dev_notes_file}")
@@ -1347,7 +1347,7 @@ Template file not found at: {self.template_file}
             print(f"[SKIP] domain.record.md update skipped (requires Gojo invocation)")
             return
 
-        domain_record_file = self.protocol_root / "domain.record.md"
+        domain_record_file = self.protocol_root / ".dzp-domain" / "domain.record.md"
 
         if not domain_record_file.exists():
             print(f"[WARN] domain.record.md not found at {domain_record_file}")
@@ -1382,14 +1382,14 @@ Template file not found at: {self.template_file}
             event_type: "session_update" or "session_end"
             session_data: Session state or archived session data
         """
-        security_review_file = self.protocol_root / "dev-notes.md"  # Use dev-notes for now
+        security_review_file = self.protocol_root / ".protocol-state" / "security-review.md"
 
         if not security_review_file.exists():
             print(f"[WARN] security review file not found at {security_review_file}")
             return
 
         try:
-            now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
             if event_type == "session_update":
                 duration = self._calculate_current_duration(session_data)
@@ -1524,7 +1524,7 @@ def main():
         # PATCH-SEC-007 (SEC-004): Add error handling
         try:
             state = monitor.update_interaction()
-            timestamp = datetime.now().strftime('%H:%M')
+            timestamp = datetime.now(timezone.utc).strftime('%H:%M')
             print(f"[OK] Work resumed at {timestamp}")
             print(f"    Total session time: {state['session_metrics']['total_duration_minutes']} minutes")
         except Exception as e:
@@ -1537,7 +1537,7 @@ def main():
         if monitor.state_file.exists():
             try:
                 # Create timestamped backup
-                backup_timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                backup_timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
                 backup_filename = f"session-state.backup.{backup_timestamp}.json"
                 backup_path = monitor.state_file.parent / backup_filename
 
@@ -1614,7 +1614,7 @@ def main():
             # Auto-increment alert counters when alert detected
             state = monitor.load_state()
             state['current_session']['alert_count'] += 1
-            state['current_session']['last_alert_time'] = datetime.now().isoformat()
+            state['current_session']['last_alert_time'] = datetime.now(timezone.utc).isoformat()
             state['session_metrics']['alerts_issued'] += 1
             monitor.save_state(state)
 
