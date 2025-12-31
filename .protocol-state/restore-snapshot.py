@@ -40,6 +40,19 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
+# PATCH-STATE-001: Import centralized state manager
+try:
+    # Add .protocol-state to path for importing ProjectStateManager
+    protocol_state_dir = Path(__file__).parent.parent / ".protocol-state"
+    if str(protocol_state_dir) not in sys.path:
+        sys.path.insert(0, str(protocol_state_dir))
+
+    from project_state_manager import ProjectStateManager
+    STATE_MANAGER_AVAILABLE = True
+except ImportError:
+    STATE_MANAGER_AVAILABLE = False
+    # Silent fallback for restore-snapshot (optional dependency)
+
 # =============================================================================
 # Constants
 # =============================================================================
@@ -53,6 +66,12 @@ MEMORIES_DIR = PROJECT_ROOT / "memories"
 
 # Performance target
 TARGET_RESTORE_TIME_SECONDS = 30
+
+# PATCH-STATE-001: Initialize ProjectStateManager
+if STATE_MANAGER_AVAILABLE:
+    _state_manager = ProjectStateManager(PROJECT_ROOT)
+else:
+    _state_manager = None
 
 
 # =============================================================================
@@ -306,23 +325,43 @@ def restore_snapshot(snapshot_id: str, skip_backup: bool = False) -> bool:
     print("\n[6/6] Updating session state...")
 
     try:
-        session_state_path = STATE_DIR / "session-state.json"
-        if session_state_path.exists():
-            with open(session_state_path, 'r', encoding='utf-8') as f:
-                session_state = json.load(f)
-
-            session_state["last_snapshot_restore"] = {
-                "snapshot_id": snapshot_id,
-                "restored_at": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
-                "files_restored": restored_count
-            }
-
-            with open(session_state_path, 'w', encoding='utf-8') as f:
-                json.dump(session_state, f, indent=2)
-
-            print("   ✅ Session state updated")
+        # PATCH-STATE-001: Use ProjectStateManager if available
+        if _state_manager:
+            try:
+                session_data = _state_manager.get_session_tracking()
+                session_data["last_snapshot_restore"] = {
+                    "snapshot_id": snapshot_id,
+                    "restored_at": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+                    "files_restored": restored_count
+                }
+                _state_manager.update_session_tracking(session_data)
+                print("   ✅ Session state updated")
+            except Exception as e:
+                print(f"   ⚠️  ProjectStateManager failed, falling back to legacy: {e}", file=sys.stderr)
+                # Fall through to legacy file I/O
+                raise  # Re-raise to trigger legacy fallback
+        else:
+            raise ImportError("ProjectStateManager not available")
     except Exception as e:
-        print(f"   ⚠️  Session state update skipped: {e}", file=sys.stderr)
+        # Legacy file I/O (backward compatibility)
+        try:
+            session_state_path = STATE_DIR / "session-state.json"
+            if session_state_path.exists():
+                with open(session_state_path, 'r', encoding='utf-8') as f:
+                    session_state = json.load(f)
+
+                session_state["last_snapshot_restore"] = {
+                    "snapshot_id": snapshot_id,
+                    "restored_at": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+                    "files_restored": restored_count
+                }
+
+                with open(session_state_path, 'w', encoding='utf-8') as f:
+                    json.dump(session_state, f, indent=2)
+
+                print("   ✅ Session state updated (legacy mode)")
+        except Exception as legacy_error:
+            print(f"   ⚠️  Session state update skipped: {legacy_error}", file=sys.stderr)
 
     # Calculate restore time
     restore_time = time.time() - start_time

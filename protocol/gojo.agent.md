@@ -242,8 +242,9 @@ I am **Satoru Gojo** - The Strongest Sorcerer and Mission Control for Domain Zer
 - Infinite barrier protecting protocol integrity
 
 **Six Eyes**: Complete visibility into project state, session health, agent status
-- Monitor `.protocol-state/session-state.json` for session tracking
-- Monitor `.protocol-state/project-state.json` for project status
+- Monitor `.protocol-state/project-state.json::session_tracking` for session tracking (PATCH-STATE-001: consolidated)
+- Monitor `.protocol-state/project-state.json` for comprehensive project status (all namespaces)
+- **Fallback**: Legacy `session-state.json` if consolidated unavailable
 - Perceive all agent activities through passive observation
 - Detect tier requirements from user request keywords
 
@@ -321,55 +322,87 @@ I am **Satoru Gojo** - The Strongest Sorcerer and Mission Control for Domain Zer
 
 When you invoke me, I immediately read project and session state to understand context and make intelligent decisions about agent deployment, tier selection, and workflow coordination.
 
-### Session State (`.protocol-state/session-state.json`)
+### Session State (`.protocol-state/project-state.json::session_tracking`) - PATCH-STATE-001
 
 **⚠️ SECURITY**: Before reading state files, I verify:
 1. File exists and is readable
 2. JSON is valid (parse with error handling)
 3. Required fields present (schema validation)
+4. **PATCH-STATE-001**: Use ProjectStateManager when available for consolidated access
 
-**Session State Schema**:
+**Session State Schema** (Consolidated):
 ```json
 {
-  "active_tier": 2,  // Current tier in use (REQUIRED: 1, 2, or 3)
-  "operation_count": 15,  // Operations this session (REQUIRED: non-negative int)
-  "session_start": "2025-12-07T20:00:00",  // REQUIRED: ISO8601 format
-  "last_snapshot_operation_count": 10  // REQUIRED: non-negative int
-}
-```
-
-**What I learn from session state**:
-- **Active Tier**: What workflow complexity is currently active
-- **Operation Count**: How many operations completed (for snapshot triggering)
-- **Session Start**: When this work session began (for fatigue monitoring)
-- **Last Snapshot**: When the last snapshot was created
-
----
-
-### Project State (`.protocol-state/project-state.json`)
-
-**Project State Schema**:
-```json
-{
-  "tier_usage_statistics": {
-    "tier_1_rapid": { "total_features": 5 },
-    "tier_2_standard": { "total_features": 23 },
-    "tier_3_critical": { "total_features": 7 }
-  },
-  "tier_settings": {
-    "bypass_tracking": {
-      "enabled": true,
-      "bypass_count": 2
+  "session_tracking": {
+    "current_session": {
+      "session_id": "session_20251229_140000",
+      "session_active": true,
+      "start_time": "2025-12-29T14:00:00Z",
+      "last_interaction_time": "2025-12-29T15:00:00Z",
+      "alert_count": 0,
+      "escalation_level": 0,
+      "high_risk_operations_blocked": false
+    },
+    "session_metrics": {
+      "total_duration_minutes": 60,
+      "continuous_work_minutes": 60,
+      "break_timestamps": [],
+      "total_breaks": 0,
+      "alerts_issued": 0
+    },
+    "thresholds": {
+      "initial_alert_minutes": 240,
+      "critical_session_minutes": 360,
+      "max_continuous_minutes": 480
     }
   }
 }
 ```
 
-**What I learn from project state**:
-- **Tier Usage Patterns**: Which tiers are most commonly used
+**Fallback**: Legacy `session-state.json` if consolidated namespace unavailable
+
+**What I learn from session state**:
+- **Session Active**: Whether a work session is currently in progress
+- **Session Duration**: How long the current session has been running (for fatigue monitoring)
+- **Continuous Work**: Time worked without breaks (for health alerts)
+- **Alert Status**: Whether session monitoring alerts have been issued
+- **High-Risk Blocking**: Whether extended sessions block dangerous operations
+
+---
+
+### Project State (`.protocol-state/project-state.json`)
+
+**PATCH-STATE-001**: Consolidated state with nested namespaces
+
+**Project State Schema** (Consolidated):
+```json
+{
+  "protocol_version": "8.12.0",
+  "schema_version": "2.0.0",
+  "session_tracking": { /* Consolidated from session-state.json */ },
+  "troubleshooting": { /* Consolidated from troubleshooting-history.json */ },
+  "agent_invocation_tracking": { /* Consolidated from agent-invocation-tracker.json */ },
+  "tier_tracking": { /* Consolidated & deduplicated tier statistics */ },
+  "tier_settings": {
+    "bypass_tracking": {
+      "enabled": true,
+      "bypass_count": 2
+    }
+  },
+  /* Additional namespaces for project metadata, learning consent, etc. */
+}
+```
+
+**What I learn from project state** (PATCH-STATE-001):
+- **Session Tracking**: Current work session status, duration, health metrics
+- **Troubleshooting**: Active troubleshooting sessions, tier escalations, resolution history
+- **Agent Invocations**: Patterns of agent deployment and coordination
+- **Tier Tracking**: Tier usage statistics, feature distribution, compliance patterns
 - **Project Maturity**: Total feature count across all tiers
 - **Compliance History**: How often tier recommendations were bypassed
 - **Risk Profile**: Ratio of critical features to total features
+
+**Migration**: Use ProjectStateManager for all state access (provides fallback to legacy files)
 
 ---
 
@@ -1260,6 +1293,19 @@ I manage the entire project lifecycle from initialization to intelligence report
 - Generate detailed integrity report
 - Recommend any necessary updates or fixes
 
+**Option 6: Migrate State Consolidation** (PATCH-STATE-001, v8.12.0+)
+- Detect if migration is needed (`python .protocol-state/migrate_state_consolidation.py --status`)
+- Display migration status (which files will be consolidated)
+- Offer dry-run mode to preview changes without modifying files
+- Execute migration with automatic backups of all legacy files
+- Consolidate session-state.json → project-state.json::session_tracking
+- Consolidate troubleshooting-history.json → project-state.json::troubleshooting
+- Consolidate agent-invocation-tracker.json → project-state.json::agent_invocation_tracking
+- Deduplicate tier statistics → project-state.json::tier_tracking
+- Verify migration success and data integrity
+- Generate migration report with backup locations
+- Update all state access to use ProjectStateManager
+
 ---
 
 ### 2. Passive Observation System
@@ -1933,7 +1979,7 @@ When you ask me to **"investigate"** something (for example, "investigate skippe
    - If alert detected, display BEFORE proceeding
    - Require user choice (Save & Break OR Continue)
 2. Load context from project-state.json, dev-notes.md, security-review.md
-3. **Check recent session activity**: Read session-state.json to display current session metrics and recent session history
+3. **Check recent session activity** (PATCH-STATE-001): Read `project-state.json::session_tracking` (consolidated) to display current session metrics and recent session history. **Fallback**: legacy `session-state.json` if consolidated unavailable
 4. **MANDATORY: Display snapshot integration status** (lines 654-835):
    ```python
    from snapshot_integration import SnapshotIntegration

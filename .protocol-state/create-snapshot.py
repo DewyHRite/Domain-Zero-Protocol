@@ -38,6 +38,19 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
+# PATCH-STATE-001: Import centralized state manager
+try:
+    # Add .protocol-state to path for importing ProjectStateManager
+    protocol_state_dir = Path(__file__).parent.parent / ".protocol-state"
+    if str(protocol_state_dir) not in sys.path:
+        sys.path.insert(0, str(protocol_state_dir))
+
+    from project_state_manager import ProjectStateManager
+    STATE_MANAGER_AVAILABLE = True
+except ImportError:
+    STATE_MANAGER_AVAILABLE = False
+    # Silent fallback for create-snapshot (optional dependency)
+
 # =============================================================================
 # Constants
 # =============================================================================
@@ -47,6 +60,12 @@ STATE_DIR = PROJECT_ROOT / ".protocol-state"
 SNAPSHOTS_DIR = STATE_DIR / "snapshots"
 MANIFEST_FILE = SNAPSHOTS_DIR / "snapshot-manifest.json"
 MEMORIES_DIR = PROJECT_ROOT / "memories"
+
+# PATCH-STATE-001: Initialize ProjectStateManager
+if STATE_MANAGER_AVAILABLE:
+    _state_manager = ProjectStateManager(PROJECT_ROOT)
+else:
+    _state_manager = None
 
 # Retention limits by tier
 RETENTION_LIMITS = {
@@ -108,25 +127,53 @@ def discover_state_files() -> Dict[str, Any]:
     """
     Discover all DZP state files to include in snapshot
 
+    PATCH-STATE-001: Uses ProjectStateManager when available to read consolidated state.
+
     Returns:
         Dictionary mapping logical keys to:
         - Path objects for core state files, and
         - Nested dicts of agent → {relative_path → Path} for "agent_memories".
     """
     state_files = {}
+    _state_manager_failed = False  # Initialize flag to avoid undefined variable error
 
-    # Core state files
-    core_files = {
-        "project_state": STATE_DIR / "project-state.json",
-        "session_state": STATE_DIR / "session-state.json",
-        "validation_state": STATE_DIR / "validation" / "validation-state.json",
-    }
+    # PATCH-STATE-001: Use ProjectStateManager if available for consolidated state
+    if _state_manager:
+        try:
+            # Read consolidated project-state.json using ProjectStateManager
+            project_state = _state_manager.load_project_state()
 
-    for key, path in core_files.items():
-        if path.exists():
-            state_files[key] = path
+            # Include full project state
+            state_files["project_state"] = {"_data": project_state}
 
-    # Memory files (agent-specific)
+            # Extract session tracking from consolidated state
+            if "session_tracking" in project_state:
+                state_files["session_state"] = {"_data": project_state["session_tracking"]}
+
+            # Validation state still stored separately (not consolidated)
+            validation_state_path = STATE_DIR / "validation" / "validation-state.json"
+            if validation_state_path.exists():
+                state_files["validation_state"] = validation_state_path
+        except Exception as e:
+            print(f"[WARN] ProjectStateManager failed, falling back to legacy file discovery: {e}", file=sys.stderr)
+            # Fall through to legacy file I/O
+            _state_manager_failed = True
+    else:
+        _state_manager_failed = True
+
+    # Legacy file I/O (backward compatibility)
+    if not _state_manager or _state_manager_failed:
+        core_files = {
+            "project_state": STATE_DIR / "project-state.json",
+            "session_state": STATE_DIR / "session-state.json",
+            "validation_state": STATE_DIR / "validation" / "validation-state.json",
+        }
+
+        for key, path in core_files.items():
+            if path.exists():
+                state_files[key] = path
+
+    # Memory files (agent-specific) - always use file discovery
     if MEMORIES_DIR.exists():
         agent_memories = {}
         for agent_dir in MEMORIES_DIR.glob("agents/*"):
@@ -212,11 +259,11 @@ def create_snapshot(
     file_count = 0
 
     # Core state files
-    for key, path in state_files_paths.items():
+    for key, value in state_files_paths.items():
         if key == "agent_memories":
             # Handle agent memories separately
             agent_memories = {}
-            for agent_name, memory_files in path.items():
+            for agent_name, memory_files in value.items():
                 agent_data = {}
                 for rel_path, file_path in memory_files.items():
                     try:
@@ -232,10 +279,18 @@ def create_snapshot(
             if agent_memories:
                 snapshot_data["state_files"]["agent_memories"] = agent_memories
         else:
+            # PATCH-STATE-001: Handle both Path objects and data dictionaries
             try:
-                snapshot_data["state_files"][key] = read_json_file(path)
-                file_count += 1
-                snapshot_data["metadata"]["files_included"].append(str(path.relative_to(PROJECT_ROOT)))
+                if isinstance(value, dict) and "_data" in value:
+                    # Data already loaded by ProjectStateManager
+                    snapshot_data["state_files"][key] = value["_data"]
+                    file_count += 1
+                    snapshot_data["metadata"]["files_included"].append(f".protocol-state/{key}.json")
+                else:
+                    # Legacy: Path object, read from file
+                    snapshot_data["state_files"][key] = read_json_file(value)
+                    file_count += 1
+                    snapshot_data["metadata"]["files_included"].append(str(value.relative_to(PROJECT_ROOT)))
             except Exception:
                 # Skip files that can't be read
                 pass

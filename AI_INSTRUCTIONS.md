@@ -34,6 +34,90 @@
 
 ## What's New in v8.12.0
 
+### PATCH-STATE-001: State File Consolidation (2025-12-31)
+**Purpose**: Consolidate 4 fragmented state files into unified `project-state.json` with nested namespaces for improved data consistency and reduced file sprawl.
+
+**Problem**: State fragmentation across `session-state.json`, `troubleshooting-history.json`, `agent-invocation-tracker.json`, and duplicated tier statistics caused data inconsistency and maintenance overhead.
+
+**Solution**: Created centralized `ProjectStateManager` class with consolidated namespaces and non-destructive migration system.
+
+**Key Changes**:
+1. **Consolidated Namespaces**:
+   - `session-state.json` → `project-state.json::session_tracking`
+   - `troubleshooting-history.json` → `project-state.json::troubleshooting`
+   - `agent-invocation-tracker.json` → `project-state.json::agent_invocation_tracking`
+   - Deduplicated `tier_usage_statistics` + `tier_statistics` → `project-state.json::tier_tracking`
+
+2. **ProjectStateManager** (`.protocol-state/project_state_manager.py`, 558 lines):
+   - Centralized state access for all DZP components
+   - Automatic fallback to legacy files if consolidated namespaces unavailable
+   - Cross-platform file locking (Windows msvcrt, Unix fcntl)
+   - Atomic writes using tempfile pattern
+
+3. **Migration System** (`.protocol-state/migrate_state_consolidation.py`, 368 lines):
+   - Automatic backup creation with timestamps
+   - Dry-run mode for safety
+   - Migration status detection
+   - Rollback capability
+
+4. **Updated Scripts** (8 total):
+   - `session_monitor.py`, `troubleshooting_tracker.py`, `tier-statistics.py`, `tier-enforcement.py`
+   - `gojo-learn.py`, `sukuna-learn.py`, `restore-snapshot.py`, `create-snapshot.py`
+   - All use ProjectStateManager with backward compatibility
+
+5. **Updated Documentation**:
+   - `protocol/skills/session.md` (v1.0.0 → PATCH-STATE-001)
+   - `protocol/skills/ts.md` (v1.0.0 → v1.1.0)
+   - `protocol/gojo.agent.md` (added Option 6: Migrate State Consolidation)
+
+**Migration Path**:
+```bash
+# Check if migration needed
+python .protocol-state/migrate_state_consolidation.py --status
+
+# Dry run (no changes)
+python .protocol-state/migrate_state_consolidation.py --dry-run
+
+# Execute migration (with automatic backups)
+python .protocol-state/migrate_state_consolidation.py --execute
+```
+
+### Manual Rollback Procedure
+
+If automatic rollback fails or you need to manually restore from backups:
+
+1. **Locate Backups**:
+   ```bash
+   ls .protocol-state/backups/state-consolidation_*/
+   ```
+
+2. **Verify Backup Integrity**:
+   ```bash
+   python .protocol-state/migrate_state_consolidation.py --status
+   ```
+
+3. **Restore from Backup**:
+   ```bash
+   python .protocol-state/migrate_state_consolidation.py --rollback
+   ```
+
+4. **Verify Restoration**:
+   ```bash
+   python .protocol-state/migrate_state_consolidation.py --status
+   ```
+
+**Safety Notes**:
+- Backups are timestamped and SHA-256 verified
+- Original state files are preserved in backup directory
+- Rollback is non-destructive - consolidated state is archived, not deleted
+- If multiple backups exist, the most recent valid backup is used automatically
+
+**Backward Compatibility**: All scripts fallback to legacy files if consolidated namespaces unavailable. No breaking changes for existing DZP instances.
+
+**Impact**: Reduced file count from 4 to 1, eliminated tier statistics duplication, improved data consistency, single source of truth for DZP state.
+
+---
+
 ### PATCH-SESSION-004: Session Monitoring Enhancement
 Closes critical coverage gap (70-85% → 85-90%) identified through adversarial analysis.
 
@@ -53,6 +137,65 @@ Closes critical coverage gap (70-85% → 85-90%) identified through adversarial 
 - `scripts/verify-auto-invoked.py` (NEW)
 - `.protocol-state/session-monitoring-report.py` (NEW)
 - `.protocol-state/agent-invocation-tracker.json` (NEW)
+
+### PATCH-SESSION-005-v2: Critical User Safety Restoration (2025-12-31)
+**Priority**: P0-Critical - Restores completely non-functional user safety systems.
+
+**3 Critical Bugs Fixed**:
+1. **Status Display Failure**: `get_session_summary()` always showed "0 minutes" for 15+ hour sessions
+2. **Historical Data Corruption**: `_archive_session()` permanently stored sessions with "0 minutes" duration
+3. **Safety System Complete Failure**: `should_block_operation()` NEVER blocked high-risk operations, even after 47+ hours of continuous work
+
+**Root Cause**: Methods read stale `metrics['total_duration_minutes']` from JSON state instead of calculating live duration from timestamps.
+
+**Fix**: Added `_calculate_current_duration()` and `_calculate_current_continuous_work()` helper methods (lines 942-995) that compute live duration from `start_time` using `datetime.fromisoformat()`.
+
+**Extensions Added**:
+- **Extension 2 - State Management**: 4 new methods to update `project-state.json`, `dev-notes.md`, `domain.record.md` on session events
+- **Extension 3 - Permission System**: Gojo-only access to `domain.record.md` via `DZP_AGENT=gojo` environment variable check
+
+**Files Modified**:
+- `.protocol-state/session_monitor.py` (+180 lines, 9 methods added/modified)
+- `protocol/skills/session.md` (updated with `DZP_AGENT=gojo` syntax for `/session update` and `/session end`)
+
+**Impact**: User safety systems RESTORED - high-risk operation blocking now functional, session duration display accurate, historical data integrity preserved.
+
+**Discoverer**: Sukuna (System Update Adversary) - Bug report from previous session.
+
+### PATCH-TS-001: Unified Troubleshooting Session Tracker (2025-12-31)
+**Purpose**: Centralized tracking system for all `/ts` tier commands with permanent historical analytics.
+
+**Problem**: No historical data on troubleshooting patterns, tier effectiveness, or escalation frequencies, preventing data-driven tier selection.
+
+**Solution**: Created `.protocol-state/troubleshooting_tracker.py` (585 lines) with permanent session storage in `troubleshooting-history.json`.
+
+**Key Features**:
+1. **Session Management**: 6 commands (start, update, complete, escalate, status, stats)
+2. **Tier Analysis**: Success rates, average durations, escalation patterns per tier (1-5)
+3. **File Frequency Tracking**: Identifies most commonly problematic files across sessions
+4. **Pattern Recognition**: Statistical analysis of tier effectiveness and escalation triggers
+5. **Permanent Retention**: All sessions kept indefinitely in `troubleshooting-history.json`
+
+**Commands Added**:
+```bash
+python troubleshooting_tracker.py start <tier> "<description>" "<files>"
+python troubleshooting_tracker.py update <session_id> "<status>"
+python troubleshooting_tracker.py complete <session_id> "<resolution>"
+python troubleshooting_tracker.py escalate <session_id> <new_tier> "<reason>"
+python troubleshooting_tracker.py status [session_id]
+python troubleshooting_tracker.py stats  # NEW - historical analytics
+```
+
+**Integration**: Updated `protocol/skills/ts.md` with **Step 0**: Review historical stats before tier selection (data-driven tier choice).
+
+**Files Created**:
+- `.protocol-state/troubleshooting_tracker.py` (585 lines)
+- `.protocol-state/troubleshooting-history.json` (session storage)
+
+**Files Modified**:
+- `protocol/skills/ts.md` (added Step 0 - stats review)
+
+**Impact**: Data-driven tier selection, pattern learning, troubleshooting effectiveness tracking over time.
 
 **Protocol Version**: 8.12.0
 
@@ -440,15 +583,26 @@ If using Claude Code CLI:
 
 ### 4.1 Templates That Need Syncing
 
+**Template File Naming Convention**: v8.12.0+
+- `.template.json` - State file templates (NEW: v8.12.0+)
+- `.example.json` - Legacy example files (pre-v8.12.0)
+- `.template.md` - Markdown templates
+
+**Installation Rule**: If real file exists, KEEP it (contains project data). If missing, COPY from template (initialize fresh).
+
 | Template File | → | Working File | Status |
 |---------------|---|--------------|--------|
-| `.protocol-state/session-state.example.json` | → | `.protocol-state/session-state.json` | Auto-created by session_monitor.py |
+| **State Files (v8.12.0+)** ||||
+| `.protocol-state/session-state.template.json` | → | `.protocol-state/session-state.json` | Copy if missing, else KEEP existing |
+| `.protocol-state/troubleshooting-history.template.json` | → | `.protocol-state/troubleshooting-history.json` | Copy if missing, else KEEP existing |
+| `.protocol-state/validation-state.template.json` | → | `.protocol-state/validation/validation-state.json` | Copy if missing, else KEEP existing |
+| **Legacy Templates** ||||
+| `.protocol-state/session-state.example.json` | → | `.protocol-state/session-state.json` | DEPRECATED: Use .template.json |
 | `.protocol-state/custom-agent-registry.example.json` | → | `.protocol-state/custom-agent-registry.json` | User must create if using custom agents |
+| **Framework Templates** ||||
 | `.protocol-state/system-update-framework/backup-manifest.template.json` | → | `.protocol-state/system-update-framework/backup-manifest.json` | Created on first Sukuna invocation |
 | `.protocol-state/system-update-framework/file-classifications.template.json` | → | `.protocol-state/system-update-framework/file-classifications.json` | Created on first Sukuna invocation |
 | `.protocol-state/system-update-framework/version-registry.template.json` | → | `.protocol-state/system-update-framework/version-registry.json` | Created on first Sukuna invocation |
-| `.protocol-state/system-update-framework/plan-documentation.template.md` | → | `.protocol-state/system-update-framework/plan-documentation.md` | Already exists (not template) |
-| `.protocol-state/system-update-framework/SYSTEM_UPDATE_FRAMEWORK.template.md` | → | `.protocol-state/system-update-framework/SYSTEM_UPDATE_FRAMEWORK.md` | Already exists (not template) |
 
 ### 4.2 Automated Template Syncing
 
@@ -460,16 +614,25 @@ import shutil
 from pathlib import Path
 
 def sync_templates():
-    """Sync .template.* and .example.* files to working locations"""
+    """Sync .template.* and .example.* files to working locations (v8.12.0+)"""
 
     templates = [
-        # (source, destination, create_if_missing)
-        ('.protocol-state/session-state.example.json',
-         '.protocol-state/session-state.json', False),  # Created by session_monitor.py
+        # (source, destination, copy_if_missing_only)
+        # State Files (v8.12.0+ - .template.json)
+        ('.protocol-state/session-state.template.json',
+         '.protocol-state/session-state.json', True),  # KEEP existing, copy if missing
 
+        ('.protocol-state/troubleshooting-history.template.json',
+         '.protocol-state/troubleshooting-history.json', True),  # KEEP existing, copy if missing
+
+        ('.protocol-state/validation-state.template.json',
+         '.protocol-state/validation/validation-state.json', True),  # KEEP existing, copy if missing
+
+        # Legacy Templates
         ('.protocol-state/custom-agent-registry.example.json',
          '.protocol-state/custom-agent-registry.json', True),
 
+        # Framework Templates
         ('.protocol-state/system-update-framework/backup-manifest.template.json',
          '.protocol-state/system-update-framework/backup-manifest.json', True),
 
@@ -480,7 +643,7 @@ def sync_templates():
          '.protocol-state/system-update-framework/version-registry.json', True),
     ]
 
-    for src, dst, create in templates:
+    for src, dst, copy_if_missing in templates:
         src_path = Path(src)
         dst_path = Path(dst)
 
@@ -488,13 +651,15 @@ def sync_templates():
             print(f"⚠️  Template missing: {src}")
             continue
 
-        if dst_path.exists() and not create:
-            print(f"✅ Already exists (skipping): {dst}")
-            continue
+        if dst_path.exists():
+            if copy_if_missing:
+                print(f"✅ Already exists (KEEPING project data): {dst}")
+                continue
 
-        if create:
-            shutil.copy2(src, dst)
-            print(f"✅ Synced: {src} → {dst}")
+        # Copy template to working location
+        dst_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
+        shutil.copy2(src, dst)
+        print(f"✅ Synced: {src} → {dst}")
 
 if __name__ == '__main__':
     sync_templates()
@@ -505,12 +670,23 @@ if __name__ == '__main__':
 python scripts/sync-templates.py
 ```
 
-**Expected Output**:
+**Expected Output** (Fresh Installation):
 ```text
-✅ Synced: .protocol-state/custom-agent-registry.example.json → ...
+✅ Synced: .protocol-state/session-state.template.json → .protocol-state/session-state.json
+✅ Synced: .protocol-state/troubleshooting-history.template.json → .protocol-state/troubleshooting-history.json
+✅ Synced: .protocol-state/validation-state.template.json → .protocol-state/validation/validation-state.json
+✅ Synced: .protocol-state/custom-agent-registry.example.json → .protocol-state/custom-agent-registry.json
 ✅ Synced: .protocol-state/system-update-framework/backup-manifest.template.json → ...
 ✅ Synced: .protocol-state/system-update-framework/file-classifications.template.json → ...
 ✅ Synced: .protocol-state/system-update-framework/version-registry.template.json → ...
+```
+
+**Expected Output** (Existing Installation - Preserves Project Data):
+```text
+✅ Already exists (KEEPING project data): .protocol-state/session-state.json
+✅ Already exists (KEEPING project data): .protocol-state/troubleshooting-history.json
+✅ Already exists (KEEPING project data): .protocol-state/validation/validation-state.json
+✅ Synced: .protocol-state/system-update-framework/backup-manifest.template.json → ...
 ```
 
 ---
@@ -1479,7 +1655,7 @@ python scripts/validate-protocol.py --check
 ## Canonical Source
 
 > **Repository**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Version**: 8.10.0
+> **Version**: 8.12.0
 > **Canonical File**: `protocol/CLAUDE.md`
 
 All protocol updates originate from the canonical source.
@@ -1507,5 +1683,5 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**Domain Zero Protocol v8.10.0 - Complete Installation Guide**
+**Domain Zero Protocol v8.12.0 - Complete Installation Guide**
 **Updated**: 2025-12-25 (DZP Rules of Engagement - Post-Compaction Recovery)

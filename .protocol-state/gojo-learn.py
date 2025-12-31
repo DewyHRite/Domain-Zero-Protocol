@@ -61,6 +61,19 @@ except ImportError:
     print("  Ensure verify_working_directory.py exists in scripts/")
     sys.exit(1)
 
+# PATCH-STATE-001: Import centralized state manager
+try:
+    # Add .protocol-state to path for importing ProjectStateManager
+    protocol_state_dir = Path(__file__).parent.parent / ".protocol-state"
+    if str(protocol_state_dir) not in sys.path:
+        sys.path.insert(0, str(protocol_state_dir))
+
+    from project_state_manager import ProjectStateManager
+    STATE_MANAGER_AVAILABLE = True
+except ImportError:
+    STATE_MANAGER_AVAILABLE = False
+    # Silent fallback for gojo-learn (optional dependency)
+
 
 # Sensitive data patterns to NEVER store (same as Sukuna)
 PROHIBITED_DATA_PATTERNS = [
@@ -96,6 +109,12 @@ class GojoLearning:
         # Create learning directory if needed
         self.learning_dir.mkdir(parents=True, exist_ok=True)
 
+        # PATCH-STATE-001: Initialize ProjectStateManager if available
+        if STATE_MANAGER_AVAILABLE:
+            self.state_manager = ProjectStateManager(project_root)
+        else:
+            self.state_manager = None
+
         # Project-specific learning file (isolated per project)
         self.project_id = self._get_project_id()
         self.patterns_file = self.learning_dir / f"gojo-patterns-{self.project_id}.json"
@@ -116,9 +135,21 @@ class GojoLearning:
     def _load_config(self) -> Dict[str, Any]:
         """Load learning configuration from project-state.json
 
+        PATCH-STATE-001: Uses ProjectStateManager when available for unified state access.
+
         Returns:
             Learning configuration dictionary
         """
+        # PATCH-STATE-001: Use ProjectStateManager if available
+        if self.state_manager:
+            try:
+                state = self.state_manager.load_project_state()
+                return state.get("learning_consent", {"enabled": False, "consent_given": False})
+            except Exception as e:
+                print(f"[WARN] ProjectStateManager failed, falling back to legacy: {e}")
+                # Fall through to legacy file I/O
+
+        # Legacy file I/O (backward compatibility)
         if not self.project_state_path.exists():
             return {"enabled": False, "consent_given": False}
 
@@ -187,7 +218,7 @@ class GojoLearning:
             with open(self.kill_switch_path, 'r', encoding='utf-8') as f:
                 state = json.load(f)
                 return state.get("active", False)
-        except:
+        except (OSError, json.JSONDecodeError):
             return False
 
     def _contains_sensitive_data(self, text: str) -> bool:

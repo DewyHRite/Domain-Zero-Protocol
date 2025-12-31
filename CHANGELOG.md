@@ -52,6 +52,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - CLI command: `python session_monitor.py record-invocation <agent_name> [--routed]`
    - Detects 10-15% coverage gap from agent bypass patterns
 
+#### **PATCH-STATE-001: State File Consolidation** (2025-12-31)
+- **Purpose**: Consolidate 4 fragmented state files into unified `project-state.json` with nested namespaces
+- **Problem**: State fragmentation across `session-state.json`, `troubleshooting-history.json`, `agent-invocation-tracker.json`, and duplicated tier statistics caused data inconsistency and maintenance overhead
+- **Solution**: Created centralized `ProjectStateManager` class with consolidated namespaces and non-destructive migration system
+- **Key Changes**:
+  1. **Consolidated Namespaces**:
+     - `session-state.json` → `project-state.json::session_tracking`
+     - `troubleshooting-history.json` → `project-state.json::troubleshooting`
+     - `agent-invocation-tracker.json` → `project-state.json::agent_invocation_tracking`
+     - Deduplicated `tier_usage_statistics` + `tier_statistics` → `project-state.json::tier_tracking`
+  2. **ProjectStateManager** (`.protocol-state/project_state_manager.py`, 558 lines):
+     - Centralized state access for all DZP components
+     - Automatic fallback to legacy files if consolidated namespaces unavailable
+     - Cross-platform file locking (Windows msvcrt, Unix fcntl)
+     - Atomic writes using tempfile pattern
+  3. **Migration System** (`.protocol-state/migrate_state_consolidation.py`, 368 lines):
+     - Automatic backup creation with timestamps
+     - Dry-run mode for safety
+     - Migration status detection
+     - Rollback capability
+  4. **Updated Scripts** (8 total):
+     - `session_monitor.py`, `troubleshooting_tracker.py`, `tier-statistics.py`, `tier-enforcement.py`
+     - `gojo-learn.py`, `sukuna-learn.py`, `restore-snapshot.py`, `create-snapshot.py`
+     - All use ProjectStateManager with backward compatibility
+  5. **Updated Documentation**:
+     - `protocol/skills/session.md` (v1.0.0 → PATCH-STATE-001)
+     - `protocol/skills/ts.md` (v1.0.0 → v1.1.0)
+     - `protocol/gojo.agent.md` (added Option 6: Migrate State Consolidation)
+- **Migration Path**:
+  ```bash
+  # Check if migration needed
+  python .protocol-state/migrate_state_consolidation.py --status
+
+  # Dry run (no changes)
+  python .protocol-state/migrate_state_consolidation.py --dry-run
+
+  # Execute migration (with automatic backups)
+  python .protocol-state/migrate_state_consolidation.py --execute
+  ```
+- **Backward Compatibility**: All scripts fallback to legacy files if consolidated namespaces unavailable. No breaking changes.
+- **Impact**: Reduced file count from 4 to 1, eliminated tier statistics duplication, improved data consistency, single source of truth for DZP state
+- **Files Created**: `project_state_manager.py`, `migrate_state_consolidation.py`
+- **Files Modified**: 8 Python scripts + 3 documentation files (session.md, ts.md, gojo.agent.md)
+
+#### **PATCH-TS-001: Unified Troubleshooting Session Tracker** (2025-12-31)
+- **Purpose**: Centralized tracking system for all /ts tier commands with permanent historical analytics
+- **Problem**: No historical data on troubleshooting patterns, tier effectiveness, or escalation frequencies
+- **Solution**: Created `.protocol-state/troubleshooting_tracker.py` (585 lines) with permanent session storage
+- **Key Features**:
+  1. **Session Management**: start, update, complete, escalate, status commands
+  2. **Tier Analysis**: Success rates, average durations, escalation patterns per tier (1-5)
+  3. **File Frequency Tracking**: Identifies most commonly problematic files across sessions
+  4. **Pattern Recognition**: Statistical analysis of tier effectiveness and escalation triggers
+  5. **Permanent Retention**: All sessions kept indefinitely in `troubleshooting-history.json`
+- **Commands Added**:
+  - `python troubleshooting_tracker.py start <tier> "<description>" "<files>"`
+  - `python troubleshooting_tracker.py update <session_id> "<status>"`
+  - `python troubleshooting_tracker.py complete <session_id> "<resolution>"`
+  - `python troubleshooting_tracker.py escalate <session_id> <new_tier> "<reason>"`
+  - `python troubleshooting_tracker.py status [session_id]`
+  - `python troubleshooting_tracker.py stats` (NEW - historical analytics)
+- **Integration**: Updated `protocol/skills/ts.md` to review stats before tier selection
+- **Files Created**: troubleshooting_tracker.py, troubleshooting-history.json
+- **Files Modified**: protocol/skills/ts.md (added Step 0 - stats review)
+- **Impact**: Data-driven tier selection, pattern learning, troubleshooting effectiveness tracking
+
 ### Fixed
 
 #### **Windows Compatibility: Unicode Encoding Error**
@@ -62,6 +128,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `🛑` → `[BLOCKED]`, `❌` → `[ERROR]`, `ℹ️` → `[INFO]`, `🗑️` → `[DELETE]`
   - `💡` → `[TIP]`, `🌙` → `[LATE]`
 - **Testing**: All commands tested on Windows cmd.exe with no encoding errors
+
+#### **PATCH-SESSION-005-v2: Complete Stale Timestamp Fix + State Management + Permission System** (2025-12-31)
+- **Priority**: P0-Critical (User Safety)
+- **Discoverer**: Sukuna (System Update Adversary)
+- **Issue**: Three critical stale timestamp bugs completely disabled user safety systems
+- **Bugs Fixed**:
+  1. **Status Display Failure**: `get_session_summary()` always showed "0 minutes" for 15+ hour sessions
+  2. **Historical Data Corruption**: `_archive_session()` permanently stored sessions with "0 minutes" duration
+  3. **Safety System Complete Failure**: `should_block_operation()` NEVER blocked high-risk operations, even after 47+ hours
+- **Root Cause**: Methods read stale `metrics['total_duration_minutes']` from JSON state instead of calculating live duration from timestamps
+- **Fix**: Added `_calculate_current_duration()` and `_calculate_current_continuous_work()` helper methods (lines 942-995)
+- **Extensions Added**:
+  - **Extension 2 - State Management**: 4 new methods to update project-state.json, dev-notes.md, domain.record.md on session events
+  - **Extension 3 - Permission System**: Gojo-only access to domain.record.md via `DZP_AGENT=gojo` environment variable
+- **Files Modified**: session_monitor.py (+180 lines), session.md (updated with `DZP_AGENT=gojo`)
+- **Impact**: User safety systems RESTORED - high-risk blocking now functional, duration display accurate, data integrity preserved
 
 ### Changed
 

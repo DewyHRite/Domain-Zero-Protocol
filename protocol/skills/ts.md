@@ -2,7 +2,7 @@
 # TS (Tier Shift) - Troubleshooting Tier Management
 ## Context-Aware Bug Resolution with Hybrid Escalation
 
-**Version**: 1.0.0
+**Version**: 1.1.0 (PATCH-STATE-001)
 **Agent(s)**: Gojo (Mission Control)
 **Category**: Troubleshooting & Diagnostics
 **Risk Level**: Medium (state writes, agent coordination)
@@ -14,6 +14,14 @@
 
 5-tier hybrid troubleshooting system for systematic bug resolution with automatic escalation. User selects initial tier based on bug severity, with auto-escalation after failed attempts.
 
+**Integrated Troubleshooting Tracker** (v1.0.0, PATCH-STATE-001):
+- All /ts commands automatically track sessions in `project-state.json::troubleshooting` (consolidated)
+- Uses nested structure: `troubleshooting.active_session`, `troubleshooting.statistics`, `troubleshooting.history`
+- Backward compatible: Falls back to legacy `troubleshooting-history.json` when needed
+- Historical stats inform tier selection and approach
+- Pattern recognition from past resolutions
+- Escalation tracking for learning
+
 **Use when:**
 - Debugging complex issues requiring multiple approaches
 - Need structured troubleshooting workflow
@@ -24,7 +32,8 @@
 
 ## Prerequisites
 
-- [ ] `.protocol-state/project-state.json` exists
+- [ ] `.protocol-state/project-state.json` exists (consolidated state)
+- [ ] **PATCH-STATE-001**: Uses `project-state.json::troubleshooting` namespace (fallback to legacy `troubleshooting-history.json`)
 - [ ] Python 3.8+ available (for optional plan mode validation)
 - [ ] Gojo agent context (domain.record.md write access)
 
@@ -32,6 +41,7 @@
 1. If project-state.json missing: Create minimal version with troubleshooting schemas
 2. If Python unavailable: Skip plan mode validation (proceed with user confirmation)
 3. Continue with available troubleshooting features
+4. **PATCH-STATE-001**: Automatic fallback to legacy files if consolidated state unavailable
 
 ---
 
@@ -59,15 +69,29 @@
 **Purpose**: Quick fix for minor bugs with standard workflow
 
 **Workflow**:
-1. Initialize troubleshooting session in project-state.json
+0. **Review troubleshooting history stats** (python troubleshooting_tracker.py stats)
+- Check past Tier 1 success rate and avg duration
+- Review frequently affected files for pattern recognition
+- Inform tier selection with historical data
+1. **Initialize troubleshooting session** (python troubleshooting_tracker.py start 1 "<description>" "<files>")
 2. Prompt user for bug details (description, affected files, expected vs actual)
 3. Brief Yuuji for TDD workflow (write failing test, implement fix, verify)
 4. Brief Megumi for OWASP security review
 5. Update dev-notes.md and domain.record.md
+6. **Complete session tracking** (python troubleshooting_tracker.py complete "<resolution>")
 
 **Implementation**:
 ```bash
-/ts tier1
+# Step 0: Review past troubleshooting patterns
+python .protocol-state/troubleshooting_tracker.py stats
+
+# Step 1: Start new session
+python .protocol-state/troubleshooting_tracker.py start 1 "<description>" "<files>"
+
+# ... (Yuuji + Megumi work) ...
+
+# Step 6: Mark complete
+python .protocol-state/troubleshooting_tracker.py complete "<resolution>"
 ```
 
 **User Prompts**:
@@ -108,8 +132,8 @@ Review for:
 - Logging of sensitive data
 ```
 
-**State Updates**:
-- `project-state.json → troubleshooting_session`:
+**State Updates** (PATCH-STATE-001):
+- `project-state.json::troubleshooting.active_session` (consolidated):
   ```json
   {
     "session_id": "TS-{timestamp}",
@@ -121,6 +145,7 @@ Review for:
     "started_at": "{timestamp}"
   }
   ```
+- **Fallback**: Updates legacy `troubleshooting_session` if consolidated namespace unavailable
 
 **Exit Conditions**:
 - **Success**: Bug fixed, tests pass, security clean → `/ts complete`
@@ -182,9 +207,10 @@ Investigation Steps:
 7. Analyze git log for related changes
 ```
 
-**State Updates**:
-- Increment `attempts_count`
+**State Updates** (PATCH-STATE-001):
+- Increment `troubleshooting.active_session.attempts_count` (consolidated)
 - Add investigation.md path to session metadata
+- **Fallback**: Updates legacy `troubleshooting_session` if needed
 
 ---
 
@@ -281,15 +307,16 @@ Synthesize unified fix:
 4. Test across all domains (DB, API, performance)
 ```
 
-**State Updates**:
-- `selected_support_agents`: ["todo", "maki"]
-- `support_agent_deliverables`:
+**State Updates** (PATCH-STATE-001):
+- `troubleshooting.active_session.selected_support_agents`: ["todo", "maki"] (consolidated)
+- `troubleshooting.active_session.support_agent_deliverables`:
   ```json
   {
     "todo": {"status": "complete", "output_file": ".protocol-state/investigation.md#database-analysis"},
     "maki": {"status": "in_progress", "output_file": null}
   }
   ```
+- **Fallback**: Updates legacy `troubleshooting_session` if needed
 
 ---
 
@@ -518,26 +545,29 @@ Adversarial Review:
 - Devil's advocate recommendations
 ```
 
-**Step 3: Full Documentation Sync**
+**Step 3: Full Documentation Sync** (PATCH-STATE-001)
 
 ALL 6 state files MUST be updated:
 
-1. **project-state.json**:
+1. **project-state.json::troubleshooting.active_session** (consolidated):
    ```json
    {
-     "troubleshooting_session": {
-       "session_id": "{id}",
-       "current_tier": 5,
-       "codered_active": true,
-       "plan_mode_active": true,
-       "agent_completion_status": {
-         "yuuji": "complete",
-         "megumi": "in_progress",
-         ...
+     "troubleshooting": {
+       "active_session": {
+         "session_id": "{id}",
+         "current_tier": 5,
+         "codered_active": true,
+         "plan_mode_active": true,
+         "agent_completion_status": {
+           "yuuji": "complete",
+           "megumi": "in_progress",
+           ...
+         }
        }
      }
    }
    ```
+   **Fallback**: Updates legacy `troubleshooting_session` if consolidated unavailable
 
 2. **dev-notes.md**:
    ```markdown
@@ -558,8 +588,9 @@ ALL 6 state files MUST be updated:
 5. **domain.record.md** (Gojo only):
    Strategic context, business impact, decision log
 
-6. **troubleshooting-history.json**:
-   Session archive on completion
+6. **project-state.json::troubleshooting.history** (PATCH-STATE-001):
+   Session archive on completion (consolidated)
+   **Fallback**: Legacy `troubleshooting-history.json` if consolidated unavailable
 
 **Step 4: Gojo Unified Recommendation**
 
@@ -632,8 +663,9 @@ Escalation History:
 Next Actions: Waiting for Megumi + Maki completion
 ```
 
-**Implementation**:
-Read project-state.json → troubleshooting_session, format output
+**Implementation** (PATCH-STATE-001):
+Read `project-state.json::troubleshooting.active_session` (consolidated), format output
+**Fallback**: Reads legacy `troubleshooting_session` if consolidated unavailable
 
 ---
 
@@ -670,8 +702,9 @@ Statistics:
 - Most Common Escalation: tier1 → tier2 (auto, failed attempt)
 ```
 
-**Implementation**:
-Read troubleshooting-history.json, format last 10 sessions + statistics
+**Implementation** (PATCH-STATE-001):
+Read `project-state.json::troubleshooting.history` + `troubleshooting.statistics` (consolidated), format last 10 sessions + statistics
+**Fallback**: Reads legacy `troubleshooting-history.json` if consolidated unavailable
 
 ---
 
@@ -720,15 +753,16 @@ _____________________________________________
 
 ### 9. /ts complete - Close and Archive Session
 
-**Purpose**: Mark session complete and archive to troubleshooting-history.json
+**Purpose**: Mark session complete and archive to consolidated state (PATCH-STATE-001)
 
 **Workflow**:
 1. Validate session is active
 2. Prompt user for outcome and completion notes
-3. Archive session to troubleshooting-history.json
-4. Clear active session from project-state.json
+3. Archive session to `project-state.json::troubleshooting.history` (consolidated)
+4. Clear active session from `project-state.json::troubleshooting.active_session`
 5. Log completion to dev-notes.md and domain.record.md
-6. Update troubleshooting_statistics
+6. Update `troubleshooting.statistics`
+7. **Fallback**: Updates legacy files if consolidated unavailable
 
 **User Prompt**:
 ```
@@ -748,7 +782,7 @@ Tests Added: ___ (count)
 [Complete Session] [Cancel]
 ```
 
-**Archive Entry** (troubleshooting-history.json):
+**Archive Entry** (project-state.json::troubleshooting.history - PATCH-STATE-001):
 ```json
 {
   "session_id": "TS-20251228-140000",
@@ -769,12 +803,13 @@ Tests Added: ___ (count)
 }
 ```
 
-**State Updates**:
-- Archive to troubleshooting-history.json
-- Clear troubleshooting_session from project-state.json
-- Increment troubleshooting_statistics.total_sessions
-- Update tier distribution statistics
+**State Updates** (PATCH-STATE-001):
+- Archive to `project-state.json::troubleshooting.history.sessions[]` (consolidated)
+- Clear `troubleshooting.active_session`
+- Increment `troubleshooting.statistics.total_sessions`
+- Update tier distribution in `troubleshooting.statistics.sessions_by_tier`
 - Log to dev-notes.md and domain.record.md
+- **Fallback**: Updates legacy `troubleshooting-history.json` if consolidated unavailable
 
 ---
 
@@ -820,79 +855,86 @@ Always available via `/ts escalate`, regardless of auto-escalation logic.
 
 ## State Schemas
 
-### troubleshooting_session (project-state.json)
+### project-state.json::troubleshooting (PATCH-STATE-001 Consolidated)
 
 ```json
 {
-  "troubleshooting_session": {
-    "session_id": "TS-20251228-140000",
-    "active": true,
-    "current_tier": 3,
-    "attempts_count": 3,
-    "bug_description": "Database query returns stale data intermittently",
-    "affected_files": ["src/db/queries.ts", "src/cache/redis-client.ts"],
-    "expected_behavior": "Query returns fresh data every time",
-    "actual_behavior": "Query returns stale data ~10% of requests",
-    "reproduction_steps": ["1. Run query", "2. Update data", "3. Re-run query within 5 seconds"],
-    "selected_support_agents": ["todo", "maki"],
-    "support_agent_deliverables": {
-      "todo": {"status": "complete", "output_file": ".protocol-state/investigation.md#database-analysis"},
-      "maki": {"status": "in_progress", "output_file": null}
+  "troubleshooting": {
+    "_comment": "Troubleshooting session tracking - consolidated",
+    "_schema_version": "2.0.0",
+    "active_session": {
+      "session_id": "TS-20251228-140000",
+      "active": true,
+      "current_tier": 3,
+      "attempts_count": 3,
+      "bug_description": "Database query returns stale data intermittently",
+      "affected_files": ["src/db/queries.ts", "src/cache/redis-client.ts"],
+      "expected_behavior": "Query returns fresh data every time",
+      "actual_behavior": "Query returns stale data ~10% of requests",
+      "reproduction_steps": ["1. Run query", "2. Update data", "3. Re-run query within 5 seconds"],
+      "selected_support_agents": ["todo", "maki"],
+      "support_agent_deliverables": {
+        "todo": {"status": "complete", "output_file": ".protocol-state/investigation.md#database-analysis"},
+        "maki": {"status": "in_progress", "output_file": null}
+      },
+      "escalation_history": [
+        {"from_tier": 1, "to_tier": 2, "reason": "auto", "trigger": "failed_attempt", "timestamp": "2025-12-28T14:30:00Z"},
+        {"from_tier": 2, "to_tier": 3, "reason": "manual", "user_reason": "Need DB + perf expertise", "timestamp": "2025-12-28T15:00:00Z"}
+      ],
+      "agent_completion_status": {
+        "yuuji": "complete",
+        "megumi": "in_progress",
+        "todo": "complete",
+        "maki": "in_progress"
+      },
+      "plan_mode_active": false,
+      "codered_active": false,
+      "started_at": "2025-12-28T14:00:00Z",
+      "last_updated": "2025-12-28T15:30:00Z"
     },
-    "escalation_history": [
-      {"from_tier": 1, "to_tier": 2, "reason": "auto", "trigger": "failed_attempt", "timestamp": "2025-12-28T14:30:00Z"},
-      {"from_tier": 2, "to_tier": 3, "reason": "manual", "user_reason": "Need DB + perf expertise", "timestamp": "2025-12-28T15:00:00Z"}
-    ],
-    "agent_completion_status": {
-      "yuuji": "complete",
-      "megumi": "in_progress",
-      "todo": "complete",
-      "maki": "in_progress"
+    "statistics": {
+      "total_sessions": 47,
+      "sessions_by_tier": {
+        "tier1": 15,
+        "tier2": 21,
+        "tier3": 8,
+        "tier4": 2,
+        "codered": 1
+      },
+      "sessions_by_outcome": {
+        "resolved": 40,
+        "mitigated": 4,
+        "deferred": 2,
+        "cannot_reproduce": 1
+      },
+      "average_resolution_minutes": {
+        "tier1": 35,
+        "tier2": 75,
+        "tier3": 165,
+        "tier4": 240,
+        "codered": 263
+      },
+      "auto_escalation_count": 12,
+      "manual_escalation_count": 5,
+      "most_common_escalation_path": "tier1 → tier2",
+      "total_tests_added": 387,
+      "last_updated": "2025-12-28T16:00:00Z"
     },
-    "plan_mode_active": false,
-    "codered_active": false,
-    "started_at": "2025-12-28T14:00:00Z",
-    "last_updated": "2025-12-28T15:30:00Z"
+    "history": {
+      "sessions": [],
+      "metadata": {
+        "created": "2025-12-01T00:00:00Z",
+        "total_sessions_all_time": 47,
+        "last_updated": "2025-12-28T16:00:00Z"
+      }
+    }
   }
 }
 ```
 
-### troubleshooting_statistics (project-state.json)
+**Migration Note**: Legacy `troubleshooting-history.json` and `project-state.json::troubleshooting_session/troubleshooting_statistics` supported for backward compatibility.
 
-```json
-{
-  "troubleshooting_statistics": {
-    "total_sessions": 47,
-    "sessions_by_tier": {
-      "tier1": 15,
-      "tier2": 21,
-      "tier3": 8,
-      "tier4": 2,
-      "codered": 1
-    },
-    "sessions_by_outcome": {
-      "resolved": 40,
-      "mitigated": 4,
-      "deferred": 2,
-      "cannot_reproduce": 1
-    },
-    "average_resolution_minutes": {
-      "tier1": 35,
-      "tier2": 75,
-      "tier3": 165,
-      "tier4": 240,
-      "codered": 263
-    },
-    "auto_escalation_count": 12,
-    "manual_escalation_count": 5,
-    "most_common_escalation_path": "tier1 → tier2",
-    "total_tests_added": 387,
-    "last_updated": "2025-12-28T16:00:00Z"
-  }
-}
-```
-
-### troubleshooting-history.json
+### troubleshooting-history.json (Legacy - Deprecated)
 
 ```json
 {
@@ -985,15 +1027,16 @@ troubleshooting:
 
 ## Escape Paths
 
-### Prerequisites Failures
-- **troubleshooting-history.json missing**: Auto-create with default schema
+### Prerequisites Failures (PATCH-STATE-001)
+- **project-state.json::troubleshooting missing**: Auto-create with default troubleshooting namespace schema
+- **Consolidated state unavailable**: Fallback to legacy `troubleshooting-history.json` (read/write)
 - **Python unavailable**: Skip plan mode validation, trust user confirmation for codered
 - **domain.record.md locked**: Skip strategic logging, log to dev-notes.md only
 - **project-state.json corrupted**: Create minimal version with troubleshooting schemas
 
 ### Graceful Degradation Hierarchy
-1. **CRITICAL** (must succeed): project-state.json, dev-notes.md
-2. **HIGH** (best effort): troubleshooting-history.json, domain.record.md
+1. **CRITICAL** (must succeed): project-state.json::troubleshooting, dev-notes.md
+2. **HIGH** (best effort): domain.record.md, legacy troubleshooting-history.json (fallback only)
 3. **MEDIUM** (optional): security-review.md, investigation.md
 4. **LOW** (nice-to-have): plan mode validation, statistics, tier time estimates
 
@@ -1065,6 +1108,14 @@ Tests Added: 23
 ---
 
 ## Changelog
+
+### 1.1.0 (2025-12-29) - PATCH-STATE-001
+- **BREAKING**: Migrated to consolidated state (`project-state.json::troubleshooting`)
+- Nested structure: `troubleshooting.active_session`, `troubleshooting.statistics`, `troubleshooting.history`
+- Backward compatibility: Fallback to legacy `troubleshooting-history.json` when consolidated unavailable
+- Uses ProjectStateManager for all state operations
+- All commands updated to reference consolidated namespaces
+- Migration support via `migrate_state_consolidation.py`
 
 ### 1.0.0 (2025-12-28)
 - Initial release for v8.11.0

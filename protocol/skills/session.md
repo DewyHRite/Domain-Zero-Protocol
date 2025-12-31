@@ -25,7 +25,8 @@ Provides unified skill interface for session_monitor.py operations with integrat
 ## Prerequisites
 
 - [ ] `.protocol-state/session_monitor.py` exists
-- [ ] `.protocol-state/session-state.json` exists (auto-created if missing)
+- [ ] `.protocol-state/project-state.json` exists (consolidated state - auto-created if missing)
+- [ ] **PATCH-STATE-001**: Uses consolidated `project-state.json::session_tracking` namespace (fallback to legacy `session-state.json` for backward compatibility)
 - [ ] Python 3.8+ available
 - [ ] Gojo agent context (domain.record.md write access)
 
@@ -55,8 +56,9 @@ Read protocol/CLAUDE.md
 - Session ID and start timestamp
 - Full DZP protocol activation (all agent rules, restrictions, workflows)
 
-**State Updates**:
-- `session-state.json`: Creates/updates current session
+**State Updates** (PATCH-STATE-001):
+- `project-state.json::session_tracking`: Creates/updates current session (consolidated namespace)
+- Backward compatible: Falls back to `session-state.json` if consolidated state unavailable
 - `domain.record.md`: Logs session start (Gojo only)
 
 **Workflow**:
@@ -92,19 +94,21 @@ python .protocol-state/session_monitor.py status
 
 **Implementation**:
 ```bash
-# Step 1: Update session timestamp
-python .protocol-state/session_monitor.py update
+# Step 1: Update session timestamp with Gojo permission (for domain.record.md access)
+DZP_AGENT=gojo python .protocol-state/session_monitor.py update
 
 # Step 2: Sync checkpoint files
 # (See Checkpoint Update Workflow below)
 ```
 
-**Checkpoint Files Updated**:
-1. **session-state.json** - Session duration, alert counts
-2. **dev-notes.md** - Append checkpoint entry with current tasks
-3. **project-state.json** - Update last_active timestamp, mission progress
-4. **security-review.md** - Append checkpoint (if security work active)
-5. **domain.record.md** - Log checkpoint with strategic context (Gojo only)
+**State Files Updated** (PATCH-SESSION-005 - Extensions 2 & 3, PATCH-STATE-001):
+1. **project-state.json::session_tracking** - Session duration, alert counts, interaction timestamp (consolidated)
+2. **dev-notes.md** - Security review log with session update event
+3. **domain.record.md** - Session checkpoint (Gojo permission only via DZP_AGENT env var)
+
+**Note (PATCH-STATE-001)**: Uses consolidated state in `project-state.json::session_tracking`. Falls back to legacy `session-state.json` for backward compatibility.
+
+**Note**: `DZP_AGENT=gojo` environment variable grants temporary Gojo permission, allowing the session monitor to update domain.record.md when invoked by the user through this skill. Without this variable, domain.record.md updates are skipped (permission denied).
 
 **Use Cases**:
 - Manual checkpoint during long work sessions
@@ -134,8 +138,9 @@ python .protocol-state/session_monitor.py break 30
 
 **Validation**: Duration must be 1-480 minutes (8 hours)
 
-**State Updates**:
-- `session-state.json`: Adds break timestamp, resets escalation
+**State Updates** (PATCH-STATE-001):
+- `project-state.json::session_tracking`: Adds break timestamp, resets escalation
+- Backward compatible: Falls back to `session-state.json` if needed
 - `domain.record.md`: Logs break (Gojo only)
 
 ---
@@ -151,8 +156,9 @@ python .protocol-state/session_monitor.py continue
 
 **Output**: Resume timestamp and total session time
 
-**State Updates**:
-- `session-state.json`: Updates last interaction timestamp
+**State Updates** (PATCH-STATE-001):
+- `project-state.json::session_tracking`: Updates last interaction timestamp
+- Backward compatible: Falls back to `session-state.json` if needed
 
 ---
 
@@ -162,14 +168,21 @@ python .protocol-state/session_monitor.py continue
 
 **Implementation**:
 ```bash
-python .protocol-state/session_monitor.py end
+# End session with Gojo permission (for domain.record.md access)
+DZP_AGENT=gojo python .protocol-state/session_monitor.py end
 ```
 
-**State Updates**:
-- `session-state.json`: Archives session to history, resets current
-- `domain.record.md`: Logs session end with metrics (Gojo only)
+**State Files Updated** (PATCH-SESSION-005 - Extensions 2 & 3, PATCH-STATE-001):
+1. **project-state.json::session_tracking** - Archives session to history, resets current session (consolidated)
+2. **project-state.json** - Updates total sessions count, total work minutes
+3. **dev-notes.md** - Logs session end with metrics, security review event
+4. **domain.record.md** - Logs session completion with wellbeing metrics (Gojo permission only via DZP_AGENT env var)
+
+**Note (PATCH-STATE-001)**: Uses consolidated `project-state.json::session_tracking` namespace. Falls back to legacy `session-state.json` for backward compatibility.
 
 **Output**: Session summary (duration, breaks, alerts)
+
+**Note**: `DZP_AGENT=gojo` environment variable grants temporary Gojo permission for domain.record.md updates. All other state files are updated regardless of this variable.
 
 ---
 
@@ -294,32 +307,37 @@ args: "start"
 
 ## State File Schemas
 
-### session-state.json
+### project-state.json::session_tracking (PATCH-STATE-001 Consolidated)
 ```json
 {
-  "current_session": {
-    "session_id": "session_20251228_200000",
-    "session_active": true,
-    "start_time": "2025-12-28T20:00:00Z",
-    "last_interaction_time": "2025-12-28T20:30:00Z",
-    "alert_count": 0,
-    "escalation_level": 0,
-    "high_risk_operations_blocked": false
-  },
-  "session_metrics": {
-    "total_duration_minutes": 30,
-    "continuous_work_minutes": 30,
-    "break_timestamps": [],
-    "total_breaks": 0,
-    "alerts_issued": 0
-  },
-  "thresholds": {
-    "initial_alert_minutes": 240,
-    "critical_session_minutes": 360,
-    "max_continuous_minutes": 480
+  "session_tracking": {
+    "current_session": {
+      "session_id": "session_20251228_200000",
+      "session_active": true,
+      "start_time": "2025-12-28T20:00:00Z",
+      "last_interaction_time": "2025-12-28T20:30:00Z",
+      "alert_count": 0,
+      "escalation_level": 0,
+      "high_risk_operations_blocked": false
+    },
+    "session_metrics": {
+      "total_duration_minutes": 30,
+      "continuous_work_minutes": 30,
+      "break_timestamps": [],
+      "total_breaks": 0,
+      "alerts_issued": 0
+    },
+    "thresholds": {
+      "initial_alert_minutes": 240,
+      "critical_session_minutes": 360,
+      "max_continuous_minutes": 480
+    },
+    "last_updated": "2025-12-28T20:30:00Z"
   }
 }
 ```
+
+**Migration Note**: Legacy `session-state.json` supported for backward compatibility. Run `python .protocol-state/migrate_state_consolidation.py --execute` to consolidate.
 
 ---
 
