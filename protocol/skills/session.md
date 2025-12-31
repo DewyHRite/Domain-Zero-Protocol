@@ -219,15 +219,19 @@ cat .protocol-state/project-state.json
 echo "\n---\n## $(date -Iseconds) - Session Checkpoint\n**Session Duration**: ... \n" >> .protocol-state/dev-notes.md
 ```
 
-**project-state.json**:
+**project-state.json::session_tracking** (PATCH-STATE-001 consolidated):
 ```json
 {
-  "session_metadata": {
-    "last_active": "2025-12-28T20:00:00Z",
-    "last_checkpoint": "2025-12-28T20:00:00Z"
+  "session_tracking": {
+    "current_session": {
+      "last_interaction_time": "2025-12-28T20:00:00Z"
+    },
+    "last_updated": "2025-12-28T20:00:00Z"
   }
 }
 ```
+
+Note: Uses consolidated `session_tracking` namespace. Legacy `session-state.json` format supported for backward compatibility.
 
 **domain.record.md** (Gojo only):
 ```markdown

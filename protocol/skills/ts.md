@@ -16,7 +16,8 @@
 
 **Integrated Troubleshooting Tracker** (v1.0.0, PATCH-STATE-001):
 - All /ts commands automatically track sessions in `project-state.json::troubleshooting` (consolidated)
-- Uses nested structure: `troubleshooting.active_session`, `troubleshooting.statistics`, `troubleshooting.history`
+- Uses nested structure: `troubleshooting.active_session`, `troubleshooting.history`
+- Statistics computed on-the-fly from history (not persisted)
 - Backward compatible: Falls back to legacy `troubleshooting-history.json` when needed
 - Historical stats inform tier selection and approach
 - Pattern recognition from past resolutions
@@ -703,7 +704,7 @@ Statistics:
 ```
 
 **Implementation** (PATCH-STATE-001):
-Read `project-state.json::troubleshooting.history` + `troubleshooting.statistics` (consolidated), format last 10 sessions + statistics
+Read `project-state.json::troubleshooting.history` (consolidated), compute statistics on-the-fly, format last 10 sessions + statistics
 **Fallback**: Reads legacy `troubleshooting-history.json` if consolidated unavailable
 
 ---
@@ -761,8 +762,9 @@ _____________________________________________
 3. Archive session to `project-state.json::troubleshooting.history` (consolidated)
 4. Clear active session from `project-state.json::troubleshooting.active_session`
 5. Log completion to dev-notes.md and domain.record.md
-6. Update `troubleshooting.statistics`
-7. **Fallback**: Updates legacy files if consolidated unavailable
+6. **Fallback**: Updates legacy files if consolidated unavailable
+
+Note: Statistics are computed on-the-fly from history; no separate statistics persistence required.
 
 **User Prompt**:
 ```
@@ -806,10 +808,10 @@ Tests Added: ___ (count)
 **State Updates** (PATCH-STATE-001):
 - Archive to `project-state.json::troubleshooting.history.sessions[]` (consolidated)
 - Clear `troubleshooting.active_session`
-- Increment `troubleshooting.statistics.total_sessions`
-- Update tier distribution in `troubleshooting.statistics.sessions_by_tier`
 - Log to dev-notes.md and domain.record.md
 - **Fallback**: Updates legacy `troubleshooting-history.json` if consolidated unavailable
+
+Note: Statistics (total_sessions, sessions_by_tier, etc.) are computed on-the-fly from history when `/ts stats` or `/ts history` is called.
 
 ---
 
@@ -857,6 +859,8 @@ Always available via `/ts escalate`, regardless of auto-escalation logic.
 
 ### project-state.json::troubleshooting (PATCH-STATE-001 Consolidated)
 
+**Note**: The `statistics` field is NOT persisted in the state file. Statistics are computed on-the-fly from the `history` data when requested via `/ts stats` or `/ts history`.
+
 ```json
 {
   "troubleshooting": {
@@ -892,34 +896,6 @@ Always available via `/ts escalate`, regardless of auto-escalation logic.
       "started_at": "2025-12-28T14:00:00Z",
       "last_updated": "2025-12-28T15:30:00Z"
     },
-    "statistics": {
-      "total_sessions": 47,
-      "sessions_by_tier": {
-        "tier1": 15,
-        "tier2": 21,
-        "tier3": 8,
-        "tier4": 2,
-        "codered": 1
-      },
-      "sessions_by_outcome": {
-        "resolved": 40,
-        "mitigated": 4,
-        "deferred": 2,
-        "cannot_reproduce": 1
-      },
-      "average_resolution_minutes": {
-        "tier1": 35,
-        "tier2": 75,
-        "tier3": 165,
-        "tier4": 240,
-        "codered": 263
-      },
-      "auto_escalation_count": 12,
-      "manual_escalation_count": 5,
-      "most_common_escalation_path": "tier1 → tier2",
-      "total_tests_added": 387,
-      "last_updated": "2025-12-28T16:00:00Z"
-    },
     "history": {
       "sessions": [],
       "metadata": {
@@ -932,7 +908,7 @@ Always available via `/ts escalate`, regardless of auto-escalation logic.
 }
 ```
 
-**Migration Note**: Legacy `troubleshooting-history.json` and `project-state.json::troubleshooting_session/troubleshooting_statistics` supported for backward compatibility.
+**Migration Note**: Legacy `troubleshooting-history.json` and `project-state.json::troubleshooting_session` supported for backward compatibility. Statistics are always computed on-the-fly from history data.
 
 ### troubleshooting-history.json (Legacy - Deprecated)
 
@@ -1038,7 +1014,7 @@ troubleshooting:
 1. **CRITICAL** (must succeed): project-state.json::troubleshooting, dev-notes.md
 2. **HIGH** (best effort): domain.record.md, legacy troubleshooting-history.json (fallback only)
 3. **MEDIUM** (optional): security-review.md, investigation.md
-4. **LOW** (nice-to-have): plan mode validation, statistics, tier time estimates
+4. **LOW** (nice-to-have): plan mode validation, on-the-fly statistics computation, tier time estimates
 
 ---
 
@@ -1111,7 +1087,8 @@ Tests Added: 23
 
 ### 1.1.0 (2025-12-29) - PATCH-STATE-001
 - **BREAKING**: Migrated to consolidated state (`project-state.json::troubleshooting`)
-- Nested structure: `troubleshooting.active_session`, `troubleshooting.statistics`, `troubleshooting.history`
+- Nested structure: `troubleshooting.active_session`, `troubleshooting.history`
+- Statistics computed on-the-fly from history (not persisted)
 - Backward compatibility: Fallback to legacy `troubleshooting-history.json` when consolidated unavailable
 - Uses ProjectStateManager for all state operations
 - All commands updated to reference consolidated namespaces
@@ -1123,7 +1100,8 @@ Tests Added: 23
 - Hybrid escalation (severity + attempts-based)
 - Context-dependent support agent selection (tier3-4)
 - Mandatory plan mode for codered
-- Full state persistence (troubleshooting_session, troubleshooting_statistics, troubleshooting-history.json)
+- Full state persistence (troubleshooting_session, troubleshooting-history.json)
+- On-the-fly statistics computation from historical session data
 - Auto-escalation after 2 failed attempts per tier
 - Gojo-owned skill (domain.record.md write access)
 

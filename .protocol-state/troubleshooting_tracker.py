@@ -40,7 +40,7 @@ try:
     STATE_MANAGER_AVAILABLE = True
 except ImportError:
     STATE_MANAGER_AVAILABLE = False
-    print("[WARN] ProjectStateManager not available - using legacy file I/O")
+    # Silent fallback to legacy file I/O for backward compatibility
 
 
 class TroubleshootingTracker:
@@ -170,6 +170,20 @@ class TroubleshootingTracker:
         if not (1 <= tier <= 5):
             raise ValueError(f"Invalid tier: {tier}. Must be 1-5.")
 
+        # Validate description
+        if not description or not description.strip():
+            raise ValueError("Description cannot be empty")
+        if len(description) > 5000:
+            raise ValueError("Description exceeds maximum length (5000 characters)")
+
+        # Validate affected_files if provided
+        if affected_files:
+            file_list = [f.strip() for f in affected_files.split(',')]
+            for file_path in file_list:
+                if file_path and PATH_VALIDATOR_AVAILABLE:
+                    if not validate_file_path(file_path):
+                        raise ValueError(f"Invalid file path: {file_path}")
+
         history = self.load_history()
         now = datetime.now()
 
@@ -218,6 +232,12 @@ class TroubleshootingTracker:
         Args:
             progress_note: Progress update text
         """
+        # Validate progress_note
+        if not progress_note or not progress_note.strip():
+            raise ValueError("Progress note cannot be empty")
+        if len(progress_note) > 5000:
+            raise ValueError("Progress note exceeds maximum length (5000 characters)")
+
         history = self.load_history()
 
         # Find active session
@@ -243,6 +263,12 @@ class TroubleshootingTracker:
         Args:
             resolution: Resolution description
         """
+        # Validate resolution
+        if not resolution or not resolution.strip():
+            raise ValueError("Resolution cannot be empty")
+        if len(resolution) > 5000:
+            raise ValueError("Resolution exceeds maximum length (5000 characters)")
+
         history = self.load_history()
 
         # Find active session

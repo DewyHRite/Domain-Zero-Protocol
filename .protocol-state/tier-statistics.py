@@ -60,7 +60,7 @@ try:
     STATE_MANAGER_AVAILABLE = True
 except ImportError:
     STATE_MANAGER_AVAILABLE = False
-    print("[WARN] ProjectStateManager not available - using legacy file I/O")
+    # Silent fallback to legacy file I/O for backward compatibility
 
 
 class TierStatistics:

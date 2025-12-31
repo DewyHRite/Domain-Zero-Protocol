@@ -102,6 +102,14 @@ REQUIRED_FILES = {
     '.protocol-state/work-session-alert.template.md': 'State',
     '.protocol-state/WORK_SESSION_STATUS.md': 'State',
 
+    # State files (PATCH-STATE-001 modules - v8.12.0)
+    '.protocol-state/project_state_manager.py': 'State',
+    '.protocol-state/migrate_state_consolidation.py': 'State',
+    '.protocol-state/troubleshooting_tracker.py': 'State',
+    '.protocol-state/session-state.template.json': 'State',
+    '.protocol-state/troubleshooting-history.template.json': 'State',
+    '.protocol-state/validation-state.template.json': 'State',
+
     # System Update Framework
     '.protocol-state/system-update-framework/backup-manifest.template.json': 'SUF',
     '.protocol-state/system-update-framework/file-classifications.template.json': 'SUF',
