@@ -38,6 +38,19 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
+# PATCH-STATE-001: Import centralized state manager
+try:
+    # Add .protocol-state to path for importing ProjectStateManager
+    protocol_state_dir = Path(__file__).parent.parent / ".protocol-state"
+    if str(protocol_state_dir) not in sys.path:
+        sys.path.insert(0, str(protocol_state_dir))
+
+    from project_state_manager import ProjectStateManager
+    STATE_MANAGER_AVAILABLE = True
+except ImportError:
+    STATE_MANAGER_AVAILABLE = False
+    # Silent fallback for tier-enforcement (optional dependency)
+
 
 # =============================================================================
 # Constants
@@ -49,6 +62,12 @@ PROJECT_STATE_FILE = PROJECT_ROOT / ".protocol-state" / "project-state.json"
 # Statistics tracking (no enforcement limits)
 BYPASS_TRACKING_ENABLED = True
 
+# PATCH-STATE-001: Initialize ProjectStateManager
+if STATE_MANAGER_AVAILABLE:
+    _state_manager = ProjectStateManager(PROJECT_ROOT)
+else:
+    _state_manager = None
+
 
 # =============================================================================
 # Project State Management
@@ -58,6 +77,8 @@ def load_project_state() -> Dict[str, Any]:
     """
     Load project-state.json
 
+    PATCH-STATE-001: Uses ProjectStateManager when available for unified state access.
+
     Returns:
         Project state dictionary
 
@@ -65,6 +86,15 @@ def load_project_state() -> Dict[str, Any]:
         FileNotFoundError: If project-state.json doesn't exist
         json.JSONDecodeError: If file is malformed
     """
+    # PATCH-STATE-001: Use ProjectStateManager if available
+    if _state_manager:
+        try:
+            return _state_manager.load_project_state()
+        except Exception as e:
+            # Fall through to legacy file I/O
+            pass
+
+    # Legacy file I/O (backward compatibility)
     if not PROJECT_STATE_FILE.exists():
         raise FileNotFoundError(f"Project state file not found: {PROJECT_STATE_FILE}")
 
@@ -76,9 +106,21 @@ def save_project_state(state: Dict[str, Any]) -> None:
     """
     Save project-state.json
 
+    PATCH-STATE-001: Uses ProjectStateManager when available for atomic writes.
+
     Args:
         state: Project state dictionary to save
     """
+    # PATCH-STATE-001: Use ProjectStateManager if available
+    if _state_manager:
+        try:
+            _state_manager.save_project_state(state)
+            return
+        except Exception as e:
+            # Fall through to legacy file I/O
+            pass
+
+    # Legacy file I/O (backward compatibility)
     with open(PROJECT_STATE_FILE, 'w', encoding='utf-8') as f:
         json.dump(state, f, indent=2)
 

@@ -49,6 +49,19 @@ except ImportError:
     print("  Ensure verify_working_directory.py exists in scripts/")
     sys.exit(1)
 
+# PATCH-STATE-001: Import centralized state manager
+try:
+    # Add .protocol-state to path for importing ProjectStateManager
+    protocol_state_dir = Path(__file__).parent.parent / ".protocol-state"
+    if str(protocol_state_dir) not in sys.path:
+        sys.path.insert(0, str(protocol_state_dir))
+
+    from project_state_manager import ProjectStateManager
+    STATE_MANAGER_AVAILABLE = True
+except ImportError:
+    STATE_MANAGER_AVAILABLE = False
+    print("[WARN] ProjectStateManager not available - using legacy file I/O")
+
 
 class TierStatistics:
     """Tier statistics management and reporting"""
@@ -61,6 +74,13 @@ class TierStatistics:
         """
         self.project_state_path = project_state_path
         self.project_state = self._load_project_state()
+
+        # PATCH-STATE-001: Initialize ProjectStateManager if available
+        if STATE_MANAGER_AVAILABLE:
+            protocol_root = project_state_path.parent.parent
+            self.state_manager = ProjectStateManager(protocol_root)
+        else:
+            self.state_manager = None
 
     def _load_project_state(self) -> Dict[str, Any]:
         """Load project state from JSON file
@@ -80,7 +100,20 @@ class TierStatistics:
             sys.exit(1)
 
     def _save_project_state(self):
-        """Save project state to JSON file"""
+        """
+        Save project state to JSON file
+
+        PATCH-STATE-001: Uses ProjectStateManager when available for atomic writes.
+        """
+        # PATCH-STATE-001: Use ProjectStateManager if available
+        if self.state_manager:
+            try:
+                self.state_manager.save_project_state(self.project_state)
+                return
+            except Exception as e:
+                print(f"[WARN] ProjectStateManager failed, falling back to legacy: {e}")
+
+        # Legacy file I/O (backward compatibility)
         try:
             with open(self.project_state_path, 'w', encoding='utf-8') as f:
                 json.dump(self.project_state, f, indent=2, ensure_ascii=False)
@@ -125,14 +158,33 @@ class TierStatistics:
     def get_statistics(self) -> Dict[str, Any]:
         """Get current tier statistics
 
+        PATCH-STATE-001: Uses ProjectStateManager when available for unified state access.
+        Reads from "tier_tracking" namespace (consolidated from tier_statistics).
+
         Returns:
             Tier statistics dictionary
         """
+        # PATCH-STATE-001: Use ProjectStateManager if available
+        if self.state_manager:
+            try:
+                tier_data = self.state_manager.get_tier_tracking()
+                # Ensure tier_data is not deprecated
+                if not tier_data.get("_deprecated"):
+                    return tier_data
+            except Exception as e:
+                print(f"[WARN] ProjectStateManager failed, falling back to legacy: {e}")
+
+        # Legacy file I/O (backward compatibility)
+        # Check tier_tracking first (new consolidated name)
+        if "tier_tracking" in self.project_state and not self.project_state["tier_tracking"].get("_deprecated"):
+            return self.project_state["tier_tracking"]
+
+        # Fallback to legacy tier_statistics name
         if "tier_statistics" not in self.project_state:
-            self.project_state["tier_statistics"] = self._init_statistics()
+            self.project_state["tier_tracking"] = self._init_statistics()
             self._save_project_state()
 
-        return self.project_state["tier_statistics"]
+        return self.project_state.get("tier_tracking", self._init_statistics())
 
     def _sanitize_input(self, text: str, field_name: str) -> str:
         """Sanitize user input to prevent data pollution
@@ -250,6 +302,9 @@ class TierStatistics:
 
         # Update timestamp
         stats["last_updated"] = datetime.utcnow().isoformat() + "Z"
+
+        # PATCH-STATE-001: Update self.project_state with modified tier_tracking data
+        self.project_state["tier_tracking"] = stats
 
         # Save changes
         self._save_project_state()
@@ -409,8 +464,12 @@ class TierStatistics:
             return "(slower than target)"
 
     def reset_statistics(self):
-        """Reset all tier statistics to zero"""
-        self.project_state["tier_statistics"] = self._init_statistics()
+        """
+        Reset all tier statistics to zero
+
+        PATCH-STATE-001: Resets tier_tracking namespace (consolidated from tier_statistics).
+        """
+        self.project_state["tier_tracking"] = self._init_statistics()
         self._save_project_state()
         print("[OK] Tier statistics reset to zero")
 

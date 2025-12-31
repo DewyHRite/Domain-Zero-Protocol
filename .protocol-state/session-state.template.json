@@ -1,0 +1,38 @@
+{
+  "_comment": "Domain Zero Protocol - Work Session State Tracking Template (v8.12.0)",
+  "_template_version": "1.0.0",
+  "_usage": "Copy this file to session-state.json during fresh installation",
+  "current_session": {
+    "session_id": null,
+    "session_active": false,
+    "start_time": null,
+    "last_interaction_time": null,
+    "last_alert_time": null,
+    "alert_count": 0,
+    "escalation_level": 0,
+    "user_last_choice": null,
+    "break_acknowledged": false,
+    "high_risk_operations_blocked": false
+  },
+  "session_metrics": {
+    "total_duration_minutes": 0,
+    "continuous_work_minutes": 0,
+    "break_timestamps": [],
+    "total_breaks": 0,
+    "alerts_issued": 0,
+    "alerts_ignored": 0,
+    "continues_chosen": 0,
+    "breaks_chosen": 0
+  },
+  "thresholds": {
+    "initial_alert_minutes": 240,
+    "escalated_alert_minutes": 45,
+    "critical_session_minutes": 360,
+    "max_continuous_minutes": 480,
+    "late_night_hour": 22,
+    "minimum_break_minutes": 15
+  },
+  "session_history": [],
+  "last_updated": null,
+  "protocol_version": "8.12.0"
+}

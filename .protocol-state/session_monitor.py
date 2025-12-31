@@ -21,6 +21,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+# PATCH-STATE-001: Import centralized state manager
+try:
+    from project_state_manager import ProjectStateManager
+    STATE_MANAGER_AVAILABLE = True
+except ImportError:
+    STATE_MANAGER_AVAILABLE = False
+    print("[WARN] ProjectStateManager not available - using legacy file I/O")
+
 # Session duration limits (PATCH-SEC-005 - SEC-DZP-008 remediation)
 MAX_BREAK_DURATION = 480  # 8 hours
 MIN_BREAK_DURATION = 1    # 1 minute
@@ -34,6 +42,14 @@ class SessionMonitor:
 
     def __init__(self, protocol_root: Path):
         self.protocol_root = Path(protocol_root)
+
+        # PATCH-STATE-001: Initialize centralized state manager
+        if STATE_MANAGER_AVAILABLE:
+            self.state_manager = ProjectStateManager(protocol_root)
+        else:
+            self.state_manager = None
+
+        # Legacy file paths (kept for backward compatibility)
         self.state_file = self.protocol_root / ".protocol-state" / "session-state.json"
         self.template_file = self.protocol_root / ".protocol-state" / "work-session-alert.template.md"
         self.config_file = self.protocol_root / "protocol.config.yaml"
@@ -48,6 +64,19 @@ class SessionMonitor:
         self.alert_customization = self._load_alert_customization()
 
         self._ensure_state_file()
+
+    def _check_gojo_invocation(self) -> bool:
+        """
+        Check if current invocation is from Gojo agent.
+
+        EXTENSION 3: Permission System (PATCH-SESSION-005)
+        Domain.record.md should only be updated when invoked by Gojo to maintain
+        strategic protocol integrity. Other agents/users can update other state files.
+
+        Returns:
+            True if invoked by Gojo (DZP_AGENT=gojo env var), False otherwise
+        """
+        return os.environ.get('DZP_AGENT', '').lower() == 'gojo'
 
     def _load_high_risk_literals(self) -> List[str]:
         """
@@ -379,7 +408,21 @@ class SessionMonitor:
         }
 
     def load_state(self) -> Dict:
-        """Load current session state from JSON."""
+        """
+        Load current session state from JSON.
+
+        PATCH-STATE-001: Uses ProjectStateManager when available for unified state access.
+        Falls back to legacy file I/O for backward compatibility.
+        """
+        # PATCH-STATE-001: Use ProjectStateManager if available
+        if self.state_manager:
+            try:
+                return self.state_manager.get_session_tracking()
+            except Exception as e:
+                print(f"[WARN] ProjectStateManager failed, falling back to legacy file: {e}")
+                # Fall through to legacy file I/O
+
+        # Legacy file I/O (backward compatibility)
         try:
             with open(self.state_file, 'r') as f:
                 return json.load(f)
@@ -391,10 +434,24 @@ class SessionMonitor:
             return self._default_state()
 
     def save_state(self, state: Dict):
-        """Save session state to JSON with atomic write (SEC-002 FIX)."""
+        """
+        Save session state to JSON with atomic write (SEC-002 FIX).
+
+        PATCH-STATE-001: Uses ProjectStateManager when available for unified state access.
+        Falls back to legacy file I/O for backward compatibility.
+        """
         state['last_updated'] = datetime.now().isoformat()
 
-        # Atomic write pattern
+        # PATCH-STATE-001: Use ProjectStateManager if available
+        if self.state_manager:
+            try:
+                self.state_manager.update_session_tracking(state)
+                return
+            except Exception as e:
+                print(f"[WARN] ProjectStateManager failed, falling back to legacy file: {e}")
+                # Fall through to legacy file I/O
+
+        # Legacy atomic write pattern (backward compatibility)
         try:
             with tempfile.NamedTemporaryFile('w', encoding='utf-8', delete=False,
                                               dir=self.state_file.parent,
@@ -536,6 +593,9 @@ class SessionMonitor:
             continuous_minutes = duration_minutes
 
         state['session_metrics']['continuous_work_minutes'] = int(continuous_minutes)
+
+        # Log to security review (EXTENSION 3: PATCH-SESSION-005)
+        self._log_session_to_security_review('session_update', state)
 
         self.save_state(state)
         return state
@@ -797,6 +857,19 @@ Template file not found at: {self.template_file}
             self._archive_session(state)
             print("[OK] Session ended and archived")
 
+            # Get archived session data (last entry in history)
+            if state['session_history']:
+                archived_session = state['session_history'][-1]
+
+                # EXTENSION 2: State Management (PATCH-SESSION-005)
+                # Update all protocol state files with session completion data
+                self._update_project_state_on_session_end(archived_session)
+                self._log_session_end_to_dev_notes(archived_session)
+                self._log_session_end_to_domain_record(archived_session)
+
+                # EXTENSION 3: Security Review (PATCH-SESSION-005)
+                self._log_session_to_security_review('session_end', archived_session)
+
         self.save_state(state)
         return state
 
@@ -851,7 +924,9 @@ Template file not found at: {self.template_file}
         if not state['current_session']['session_active']:
             return False, ""
 
-        duration_minutes = state['session_metrics']['total_duration_minutes']
+        # Calculate live duration (BUG FIX: PATCH-SESSION-005 - SESSION-003)
+        # Fixes CRITICAL bug where high-risk blocking never activated due to stale duration
+        duration_minutes = self._calculate_current_duration(state)
         thresholds = state['thresholds']
 
         # Check if 8-hour maximum continuous work threshold reached - BLOCK ALL OPERATIONS
@@ -892,11 +967,18 @@ Template file not found at: {self.template_file}
         except (ValueError, TypeError):
             start_formatted = "Invalid timestamp"
 
+        # Calculate live duration (BUG FIX: PATCH-SESSION-005 - SESSION-001)
+        # Fixes bug where status command showed 0 minutes for long-running sessions
+        current_duration = self._calculate_current_duration(state)
+        current_continuous = self._calculate_current_continuous_work(state)
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
         summary = f"""
 [STATUS] **Work Session Summary**
 
-**Duration:** {self._format_duration(metrics['total_duration_minutes'])}
-**Continuous Work:** {self._format_duration(metrics['continuous_work_minutes'])} since last break
+**Current Time:** {current_time}
+**Duration:** {self._format_duration(current_duration)}
+**Continuous Work:** {self._format_duration(current_continuous)} since last break
 **Breaks Taken:** {metrics['total_breaks']}
 **Alerts Issued:** {metrics['alerts_issued']}
 **Escalation Level:** {current['escalation_level']}
@@ -910,11 +992,21 @@ Template file not found at: {self.template_file}
     def _archive_session(self, state: Dict):
         """Archive current session to history."""
         if state['current_session']['session_active']:
+            # Calculate final duration from start to end (BUG FIX: PATCH-SESSION-005 - SESSION-002)
+            # Fixes bug where archived sessions showed 0 minutes duration
+            try:
+                start = datetime.fromisoformat(state['current_session']['start_time'])
+                end = datetime.now()
+                actual_duration = int((end - start).total_seconds() / 60)
+            except (ValueError, TypeError):
+                # Fallback to stored value if timestamp invalid (shouldn't happen)
+                actual_duration = state['session_metrics']['total_duration_minutes']
+
             archived = {
                 "session_id": state['current_session']['session_id'],
                 "start_time": state['current_session']['start_time'],
                 "end_time": datetime.now().isoformat(),
-                "total_duration_minutes": state['session_metrics']['total_duration_minutes'],
+                "total_duration_minutes": actual_duration,
                 "total_breaks": state['session_metrics']['total_breaks'],
                 "alerts_issued": state['session_metrics']['alerts_issued'],
                 "continues_chosen": state['session_metrics']['continues_chosen']
@@ -938,6 +1030,61 @@ Template file not found at: {self.template_file}
             return f"{hours} hour{'s' if hours > 1 else ''} {mins} minutes"
         else:
             return f"{mins} minutes"
+
+    def _calculate_current_duration(self, state: Dict) -> int:
+        """
+        Calculate current session duration without updating state.
+
+        PATCH-SESSION-005 (BUG FIX: SESSION-001)
+        Calculates duration on-the-fly from start_time instead of reading stale metrics.
+
+        Args:
+            state: Session state dictionary
+
+        Returns:
+            Current session duration in minutes (0 if not active or invalid)
+        """
+        if not state['current_session']['session_active']:
+            return 0
+
+        start_time = state['current_session'].get('start_time')
+        if not start_time:
+            return 0
+
+        try:
+            start = datetime.fromisoformat(start_time)
+            now = datetime.now()
+            return int((now - start).total_seconds() / 60)
+        except (ValueError, TypeError):
+            return 0  # Fallback on error
+
+    def _calculate_current_continuous_work(self, state: Dict) -> int:
+        """
+        Calculate continuous work duration without updating state.
+
+        PATCH-SESSION-005 (BUG FIX: SESSION-001)
+        Calculates time since last break on-the-fly.
+
+        Args:
+            state: Session state dictionary
+
+        Returns:
+            Continuous work duration in minutes (0 if not active or invalid)
+        """
+        if not state['current_session']['session_active']:
+            return 0
+
+        if state['session_metrics']['break_timestamps']:
+            try:
+                last_break = datetime.fromisoformat(
+                    state['session_metrics']['break_timestamps'][-1]
+                )
+                now = datetime.now()
+                return int((now - last_break).total_seconds() / 60)
+            except (ValueError, TypeError, IndexError):
+                return self._calculate_current_duration(state)
+        else:
+            return self._calculate_current_duration(state)
 
     def _get_project_name(self) -> str:
         """Get current project name from protocol root."""
@@ -1017,19 +1164,29 @@ Template file not found at: {self.template_file}
         if agent_name_lower not in valid_agents:
             raise ValueError(f"Invalid agent name: {agent_name}. Must be one of: {', '.join(valid_agents)}")
 
-        # Load tracker state
-        if not self.invocation_tracker_file.exists():
-            print(f"[!] Agent invocation tracker not found at {self.invocation_tracker_file}")
-            print("    Using default schema")
-            # File should exist from PATCH-SESSION-004, but handle gracefully
-            return {}
+        # PATCH-STATE-001: Load tracker state using ProjectStateManager
+        if self.state_manager:
+            try:
+                tracker = self.state_manager.get_agent_invocation_tracking()
+            except Exception as e:
+                print(f"[WARN] ProjectStateManager failed, falling back to legacy file: {e}")
+                # Fall through to legacy file I/O
+                tracker = None
 
-        try:
-            with open(self.invocation_tracker_file, 'r', encoding='utf-8') as f:
-                tracker = json.load(f)
-        except (IOError, json.JSONDecodeError) as e:
-            print(f"[ERROR] Cannot read invocation tracker: {e}")
-            return {}
+        if not self.state_manager or tracker is None:
+            # Legacy file I/O (backward compatibility)
+            if not self.invocation_tracker_file.exists():
+                print(f"[!] Agent invocation tracker not found at {self.invocation_tracker_file}")
+                print("    Using default schema")
+                # File should exist from PATCH-SESSION-004, but handle gracefully
+                return {}
+
+            try:
+                with open(self.invocation_tracker_file, 'r', encoding='utf-8') as f:
+                    tracker = json.load(f)
+            except (IOError, json.JSONDecodeError) as e:
+                print(f"[ERROR] Cannot read invocation tracker: {e}")
+                return {}
 
         if not tracker.get('tracking_enabled', True):
             # Tracking disabled, silently skip
@@ -1076,7 +1233,16 @@ Template file not found at: {self.template_file}
                     except (ValueError, TypeError):
                         pass  # Invalid timestamp, skip bypass detection
 
-        # Save updated tracker (SEC-001 FIX: atomic write)
+        # PATCH-STATE-001: Save updated tracker using ProjectStateManager
+        if self.state_manager:
+            try:
+                self.state_manager.update_agent_invocation_tracking(tracker)
+                return tracker
+            except Exception as e:
+                print(f"[WARN] ProjectStateManager failed, falling back to legacy file: {e}")
+                # Fall through to legacy file I/O
+
+        # Legacy save (SEC-001 FIX: atomic write)
         try:
             # Atomic write pattern
             with tempfile.NamedTemporaryFile('w', encoding='utf-8', delete=False,
@@ -1091,6 +1257,170 @@ Template file not found at: {self.template_file}
             print(f"[ERROR] Cannot save invocation tracker: {e}")
 
         return tracker
+
+    def _update_project_state_on_session_end(self, session_data: Dict):
+        """
+        Update project-state.json with session completion data.
+
+        EXTENSION 2: State Management (PATCH-SESSION-005)
+        Logs session metrics to project-state for aggregate tracking.
+
+        Args:
+            session_data: Archived session data with duration, breaks, alerts, etc.
+        """
+        project_state_file = self.protocol_root / ".protocol-state" / "project-state.json"
+
+        if not project_state_file.exists():
+            print(f"[WARN] project-state.json not found at {project_state_file}")
+            return
+
+        try:
+            with open(project_state_file, 'r', encoding='utf-8') as f:
+                project_state = json.load(f)
+
+            # Update session tracking metrics
+            tracking = project_state.setdefault('session_tracking', {})
+            tracking['last_session_end'] = session_data['end_time']
+            tracking['total_sessions'] = tracking.get('total_sessions', 0) + 1
+            tracking['total_work_minutes'] = tracking.get('total_work_minutes', 0) + session_data['total_duration_minutes']
+
+            # Atomic write
+            with tempfile.NamedTemporaryFile('w', encoding='utf-8', delete=False,
+                                              dir=project_state_file.parent,
+                                              suffix='.tmp') as tmp_file:
+                json.dump(project_state, tmp_file, indent=2)
+                tmp_path = tmp_file.name
+
+            os.replace(tmp_path, project_state_file)
+            print(f"[OK] Updated project-state.json with session metrics")
+
+        except (IOError, OSError, json.JSONDecodeError) as e:
+            print(f"[ERROR] Failed to update project-state.json: {e}")
+
+    def _log_session_end_to_dev_notes(self, session_data: Dict):
+        """
+        Log session end to dev-notes.md.
+
+        EXTENSION 2: State Management (PATCH-SESSION-005)
+        Provides human-readable development log of work sessions.
+
+        Args:
+            session_data: Archived session data
+        """
+        dev_notes_file = self.protocol_root / "dev-notes.md"
+
+        if not dev_notes_file.exists():
+            print(f"[WARN] dev-notes.md not found at {dev_notes_file}")
+            return
+
+        try:
+            entry = f"""
+## Work Session Ended - {session_data['end_time']}
+
+**Session ID:** {session_data['session_id']}
+**Duration:** {self._format_duration(session_data['total_duration_minutes'])}
+**Breaks Taken:** {session_data['total_breaks']}
+**Alerts Issued:** {session_data['alerts_issued']}
+**Continues Chosen:** {session_data['continues_chosen']}
+
+"""
+            with open(dev_notes_file, 'a', encoding='utf-8') as f:
+                f.write(entry)
+
+            print(f"[OK] Logged session end to dev-notes.md")
+
+        except (IOError, OSError) as e:
+            print(f"[ERROR] Failed to write to dev-notes.md: {e}")
+
+    def _log_session_end_to_domain_record(self, session_data: Dict):
+        """
+        Log session end to domain.record.md (Gojo permission only).
+
+        EXTENSION 3: Permission System (PATCH-SESSION-005)
+        Strategic protocol tracking - only accessible when invoked by Gojo.
+
+        Args:
+            session_data: Archived session data
+        """
+        # Permission check: Only Gojo can update domain.record.md
+        if not self._check_gojo_invocation():
+            print(f"[SKIP] domain.record.md update skipped (requires Gojo invocation)")
+            return
+
+        domain_record_file = self.protocol_root / "domain.record.md"
+
+        if not domain_record_file.exists():
+            print(f"[WARN] domain.record.md not found at {domain_record_file}")
+            return
+
+        try:
+            entry = f"""
+### Session Completed - {session_data['end_time']}
+
+- **Session ID:** {session_data['session_id']}
+- **Duration:** {self._format_duration(session_data['total_duration_minutes'])}
+- **Wellbeing Metrics:** {session_data['total_breaks']} breaks, {session_data['alerts_issued']} alerts, {session_data['continues_chosen']} continues
+- **Session Pattern:** {'Extended session' if session_data['total_duration_minutes'] > 360 else 'Standard session'}
+
+"""
+            with open(domain_record_file, 'a', encoding='utf-8') as f:
+                f.write(entry)
+
+            print(f"[OK] Logged session end to domain.record.md (Gojo permission)")
+
+        except (IOError, OSError) as e:
+            print(f"[ERROR] Failed to write to domain.record.md: {e}")
+
+    def _log_session_to_security_review(self, event_type: str, session_data: Dict):
+        """
+        Log session events to security-review.md for audit trail.
+
+        EXTENSION 3: Permission System (PATCH-SESSION-005)
+        Tracks session lifecycle events for security monitoring and protocol compliance.
+
+        Args:
+            event_type: "session_update" or "session_end"
+            session_data: Session state or archived session data
+        """
+        security_review_file = self.protocol_root / "dev-notes.md"  # Use dev-notes for now
+
+        if not security_review_file.exists():
+            print(f"[WARN] security review file not found at {security_review_file}")
+            return
+
+        try:
+            now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            if event_type == "session_update":
+                duration = self._calculate_current_duration(session_data)
+                entry = f"""
+## Security Review - Session Update - {now}
+
+**Event:** User interaction recorded
+**Session Duration:** {self._format_duration(duration)}
+**Safety Status:** {'[ALERT] Extended session' if duration > 360 else '[OK] Normal'}
+
+"""
+            elif event_type == "session_end":
+                entry = f"""
+## Security Review - Session End - {now}
+
+**Event:** Work session ended
+**Session ID:** {session_data['session_id']}
+**Total Duration:** {self._format_duration(session_data['total_duration_minutes'])}
+**Wellbeing Compliance:** {session_data['total_breaks']} breaks taken, {session_data['alerts_issued']} alerts acknowledged
+
+"""
+            else:
+                return
+
+            with open(security_review_file, 'a', encoding='utf-8') as f:
+                f.write(entry)
+
+            print(f"[OK] Logged {event_type} to security review")
+
+        except (IOError, OSError) as e:
+            print(f"[ERROR] Failed to write security review: {e}")
 
 
 def main():

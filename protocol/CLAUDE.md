@@ -1386,6 +1386,18 @@ All protocol settings are stored in `protocol.config.yaml`:
 - Mission status
 - Agent performance metrics
 
+**Consolidated State Namespaces** (PATCH-STATE-001):
+- `session_tracking` - Active work sessions, metrics, thresholds, history
+- `troubleshooting` - Active troubleshooting sessions, historical analytics, tier statistics
+- `tier_tracking` - Tier usage statistics, compliance monitoring, event tracking
+- `agent_invocation_tracking` - Agent invocation patterns, bypass detection, session monitoring
+
+**Migration Notes**:
+- State consolidation completed in v8.12.0 (PATCH-STATE-001)
+- Legacy files (session-state.json, troubleshooting-history.json, agent-invocation-tracker.json) preserved as backups
+- All scripts automatically use consolidated state with fallback to legacy files
+- See AI_INSTRUCTIONS.md for migration procedures and rollback instructions
+
 **Kill Switch State**: `.dzp-killswitch/`
 - `state.json` - Kill switch status
 - `checkpoint.json` - Emergency checkpoint
