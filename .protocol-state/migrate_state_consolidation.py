@@ -573,9 +573,13 @@ class StateMigration:
 
 def main():
     parser = argparse.ArgumentParser(description="Domain Zero Protocol State Consolidation Migration")
-    parser.add_argument("--check", action="store_true", help="Dry run - show what will happen")
-    parser.add_argument("--execute", action="store_true", help="Execute migration")
-    parser.add_argument("--rollback", action="store_true", help="Rollback to most recent backup")
+
+    # Make action flags mutually exclusive (fixes ambiguous invocation)
+    action_group = parser.add_mutually_exclusive_group(required=True)
+    action_group.add_argument("--check", action="store_true", help="Dry run - show what will happen")
+    action_group.add_argument("--execute", action="store_true", help="Execute migration")
+    action_group.add_argument("--rollback", action="store_true", help="Rollback to most recent backup")
+
     parser.add_argument("--protocol-root", type=str, help="Protocol root directory (default: auto-detect)")
 
     args = parser.parse_args()

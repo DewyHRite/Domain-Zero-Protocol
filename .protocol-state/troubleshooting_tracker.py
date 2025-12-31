@@ -23,6 +23,17 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
 
+# Import path_validator for input validation (security enhancement)
+try:
+    sys.path.insert(0, str(Path(__file__).parent / "security"))
+    from path_validator import validate_file_path
+    PATH_VALIDATOR_AVAILABLE = True
+except ImportError:
+    PATH_VALIDATOR_AVAILABLE = False
+    def validate_file_path(path: str) -> bool:
+        """Fallback validator if path_validator not available"""
+        return True  # No validation if module missing
+
 # PATCH-STATE-001: Import centralized state manager
 try:
     from project_state_manager import ProjectStateManager
@@ -293,6 +304,9 @@ class TroubleshootingTracker:
         session['tier_name'] = self._get_tier_name(new_tier)
         session['agents_deployed'] = self._get_tier_agents(new_tier)
 
+        # Increment attempts counter (escalation = failed attempt)
+        session['attempts_count'] = session.get('attempts_count', 1) + 1
+
         self.save_history(history)
         print(f"[OK] Session escalated: Tier {old_tier} → Tier {new_tier}")
         print(f"    New agents: {', '.join(session['agents_deployed'])}")
@@ -506,7 +520,8 @@ def main():
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
         sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-    protocol_root = Path.cwd()
+    # Derive protocol root from script location (not CWD - fixes path resolution bug)
+    protocol_root = Path(__file__).resolve().parent.parent
 
     try:
         tracker = TroubleshootingTracker(protocol_root)

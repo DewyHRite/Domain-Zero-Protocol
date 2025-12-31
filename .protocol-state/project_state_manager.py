@@ -90,6 +90,7 @@ class ProjectStateManager:
         """
         file_handle = None
         lock_acquired = False
+        lock_size = None  # Store lock size for Windows unlock
 
         try:
             file_handle = open(file_path, mode, encoding='utf-8')
@@ -104,7 +105,7 @@ class ProjectStateManager:
                         file_handle.seek(0, 2)  # Seek to end to get size
                         file_size = file_handle.tell()
                         file_handle.seek(0)  # Seek back to beginning
-                        lock_size = max(file_size, 1024 * 1024)  # At least 1MB
+                        lock_size = max(file_size, 1024 * 1024)  # At least 1MB, store for unlock
                         msvcrt.locking(file_handle.fileno(), msvcrt.LK_NBLCK, lock_size)
                     else:
                         import fcntl
@@ -134,10 +135,8 @@ class ProjectStateManager:
                 try:
                     if self.is_windows:
                         import msvcrt
-                        file_handle.seek(0, 2)
-                        file_size = file_handle.tell()
+                        # Use stored lock_size from acquisition (fixes fragility bug)
                         file_handle.seek(0)
-                        lock_size = max(file_size, 1024 * 1024)
                         msvcrt.locking(file_handle.fileno(), msvcrt.LK_UNLCK, lock_size)
                     else:
                         import fcntl
@@ -372,12 +371,21 @@ class ProjectStateManager:
 
         Returns:
             Complete project state dictionary
+
+        Note: Creates default state on fresh install (fixes FileNotFoundError on update methods)
         """
         try:
             with open(self.project_state_file, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except FileNotFoundError:
-            raise FileNotFoundError(f"project-state.json not found: {self.project_state_file}")
+            # Fresh install - create default state structure
+            return {
+                "protocol_version": "8.12.0",
+                "session_tracking": {},
+                "troubleshooting": {"sessions": [], "metadata": {"total_sessions_all_time": 0}},
+                "agent_invocation_tracking": {},
+                "tier_tracking": {}
+            }
 
     def save_project_state(self, state: Dict[str, Any]) -> None:
         """
