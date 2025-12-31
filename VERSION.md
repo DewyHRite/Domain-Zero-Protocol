@@ -11,7 +11,13 @@
 
 This release closes a critical session monitoring coverage gap (70-85% → 85-90%) identified through adversarial analysis. PATCH-SESSION-004 implements 5 defensive layers to prevent context compaction and agent bypass from disabling safety systems.
 
+**Additional Patches (2025-12-31):**
+- **PATCH-SESSION-005-v2**: Critical bug fix restoring user safety systems (3 stale timestamp bugs) + state management extensions + Gojo permission system
+- **PATCH-TS-001**: Unified troubleshooting session tracker with permanent historical analytics and tier effectiveness analysis
+
 ### Key Changes in v8.12.0
+
+#### PATCH-SESSION-004 (Original Release - 2025-12-29)
 
 - **Component 1: Configurable Debounce** - Adjustable alert frequency (15-60 min range) via protocol.config.yaml + CLI `--debounce` flag to prevent alert spam during rapid prototyping
 - **Component 2: Compaction-Resistant Markers** - HTML comments protect AUTO-INVOKED section in gojo.agent.md from context compaction removal (5-10% coverage gap closed)
@@ -19,6 +25,54 @@ This release closes a critical session monitoring coverage gap (70-85% → 85-90
 - **Component 4: Verification Script** - `scripts/verify-auto-invoked.py` for CI/CD validation (exit code 0/1) to prevent safety system removal
 - **Component 5: Invocation Tracking** - Tracks agent bypass patterns (direct vs routed invocations) to detect 10-15% coverage gap from agent invocation without Gojo
 - **Bug Fix: Windows Compatibility** - Replaced Unicode emojis with ASCII equivalents in session_monitor.py (20+ instances) for full Windows cmd support
+
+#### PATCH-SESSION-005-v2 (2025-12-31) - P0-Critical User Safety Restoration
+
+- **3 Critical Bugs Fixed** - All causing user safety system failures:
+  1. `get_session_summary()` always displayed "0 minutes" for 15+ hour sessions (visibility failure)
+  2. `_archive_session()` permanently stored "0 minutes" in historical data (data corruption)
+  3. `should_block_operation()` NEVER blocked high-risk operations, even after 47+ hours (safety system complete failure)
+- **Root Cause** - Methods read stale `metrics['total_duration_minutes']` from JSON instead of calculating live from timestamps
+- **Fix** - Added `_calculate_current_duration()` and `_calculate_current_continuous_work()` helper methods (lines 942-995)
+- **Extension 2: State Management** - 4 new methods to update project-state.json, dev-notes.md, domain.record.md on session events
+- **Extension 3: Permission System** - Gojo-only access to domain.record.md via `DZP_AGENT=gojo` environment variable check
+- **Files Modified** - session_monitor.py (+180 lines), session.md (updated with DZP_AGENT=gojo syntax)
+
+#### PATCH-TS-001 (2025-12-31) - Unified Troubleshooting Tracker
+
+- **Purpose** - Centralized tracking for all /ts tier commands with permanent historical analytics
+- **Created** - troubleshooting_tracker.py (585 lines) with 6 commands: start, update, complete, escalate, status, stats
+- **Key Features**:
+  - Tier analysis: Success rates, average durations, escalation patterns per tier (1-5)
+  - File frequency tracking: Identifies most commonly problematic files across sessions
+  - Pattern recognition: Statistical analysis of tier effectiveness and escalation triggers
+  - Permanent retention: All sessions kept indefinitely in troubleshooting-history.json
+- **Integration** - Updated protocol/skills/ts.md with Step 0: Review historical stats before tier selection
+- **Impact** - Data-driven tier selection, pattern learning, troubleshooting effectiveness tracking
+
+#### PATCH-STATE-001 (2025-12-31) - State File Consolidation
+
+- **Purpose** - Consolidate 4 fragmented state files into unified project-state.json with nested namespaces
+- **Problem Solved** - Eliminated state fragmentation, tier statistics duplication, and race conditions across separate JSON files
+- **Created** - ProjectStateManager class (788 lines) + migration script (494 lines) with automatic backups and rollback
+- **Key Features**:
+  - Nested namespace architecture: session_tracking, troubleshooting, tier_tracking, agent_invocation_tracking
+  - Centralized state management with cross-platform file locking (Windows msvcrt + Unix fcntl)
+  - Non-destructive migration with SHA-256 integrity verification and automatic rollback on failure
+  - Backward compatibility via fallback to legacy files if consolidated state unavailable
+  - Atomic write operations using tempfile pattern to prevent partial state corruption
+- **Files Consolidated**:
+  - session-state.json -> project-state.json::session_tracking
+  - troubleshooting-history.json -> project-state.json::troubleshooting
+  - agent-invocation-tracker.json -> project-state.json::agent_invocation_tracking
+  - Deduplicated tier_usage_statistics + tier_statistics -> project-state.json::tier_tracking
+- **Security** - 24 security issues identified by Megumi, 16 resolved by Sukuna including 3 P0 critical race conditions (SEC-016, SEC-019, SEC-024)
+- **Performance** - P95 latency 8.44ms (23.7x better than 200ms target), 125 ops/sec throughput (12.5x better than target), 99%+ capacity headroom
+- **UX** - 78/100 initial score improved to 85/100 after Priority 1 fixes (rollback documentation, actionable error messages, clear success output)
+- **Testing** - 5-phase comprehensive testing (Unit, Integration, Edge Cases, E2E Workflows, Final Validation) with unanimous @approved from Megumi, Maki, and Nobara
+- **Updated Scripts (8)** - session_monitor.py, troubleshooting_tracker.py, tier-statistics.py, tier-enforcement.py, gojo-learn.py, sukuna-learn.py, restore-snapshot.py, create-snapshot.py
+- **Updated Documentation (5)** - session.md, ts.md, gojo.agent.md, AI_INSTRUCTIONS.md, CHANGELOG.md
+- **Impact** - Single source of truth for all DZP state, eliminated data inconsistency, improved reliability with proper locking mechanisms
 
 ### Previous Release (v8.11.0)
 

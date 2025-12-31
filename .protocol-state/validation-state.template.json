@@ -1,0 +1,16 @@
+{
+  "_comment": "Domain Zero Protocol - Validation State Template (v8.12.0)",
+  "_template_version": "1.0.0",
+  "_usage": "Copy this file to validation/validation-state.json during fresh installation",
+  "protocol_version": "8.12.0",
+  "last_validation": null,
+  "validation_history": [],
+  "drift_detected": false,
+  "drift_details": [],
+  "auto_fix_enabled": false,
+  "validation_schedule": {
+    "enabled": false,
+    "interval_hours": 168,
+    "last_scheduled_run": null
+  }
+}
