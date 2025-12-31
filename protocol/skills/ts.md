@@ -70,9 +70,9 @@
 
 **Workflow**:
 0. **Review troubleshooting history stats** (python troubleshooting_tracker.py stats)
-   - Check past Tier 1 success rate and avg duration
-   - Review frequently affected files for pattern recognition
-   - Inform tier selection with historical data
+- Check past Tier 1 success rate and avg duration
+- Review frequently affected files for pattern recognition
+- Inform tier selection with historical data
 1. **Initialize troubleshooting session** (python troubleshooting_tracker.py start 1 "<description>" "<files>")
 2. Prompt user for bug details (description, affected files, expected vs actual)
 3. Brief Yuuji for TDD workflow (write failing test, implement fix, verify)

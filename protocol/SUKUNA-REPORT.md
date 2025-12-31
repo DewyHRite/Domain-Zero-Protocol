@@ -960,7 +960,7 @@ def initialize_integrity_baseline():
     with open(INTEGRITY_FILE, 'w') as f:
         json.dump({
             'version': '8.8.0',
-            'timestamp': hashlib.sha256(str(Path.ctime(Path(INTEGRITY_FILE))).encode()).hexdigest()[:16],
+            'timestamp': hashlib.sha256(str(Path(INTEGRITY_FILE).stat().st_ctime).encode()).hexdigest()[:16],
             'hashes': baseline
         }, f, indent=2)
 
@@ -1012,7 +1012,10 @@ def update_integrity_baseline(filepath: str):
 ```bash
 # Initialize integrity baseline
 python -c "
-from .protocol_state.security.file_integrity import initialize_integrity_baseline, verify_file_integrity
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path('.protocol-state')))
+from security.file_integrity import initialize_integrity_baseline, verify_file_integrity
 initialize_integrity_baseline()
 violations = verify_file_integrity()
 assert len(violations) == 0, f'Integrity violations: {violations}'
@@ -1154,7 +1157,10 @@ def load_validated_session_state(filepath: str = '.protocol-state/session-state.
 ```bash
 # Test JSON validation
 python -c "
-from .protocol_state.security.json_validator import load_validated_project_state
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path('.protocol-state')))
+from security.json_validator import load_validated_project_state
 state = load_validated_project_state()
 print('✅ JSON schema validation working')
 "
@@ -1241,7 +1247,10 @@ def validate_backup_path(backup_name: str) -> Path:
 ```bash
 # Test path validation
 python -c "
-from .protocol_state.security.path_validator import safe_join, SecurityError
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path('.protocol-state')))
+from security.path_validator import safe_join, SecurityError
 import sys
 
 # Test valid path

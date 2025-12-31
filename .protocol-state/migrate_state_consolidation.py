@@ -57,7 +57,7 @@ class StateMigration:
         self.manager = ProjectStateManager(protocol_root)
 
         # Backup directory with microseconds to avoid collision (SEC-022 improvement)
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
         self.backup_dir = self.state_dir / "backups" / f"state-consolidation_{timestamp}"
 
         # Checksums for integrity verification (SEC-021, SEC-026)

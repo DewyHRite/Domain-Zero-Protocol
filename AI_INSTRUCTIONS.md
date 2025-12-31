@@ -1655,7 +1655,7 @@ python scripts/validate-protocol.py --check
 ## Canonical Source
 
 > **Repository**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Version**: 8.10.0
+> **Version**: 8.12.0
 > **Canonical File**: `protocol/CLAUDE.md`
 
 All protocol updates originate from the canonical source.
@@ -1683,5 +1683,5 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**Domain Zero Protocol v8.10.0 - Complete Installation Guide**
+**Domain Zero Protocol v8.12.0 - Complete Installation Guide**
 **Updated**: 2025-12-25 (DZP Rules of Engagement - Post-Compaction Recovery)
