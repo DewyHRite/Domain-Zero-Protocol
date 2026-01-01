@@ -1248,7 +1248,7 @@ I manage the entire project lifecycle from initialization to intelligence report
 
 **Option 1: Resume Current Project**
 - Load project-state.json for context
-- Read last 50 lines of dev-notes.md
+- Read dev-notes.md
 - Scan security-review.md for open issues
 - Brief yuuji.agent.md and megumi.agent.md with full context
 - Update mission_status in project-state.json

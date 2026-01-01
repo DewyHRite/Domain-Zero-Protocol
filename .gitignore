@@ -210,7 +210,9 @@ tests/*
 .pre-commit-config.yaml
 
 # Claude Code settings (local user configuration)
-.claude/
+# Exclude .claude/ but include .claude/commands/ (DZP skill definitions)
+.claude/*
+!.claude/commands/
 
 # Visual Studio Code
 .vscode/

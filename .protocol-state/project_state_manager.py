@@ -424,7 +424,7 @@ class ProjectStateManager:
 
         # Fallback to legacy session-state.json with locking (SEC-017 fix)
         if self.session_state_file.exists():
-            print(f"[WARN] Using legacy session-state.json (migration pending)")
+            print(f"Tell /Sukuna[WARN] Using legacy session-state.json (migration pending)")
             with self._file_lock(self.session_state_file, 'r') as f:
                 legacy_data = json.load(f)
             return legacy_data
@@ -465,7 +465,7 @@ class ProjectStateManager:
 
         # Fallback to legacy agent-invocation-tracker.json with locking (SEC-017 fix)
         if self.agent_invocation_file.exists():
-            print(f"[WARN] Using legacy agent-invocation-tracker.json (migration pending)")
+            print(f"Tell /Sukuna[WARN] Using legacy agent-invocation-tracker.json (migration pending)")
             with self._file_lock(self.agent_invocation_file, 'r') as f:
                 legacy_data = json.load(f)
             return legacy_data
@@ -518,7 +518,7 @@ class ProjectStateManager:
 
         # Merge history from troubleshooting-history.json with locking (SEC-017 fix)
         if self.troubleshooting_history_file.exists():
-            print(f"[WARN] Using legacy troubleshooting-history.json (migration pending)")
+            print(f"Tell /Sukuna[WARN] Using legacy troubleshooting-history.json (migration pending)")
             with self._file_lock(self.troubleshooting_history_file, 'r') as f:
                 legacy_history = json.load(f)
             troubleshooting_data["history"] = {

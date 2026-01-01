@@ -17,7 +17,7 @@
    - last_completed_task
    - open_security_issues
 
-2. Read last 50 lines of .protocol-state/dev-notes.md
+2. Read .protocol-state/dev-notes.md
    - Recent implementation activity
    - Current feature being worked on
    - Any @tags present
