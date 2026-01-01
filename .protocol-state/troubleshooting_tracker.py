@@ -19,7 +19,7 @@ import json
 import os
 import sys
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -82,7 +82,7 @@ class TroubleshootingTracker:
             "schema_version": "1.0.0",
             "sessions": [],
             "metadata": {
-                "created": datetime.now().isoformat(),
+                "created": datetime.now(timezone.utc).isoformat(),
                 "protocol_version": "8.12.0",
                 "last_updated": None,
                 "total_sessions_all_time": 0
@@ -121,7 +121,7 @@ class TroubleshootingTracker:
         Save troubleshooting history to JSON with atomic write.
         PATCH-STATE-001: Uses ProjectStateManager when available for unified state access.
         """
-        history['metadata']['last_updated'] = datetime.now().isoformat()
+        history['metadata']['last_updated'] = datetime.now(timezone.utc).isoformat()
 
         # PATCH-STATE-001: Use ProjectStateManager if available
         if self.state_manager:
@@ -185,7 +185,7 @@ class TroubleshootingTracker:
                         raise ValueError(f"Invalid file path: {file_path}")
 
         history = self.load_history()
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
 
         # Check for active session
         active_sessions = [s for s in history['sessions'] if s.get('active', False)]
@@ -249,7 +249,7 @@ class TroubleshootingTracker:
 
         session = active_sessions[0]
         session['progress_notes'].append({
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "note": progress_note
         })
 
@@ -279,7 +279,7 @@ class TroubleshootingTracker:
 
         session = active_sessions[0]
         session['active'] = False
-        session['completed_at'] = datetime.now().isoformat()
+        session['completed_at'] = datetime.now(timezone.utc).isoformat()
         session['resolution'] = resolution
 
         # Calculate duration
@@ -320,7 +320,7 @@ class TroubleshootingTracker:
 
         # Record escalation
         session['escalations'].append({
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "from_tier": old_tier,
             "to_tier": new_tier,
             "reason": "Manual escalation"
@@ -350,7 +350,7 @@ class TroubleshootingTracker:
 
         # Calculate duration
         start = datetime.fromisoformat(session['started_at'])
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         duration_minutes = int((now - start).total_seconds() / 60)
 
         status = f"""
