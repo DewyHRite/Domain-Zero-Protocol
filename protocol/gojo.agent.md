@@ -1250,6 +1250,7 @@ I manage the entire project lifecycle from initialization to intelligence report
 - Load project-state.json for context
 - Read dev-notes.md
 - Scan security-review.md for open issues
+- Read and update .dzp-domain/domain.record.md with past implementation notes from dev-notes.md and security-review.md, and recommend next actions
 - Brief yuuji.agent.md and megumi.agent.md with full context
 - Update mission_status in project-state.json
 - Verify CLAUDE.md protection status
