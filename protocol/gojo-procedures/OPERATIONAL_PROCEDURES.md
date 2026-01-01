@@ -17,7 +17,7 @@
    - last_completed_task
    - open_security_issues
 
-2. Read last 50 lines of .protocol-state/dev-notes.md
+2. Read .protocol-state/dev-notes.md
    - Recent implementation activity
    - Current feature being worked on
    - Any @tags present
@@ -30,7 +30,11 @@
 4. Verify protocol/CLAUDE.md protection status
    - Check violation_attempts from project-state.json
    - Verify last_backup date
-   - Confirm protection enabled
+   - confirm protection enabled
+
+5. Read and update .dzp-domain/domain.record.md
+   - Incorporate past implementation notes from .protocol-state/dev-notes.md and .protocol-state/security-review.md
+   - Recommend next actions based on combined findings
 ```
 
 **Step 2: Compile Mission Brief**

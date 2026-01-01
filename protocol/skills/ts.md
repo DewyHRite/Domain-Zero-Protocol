@@ -15,34 +15,23 @@
 5-tier hybrid troubleshooting system for systematic bug resolution with automatic escalation. User selects initial tier based on bug severity, with auto-escalation after failed attempts.
 
 **Integrated Troubleshooting Tracker** (v1.0.0, PATCH-STATE-001):
-- All /ts commands automatically track sessions in `project-state.json::troubleshooting` (consolidated)
-- Uses nested structure: `troubleshooting.active_session`, `troubleshooting.history`
-- Statistics computed on-the-fly from history (not persisted)
-- Backward compatible: Falls back to legacy `troubleshooting-history.json` when needed
-- Historical stats inform tier selection and approach
-- Pattern recognition from past resolutions
-- Escalation tracking for learning
+All /ts commands track sessions in `project-state.json::troubleshooting` using nested structure: `troubleshooting.active_session`, `troubleshooting.history`. Statistics compute on-the-fly from history. Backward compatible with legacy `troubleshooting-history.json`.
 
 **Use when:**
-- Debugging complex issues requiring multiple approaches
-- Need structured troubleshooting workflow
-- Escalating from simple fixes to full investigation
-- Coordinating multiple DZP agents for bug resolution
+Debugging complex issues requiring multiple approaches, structured workflows, escalation patterns, or coordinating DZP agents for bug resolution.
 
 ---
 
 ## Prerequisites
 
-- [ ] `.protocol-state/project-state.json` exists (consolidated state)
-- [ ] **PATCH-STATE-001**: Uses `project-state.json::troubleshooting` namespace (fallback to legacy `troubleshooting-history.json`)
-- [ ] Python 3.8+ available (for optional plan mode validation)
+- [ ] `.protocol-state/project-state.json` exists
+- [ ] `troubleshooting` namespace initialized
+- [ ] `troubleshooting.active_session` is null (no active session)
+- [ ] `troubleshooting_tracker.py` script available in `.protocol-state/`
+- [ ] Python 3.8+ available (optional plan mode validation)
 - [ ] Gojo agent context (domain.record.md write access)
 
-**ESCAPE PATH**: If prerequisites fail:
-1. If project-state.json missing: Create minimal version with troubleshooting schemas
-2. If Python unavailable: Skip plan mode validation (proceed with user confirmation)
-3. Continue with available troubleshooting features
-4. **PATCH-STATE-001**: Automatic fallback to legacy files if consolidated state unavailable
+**ESCAPE PATH**: If prerequisites fail, create minimal project-state.json with troubleshooting schemas. Skip Python validation if unavailable. Auto-fallback to legacy files when consolidated state missing. Continue with available features.
 
 ---
 
@@ -57,9 +46,7 @@
 | **Tier 5 (Codered)** | Catastrophic | ALL 9 agents | 4-6 hours | Mandatory plan mode, full doc sync |
 
 **Hybrid Escalation**:
-- **Initial tier**: User selects based on bug severity
-- **Auto-escalation**: After 2 failed attempts per tier (configurable)
-- **Manual escalation**: Available anytime via `/ts escalate`
+User selects initial tier based on bug severity. Auto-escalation triggers after 2 failed attempts per tier (configurable). Manual escalation available anytime via `/ts escalate`.
 
 ---
 
@@ -67,40 +54,35 @@
 
 ### 1. /ts_tier1 - Minor Bugs, First Attempt
 
-**Purpose**: Quick fix for minor bugs with standard workflow
+Quick fix for minor bugs with standard workflow.
 
 **Workflow**:
-0. **Review troubleshooting history stats** (python troubleshooting_tracker.py stats)
-- Check past Tier 1 success rate and avg duration
-- Review frequently affected files for pattern recognition
-- Inform tier selection with historical data
-1. **Initialize troubleshooting session** (python troubleshooting_tracker.py start 1 "<description>" "<files>")
-2. Prompt user for bug details (description, affected files, expected vs actual)
-3. Brief Yuuji for TDD workflow (write failing test, implement fix, verify)
-4. Brief Megumi for OWASP security review
-5. Update dev-notes.md and domain.record.md
-6. **Complete session tracking** (python troubleshooting_tracker.py complete "<resolution>")
+1. Gather bug details from user (description, affected files, expected vs actual behavior, reproduction steps)
+2. Brief Yuuji for TDD workflow: write failing test, implement fix, verify test passes
+3. Brief Megumi for OWASP security review of the fix
+4. Update dev-notes.md with fix summary and domain.record.md with session notes
+5. Verify: tests pass, security clean, bug resolved
+6. Mark session complete
 
 **Implementation**:
 ```bash
-# Step 0: Review past troubleshooting patterns
-python .protocol-state/troubleshooting_tracker.py stats
+# Review past patterns
 
-# Step 1: Start new session
-python .protocol-state/troubleshooting_tracker.py start 1 "<description>" "<files>"
 
-# ... (Yuuji + Megumi work) ...
+# Start new session
+DESCRIPTION="Brief description of the bug"
+FILES="src/file1.ts,src/file2.ts"
 
-# Step 6: Mark complete
-python .protocol-state/troubleshooting_tracker.py complete "<resolution>"
+
+# ... (Yuuji + Megumi work - agents fix and review) ...
+
+# Mark complete
+RESOLUTION="Bug fixed: root cause was X, implemented fix Y with Z tests"
+
 ```
 
 **User Prompts**:
-- Bug description (max 500 chars)
-- Affected files (comma-separated paths)
-- Expected behavior
-- Actual behavior
-- Steps to reproduce (optional)
+Gather bug description (max 500 chars), affected files (comma-separated paths), expected behavior, actual behavior, and optional reproduction steps.
 
 **Agent Briefing** (Yuuji):
 ```
@@ -133,41 +115,32 @@ Review for:
 - Logging of sensitive data
 ```
 
-**State Updates** (PATCH-STATE-001):
-- `project-state.json::troubleshooting.active_session` (consolidated):
-  ```json
-  {
-    "session_id": "TS-{timestamp}",
-    "active": true,
-    "current_tier": 1,
-    "attempts_count": 1,
-    "bug_description": "{description}",
-    "affected_files": ["{file1}", "{file2}"],
-    "started_at": "{timestamp}"
-  }
-  ```
-- **Fallback**: Updates legacy `troubleshooting_session` if consolidated namespace unavailable
+**State Updates**:
+`project-state.json::troubleshooting.active_session` receives:
+```json
+{
+  "session_id": "TS-{timestamp}",
+  "active": true,
+  "current_tier": 1,
+  "attempts_count": 1,
+  "bug_description": "{description}",
+  "affected_files": ["{file1}", "{file2}"],
+  "started_at": "{timestamp}"
+}
+```
+Falls back to legacy `troubleshooting_session` when consolidated namespace unavailable.
 
 **Exit Conditions**:
-- **Success**: Bug fixed, tests pass, security clean → `/ts complete`
-- **Failure**: Bug persists after 1 attempt → Recommend `/ts tier2` or `/ts escalate`
+Success (bug fixed, tests pass, security clean) triggers `/ts complete`. Failure after 1 attempt prompts recommendation for `/ts tier2` or `/ts escalate`.
 
 ---
 
 ### 2. /ts_tier2 - Moderate Bugs, Enhanced Investigation
 
-**Enhancements over Tier1**:
-- **Investigation phase** BEFORE fix (write to investigation.md)
-- **Root cause hypothesis** with user review gate
-- **Integration tests** in addition to unit tests
-- **Git log analysis** for recent changes
+Adds investigation phase BEFORE fix, root cause hypothesis with user review gate, integration tests beyond unit tests, and git log analysis for recent changes.
 
 **Workflow**:
-1. Yuuji investigates and writes hypothesis to investigation.md
-2. Present hypothesis to user for approval
-3. Implement fix only after approval
-4. Add integration tests
-5. Analyze git history for related changes
+Yuuji investigates and writes hypothesis to investigation.md. Present hypothesis to user for approval. Implement fix only after approval. Add integration tests. Analyze git history for related changes.
 
 **Investigation Template** (investigation.md):
 ```markdown
@@ -208,32 +181,41 @@ Investigation Steps:
 7. Analyze git log for related changes
 ```
 
-**State Updates** (PATCH-STATE-001):
-- Increment `troubleshooting.active_session.attempts_count` (consolidated)
-- Add investigation.md path to session metadata
-- **Fallback**: Updates legacy `troubleshooting_session` if needed
+**State Updates**:
+Increment `troubleshooting.active_session.attempts_count`. Add investigation.md path to session metadata. Falls back to legacy `troubleshooting_session` when needed.
 
 ---
 
 ### 3. /ts_tier3 - Complex Bugs, Support Agent Selection
 
-**New Feature**: Context-dependent support agent selection
+Introduces context-dependent support agent selection. User selects agents based on bug domain. Each selected support agent investigates and outputs recommendation. All recommendations route to Yuuji via @implementation handoff. Yuuji synthesizes and implements unified fix.
 
-**Workflow**:
-1. Prompt user to select support agents based on bug domain
-2. Each selected support agent investigates and outputs recommendation
-3. All recommendations route to Yuuji via @implementation handoff
-4. Yuuji synthesizes and implements unified fix
+**Implementation**:
+```bash
+# Review past patterns
+
+
+# Start new session
+DESCRIPTION="Brief description of the bug"
+FILES="src/file1.ts,src/file2.ts"
+python .protocol-state/troubleshooting_tracker.py start 3 "$DESCRIPTION" "$FILES"
+
+# ... (Yuuji + Megumi work - agents fix and review) ...
+
+# Mark complete
+RESOLUTION="Bug fixed: root cause was X, implemented fix Y with Z tests"
+python .protocol-state/troubleshooting_tracker.py complete "$RESOLUTION"
 
 **Support Agent Selection UI**:
 ```
 Select support agents based on bug domain (multi-select):
 
-[ ] Todo - Database issues (schema, queries, migrations, ORM)
-[ ] Panda - CI/CD issues (build failures, deployment, Docker, GitHub Actions)
-[ ] Maki - Performance issues (slow queries, memory leaks, bundle size)
-[ ] Inumaki - API issues (REST, GraphQL, WebSocket, contracts)
-[ ] Nobara - UX issues (accessibility, user flow, design system)
+[ ] Todo - Database issues (schema, queries, migrations, ORM). Read protocol/todo.agent.md
+[ ] Panda - CI/CD issues (build failures, deployment, Docker, GitHub Actions).read protocol/panda.agent.md
+[ ] Maki - Performance issues (slow queries, memory leaks, bundle size).read protocol/maki.agent.md
+[ ] Inumaki - API issues (REST, GraphQL, WebSocket, contracts). read protocol/inumaki.agent.md
+[ ] Sukuna - System update issues (protocol changes, adversarial testing). read protocol/sukuna.agent.md
+[ ] Nobara - UX issues (accessibility, user flow, design system).read protocol/nobara.agent.md
 
 Examples:
 - Database bug → select Todo
@@ -244,7 +226,7 @@ Selected agents: _____________
 ```
 
 **Agent Coordination**:
-Each support agent provides specialized analysis:
+Each support agent provides specialized analysis.
 
 **Todo** (Database):
 ```
@@ -308,27 +290,38 @@ Synthesize unified fix:
 4. Test across all domains (DB, API, performance)
 ```
 
-**State Updates** (PATCH-STATE-001):
-- `troubleshooting.active_session.selected_support_agents`: ["todo", "maki"] (consolidated)
-- `troubleshooting.active_session.support_agent_deliverables`:
-  ```json
-  {
-    "todo": {"status": "complete", "output_file": ".protocol-state/investigation.md#database-analysis"},
-    "maki": {"status": "in_progress", "output_file": null}
-  }
-  ```
-- **Fallback**: Updates legacy `troubleshooting_session` if needed
+**State Updates**:
+`troubleshooting.active_session.selected_support_agents`: ["todo", "maki"]
+`troubleshooting.active_session.support_agent_deliverables`:
+```json
+{
+  "todo": {"status": "complete", "output_file": ".protocol-state/investigation.md#database-analysis"},
+  "maki": {"status": "in_progress", "output_file": null}
+}
+```
+Falls back to legacy `troubleshooting_session` when needed.
 
 ---
 
 ### 4. /ts_tier4 - Critical Bugs, Advanced Investigation
 
-**Requirements**:
-- **Root cause diagram/flowchart** (visual bug propagation)
-- **Multi-hypothesis testing** (test at least 2 hypotheses before fixing)
-- **Regression suite category addition** (prevent similar bugs)
-- **Production telemetry analysis** (logs, metrics, traces)
-- **User review gate before implementation**
+Requires root cause diagram/flowchart (visual bug propagation), multi-hypothesis testing (test at least 2 hypotheses before fixing), regression suite category addition (prevent similar bugs), production telemetry analysis (logs, metrics, traces), and user review gate before implementation.
+
+**Implementation**:
+```bash
+# Review past patterns
+python .protocol-state/troubleshooting_tracker.py stats
+
+# Start new session
+DESCRIPTION="Brief description of the bug"
+FILES="src/file1.ts,src/file2.ts"
+python .protocol-state/troubleshooting_tracker.py start 4 "$DESCRIPTION" "$FILES"
+
+# ... (Yuuji + Megumi work - agents fix and review) ...
+
+# Mark complete
+RESOLUTION="Bug fixed: root cause was X, implemented fix Y with Z tests"
+python .protocol-state/troubleshooting_tracker.py complete "$RESOLUTION"
 
 **Enhanced Investigation Deliverable** (investigation.md):
 ```markdown
@@ -386,7 +379,7 @@ Investigation Requirements:
 
 ### 5. /ts_codered - All Hands, Mandatory Plan Mode
 
-**Critical Protocol**: Codered activates ALL 9 agents with mandatory plan mode
+Codered activates ALL 9 agents with mandatory plan mode.
 
 **Step 1: Plan Mode Validation**
 
@@ -402,6 +395,7 @@ Settings → Plans → Enable Plan Mode
 
 Once enabled, reinvoke: /ts codered
 
+
 Plan mode ensures:
 - Full investigation before code changes
 - Complete documentation of approach
@@ -413,7 +407,8 @@ Plan mode ensures:
 
 **Step 2: All-Agent Briefing**
 
-Output briefing templates for ALL 9 agents:
+
+Output briefing templates for ALL 9 agents.
 
 **Gojo** (Mission Control):
 ```
@@ -546,52 +541,47 @@ Adversarial Review:
 - Devil's advocate recommendations
 ```
 
-**Step 3: Full Documentation Sync** (PATCH-STATE-001)
+**Step 3: Full Documentation Sync**
 
 ALL 6 state files MUST be updated:
 
-1. **project-state.json::troubleshooting.active_session** (consolidated):
-   ```json
-   {
-     "troubleshooting": {
-       "active_session": {
-         "session_id": "{id}",
-         "current_tier": 5,
-         "codered_active": true,
-         "plan_mode_active": true,
-         "agent_completion_status": {
-           "yuuji": "complete",
-           "megumi": "in_progress",
-           ...
-         }
-       }
-     }
-   }
-   ```
-   **Fallback**: Updates legacy `troubleshooting_session` if consolidated unavailable
+1. **project-state.json::troubleshooting.active_session**:
+```json
+{
+  "troubleshooting": {
+    "active_session": {
+      "session_id": "{id}",
+      "current_tier": 5,
+      "codered_active": true,
+      "plan_mode_active": true,
+      "agent_completion_status": {
+        "yuuji": "complete",
+        "megumi": "in_progress",
+        ...
+      }
+    }
+  }
+}
+```
+Falls back to legacy `troubleshooting_session` when consolidated unavailable.
 
 2. **dev-notes.md**:
-   ```markdown
-   ## CODERED Session - {session_id}
-   **Agents**: All 9 deployed
-   **Assignments**:
-   - Yuuji: Implementation with plan mode
-   - Megumi: Threat model + multi-model review
-   - [Full list]
-   ```
+```markdown
+## CODERED Session - {session_id}
+**Agents**: All 9 deployed
+**Assignments**:
+- Yuuji: Implementation with plan mode
+- Megumi: Threat model + multi-model review
+- [Full list]
+```
 
-3. **investigation.md**:
-   Multi-agent findings consolidated by Gojo
+3. **investigation.md**: Multi-agent findings consolidated by Gojo
 
-4. **security-review.md**:
-   Megumi threat model + OWASP review
+4. **security-review.md**: Megumi threat model + OWASP review
 
-5. **domain.record.md** (Gojo only):
-   Strategic context, business impact, decision log
+5. **domain.record.md** (Gojo only): Strategic context, business impact, decision log
 
-6. **project-state.json::troubleshooting.history** (PATCH-STATE-001):
-   Session archive on completion (consolidated)
-   **Fallback**: Legacy `troubleshooting-history.json` if consolidated unavailable
+6. **project-state.json::troubleshooting.history**: Session archive on completion. Falls back to legacy `troubleshooting-history.json` when consolidated unavailable.
 
 **Step 4: Gojo Unified Recommendation**
 
@@ -632,8 +622,9 @@ After all 9 agents complete, Gojo synthesizes:
 
 ### 6. /ts status - Show Current Session
 
-**Read-only command** displaying active troubleshooting session.
+Read-only command displaying active troubleshooting session.
 
+troubleshooting_tracker reads `project-state.json::troubleshooting.active_session` and formats output.
 **Output**:
 ```
 📊 TROUBLESHOOTING SESSION STATUS
@@ -664,15 +655,14 @@ Escalation History:
 Next Actions: Waiting for Megumi + Maki completion
 ```
 
-**Implementation** (PATCH-STATE-001):
-Read `project-state.json::troubleshooting.active_session` (consolidated), format output
-**Fallback**: Reads legacy `troubleshooting_session` if consolidated unavailable
+**Implementation**:
+Read `project-state.json::troubleshooting.active_session`, format output. Falls back to legacy `troubleshooting_session` when consolidated unavailable.
 
 ---
 
 ### 7. /ts history - Show Recent Sessions
 
-**Read-only command** displaying last 10 troubleshooting sessions.
+Read-only command displaying last 10 troubleshooting sessions.
 
 **Output**:
 ```
@@ -703,27 +693,20 @@ Statistics:
 - Most Common Escalation: tier1 → tier2 (auto, failed attempt)
 ```
 
-**Implementation** (PATCH-STATE-001):
-Read `project-state.json::troubleshooting.history` (consolidated), compute statistics on-the-fly, format last 10 sessions + statistics
-**Fallback**: Reads legacy `troubleshooting-history.json` if consolidated unavailable
+**Implementation**:
+Read `project-state.json::troubleshooting.history`, compute statistics on-the-fly, format last 10 sessions + statistics. Falls back to legacy `troubleshooting-history.json` when consolidated unavailable.
 
 ---
 
 ### 8. /ts escalate - Manual Tier Escalation
 
-**Purpose**: Manually escalate current session to next tier
+Manually escalate current session to next tier.
 
 **Workflow**:
-1. Read current tier from project-state.json
-2. Validate escalation path: tier1→tier2→tier3→tier4→codered
-3. Prompt user for escalation reason
-4. Log to escalation_history
-5. Re-run workflow for new tier
+Read current tier from project-state.json. Validate escalation path: tier1→tier2→tier3→tier4→codered. Prompt user for escalation reason. Log to escalation_history. Re-run workflow for new tier.
 
 **Tier Progression Rules**:
-- Cannot skip tiers (tier1 → tier3 blocked)
-- Codered requires explicit user confirmation
-- De-escalation not supported (complete session, start new one)
+Cannot skip tiers (tier1 → tier3 blocked). Codered requires explicit user confirmation. De-escalation not supported (complete session, start new one).
 
 **User Prompt**:
 ```
@@ -754,17 +737,12 @@ _____________________________________________
 
 ### 9. /ts complete - Close and Archive Session
 
-**Purpose**: Mark session complete and archive to consolidated state (PATCH-STATE-001)
+Mark session complete and archive to consolidated state.
 
 **Workflow**:
-1. Validate session is active
-2. Prompt user for outcome and completion notes
-3. Archive session to `project-state.json::troubleshooting.history` (consolidated)
-4. Clear active session from `project-state.json::troubleshooting.active_session`
-5. Log completion to dev-notes.md and domain.record.md
-6. **Fallback**: Updates legacy files if consolidated unavailable
+Validate session is active. Prompt user for outcome and completion notes. Archive session to `project-state.json::troubleshooting.history`. Clear active session from `project-state.json::troubleshooting.active_session`. Log completion to dev-notes.md and domain.record.md. Falls back to legacy files when consolidated unavailable.
 
-Note: Statistics are computed on-the-fly from history; no separate statistics persistence required.
+Statistics compute on-the-fly from history; no separate persistence required.
 
 **User Prompt**:
 ```
@@ -784,7 +762,7 @@ Tests Added: ___ (count)
 [Complete Session] [Cancel]
 ```
 
-**Archive Entry** (project-state.json::troubleshooting.history - PATCH-STATE-001):
+**Archive Entry** (project-state.json::troubleshooting.history):
 ```json
 {
   "session_id": "TS-20251228-140000",
@@ -805,13 +783,10 @@ Tests Added: ___ (count)
 }
 ```
 
-**State Updates** (PATCH-STATE-001):
-- Archive to `project-state.json::troubleshooting.history.sessions[]` (consolidated)
-- Clear `troubleshooting.active_session`
-- Log to dev-notes.md and domain.record.md
-- **Fallback**: Updates legacy `troubleshooting-history.json` if consolidated unavailable
+**State Updates**:
+Archive to `project-state.json::troubleshooting.history.sessions[]`. Clear `troubleshooting.active_session`. Log to dev-notes.md and domain.record.md. Falls back to legacy `troubleshooting-history.json` when consolidated unavailable.
 
-Note: Statistics (total_sessions, sessions_by_tier, etc.) are computed on-the-fly from history when `/ts stats` or `/ts history` is called.
+Statistics (total_sessions, sessions_by_tier, etc.) compute on-the-fly from history when `/ts stats` or `/ts history` is called.
 
 ---
 
@@ -822,44 +797,27 @@ Note: Statistics (total_sessions, sessions_by_tier, etc.) are computed on-the-fl
 **Trigger**: Failed attempt at current tier
 
 **Detection Heuristics**:
-1. **Test failures**: Yuuji reports tests still failing after implementation
-2. **Security issues**: Megumi tags @remediation-required
-3. **Time threshold exceeded**: tier1 (60min), tier2 (120min), tier3 (180min)
-4. **User reports bug persists**: Manual feedback
+Test failures (Yuuji reports tests still failing after implementation). Security issues (Megumi tags @remediation-required). Time threshold exceeded: tier1 (60min), tier2 (120min), tier3 (180min). User reports bug persists (manual feedback).
 
 **Escalation Threshold**: 2 failed attempts per tier (configurable in protocol.config.yaml)
 
 **Workflow**:
-```
-1. Detect failure condition (tests fail, bug persists, time exceeded)
-2. Increment attempts_count
-3. If attempts_count >= threshold:
-   - Log to escalation_history (reason: "auto", trigger: {condition})
-   - Increment current_tier
-   - Output: "Auto-escalating to tier{N} due to {reason}"
-   - Re-run tier{N} workflow
-4. Else:
-   - Output: "Attempt {N} failed. Retry tier{current} or escalate manually?"
-   - User decides: retry or `/ts escalate`
-```
+Detect failure condition (tests fail, bug persists, time exceeded). Increment attempts_count. If attempts_count >= threshold, log to escalation_history (reason: "auto", trigger: {condition}), increment current_tier, output "Auto-escalating to tier{N} due to {reason}", re-run tier{N} workflow. Otherwise, output "Attempt {N} failed. Retry tier{current} or escalate manually?" User decides: retry or `/ts escalate`.
 
 ### Manual Escalation
 
 Always available via `/ts escalate`, regardless of auto-escalation logic.
 
 **Use Cases**:
-- Bug more complex than initially assessed
-- Need specialized agent expertise ("Need Maki for performance analysis")
-- Security implications identified during investigation
-- Production impact higher than expected
+Bug more complex than initially assessed. Need specialized agent expertise ("Need Maki for performance analysis"). Security implications identified during investigation. Production impact higher than expected.
 
 ---
 
 ## State Schemas
 
-### project-state.json::troubleshooting (PATCH-STATE-001 Consolidated)
+### project-state.json::troubleshooting (Consolidated)
 
-**Note**: The `statistics` field is NOT persisted in the state file. Statistics are computed on-the-fly from the `history` data when requested via `/ts stats` or `/ts history`.
+The `statistics` field is NOT persisted. Statistics compute on-the-fly from `history` data when requested via `/ts stats` or `/ts history`.
 
 ```json
 {
@@ -908,7 +866,7 @@ Always available via `/ts escalate`, regardless of auto-escalation logic.
 }
 ```
 
-**Migration Note**: Legacy `troubleshooting-history.json` and `project-state.json::troubleshooting_session` supported for backward compatibility. Statistics are always computed on-the-fly from history data.
+**Migration Note**: Legacy `troubleshooting-history.json` and `project-state.json::troubleshooting_session` supported for backward compatibility. Statistics always compute on-the-fly from history data.
 
 ### troubleshooting-history.json (Legacy - Deprecated)
 
@@ -978,7 +936,7 @@ troubleshooting:
     cicd: "panda"
 ```
 
-**Note**: All defaults hardcoded in skill for zero-config operation.
+All defaults hardcoded in skill for zero-config operation.
 
 ---
 
@@ -987,23 +945,16 @@ troubleshooting:
 **Risk Level**: Medium
 
 **Threat Model**:
-1. **State injection** (malicious bug descriptions) → Sanitize input, truncate to 500 chars, remove control characters
-2. **Path traversal** (affected files with `../`) → Validate paths, disallow `..` sequences
-3. **Sensitive data leak** (bug descriptions with secrets) → Warn if patterns detected: "password", "secret", "token", "api_key"
-4. **DoS via large sessions** → Limit troubleshooting-history.json to 100 sessions, auto-archive old ones
+State injection (malicious bug descriptions) mitigated by sanitizing input, truncating to 500 chars, removing control characters. Path traversal (affected files with `../`) prevented by validating paths, disallowing `..` sequences. Sensitive data leak (bug descriptions with secrets) caught by warning when patterns detected: "password", "secret", "token", "api_key". DoS via large sessions limited by restricting troubleshooting-history.json to 100 sessions with auto-archive for old ones.
 
 **Mitigations**:
-- Input sanitization (remove control chars, limit length)
-- Path validation (no `../`, must be within project root)
-- Secret detection warnings (pattern matching for common secret keywords)
-- Retention policy (max 100 sessions, auto-archive after 90 days)
-- troubleshooting-history.json: 0644 permissions (read/write owner, read-only group/others)
+Input sanitization removes control chars and limits length. Path validation prohibits `../` and enforces project root boundaries. Secret detection warnings use pattern matching for common secret keywords. Retention policy enforces max 100 sessions with auto-archive after 90 days. troubleshooting-history.json permissions set to 0644 (read/write owner, read-only group/others).
 
 ---
 
 ## Escape Paths
 
-### Prerequisites Failures (PATCH-STATE-001)
+### Prerequisites Failures
 - **project-state.json::troubleshooting missing**: Auto-create with default troubleshooting namespace schema
 - **Consolidated state unavailable**: Fallback to legacy `troubleshooting-history.json` (read/write)
 - **Python unavailable**: Skip plan mode validation, trust user confirmation for codered
