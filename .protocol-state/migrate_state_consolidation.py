@@ -32,7 +32,7 @@ import json
 import re
 import shutil
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, Tuple, Optional
 
@@ -57,7 +57,7 @@ class StateMigration:
         self.manager = ProjectStateManager(protocol_root)
 
         # Backup directory with microseconds to avoid collision (SEC-022 improvement)
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+        timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')
         self.backup_dir = self.state_dir / "backups" / f"state-consolidation_{timestamp}"
 
         # Checksums for integrity verification (SEC-021, SEC-026)
@@ -173,18 +173,82 @@ class StateMigration:
         print(f"  Backups saved to: {self.backup_dir}")
 
     def migrate_session_tracking(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Migrate session-state.json to session_tracking namespace."""
+        """
+        Migrate session-state.json to session_tracking namespace.
+
+        PATCH-STATE-001-HOTFIX: Intelligent merge instead of overwrite.
+        Preserves active sessions and merges history with deduplication.
+        """
         print("[2/5] Migrating session tracking...")
 
+        # Preserve active session from project-state.json if it exists
+        existing_active_session = None
+        if "session_tracking" in state and state["session_tracking"].get("current_session"):
+            existing_active_session = state["session_tracking"]["current_session"]
+            if existing_active_session.get("session_active"):
+                print("  [!] HOTFIX: Preserving active session from project-state.json")
+
+        # Load legacy session data
         if self.manager.session_state_file.exists():
             with open(self.manager.session_state_file, 'r', encoding='utf-8') as f:
-                session_data = json.load(f)
+                legacy_data = json.load(f)
 
-            state["session_tracking"] = session_data
+            # Initialize merged session tracking
+            merged_session_tracking = self.manager._default_session_tracking()
+
+            # Step 1: Preserve active session if it exists in project-state.json
+            if existing_active_session:
+                merged_session_tracking["current_session"] = existing_active_session
+                print(f"  [OK] Preserved active session: {existing_active_session.get('session_id', 'unknown')}")
+            elif legacy_data.get("current_session"):
+                # Otherwise use legacy current session
+                merged_session_tracking["current_session"] = legacy_data["current_session"]
+
+            # Step 2: Merge session history with deduplication
+            # Get existing history from project-state.json
+            existing_history = []
+            if "session_tracking" in state and "session_history" in state["session_tracking"]:
+                existing_history = state["session_tracking"].get("session_history", [])
+
+            # Get legacy history
+            legacy_history = legacy_data.get("session_history", [])
+
+            # Combine and deduplicate by session_id
+            seen_session_ids = set()
+            merged_history = []
+
+            for session in existing_history + legacy_history:
+                session_id = session.get("session_id")
+                if session_id and session_id not in seen_session_ids:
+                    seen_session_ids.add(session_id)
+                    merged_history.append(session)
+
+            # Step 3: Sort chronologically by start_time
+            merged_history.sort(key=lambda s: s.get("start_time", ""), reverse=True)
+
+            # Step 4: Keep only last 30 sessions
+            merged_history = merged_history[:30]
+
+            merged_session_tracking["session_history"] = merged_history
+
+            # Preserve other fields from legacy data
+            for key in ["last_updated", "alert_history", "protocol_version"]:
+                if key in legacy_data:
+                    merged_session_tracking[key] = legacy_data[key]
+
+            state["session_tracking"] = merged_session_tracking
             print(f"  [OK] Migrated session-state.json ({self.manager.session_state_file.stat().st_size} bytes)")
+            print(f"  [OK] HOTFIX: Merged {len(merged_history)} sessions (deduplicated)")
         else:
-            state["session_tracking"] = self.manager._default_session_tracking()
-            print("  [!] No session-state.json found, using defaults")
+            # No legacy file - use defaults but preserve active session if exists
+            if existing_active_session:
+                default_tracking = self.manager._default_session_tracking()
+                default_tracking["current_session"] = existing_active_session
+                state["session_tracking"] = default_tracking
+                print("  [!] HOTFIX: No legacy file, preserved active session from project-state.json")
+            else:
+                state["session_tracking"] = self.manager._default_session_tracking()
+                print("  [!] No session-state.json found, using defaults")
 
         return state
 
@@ -261,7 +325,7 @@ class StateMigration:
             "history": {
                 "sessions": [],
                 "metadata": {
-                    "created": datetime.now().isoformat(),
+                    "created": datetime.now(timezone.utc).isoformat(),
                     "total_sessions_all_time": 0,
                     "last_updated": None
                 }
@@ -287,14 +351,14 @@ class StateMigration:
                 "_deprecated": True,
                 "_migrated_to": "troubleshooting.active_session",
                 "_removal_version": "8.14.0",
-                "_migration_date": datetime.now().isoformat()
+                "_migration_date": datetime.now(timezone.utc).isoformat()
             }
         if "troubleshooting_statistics" in state:
             state["troubleshooting_statistics"] = {
                 "_deprecated": True,
                 "_migrated_to": "troubleshooting.statistics",
                 "_removal_version": "8.14.0",
-                "_migration_date": datetime.now().isoformat()
+                "_migration_date": datetime.now(timezone.utc).isoformat()
             }
 
         print("  [OK] Deprecated old troubleshooting sections")
@@ -345,14 +409,14 @@ class StateMigration:
                 "_deprecated": True,
                 "_migrated_to": "tier_tracking",
                 "_removal_version": "8.14.0",
-                "_migration_date": datetime.now().isoformat()
+                "_migration_date": datetime.now(timezone.utc).isoformat()
             }
         if "tier_statistics" in state:
             state["tier_statistics"] = {
                 "_deprecated": True,
                 "_migrated_to": "tier_tracking",
                 "_removal_version": "8.14.0",
-                "_migration_date": datetime.now().isoformat()
+                "_migration_date": datetime.now(timezone.utc).isoformat()
             }
 
         print("  [OK] Deprecated old tier sections")
