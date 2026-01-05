@@ -20,6 +20,9 @@ python .protocol-state/session_monitor.py start
 
 # Step 2: Activate Domain Zero Protocol
 Read protocol/CLAUDE.md
+
+# Step 3: Start Mission Control with full DZP context
+Read protocol/gojo.agent.md
 ```
 
 **Output**:
