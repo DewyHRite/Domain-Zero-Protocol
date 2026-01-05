@@ -16,6 +16,11 @@ Read protocol/skills/session.md and execute `/session end` command.
 **Implementation**:
 ```bash
 # End session with Gojo permission (for domain.record.md access)
+# Step 1: Deactivate Domain Zero Protocol
+Read protocol/CLAUDE.md
+
+# Step 2:
+Read protocol/gojo.agent.md
 DZP_AGENT=gojo python .protocol-state/session_monitor.py end
 ```
 
