@@ -1,12 +1,12 @@
 {
   "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.11.0)",
   "current_session": {
-    "session_id": "session_20251229_141436",
+    "session_id": "bench_1767201078",
     "session_active": true,
-    "start_time": "2025-12-29T10:04:46.352190",
-    "last_interaction_time": "2025-12-29T14:14:46.353205",
-    "last_alert_time": "2025-12-29T14:14:52.552974",
-    "alert_count": 1,
+    "start_time": "2025-12-31T12:11:18.031762",
+    "last_interaction_time": "2025-12-31T12:11:21.264326",
+    "last_alert_time": null,
+    "alert_count": 0,
     "escalation_level": 0,
     "user_last_choice": null,
     "break_acknowledged": false,
@@ -17,7 +17,7 @@
     "continuous_work_minutes": 0,
     "break_timestamps": [],
     "total_breaks": 0,
-    "alerts_issued": 1,
+    "alerts_issued": 0,
     "alerts_ignored": 0,
     "continues_chosen": 0,
     "breaks_chosen": 0
@@ -39,8 +39,17 @@
       "total_breaks": 1,
       "alerts_issued": 0,
       "continues_chosen": 0
+    },
+    {
+      "session_id": "session_20251229_141436",
+      "start_time": "2025-12-29T10:04:46.352190",
+      "end_time": "2025-12-31T12:11:18.031762",
+      "total_duration_minutes": 3006,
+      "total_breaks": 0,
+      "alerts_issued": 1,
+      "continues_chosen": 0
     }
   ],
-  "last_updated": "2025-12-29T14:14:52.552974",
+  "last_updated": "2025-12-31T12:11:21.267891",
   "protocol_version": "8.11.0"
 }
