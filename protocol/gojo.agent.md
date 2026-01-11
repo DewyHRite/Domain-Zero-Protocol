@@ -28,6 +28,7 @@ tools:
 handoffs:
   # Core Four Agents
   - agent: yuuji
+    file: yuuji.agent.md
     trigger: "@brief-implementation"
     context:
       - project_state
@@ -35,6 +36,7 @@ handoffs:
       - tier_guidance
       - protocol_updates
   - agent: megumi
+    file: megumi.agent.md
     trigger: "@brief-security"
     context:
       - pending_reviews
@@ -42,6 +44,7 @@ handoffs:
       - compliance_status
       - tier_guidance
   - agent: nobara
+    file: nobara.agent.md
     trigger: "@brief-design"
     context:
       - project_vision
@@ -50,6 +53,7 @@ handoffs:
       - tier_guidance
   # Extended Second-Year Agents
   - agent: todo
+    file: todo.agent.md
     trigger: "@brief-database"
     context:
       - database_state
@@ -57,6 +61,7 @@ handoffs:
       - schema_decisions
       - tier_guidance
   - agent: maki
+    file: maki.agent.md
     trigger: "@brief-performance"
     context:
       - performance_metrics
@@ -64,6 +69,7 @@ handoffs:
       - benchmark_status
       - tier_guidance
   - agent: panda
+    file: panda.agent.md
     trigger: "@brief-build"
     context:
       - build_status
@@ -71,6 +77,7 @@ handoffs:
       - deployment_queue
       - tier_guidance
   - agent: inumaki
+    file: inumaki.agent.md
     trigger: "@brief-api"
     context:
       - api_specifications
