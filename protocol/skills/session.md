@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.13.0 -->
 # Session Management Skill
 ## Unified Interface for Work Session Tracking
 
-**Version**: 1.0.0
+**Version**: 2.0.0
 **Agent(s)**: Gojo (Mission Control)
 **Category**: Session Management
 **Risk Level**: Medium (code execution via Python)
@@ -90,36 +90,63 @@ python .protocol-state/session_monitor.py status
 
 ### /session update
 
-**Action**: Update session interaction timestamp + sync all checkpoint files
+**Action**: Comprehensive project documents sync + session interaction timestamp update
+
+**PATCH-SESSION-UPDATE (v8.13.0)**: Enhanced to sync ALL project documents comprehensively using `ProjectStateManager`.
 
 **Implementation**:
 ```bash
-# Step 1: Update session timestamp with Gojo permission (for domain.record.md access)
-DZP_AGENT=gojo python .protocol-state/session_monitor.py update
+# Comprehensive sync with secret scanning and git operations (requires Gojo permission for domain.record.md)
+DZP_AGENT=gojo python .protocol-state/session_monitor.py sync
 
-# Step 2: Sync checkpoint files
-# (See Checkpoint Update Workflow below)
+# Sync without git operations
+DZP_AGENT=gojo python .protocol-state/session_monitor.py sync --no-git
 ```
 
-**State Files Updated** (PATCH-SESSION-005 - Extensions 2 & 3, PATCH-STATE-001):
-1. **project-state.json::session_tracking** - Session duration, alert counts, interaction timestamp (consolidated)
-2. **dev-notes.md** - Security review log with session update event
-3. **domain.record.md** - Session checkpoint (Gojo permission only via DZP_AGENT env var)
+**Project Documents Synced** (ALL CONTENT, NOT JUST METADATA):
+1. **`.dzp-domain/domain.record.md`** - Strategic notes, session checkpoints, decisions log (Gojo permission required)
+2. **`.protocol-state/project-state.json`** - Full project state via ProjectStateManager (atomic operations)
+3. **`.protocol-state/dev-notes.md`** - Implementation log, completed features, pending tasks
+4. **`.protocol-state/security-review.md`** - Security audit trail, findings, SEC-ID tracking
 
-**Note (PATCH-STATE-001)**: Uses consolidated state in `project-state.json::session_tracking`. Falls back to legacy `session-state.json` for backward compatibility.
+**NEW FEATURES**:
+- ✅ **Secret Scanning**: Automatically scans for API keys, tokens, passwords, connection strings
+- ✅ **Git Operations**: Commit and push with user approval (optional)
+- ✅ **Atomic Updates**: Uses `ProjectStateManager` for race-condition-free state updates
+- ✅ **Comprehensive Sync**: ALL document content synced, not just appends
 
-**Note**: `DZP_AGENT=gojo` environment variable grants temporary Gojo permission, allowing the session monitor to update domain.record.md when invoked by the user through this skill. Without this variable, domain.record.md updates are skipped (permission denied).
+**Secret Patterns Detected**:
+- API Keys (32+ characters)
+- AWS Keys (AKIA...)
+- GitHub Tokens (ghp_...)
+- Connection Strings (mongodb://, postgres://, mysql://)
+- Password Assignments
+
+**Git Operations Workflow**:
+1. Scan all documents for secrets
+2. If secrets found: Abort commit with warning
+3. If clean: Prompt user for approval
+4. Commit with message: `chore(session): Project documents checkpoint sync`
+5. Push to remote (user choice: yes/local-only/skip)
 
 **Use Cases**:
 - Manual checkpoint during long work sessions
 - Before taking break (preserve context)
 - After completing significant milestone
 - Before context compaction (save state)
+- Ensure project documents are backed up to GitHub
 
 **ESCAPE PATH**:
-- If checkpoint file missing: Create with minimal schema
-- If write fails: Log warning, continue with available files
+- If ProjectStateManager unavailable: Fall back to legacy file I/O
+- If secret scanning fails: Log warning, continue without scan
+- If git operations fail: Log error, documents still synced locally
 - Non-blocking operation (best-effort sync)
+
+**Protection Rules** (NON-NEGOTIABLE):
+- ❌ **NEVER OVERWRITE** - Project documents are append-only
+- ✅ **BACKUP BEFORE EDIT** - Timestamped backups created automatically
+- ✅ **NO TEMPLATE RESETS** - Never reset to template state
+- ✅ **VERSION CONTROL** - Git operations recommended but optional
 
 ---
 

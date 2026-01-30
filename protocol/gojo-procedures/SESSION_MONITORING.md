@@ -1,5 +1,5 @@
 # Gojo's Work Session Monitoring Implementation Guide
-<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.13.0 -->
 
 **Purpose:** Provide Gojo with ACTUAL implementation instructions for work session monitoring.
 **Context:** Sukuna's red team assessment (v8.7.0) identified that work session monitoring was prompt-based theater with zero enforcement. This guide provides the REAL implementation.
@@ -586,9 +586,9 @@ python .protocol-state/session_monitor.py record-choice <user_choice>
 
 ---
 
-## ⚙️ CONFIGURATION OPTIONS (v8.12.0)
+## ⚙️ CONFIGURATION OPTIONS (v8.13.0)
 
-Session monitoring is highly configurable via `protocol.config.yaml`. Below are the v8.12.0 configuration enhancements that allow customization of alert timing, messages, and behavior.
+Session monitoring is highly configurable via `protocol.config.yaml`. Below are the v8.13.0 configuration enhancements that allow customization of alert timing, messages, and behavior.
 
 ### 1. Configurable Alert Thresholds
 
@@ -667,7 +667,7 @@ safety:
 
 **⚠️  Security Note**: Disabling monitoring removes safety protections. See Megumi's security review (SEC-LOW-002).
 
-### 4. Debounce Threshold (v8.12.0 - PATCH-SESSION-004)
+### 4. Debounce Threshold (v8.13.0 - PATCH-SESSION-004)
 
 **Location**: `protocol.config.yaml` → `safety.session_tracking.debounce_threshold_minutes`
 
@@ -776,11 +776,11 @@ grep -A 5 "alert_customization:" protocol.config.yaml
 **Questions? Check:**
 - `session_monitor.py` source code (fully documented)
 - `protocol.config.yaml` safety section
-- Megumi's security review: `.protocol-state/security-review-v8.12.0.md`
+- Megumi's security review: `.protocol-state/security-review-v8.13.0.md`
 - Sukuna's red team report (shows what was broken, what's fixed)
 - `protocol/skills/session-check.md` - Auto-invoked enforcement skill
 - `internal-docs/Code_review_feedback.md` - PATCH-SESSION-003 investigation
 
 **Last Updated:** 2025-12-29
 **Maintained By:** Ryomen Sukuna (System Update Adversary)
-**Authority:** v8.7.0 Work Session Monitoring Fix + PATCH-SESSION-003 Enforcement + v8.12.0 Configuration Enhancements
+**Authority:** v8.7.0 Work Session Monitoring Fix + PATCH-SESSION-003 Enforcement + v8.13.0 Configuration Enhancements

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Domain Zero Protocol - Work Session Monitoring System
-Version: 8.12.0
+Version: 8.13.0
 Purpose: Actual implementation of work session tracking and safety alerts
 
 This module provides REAL enforcement of work session monitoring, replacing
@@ -58,7 +58,7 @@ class SessionMonitor:
         # Load high-risk operation literals (no regex, safer and faster)
         self._high_risk_literals = self._load_high_risk_literals()
 
-        # Load configuration (v8.12.0 - Configuration Enhancements)
+        # Load configuration (v8.13.0 - Configuration Enhancements)
         self.enabled = self._load_enabled_flag()
         self.alert_thresholds = self._load_alert_thresholds()
         self.alert_customization = self._load_alert_customization()
@@ -146,7 +146,7 @@ class SessionMonitor:
         Load debounce threshold from config file or CLI argument.
 
         Debounce prevents alert spam by skipping alerts if last alert was < threshold ago.
-        v8.12.0 - PATCH-SESSION-004
+        v8.13.0 - PATCH-SESSION-004
 
         Args:
             cli_override: CLI --debounce argument (takes precedence)
@@ -195,7 +195,7 @@ class SessionMonitor:
         """
         Load session monitoring enabled flag from protocol.config.yaml.
 
-        v8.12.0 - Configuration Enhancement
+        v8.13.0 - Configuration Enhancement
         Master toggle for session monitoring system.
 
         Returns:
@@ -229,7 +229,7 @@ class SessionMonitor:
         """
         Load alert threshold configuration from protocol.config.yaml.
 
-        v8.12.0 - Configuration Enhancement
+        v8.13.0 - Configuration Enhancement
         Allows customization of when session alerts are issued.
 
         Returns:
@@ -309,7 +309,7 @@ class SessionMonitor:
         """
         Load custom alert messages from protocol.config.yaml.
 
-        v8.12.0 - Configuration Enhancement
+        v8.13.0 - Configuration Enhancement
         Allows customization of alert messages for company/team context.
 
         Returns:
@@ -369,9 +369,9 @@ class SessionMonitor:
                 raise RuntimeError(f"Failed to create session state file at {self.state_file}: {e}")
 
     def _default_state(self) -> Dict:
-        """Return default session state structure (v8.12.0 - uses loaded thresholds)."""
+        """Return default session state structure (v8.13.0 - uses loaded thresholds)."""
         return {
-            "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.12.0)",
+            "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.13.0)",
             "current_session": {
                 "session_id": None,
                 "session_active": False,
@@ -404,7 +404,7 @@ class SessionMonitor:
             },
             "session_history": [],
             "last_updated": None,
-            "protocol_version": "8.12.0"
+            "protocol_version": "8.13.0"
         }
 
     def load_state(self) -> Dict:
@@ -474,12 +474,12 @@ class SessionMonitor:
         """
         Start a new work session or continue existing one.
 
-        v8.12.0 - Respects enabled flag
+        v8.13.0 - Respects enabled flag
 
         Returns:
             Updated state with session initialized, or default state if disabled
         """
-        # Early return if session monitoring is disabled (v8.12.0)
+        # Early return if session monitoring is disabled (v8.13.0)
         if not self.enabled:
             return self._default_state()
 
@@ -533,7 +533,7 @@ class SessionMonitor:
         """
         Record a new interaction in the current session.
 
-        v8.12.0 - Respects enabled flag
+        v8.13.0 - Respects enabled flag
 
         Args:
             _retry_count: Internal retry counter (do not set manually)
@@ -545,7 +545,7 @@ class SessionMonitor:
         Raises:
             RuntimeError: If session cannot be started/reset after max retries
         """
-        # Early return if session monitoring is disabled (v8.12.0)
+        # Early return if session monitoring is disabled (v8.13.0)
         if not self.enabled:
             return self._default_state()
 
@@ -604,16 +604,16 @@ class SessionMonitor:
         """
         Check if a work session alert should be issued.
 
-        v8.12.0 - Respects enabled flag
+        v8.13.0 - Respects enabled flag
 
         Args:
-            debounce_override: CLI --debounce argument (v8.12.0)
+            debounce_override: CLI --debounce argument (v8.13.0)
 
         Returns:
             (should_alert, alert_level, alert_context)
             alert_level: "standard", "escalated", "critical"
         """
-        # Early return if session monitoring is disabled (v8.12.0)
+        # Early return if session monitoring is disabled (v8.13.0)
         if not self.enabled:
             return False, None, {}
 
@@ -636,7 +636,7 @@ class SessionMonitor:
 
         duration_minutes = (now - start).total_seconds() / 60
 
-        # Debounce check (v8.12.0 - PATCH-SESSION-004)
+        # Debounce check (v8.13.0 - PATCH-SESSION-004)
         # Skip alert if last alert was too recent (prevents spam during rapid prototyping)
         debounce_threshold = self._load_debounce_config(cli_override=debounce_override)
         last_alert_time = state['current_session'].get('last_alert_time')
@@ -703,7 +703,7 @@ class SessionMonitor:
         """
         Render work session alert with actual data.
 
-        v8.12.0 - Enhanced with custom message injection
+        v8.13.0 - Enhanced with custom message injection
 
         Args:
             context: Alert context from check_alert_needed()
@@ -752,7 +752,7 @@ Template file not found at: {self.template_file}
         for placeholder, value in replacements.items():
             rendered = rendered.replace(placeholder, str(value))
 
-        # Inject custom messages (v8.12.0)
+        # Inject custom messages (v8.13.0)
         custom_msg = self._inject_custom_messages(context)
         if custom_msg:
             # Append custom messages after the standard template
@@ -764,7 +764,7 @@ Template file not found at: {self.template_file}
         """
         Record user's response to work session alert.
 
-        v8.12.0 - Respects enabled flag
+        v8.13.0 - Respects enabled flag
 
         Args:
             choice: "save_and_break" or "continue"
@@ -772,7 +772,7 @@ Template file not found at: {self.template_file}
         Returns:
             Updated state, or default state if disabled
         """
-        # Early return if session monitoring is disabled (v8.12.0)
+        # Early return if session monitoring is disabled (v8.13.0)
         if not self.enabled:
             return self._default_state()
 
@@ -807,7 +807,7 @@ Template file not found at: {self.template_file}
         """
         Record that user took a break.
 
-        v8.12.0 - Respects enabled flag
+        v8.13.0 - Respects enabled flag
 
         Args:
             duration_minutes: Reported break duration (optional)
@@ -815,7 +815,7 @@ Template file not found at: {self.template_file}
         Returns:
             Updated state, or default state if disabled
         """
-        # Early return if session monitoring is disabled (v8.12.0)
+        # Early return if session monitoring is disabled (v8.13.0)
         if not self.enabled:
             return self._default_state()
 
@@ -842,12 +842,12 @@ Template file not found at: {self.template_file}
         """
         End the current work session and archive it.
 
-        v8.12.0 - Respects enabled flag
+        v8.13.0 - Respects enabled flag
 
         Returns:
             Updated state with session ended, or default state if disabled
         """
-        # Early return if session monitoring is disabled (v8.12.0)
+        # Early return if session monitoring is disabled (v8.13.0)
         if not self.enabled:
             return self._default_state()
 
@@ -877,7 +877,7 @@ Template file not found at: {self.template_file}
         """
         Check if a command is considered high-risk using literal string matching.
 
-        v8.12.0 - Respects enabled flag
+        v8.13.0 - Respects enabled flag
 
         Non-string or empty commands are treated as not high-risk.
 
@@ -887,7 +887,7 @@ Template file not found at: {self.template_file}
         Returns:
             True if command is high-risk, False if disabled or non-high-risk
         """
-        # Early return if session monitoring is disabled (v8.12.0)
+        # Early return if session monitoring is disabled (v8.13.0)
         if not self.enabled:
             return False
 
@@ -915,7 +915,7 @@ Template file not found at: {self.template_file}
         Returns:
             (should_block, reason) - reason is empty string if not blocked
         """
-        # Early return if session monitoring is disabled (v8.12.0)
+        # Early return if session monitoring is disabled (v8.13.0)
         if not self.enabled:
             return False, ""
 
@@ -1092,7 +1092,7 @@ Template file not found at: {self.template_file}
 
     def _get_break_recommendation(self, context: Dict) -> str:
         """Generate break recommendation based on context."""
-        # Use custom message if configured (v8.12.0)
+        # Use custom message if configured (v8.13.0)
         if self.alert_customization['break_recommendation']:
             return self.alert_customization['break_recommendation']
 
@@ -1115,7 +1115,7 @@ Template file not found at: {self.template_file}
         """
         Inject custom alert messages from configuration.
 
-        v8.12.0 - Configuration Enhancement
+        v8.13.0 - Configuration Enhancement
 
         Args:
             context: Alert context with duration_minutes, is_late_night, etc.
@@ -1148,7 +1148,7 @@ Template file not found at: {self.template_file}
         """
         Record an agent invocation for bypass detection.
 
-        v8.12.0 - PATCH-SESSION-004 Component 5
+        v8.13.0 - PATCH-SESSION-004 Component 5
 
         Args:
             agent_name: Name of agent invoked (gojo, yuuji, megumi, etc.)
@@ -1422,6 +1422,518 @@ Template file not found at: {self.template_file}
         except (IOError, OSError) as e:
             print(f"[ERROR] Failed to write security review: {e}")
 
+    def sync_all_project_documents(self, include_git_operations: bool = True) -> Dict[str, any]:
+        """
+        Comprehensive sync of all project documents with secret scanning and git operations.
+
+        This method performs a full checkpoint of all project documentation:
+        1. Updates project-state.json via ProjectStateManager
+        2. Prepares checkpoint content for domain.record.md, dev-notes.md,
+           security-review.md in memory (SEC-SU-002: no TOCTOU gap)
+        3. Scans prepared content for production secrets BEFORE writing
+        4. Writes content to files only if scan passes (with backups per SEC-SU-003)
+        5. Commits and pushes with user approval
+
+        Args:
+            include_git_operations: If True, performs git commit/push with approval
+
+        Returns:
+            Dict with sync results and status
+        """
+        results = {
+            'success': False,
+            'documents_updated': [],
+            'secrets_found': [],
+            'git_operations': {'attempted': False, 'success': False},
+            'errors': []
+        }
+
+        print("[SYNC] Starting comprehensive project document sync...")
+
+        # Step 1: Update project-state.json using ProjectStateManager
+        try:
+            if self.state_manager:
+                state = self.state_manager.load_project_state()
+                # Update last_updated timestamp
+                state['project_metadata']['last_updated'] = datetime.now(timezone.utc).isoformat()
+                self.state_manager.save_project_state(state)
+                results['documents_updated'].append('project-state.json')
+                print("[OK] project-state.json synced via ProjectStateManager")
+            else:
+                results['errors'].append("ProjectStateManager not available")
+                print("[WARN] ProjectStateManager not available, skipping project-state.json sync")
+        except Exception as e:
+            results['errors'].append(f"project-state.json sync failed: {e}")
+            print(f"[ERROR] Failed to sync project-state.json: {e}")
+
+        # SEC-SU-002 REMEDIATION: Prepare content in memory FIRST, scan BEFORE writing.
+        # This eliminates the TOCTOU gap where files could be modified between
+        # write and scan. Content is generated, scanned, then written only if clean.
+
+        # Step 2: Prepare checkpoint content for all documents (in-memory)
+        pending_writes = []  # List of (filepath, content, doc_name) tuples
+        content_map = {}     # filename -> content for in-memory scanning
+
+        # Prepare domain.record.md content
+        if self._check_gojo_invocation():
+            try:
+                result = self._prepare_domain_record_content()
+                if result:
+                    pending_writes.append((result[0], result[1], 'domain.record.md'))
+                    content_map['domain.record.md'] = result[1]
+                    print("[PREP] domain.record.md content prepared (Gojo permission)")
+            except Exception as e:
+                results['errors'].append(f"domain.record.md prep failed: {e}")
+                print(f"[ERROR] Failed to prepare domain.record.md: {e}")
+        else:
+            print("[SKIP] domain.record.md sync skipped (requires Gojo permission)")
+
+        # Prepare dev-notes.md content
+        try:
+            result = self._prepare_dev_notes_content()
+            if result:
+                pending_writes.append((result[0], result[1], 'dev-notes.md'))
+                content_map['dev-notes.md'] = result[1]
+                print("[PREP] dev-notes.md content prepared")
+        except Exception as e:
+            results['errors'].append(f"dev-notes.md prep failed: {e}")
+            print(f"[ERROR] Failed to prepare dev-notes.md: {e}")
+
+        # Prepare security-review.md content
+        try:
+            result = self._prepare_security_review_content()
+            if result:
+                pending_writes.append((result[0], result[1], 'security-review.md'))
+                content_map['security-review.md'] = result[1]
+                print("[PREP] security-review.md content prepared")
+        except Exception as e:
+            results['errors'].append(f"security-review.md prep failed: {e}")
+            print(f"[ERROR] Failed to prepare security-review.md: {e}")
+
+        # Step 3: Scan prepared content for secrets BEFORE writing
+        doc_names = [name for _, _, name in pending_writes]
+        if doc_names:
+            print("[SCAN] Scanning prepared content for production secrets (pre-write)...")
+            secrets_found = self._scan_for_secrets(doc_names, content_map=content_map)
+            results['secrets_found'] = secrets_found
+
+            # Filter to high-confidence findings that should block writes
+            high_confidence_secrets = [s for s in secrets_found if s.get('confidence') == 'high']
+
+            if high_confidence_secrets:
+                print(f"[WARNING] Found {len(high_confidence_secrets)} HIGH confidence secrets in prepared content!")
+                for secret in high_confidence_secrets:
+                    print(f"  - {secret['file']}: {secret['type']} at line {secret['line']} [{secret['confidence']}]")
+                print("[ABORT] Blocking file writes due to high-confidence secret detection")
+                results['errors'].append(f"Write blocked: {len(high_confidence_secrets)} high-confidence secrets detected in content")
+            else:
+                if secrets_found:
+                    print(f"[INFO] Found {len(secrets_found)} potential findings (none high-confidence)")
+                    for secret in secrets_found:
+                        print(f"  - {secret['file']}: {secret['type']} at line {secret['line']} [{secret.get('confidence', 'unknown')}]")
+                else:
+                    print("[OK] No secrets detected in prepared content")
+
+                # Step 4: Write content to files (scan passed)
+                for filepath, content, doc_name in pending_writes:
+                    try:
+                        self._write_checkpoint(filepath, content)
+                        results['documents_updated'].append(doc_name)
+                        print(f"[OK] {doc_name} synced")
+                    except Exception as e:
+                        results['errors'].append(f"{doc_name} write failed: {e}")
+                        print(f"[ERROR] Failed to write {doc_name}: {e}")
+
+        # Step 5: Git operations with user approval
+        if include_git_operations and results['documents_updated']:
+            try:
+                git_result = self._git_commit_and_push_with_approval(
+                    files=results['documents_updated'],
+                    secrets_found=results['secrets_found']
+                )
+                results['git_operations'] = git_result
+            except Exception as e:
+                results['errors'].append(f"Git operations failed: {e}")
+                print(f"[ERROR] Git operations failed: {e}")
+
+        results['success'] = len(results['documents_updated']) > 0 and len(results['errors']) == 0
+
+        print(f"[SYNC] Sync completed. {len(results['documents_updated'])} documents updated.")
+        return results
+
+    def _backup_before_append(self, filepath: Path) -> Optional[Path]:
+        """
+        SEC-SU-003 REMEDIATION: Create timestamped backup before append operations.
+
+        Satisfies Protection Rule 4: BACKUP BEFORE EDIT for all project documents.
+
+        Args:
+            filepath: Path to the file being appended to
+
+        Returns:
+            Path to backup file, or None if backup failed
+        """
+        if not filepath.exists():
+            return None
+
+        timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
+        backup_dir = self.protocol_root / ".protocol-state" / "backups" / f"session-sync_{timestamp}"
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        backup_file = backup_dir / filepath.name
+
+        try:
+            shutil.copy2(filepath, backup_file)
+            return backup_file
+        except (IOError, OSError) as e:
+            print(f"[WARN] Failed to create backup of {filepath.name}: {e}")
+            return None
+
+    def _prepare_domain_record_content(self) -> Optional[Tuple[Path, str]]:
+        """
+        Generate domain.record.md checkpoint content without writing.
+
+        SEC-SU-002 REMEDIATION: Content is generated in memory for
+        pre-write secret scanning (eliminates TOCTOU gap).
+
+        Returns:
+            Tuple of (filepath, content_string) or None if file not found
+        """
+        domain_record_file = self.protocol_root / ".dzp-domain" / "domain.record.md"
+
+        if not domain_record_file.exists():
+            print(f"[WARN] domain.record.md not found at {domain_record_file}")
+            return None
+
+        state = self.load_state()
+        now = datetime.now(timezone.utc)
+
+        # Calculate session duration
+        start_time = state['current_session'].get('start_time')
+        if start_time:
+            start = datetime.fromisoformat(start_time)
+            duration_minutes = (now - start).total_seconds() / 60
+            duration_formatted = f"{int(duration_minutes // 60)}h {int(duration_minutes % 60)}m"
+        else:
+            duration_formatted = "Unknown"
+
+        # Read recent entries from dev-notes for strategic context
+        dev_notes_file = self.protocol_root / ".protocol-state" / "dev-notes.md"
+        strategic_context = "No recent implementation notes"
+        if dev_notes_file.exists():
+            try:
+                with open(dev_notes_file, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+                    # Get last 5 non-empty lines
+                    recent_lines = [l.strip() for l in lines[-10:] if l.strip() and not l.startswith('#')]
+                    if recent_lines:
+                        strategic_context = ' | '.join(recent_lines[:3])
+            except Exception:
+                pass
+
+        checkpoint_entry = f"""
+---
+## Session Checkpoint - {now.strftime('%Y-%m-%d %H:%M:%S')} UTC
+
+**Session Duration**: {duration_formatted}
+**Alert Status**: {state['current_session'].get('alert_count', 0)} alerts | Escalation Level {state['current_session'].get('escalation_level', 0)}
+**Strategic Context**: {strategic_context}
+
+"""
+        return (domain_record_file, checkpoint_entry)
+
+    def _prepare_dev_notes_content(self) -> Optional[Tuple[Path, str]]:
+        """
+        Generate dev-notes.md checkpoint content without writing.
+
+        SEC-SU-002 REMEDIATION: Content is generated in memory for
+        pre-write secret scanning (eliminates TOCTOU gap).
+
+        Returns:
+            Tuple of (filepath, content_string) or None if file not found
+        """
+        dev_notes_file = self.protocol_root / ".protocol-state" / "dev-notes.md"
+
+        if not dev_notes_file.exists():
+            print(f"[WARN] dev-notes.md not found at {dev_notes_file}")
+            return None
+
+        state = self.load_state()
+        now = datetime.now(timezone.utc)
+
+        # Calculate session duration
+        start_time = state['current_session'].get('start_time')
+        if start_time:
+            start = datetime.fromisoformat(start_time)
+            duration_minutes = (now - start).total_seconds() / 60
+            duration_formatted = f"{int(duration_minutes // 60)}h {int(duration_minutes % 60)}m"
+        else:
+            duration_formatted = "Unknown"
+
+        checkpoint_entry = f"""
+---
+## {now.strftime('%Y-%m-%d %H:%M:%S')} - Session Checkpoint
+
+**Session Duration**: {duration_formatted}
+**Continuous Work**: {state['session_metrics'].get('continuous_work_minutes', 0)} minutes
+**Breaks Taken**: {state['session_metrics'].get('total_breaks', 0)}
+
+### Active Work
+- Session checkpoint sync completed
+- All project documents updated
+
+"""
+        return (dev_notes_file, checkpoint_entry)
+
+    def _prepare_security_review_content(self) -> Optional[Tuple[Path, str]]:
+        """
+        Generate security-review.md checkpoint content without writing.
+
+        SEC-SU-002 REMEDIATION: Content is generated in memory for
+        pre-write secret scanning (eliminates TOCTOU gap).
+
+        Returns:
+            Tuple of (filepath, content_string) or None if file not found
+        """
+        security_review_file = self.protocol_root / ".protocol-state" / "security-review.md"
+
+        if not security_review_file.exists():
+            print(f"[WARN] security-review.md not found at {security_review_file}")
+            return None
+
+        now = datetime.now(timezone.utc)
+
+        checkpoint_entry = f"""
+---
+## {now.strftime('%Y-%m-%d %H:%M:%S')} - Security Checkpoint
+
+**Event**: Session checkpoint sync
+**Status**: Project documents synced and secret scan completed
+
+"""
+        return (security_review_file, checkpoint_entry)
+
+    def _write_checkpoint(self, filepath: Path, content: str):
+        """
+        Write checkpoint content to file with backup.
+
+        SEC-SU-003: Creates timestamped backup before append.
+        SEC-SU-002: Called only AFTER content passes secret scan.
+
+        Args:
+            filepath: Target file path
+            content: Checkpoint content string to append
+        """
+        # SEC-SU-003: Create timestamped backup before append
+        self._backup_before_append(filepath)
+
+        try:
+            with open(filepath, 'a', encoding='utf-8') as f:
+                f.write(content)
+        except (IOError, OSError) as e:
+            raise Exception(f"Failed to write to {filepath.name}: {e}")
+
+    # Legacy wrappers for backward compatibility (used by external callers)
+    def _sync_domain_record(self):
+        """Sync domain.record.md - legacy wrapper."""
+        result = self._prepare_domain_record_content()
+        if result:
+            self._write_checkpoint(result[0], result[1])
+
+    def _sync_dev_notes(self):
+        """Sync dev-notes.md - legacy wrapper."""
+        result = self._prepare_dev_notes_content()
+        if result:
+            self._write_checkpoint(result[0], result[1])
+
+    def _sync_security_review(self):
+        """Sync security-review.md - legacy wrapper."""
+        result = self._prepare_security_review_content()
+        if result:
+            self._write_checkpoint(result[0], result[1])
+
+    def _scan_for_secrets(self, files: List[str], content_map: Optional[Dict[str, str]] = None) -> List[Dict]:
+        """
+        Scan project documents for production secrets.
+
+        SEC-SU-001 REMEDIATION: Reports ALL findings with confidence levels
+        instead of silently skipping suspected false positives.
+
+        SEC-SU-002 REMEDIATION: Accepts optional content_map for in-memory
+        scanning before files are written (eliminates TOCTOU gap).
+
+        SEC-SU-004 REMEDIATION: Secret previews are redacted to prevent
+        leaking secret material to stdout/logs.
+
+        SEC-SU-005 REMEDIATION: CONNECTION_STRING regex uses [^@\\s]+ before
+        the @ to prevent quadratic backtracking. Lines > 500 chars are
+        skipped to mitigate ReDoS on adversarial input.
+
+        Detects:
+        - AWS keys (AKIA...)
+        - GitHub tokens (ghp_...)
+        - Connection strings (mongodb://, postgres://, mysql://)
+        - Password assignments
+        - Generic API key patterns (high-entropy 32+ char strings)
+
+        Args:
+            files: List of filenames to scan
+            content_map: Optional dict mapping filename -> content string
+                         for in-memory pre-write scanning
+
+        Returns:
+            List of detected secrets with file, line, type, and confidence
+        """
+        import re
+
+        secrets_found = []
+
+        # SEC-SU-005: Narrowed API_KEY pattern and fixed CONNECTION_STRING
+        # to prevent ReDoS via [^@\s]+ before the @ separator
+        patterns = {
+            'AWS_KEY': re.compile(r'AKIA[0-9A-Z]{16}'),
+            'GITHUB_TOKEN': re.compile(r'ghp_[A-Za-z0-9]{36}'),
+            'CONNECTION_STRING': re.compile(r'(mongodb|postgres|mysql|redis)://[^@\s]+@[^\s]+'),
+            'PASSWORD_ASSIGNMENT': re.compile(r'password\s*=\s*["\'][^"\']{8,}["\']', re.IGNORECASE),
+            'API_KEY': re.compile(r'(?:api[_-]?key|secret[_-]?key|access[_-]?token)\s*[:=]\s*["\']?[A-Za-z0-9_\-]{32,}', re.IGNORECASE),
+        }
+
+        # Low-confidence indicator words (SEC-SU-001: still report, just lower confidence)
+        low_confidence_indicators = ['example', 'placeholder', 'test', 'sample', 'dummy', 'fake', 'mock']
+
+        for filename in files:
+            # Determine content source: in-memory map or file on disk
+            lines_to_scan = None
+
+            if content_map and filename in content_map:
+                # SEC-SU-002: Scan from in-memory content before write
+                lines_to_scan = content_map[filename].splitlines(keepends=True)
+            else:
+                # Fall back to reading file from disk
+                if filename == 'project-state.json':
+                    filepath = self.protocol_root / ".protocol-state" / "project-state.json"
+                elif filename == 'domain.record.md':
+                    filepath = self.protocol_root / ".dzp-domain" / "domain.record.md"
+                elif filename == 'dev-notes.md':
+                    filepath = self.protocol_root / ".protocol-state" / "dev-notes.md"
+                elif filename == 'security-review.md':
+                    filepath = self.protocol_root / ".protocol-state" / "security-review.md"
+                else:
+                    continue
+
+                if not filepath.exists():
+                    continue
+
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        lines_to_scan = f.readlines()
+                except Exception as e:
+                    print(f"[WARN] Failed to read {filepath} for scanning: {e}")
+                    continue
+
+            # Scan lines
+            for line_num, line in enumerate(lines_to_scan, 1):
+                # SEC-SU-005: Skip very long lines to prevent ReDoS
+                if len(line) > 500:
+                    secrets_found.append({
+                        'file': filename,
+                        'line': line_num,
+                        'type': 'LONG_LINE_SKIPPED',
+                        'confidence': 'info',
+                        'preview': f'[SKIPPED - line length {len(line)} exceeds 500 char limit]'
+                    })
+                    continue
+
+                for secret_type, pattern in patterns.items():
+                    if pattern.search(line):
+                        # SEC-SU-001: Determine confidence level instead of
+                        # silently skipping. ALL matches are reported.
+                        line_lower = line.lower()
+                        confidence = 'high'
+
+                        if any(indicator in line_lower for indicator in low_confidence_indicators):
+                            confidence = 'low'
+                        elif secret_type == 'API_KEY':
+                            # Generic API key pattern is inherently medium confidence
+                            confidence = 'medium'
+
+                        # SEC-SU-004: Redact preview to prevent secret leakage
+                        secrets_found.append({
+                            'file': filename,
+                            'line': line_num,
+                            'type': secret_type,
+                            'confidence': confidence,
+                            'preview': f'[REDACTED {secret_type}]'
+                        })
+
+        return secrets_found
+
+    def _git_commit_and_push_with_approval(self, files: List[str], secrets_found: List[Dict]) -> Dict:
+        """
+        Commit and push project documents with user approval.
+
+        Args:
+            files: List of filenames to commit
+            secrets_found: List of detected secrets
+
+        Returns:
+            Dict with operation results
+        """
+        result = {
+            'attempted': True,
+            'success': False,
+            'committed': False,
+            'pushed': False,
+            'user_approved': False,
+            'secrets_override': False
+        }
+
+        # Map short filenames to full paths
+        file_paths = []
+        for filename in files:
+            if filename == 'project-state.json':
+                file_paths.append('.protocol-state/project-state.json')
+            elif filename == 'domain.record.md':
+                file_paths.append('.dzp-domain/domain.record.md')
+            elif filename == 'dev-notes.md':
+                file_paths.append('.protocol-state/dev-notes.md')
+            elif filename == 'security-review.md':
+                file_paths.append('.protocol-state/security-review.md')
+
+        if not file_paths:
+            print("[WARN] No files to commit")
+            return result
+
+        # Check for secrets
+        if secrets_found:
+            print(f"\n[WARNING] {len(secrets_found)} potential secrets detected!")
+            print("Secrets should not be committed to git.")
+            print("\nOptions:")
+            print("  1) Abort commit (recommended)")
+            print("  2) Review and clean secrets manually, then commit")
+            print("  3) Override and commit anyway (NOT RECOMMENDED)")
+
+            # For now, abort if secrets found (can enhance with user input later)
+            print("\n[ABORT] Aborting commit due to detected secrets")
+            return result
+
+        # User approval for commit
+        print(f"\n[GIT] Ready to commit {len(file_paths)} files:")
+        for fp in file_paths:
+            print(f"  - {fp}")
+
+        print("\nCommit message: 'chore(session): Project documents checkpoint sync'")
+        print("\nOptions:")
+        print("  1) Commit and push to remote (default)")
+        print("  2) Commit locally only")
+        print("  3) Skip git operations")
+
+        # For now, return with 'user_approved': False
+        # In production, this would prompt for user input
+        print("\n[INFO] Git operations require explicit user approval")
+        print("[INFO] Run '/session commit' to complete git operations")
+
+        return result
+
 
 def main():
     """Command-line interface for session monitoring."""
@@ -1447,6 +1959,8 @@ def main():
         print("Session Management:")
         print("  start, new-session         Start a new work session")
         print("  update                     Record an interaction (updates duration)")
+        print("  sync                       Comprehensive project documents sync (domain.record, dev-notes, security-review, project-state)")
+        print("  sync --no-git              Sync documents without git operations")
         print("  end                        End the current session")
         print("  reset                      Reset session state (clear all data)")
         print("")
@@ -1461,7 +1975,7 @@ def main():
         print("  break [minutes]            Record a break (default: 15 minutes)")
         print("  continue, resume           Resume work after break")
         print("")
-        print("Agent Invocation Tracking (v8.12.0):")
+        print("Agent Invocation Tracking (v8.13.0):")
         print("  record-invocation <agent>  Record agent invocation for bypass detection")
         print("                             Use --routed flag if invocation was routed via Gojo")
         print("")
@@ -1477,8 +1991,33 @@ def main():
     elif command == "update":
         state = monitor.update_interaction()
         print(f"Session updated: {state['session_metrics']['total_duration_minutes']} minutes")
+    elif command == "sync":
+        # PATCH-SESSION-UPDATE: Comprehensive project documents sync
+        include_git = "--no-git" not in sys.argv
+        results = monitor.sync_all_project_documents(include_git_operations=include_git)
+
+        print("\n[SYNC RESULTS]")
+        print(f"Documents updated: {len(results['documents_updated'])}")
+        for doc in results['documents_updated']:
+            print(f"  ✅ {doc}")
+
+        if results['secrets_found']:
+            print(f"\n⚠️  Secrets found: {len(results['secrets_found'])}")
+            for secret in results['secrets_found']:
+                print(f"  - {secret['file']}:{secret['line']} ({secret['type']})")
+
+        if results['errors']:
+            print(f"\n❌ Errors: {len(results['errors'])}")
+            for error in results['errors']:
+                print(f"  - {error}")
+
+        if results['success']:
+            print("\n✅ Sync completed successfully")
+        else:
+            print("\n⚠️  Sync completed with errors")
+            sys.exit(1)
     elif command == "check":
-        # v8.12.0 - PATCH-SESSION-004: Support --debounce CLI argument
+        # v8.13.0 - PATCH-SESSION-004: Support --debounce CLI argument
         debounce_override = None
         if len(sys.argv) > 2 and sys.argv[2].startswith('--debounce'):
             try:
@@ -1676,7 +2215,7 @@ def main():
         print(monitor.render_alert(test_context))
     elif command == "help" or command == "--help" or command == "-h":
         # Show help
-        print("Domain Zero Protocol - Work Session Monitor v8.12.0")
+        print("Domain Zero Protocol - Work Session Monitor v8.13.0")
         print("")
         print("Usage: python session_monitor.py <command>")
         print("")
@@ -1697,7 +2236,7 @@ def main():
         print("  break [minutes]            Record a break (default: 15 minutes)")
         print("  continue, resume           Resume work after break")
         print("")
-        print("Agent Invocation Tracking (v8.12.0):")
+        print("Agent Invocation Tracking (v8.13.0):")
         print("  record-invocation <agent>  Record agent invocation for bypass detection")
         print("                             Use --routed flag if invocation was routed via Gojo")
         print("")

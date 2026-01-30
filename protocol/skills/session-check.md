@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.13.0 -->
 # Session Check Skill
 ## Automatic Work Session Alert Enforcement
 
@@ -284,7 +284,7 @@ rm slash-commands/session-check.md
 
 ---
 
-**Protocol Version**: 8.12.0
+**Protocol Version**: 8.13.0
 **Created**: 2025-12-29
 **Last Updated**: 2025-12-29
 **Status**: ACTIVE
