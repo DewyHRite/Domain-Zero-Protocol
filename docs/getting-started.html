@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Getting Started with Domain Zero Protocol - A comprehensive guide for new users of the nine-agent AI development system">
-    <title>Getting Started | Domain Zero Protocol v8.12.0</title>
+    <title>Getting Started | Domain Zero Protocol v8.13.0</title>
     <style>
         /* CSS Custom Properties for theming */
         :root {
@@ -1712,6 +1712,82 @@ Gojo: [Briefs Yuuji for TDD workflow]
                 </div>
             </section>
 
+            <!-- How to Use Agents -->
+            <section id="agent-usage" aria-labelledby="agent-usage-heading" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%); padding: var(--space-2xl); border-radius: 12px; margin-bottom: var(--space-3xl);">
+                <h2 id="agent-usage-heading" style="color: var(--color-accent);">⚡ How to Use Agents Properly</h2>
+                <p style="font-size: 1.1rem; margin-bottom: var(--space-xl); color: var(--color-text-secondary);">
+                    <strong>CRITICAL:</strong> Agents must be invoked in TWO steps for proper operation. This ensures the full agent file is loaded into context before task execution.
+                </p>
+
+                <div class="intro-grid" style="margin-bottom: var(--space-xl);">
+                    <!-- Step 1 -->
+                    <div class="intro-card" style="border-left: 4px solid var(--color-gojo);">
+                        <h3 style="color: var(--color-gojo);">📖 Step 1: Load Agent File</h3>
+                        <p style="margin-bottom: var(--space-md);">
+                            First, tell Claude to <strong>read the agent file</strong>. This loads the full agent protocol, including:
+                        </p>
+                        <ul style="list-style: none; padding-left: 0; margin-bottom: var(--space-md);">
+                            <li>✅ Complete agent definition and personality</li>
+                            <li>✅ Tool permissions and restrictions</li>
+                            <li>✅ Workflow procedures and escape paths</li>
+                            <li>✅ Tier requirements and validation rules</li>
+                        </ul>
+                        <div class="code-block agent-invoke">
+                            <code>Read protocol/yuuji.agent.md</code>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="intro-card" style="border-left: 4px solid var(--color-yuuji);">
+                        <h3 style="color: var(--color-yuuji);">🎯 Step 2: Provide Task</h3>
+                        <p style="margin-bottom: var(--space-md);">
+                            After the agent file is loaded, provide your <strong>specific task</strong> in a follow-up message:
+                        </p>
+                        <ul style="list-style: none; padding-left: 0; margin-bottom: var(--space-md);">
+                            <li>✅ Agent has full context from file</li>
+                            <li>✅ Follows proper tier workflows</li>
+                            <li>✅ Applies all protocol restrictions</li>
+                            <li>✅ Uses correct tool permissions</li>
+                        </ul>
+                        <div class="code-block agent-invoke">
+                            <code>Implement user authentication with JWT</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alternative: Single-Line Invocation -->
+                <div class="intro-card" style="background: rgba(139, 92, 246, 0.1); border: 2px solid var(--color-megumi);">
+                    <h3 style="color: var(--color-megumi);">⚡ Alternative: Single-Line Invocation</h3>
+                    <p style="margin-bottom: var(--space-md);">
+                        You can combine both steps into a single command using <code>and</code>:
+                    </p>
+                    <div class="code-block agent-invoke" style="margin-bottom: var(--space-sm);">
+                        <code>Read protocol/yuuji.agent.md and implement user authentication with JWT</code>
+                    </div>
+                    <div class="code-block agent-invoke" style="margin-bottom: var(--space-sm);">
+                        <code>Read protocol/megumi.agent.md and review the authentication system</code>
+                    </div>
+                    <div class="code-block agent-invoke">
+                        <code>Read protocol/nobara.agent.md and design the user profile page</code>
+                    </div>
+                </div>
+
+                <!-- Why This Matters -->
+                <div class="intro-card" style="margin-top: var(--space-xl); background: rgba(239, 68, 68, 0.1); border: 2px solid var(--color-maki);">
+                    <h3 style="color: var(--color-maki);">⚠️ Why This Matters</h3>
+                    <p style="margin-bottom: var(--space-md);">
+                        <strong>Skipping Step 1 causes:</strong>
+                    </p>
+                    <ul style="margin-bottom: 0;">
+                        <li>❌ Agent operates without full protocol context</li>
+                        <li>❌ Tool permissions may not be enforced correctly</li>
+                        <li>❌ Tier validation may be skipped</li>
+                        <li>❌ Escape paths and safety checks may not activate</li>
+                        <li>❌ Agent personality and workflows may be incomplete</li>
+                    </ul>
+                </div>
+            </section>
+
             <!-- Agent Relationships -->
             <section id="relationships" aria-labelledby="relationships-heading">
                 <h2 id="relationships-heading">Agent Relationships</h2>
@@ -2026,6 +2102,9 @@ project:
             <section id="quick-commands" aria-labelledby="quick-commands-heading">
                 <h2 id="quick-commands-heading">Quick Commands Reference</h2>
                 <p>Common invocation patterns for everyday development tasks.</p>
+                <div class="note" style="background: var(--bg-highlight); border-left: 4px solid var(--color-gojo); padding: var(--space-md); margin-bottom: var(--space-lg);">
+                    <p><strong>Remember:</strong> Always load the agent file first (<code>Read protocol/[agent].agent.md</code>) before providing the task. This ensures the full agent context is available.</p>
+                </div>
 
                 <div class="intro-grid">
                     <div class="intro-card">
@@ -2033,6 +2112,10 @@ project:
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">Start new session</span>
                             <code>Read protocol/gojo.agent.md</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Project documents checkpoint sync (v8.13.0)</span>
+                            <code>skill: "session" args: "update"</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">Full intelligence report</span>
@@ -2121,6 +2204,54 @@ project:
                         <div class="code-block">
                             <span class="code-label">OpenAPI spec</span>
                             <code>Read protocol/inumaki.agent.md and generate OpenAPI spec</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-maki);">Performance</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Lighthouse audit</span>
+                            <code>Read protocol/maki.agent.md and run Lighthouse audit</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Profile performance</span>
+                            <code>Read protocol/maki.agent.md and profile [component]</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">Optimize bundle size</span>
+                            <code>Read protocol/maki.agent.md and optimize bundle</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-panda);">Build & CI/CD</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Configure GitHub Actions</span>
+                            <code>Read protocol/panda.agent.md and setup CI/CD for [project]</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Docker setup</span>
+                            <code>Read protocol/panda.agent.md and create Dockerfile</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">Build optimization</span>
+                            <code>Read protocol/panda.agent.md and optimize build process</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-sukuna);">System Updates</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Protocol version migration</span>
+                            <code>Read protocol/sukuna.agent.md and migrate to v[X.Y.Z]</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Red-team security review</span>
+                            <code>Read protocol/sukuna.agent.md and stress-test [system]</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">Adversarial testing</span>
+                            <code>Read protocol/sukuna.agent.md and challenge [proposal]</code>
                         </div>
                     </div>
                 </div>
