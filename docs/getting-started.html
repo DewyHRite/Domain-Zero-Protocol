@@ -3,185 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Getting Started with Domain Zero Protocol - A comprehensive guide for new users of the nine-agent AI development system">
-    <title>Getting Started | Domain Zero Protocol v8.12.0</title>
+    <title>Getting Started - Domain Zero Protocol v8.13.0</title>
+    <meta name="description" content="Domain Zero Protocol: A nine-agent AI development system for perfect code through infinite collaboration.">
     <style>
-        /* CSS Custom Properties for theming */
         :root {
             /* Agent Colors */
-            --color-gojo: #3B82F6;
-            --color-yuuji: #EC4899;
-            --color-megumi: #8B5CF6;
-            --color-nobara: #F59E0B;
-            --color-todo: #10B981;
-            --color-maki: #EF4444;
-            --color-panda: #14B8A6;
-            --color-inumaki: #6366F1;
-            --color-sukuna: #991B1B;
+            --color-gojo: #3B82F6;      /* Blue - Mission Control */
+            --color-yuuji: #EC4899;     /* Pink - Implementation */
+            --color-megumi: #8B5CF6;    /* Purple - Security */
+            --color-nobara: #F59E0B;    /* Gold - Creative/UX */
+            --color-todo: #92400E;      /* Brown - Database */
+            --color-maki: #16A34A;      /* Green - Performance */
+            --color-panda: #0F172A;     /* Black/White - Build */
+            --color-inumaki: #7C3AED;   /* Indigo - API */
+            --color-sukuna: #DC143C;    /* Crimson - System Updates */
 
-            /* Base colors */
-            --color-bg: #0f172a;
-            --color-bg-secondary: #1e293b;
-            --color-bg-tertiary: #334155;
-            --color-text: #f8fafc;
-            --color-text-secondary: #94a3b8;
-            --color-text-muted: #64748b;
-            --color-border: #475569;
-            --color-accent: #3B82F6;
+            /* Base Colors */
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --bg-highlight: #475569;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
 
-            /* Spacing - Mobile-first values */
+            /* Spacing */
             --space-xs: 0.25rem;
             --space-sm: 0.5rem;
             --space-md: 1rem;
-            --space-lg: 1.25rem;
-            --space-xl: 1.5rem;
-            --space-2xl: 2rem;
-            --space-3xl: 2.5rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
 
             /* Typography */
-            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
 
-            /* Focus styles for accessibility */
-            --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.5);
-
-            /* Touch target minimum (WCAG 2.2) */
-            --touch-target-min: 44px;
+            /* Breakpoints */
+            --breakpoint-md: 768px;
+            --breakpoint-lg: 1024px;
         }
 
-        /* Tablet+ spacing adjustments */
-        @media (min-width: 768px) {
-            :root {
-                --space-lg: 1.5rem;
-                --space-xl: 2rem;
-                --space-2xl: 3rem;
-                --space-3xl: 4rem;
-            }
-        }
-
-        /* Reset and base styles */
-        *, *::before, *::after {
-            box-sizing: border-box;
+        * {
             margin: 0;
             padding: 0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-            -webkit-text-size-adjust: 100%;
+            box-sizing: border-box;
         }
 
         body {
             font-family: var(--font-sans);
-            font-size: 1rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
-            color: var(--color-text);
-            background-color: var(--color-bg);
-            min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Skip link for accessibility */
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            background: var(--color-accent);
-            color: white;
-            padding: var(--space-sm) var(--space-md);
-            text-decoration: none;
-            z-index: 100;
-            border-radius: 0 0 4px 0;
-            min-height: var(--touch-target-min);
-            display: flex;
-            align-items: center;
-        }
-
-        .skip-link:focus {
-            top: 0;
-            outline: none;
-            box-shadow: var(--focus-ring);
-        }
-
-        /* Focus styles */
-        a:focus,
-        button:focus,
-        input:focus,
-        [tabindex]:focus {
-            outline: none;
-            box-shadow: var(--focus-ring);
-        }
-
-        /* Layout */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 var(--space-md);
         }
 
-        @media (min-width: 480px) {
-            .container {
-                padding: 0 var(--space-lg);
-            }
-        }
-
         /* Header */
         header {
-            background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg) 100%);
-            border-bottom: 1px solid var(--color-border);
-            padding: var(--space-lg) 0;
-        }
-
-        @media (min-width: 768px) {
-            header {
-                padding: var(--space-xl) 0;
-            }
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-bottom: 2px solid var(--color-gojo);
+            padding: var(--space-xl) 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
         }
 
         .header-content {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            text-align: center;
+            gap: var(--space-lg);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
             gap: var(--space-md);
         }
 
-        @media (min-width: 768px) {
-            .header-content {
-                gap: var(--space-lg);
-            }
-        }
-
         .logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: var(--space-sm);
-        }
-
-        @media (min-width: 480px) {
-            .logo {
-                flex-direction: row;
-                gap: var(--space-md);
-            }
-        }
-
-        .logo-icon {
-            width: 48px;
-            height: 48px;
-        }
-
-        @media (min-width: 480px) {
-            .logo-icon {
-                width: 60px;
-                height: 60px;
-            }
-        }
-
-        h1 {
-            font-size: clamp(1.5rem, 5vw, 2.5rem);
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--color-gojo), var(--color-yuuji));
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--color-gojo) 0%, var(--color-yuuji) 50%, var(--color-sukuna) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -189,264 +100,158 @@
 
         .version-badge {
             display: inline-block;
-            background: var(--color-bg-tertiary);
-            color: var(--color-text-secondary);
-            padding: var(--space-xs) var(--space-sm);
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-family: var(--font-mono);
+            padding: var(--space-xs) var(--space-md);
+            background: linear-gradient(135deg, var(--color-gojo), var(--color-yuuji));
+            color: white;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
-        @media (min-width: 480px) {
-            .version-badge {
-                font-size: 0.875rem;
-            }
-        }
-
-        .header-description {
-            max-width: 600px;
-            font-size: 0.9rem;
-            padding: 0 var(--space-sm);
-        }
-
-        @media (min-width: 480px) {
-            .header-description {
-                font-size: 1rem;
-                padding: 0;
-            }
-        }
-
-        /* Navigation - Mobile First (horizontal scroll) */
+        /* Navigation */
         nav {
-            background: var(--color-bg-secondary);
-            border-bottom: 1px solid var(--color-border);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
             position: sticky;
-            top: 0;
-            z-index: 50;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            top: 100px;
+            z-index: 99;
         }
 
-        .nav-list {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
+        nav ul {
             list-style: none;
-            padding: var(--space-sm) var(--space-md);
-            gap: var(--space-xs);
-            min-width: max-content;
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            justify-content: center;
         }
 
-        /* Hide scrollbar but keep functionality */
-        nav::-webkit-scrollbar {
-            height: 0;
-            display: none;
-        }
-        nav {
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        @media (min-width: 768px) {
-            nav {
-                overflow-x: visible;
-            }
-            .nav-list {
-                flex-wrap: wrap;
-                justify-content: center;
-                min-width: auto;
-                gap: var(--space-sm);
-                padding: var(--space-md) 0;
-            }
-        }
-
-        .nav-list li {
-            flex-shrink: 0;
-        }
-
-        .nav-list a {
-            color: var(--color-text-secondary);
+        nav a {
+            color: var(--text-secondary);
             text-decoration: none;
             padding: var(--space-sm) var(--space-md);
-            border-radius: 4px;
-            transition: background-color 0.2s, color 0.2s;
-            font-size: 0.85rem;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            min-height: var(--touch-target-min);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
         }
 
-        @media (min-width: 480px) {
-            .nav-list a {
-                font-size: 0.9rem;
-            }
+        nav a:hover {
+            background: var(--bg-highlight);
+            color: var(--text-primary);
         }
 
-        .nav-list a:hover,
-        .nav-list a:focus {
-            background: var(--color-bg-tertiary);
-            color: var(--color-text);
-        }
-
-        /* Main content */
+        /* Main Content */
         main {
             padding: var(--space-2xl) 0;
-        }
-
-        @media (min-width: 768px) {
-            main {
-                padding: var(--space-3xl) 0;
-            }
         }
 
         section {
             margin-bottom: var(--space-2xl);
         }
 
-        @media (min-width: 768px) {
-            section {
-                margin-bottom: var(--space-3xl);
-            }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: var(--space-lg);
+            background: linear-gradient(135deg, var(--color-gojo), var(--color-yuuji));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         h2 {
-            font-size: clamp(1.25rem, 4vw, 2rem);
-            font-weight: 600;
+            font-size: 2rem;
+            font-weight: 700;
             margin-bottom: var(--space-lg);
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--color-gojo);
             padding-bottom: var(--space-sm);
-            border-bottom: 2px solid var(--color-border);
-        }
-
-        @media (min-width: 768px) {
-            h2 {
-                margin-bottom: var(--space-xl);
-            }
         }
 
         h3 {
-            font-size: 1.1rem;
+            font-size: 1.5rem;
             font-weight: 600;
-            margin-bottom: var(--space-sm);
-            color: var(--color-text);
-        }
-
-        @media (min-width: 480px) {
-            h3 {
-                font-size: 1.25rem;
-                margin-bottom: var(--space-md);
-            }
+            margin-bottom: var(--space-md);
+            color: var(--text-primary);
         }
 
         p {
+            color: var(--text-secondary);
             margin-bottom: var(--space-md);
-            color: var(--color-text-secondary);
-            font-size: 0.95rem;
+            max-width: 80ch;
         }
 
-        @media (min-width: 480px) {
-            p {
-                font-size: 1rem;
-            }
-        }
-
-        /* Introduction section - Mobile First Grid */
-        .intro-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: var(--space-md);
-        }
-
-        @media (min-width: 480px) {
-            .intro-grid {
-                gap: var(--space-lg);
-            }
-        }
-
-        @media (min-width: 600px) {
-            .intro-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (min-width: 900px) {
-            .intro-grid {
-                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-                gap: var(--space-xl);
-            }
-        }
-
-        .intro-card {
-            background: var(--color-bg-secondary);
-            border: 1px solid var(--color-border);
+        /* Code Blocks */
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: var(--space-lg);
+            padding: var(--space-md);
+            margin: var(--space-md) 0;
+            position: relative;
+            overflow-x: auto;
         }
 
-        @media (min-width: 768px) {
-            .intro-card {
-                padding: var(--space-xl);
-            }
+        .code-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: var(--space-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .intro-card h3 {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            white-space: pre;
+            display: block;
         }
 
-        .intro-icon {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
+        .copy-button {
+            position: absolute;
+            top: var(--space-sm);
+            right: var(--space-sm);
+            padding: var(--space-xs) var(--space-sm);
+            background: var(--color-gojo);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            opacity: 0.7;
         }
 
-        @media (min-width: 480px) {
-            .intro-icon {
-                width: 24px;
-                height: 24px;
-            }
+        .copy-button:hover {
+            opacity: 1;
+            transform: translateY(-1px);
         }
 
-        /* Agent cards - Mobile First Grid */
+        .copy-button.copied {
+            background: var(--color-maki);
+        }
+
+        /* Agent Cards */
         .agents-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: var(--space-md);
-        }
-
-        @media (min-width: 480px) {
-            .agents-grid {
-                gap: var(--space-lg);
-            }
-        }
-
-        @media (min-width: 600px) {
-            .agents-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (min-width: 900px) {
-            .agents-grid {
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            }
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-lg);
+            margin: var(--space-xl) 0;
         }
 
         .agent-card {
-            background: var(--color-bg-secondary);
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            padding: var(--space-md);
-            transition: transform 0.2s, box-shadow 0.2s;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--space-lg);
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-        }
-
-        @media (min-width: 480px) {
-            .agent-card {
-                padding: var(--space-lg);
-            }
         }
 
         .agent-card::before {
@@ -456,625 +261,283 @@
             left: 0;
             right: 0;
             height: 4px;
+            background: linear-gradient(90deg, var(--agent-color), transparent);
         }
 
-        .agent-card:hover,
-        .agent-card:focus-within {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        .agent-card:hover {
+            border-color: var(--agent-color);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
 
-        .agent-card[data-agent="gojo"]::before { background: var(--color-gojo); }
-        .agent-card[data-agent="yuuji"]::before { background: var(--color-yuuji); }
-        .agent-card[data-agent="megumi"]::before { background: var(--color-megumi); }
-        .agent-card[data-agent="nobara"]::before { background: var(--color-nobara); }
-        .agent-card[data-agent="todo"]::before { background: var(--color-todo); }
-        .agent-card[data-agent="maki"]::before { background: var(--color-maki); }
-        .agent-card[data-agent="panda"]::before { background: var(--color-panda); }
-        .agent-card[data-agent="inumaki"]::before { background: var(--color-inumaki); }
-        .agent-card[data-agent="sukuna"]::before { background: var(--color-sukuna); }
-
-        .agent-header {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
+        .agent-card h3 {
+            color: var(--agent-color);
             margin-bottom: var(--space-sm);
         }
 
-        @media (min-width: 480px) {
-            .agent-header {
-                gap: var(--space-md);
-                margin-bottom: var(--space-md);
-            }
+        .agent-card .role {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: var(--space-md);
+            font-style: italic;
         }
 
-        .agent-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1rem;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        @media (min-width: 480px) {
-            .agent-avatar {
-                width: 48px;
-                height: 48px;
-                font-size: 1.25rem;
-            }
-        }
-
-        .agent-card[data-agent="gojo"] .agent-avatar { background: var(--color-gojo); }
-        .agent-card[data-agent="yuuji"] .agent-avatar { background: var(--color-yuuji); }
-        .agent-card[data-agent="megumi"] .agent-avatar { background: var(--color-megumi); }
-        .agent-card[data-agent="nobara"] .agent-avatar { background: var(--color-nobara); }
-        .agent-card[data-agent="todo"] .agent-avatar { background: var(--color-todo); }
-        .agent-card[data-agent="maki"] .agent-avatar { background: var(--color-maki); }
-        .agent-card[data-agent="panda"] .agent-avatar { background: var(--color-panda); }
-        .agent-card[data-agent="inumaki"] .agent-avatar { background: var(--color-inumaki); }
-        .agent-card[data-agent="sukuna"] .agent-avatar { background: var(--color-sukuna); }
-
-        .agent-name {
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        @media (min-width: 480px) {
-            .agent-name {
-                font-size: 1.1rem;
-            }
-        }
-
-        .agent-role {
-            font-size: 0.8rem;
-            color: var(--color-text-muted);
-        }
-
-        @media (min-width: 480px) {
-            .agent-role {
-                font-size: 0.875rem;
-            }
-        }
-
-        .agent-description {
-            font-size: 0.85rem;
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-sm);
-        }
-
-        @media (min-width: 480px) {
-            .agent-description {
-                font-size: 0.9rem;
-                margin-bottom: var(--space-md);
-            }
-        }
-
-        .agent-invoke {
-            background: var(--color-bg-tertiary);
-            padding: var(--space-sm);
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            color: var(--color-text);
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        @media (min-width: 480px) {
-            .agent-invoke {
-                padding: var(--space-sm) var(--space-md);
-                font-size: 0.8rem;
-            }
-        }
-
-        /* Tier system visualization */
-        .tier-diagram {
-            display: flex;
-            flex-direction: column;
+        /* Tier System */
+        .tier-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: var(--space-lg);
-            margin: var(--space-lg) 0;
-        }
-
-        @media (min-width: 768px) {
-            .tier-diagram {
-                gap: var(--space-xl);
-                margin: var(--space-xl) 0;
-            }
+            margin: var(--space-xl) 0;
         }
 
         .tier-card {
-            background: var(--color-bg-secondary);
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
             padding: var(--space-lg);
-            position: relative;
+            transition: all 0.3s ease;
         }
 
-        /* Mobile: Colored top border indicates tier */
-        .tier-card[data-tier="1"] {
-            border-top: 4px solid #22c55e;
-        }
-        .tier-card[data-tier="2"] {
-            border-top: 4px solid #3b82f6;
-        }
-        .tier-card[data-tier="3"] {
-            border-top: 4px solid #ef4444;
+        .tier-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
 
-        @media (min-width: 600px) {
-            .tier-card {
-                display: grid;
-                grid-template-columns: auto 1fr;
-                gap: var(--space-lg);
-                align-items: start;
-                padding: var(--space-xl);
-                border-top-width: 1px;
-            }
-            .tier-card[data-tier="1"],
-            .tier-card[data-tier="2"],
-            .tier-card[data-tier="3"] {
-                border-top-width: 1px;
-                border-top-color: var(--color-border);
-            }
-        }
+        .tier-1 { border-color: #22c55e; }
+        .tier-2 { border-color: #3b82f6; }
+        .tier-3 { border-color: #ef4444; }
 
-        /* Mobile: inline badge at top of card */
-        .tier-badge {
-            display: inline-flex;
-            flex-direction: row;
-            align-items: center;
-            gap: var(--space-sm);
-            padding: var(--space-sm) var(--space-md);
-            border-radius: 6px;
+        .tier-card h3 {
+            font-size: 1.25rem;
             margin-bottom: var(--space-md);
-            width: fit-content;
         }
 
-        @media (min-width: 600px) {
-            .tier-badge {
-                flex-direction: column;
-                padding: var(--space-md);
-                min-width: 100px;
-                justify-content: center;
-                text-align: center;
-                margin-bottom: 0;
-            }
-        }
+        .tier-1 h3 { color: #22c55e; }
+        .tier-2 h3 { color: #3b82f6; }
+        .tier-3 h3 { color: #ef4444; }
 
-        .tier-badge[data-tier="1"] {
-            background: linear-gradient(135deg, #22c55e20, #22c55e10);
-            border: 2px solid #22c55e;
-        }
-
-        .tier-badge[data-tier="2"] {
-            background: linear-gradient(135deg, #3b82f620, #3b82f610);
-            border: 2px solid #3b82f6;
-        }
-
-        .tier-badge[data-tier="3"] {
-            background: linear-gradient(135deg, #ef444420, #ef444410);
-            border: 2px solid #ef4444;
-        }
-
-        .tier-number {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        @media (min-width: 600px) {
-            .tier-number {
-                font-size: 2rem;
-            }
-        }
-
-        .tier-badge[data-tier="1"] .tier-number { color: #22c55e; }
-        .tier-badge[data-tier="2"] .tier-number { color: #3b82f6; }
-        .tier-badge[data-tier="3"] .tier-number { color: #ef4444; }
-
-        .tier-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        @media (min-width: 600px) {
-            .tier-label {
-                font-size: 0.875rem;
-            }
-        }
-
-        .tier-content h3 {
-            margin-bottom: var(--space-xs);
-        }
-
-        @media (min-width: 600px) {
-            .tier-content h3 {
-                margin-bottom: var(--space-sm);
-            }
-        }
-
-        .tier-features {
-            list-style: none;
-            margin-top: var(--space-sm);
-        }
-
-        @media (min-width: 600px) {
-            .tier-features {
-                margin-top: var(--space-md);
-            }
-        }
-
-        .tier-features li {
-            padding: var(--space-xs) 0;
-            padding-left: var(--space-lg);
-            position: relative;
-            color: var(--color-text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .tier-features li::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0.6em;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-
-        .tier-card[data-tier="1"] .tier-features li::before { background: #22c55e; }
-        .tier-card[data-tier="2"] .tier-features li::before { background: #3b82f6; }
-        .tier-card[data-tier="3"] .tier-features li::before { background: #ef4444; }
-
-        .tier-time {
-            display: inline-block;
-            background: var(--color-bg-tertiary);
-            padding: var(--space-xs) var(--space-sm);
-            border-radius: 4px;
-            font-size: 0.8rem;
-            margin-top: var(--space-sm);
-        }
-
-        @media (min-width: 480px) {
-            .tier-time {
-                font-size: 0.875rem;
-            }
-        }
-
-        /* SVG Diagram containers - Mobile responsive */
-        .workflow-container,
-        .relationship-diagram {
-            background: var(--color-bg-secondary);
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            padding: var(--space-md);
-            margin: var(--space-lg) 0;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        @media (min-width: 768px) {
-            .workflow-container,
-            .relationship-diagram {
-                padding: var(--space-xl);
-                margin: var(--space-xl) 0;
-            }
-        }
-
-        .workflow-svg,
-        .relationship-svg {
-            display: block;
-            margin: 0 auto;
-            min-width: 600px;
-            height: auto;
-        }
-
-        @media (min-width: 800px) {
-            .workflow-svg {
-                min-width: auto;
-                width: 100%;
-                max-width: 800px;
-            }
-        }
-
-        @media (min-width: 720px) {
-            .relationship-svg {
-                min-width: auto;
-                width: 100%;
-                max-width: 700px;
-            }
-        }
-
-        /* Scroll hint for diagrams on mobile */
-        .diagram-scroll-hint {
-            display: block;
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--color-text-muted);
-            margin-top: var(--space-sm);
-        }
-
-        @media (min-width: 800px) {
-            .diagram-scroll-hint {
-                display: none;
-            }
-        }
-
-        /* Code blocks - Mobile responsive */
-        .code-block {
-            background: var(--color-bg-tertiary);
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            padding: var(--space-md);
-            margin: var(--space-sm) 0;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        @media (min-width: 768px) {
-            .code-block {
-                padding: var(--space-lg);
-                margin: var(--space-md) 0;
-            }
-        }
-
-        .code-block code {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--color-text);
-            white-space: pre;
-            word-break: break-word;
-            display: block;
-        }
-
-        @media (min-width: 480px) {
-            .code-block code {
-                font-size: 0.85rem;
-            }
-        }
-
-        @media (min-width: 768px) {
-            .code-block code {
-                font-size: 0.9rem;
-            }
-        }
-
-        .code-label {
-            display: block;
-            font-size: 0.7rem;
-            color: var(--color-text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--space-xs);
-        }
-
-        @media (min-width: 480px) {
-            .code-label {
-                font-size: 0.75rem;
-                margin-bottom: var(--space-sm);
-            }
-        }
-
-        /* Getting started steps - Mobile First */
+        /* Steps List */
         .steps-list {
-            counter-reset: step;
             list-style: none;
+            counter-reset: step-counter;
         }
 
         .step-item {
-            counter-increment: step;
             display: flex;
-            flex-direction: column;
-            gap: var(--space-md);
-            margin-bottom: var(--space-lg);
-            padding-bottom: var(--space-lg);
-            border-bottom: 1px solid var(--color-border);
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+            position: relative;
         }
 
-        @media (min-width: 600px) {
-            .step-item {
-                display: grid;
-                grid-template-columns: auto 1fr;
-                gap: var(--space-lg);
-                margin-bottom: var(--space-xl);
-                padding-bottom: var(--space-xl);
-            }
+        .step-item::before {
+            content: '';
+            position: absolute;
+            left: 23px;
+            top: 50px;
+            bottom: -30px;
+            width: 2px;
+            background: linear-gradient(180deg, var(--color-gojo), transparent);
         }
 
-        .step-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
+        .step-item:last-child::before {
+            display: none;
         }
 
         .step-number {
-            width: var(--touch-target-min);
-            height: var(--touch-target-min);
-            background: var(--color-accent);
+            counter-increment: step-counter;
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-gojo), var(--color-yuuji));
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             color: white;
-            flex-shrink: 0;
-        }
-
-        @media (min-width: 600px) {
-            .step-number {
-                width: 48px;
-                height: 48px;
-                font-size: 1.25rem;
-            }
         }
 
         .step-number::before {
-            content: counter(step);
+            content: counter(step-counter);
         }
 
-        .step-content h3 {
-            margin-bottom: var(--space-xs);
+        .step-content {
+            flex: 1;
         }
 
-        @media (min-width: 600px) {
-            .step-content h3 {
-                margin-bottom: var(--space-sm);
-            }
-        }
-
-        /* Protocol files table - Mobile responsive */
+        /* Table */
         .table-container {
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin: var(--space-md) 0;
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-        }
-
-        @media (min-width: 768px) {
-            .table-container {
-                margin: var(--space-lg) 0;
-            }
+            margin: var(--space-lg) 0;
         }
 
         .files-table {
             width: 100%;
-            min-width: 480px;
             border-collapse: collapse;
-        }
-
-        @media (min-width: 768px) {
-            .files-table {
-                min-width: auto;
-            }
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         .files-table th,
         .files-table td {
-            padding: var(--space-sm) var(--space-md);
+            padding: var(--space-md);
             text-align: left;
-            border-bottom: 1px solid var(--color-border);
-            font-size: 0.85rem;
-        }
-
-        @media (min-width: 768px) {
-            .files-table th,
-            .files-table td {
-                padding: var(--space-md);
-                font-size: 1rem;
-            }
+            border-bottom: 1px solid var(--border-color);
         }
 
         .files-table th {
-            background: var(--color-bg-tertiary);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
             font-weight: 600;
-            color: var(--color-text);
-            white-space: nowrap;
         }
 
-        .files-table td {
-            color: var(--color-text-secondary);
+        .files-table tr:last-child td {
+            border-bottom: none;
         }
 
-        .files-table td:first-child {
-            white-space: nowrap;
+        .files-table tr:hover {
+            background: var(--bg-tertiary);
         }
 
-        .files-table code {
-            background: var(--color-bg-tertiary);
-            padding: var(--space-xs) var(--space-sm);
+        /* Intro Grid */
+        .intro-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-lg);
+            margin: var(--space-xl) 0;
+        }
+
+        .intro-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--space-lg);
+            transition: all 0.3s ease;
+        }
+
+        .intro-card:hover {
+            border-color: var(--color-gojo);
+            transform: translateY(-2px);
+        }
+
+        .intro-card h3 {
+            margin-bottom: var(--space-md);
+            font-size: 1.25rem;
+        }
+
+        /* Note Box */
+        .note {
+            background: var(--bg-highlight);
+            border-left: 4px solid var(--color-gojo);
+            padding: var(--space-md);
+            margin: var(--space-lg) 0;
             border-radius: 4px;
-            font-family: var(--font-mono);
+        }
+
+        .note strong {
+            color: var(--text-primary);
+        }
+
+        /* Diagram */
+        .diagram-container {
+            overflow-x: auto;
+            margin: var(--space-xl) 0;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: var(--space-lg);
+        }
+
+        .diagram-scroll-hint {
+            display: block;
+            text-align: center;
+            color: var(--text-muted);
             font-size: 0.75rem;
+            margin-top: var(--space-md);
         }
 
-        @media (min-width: 480px) {
-            .files-table code {
-                font-size: 0.8rem;
-            }
+        /* Setup Guide Styles */
+        .setup-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: var(--space-xl);
+            margin: var(--space-xl) 0;
+            border: 2px solid var(--color-gojo);
         }
 
-        @media (min-width: 768px) {
-            .files-table code {
-                font-size: 0.85rem;
-            }
+        .setup-subsection {
+            margin: var(--space-xl) 0;
         }
 
-        /* Footer - Mobile responsive */
+        .setup-subsection h4 {
+            font-size: 1.25rem;
+            color: var(--color-yuuji);
+            margin-bottom: var(--space-md);
+        }
+
+        .agent-setup-card {
+            background: var(--bg-tertiary);
+            border-left: 4px solid var(--agent-color);
+            border-radius: 8px;
+            padding: var(--space-lg);
+            margin: var(--space-md) 0;
+        }
+
+        .agent-setup-card h5 {
+            color: var(--agent-color);
+            margin-bottom: var(--space-sm);
+            font-size: 1.125rem;
+        }
+
+        .config-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .config-list li {
+            padding: var(--space-xs) 0;
+            color: var(--text-secondary);
+        }
+
+        .config-list li strong {
+            color: var(--text-primary);
+        }
+
+        /* Footer */
         footer {
-            background: var(--color-bg-secondary);
-            border-top: 1px solid var(--color-border);
-            padding: var(--space-lg) 0;
+            background: var(--bg-secondary);
+            border-top: 2px solid var(--color-gojo);
+            padding: var(--space-2xl) 0;
             text-align: center;
         }
 
-        @media (min-width: 768px) {
-            footer {
-                padding: var(--space-xl) 0;
-            }
-        }
-
         footer p {
-            color: var(--color-text-muted);
-            font-size: 0.8rem;
-            margin-bottom: var(--space-sm);
-        }
-
-        @media (min-width: 480px) {
-            footer p {
-                font-size: 0.875rem;
-            }
+            margin: var(--space-sm) auto;
         }
 
         .footer-links {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: var(--space-sm);
-        }
-
-        @media (min-width: 480px) {
-            .footer-links {
-                flex-direction: row;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: var(--space-md);
-            }
+            gap: var(--space-md);
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .footer-links a {
-            color: var(--color-accent);
+            color: var(--color-gojo);
             text-decoration: none;
-            padding: var(--space-sm) var(--space-md);
-            min-height: var(--touch-target-min);
-            display: flex;
-            align-items: center;
+            transition: color 0.2s ease;
         }
 
-        .footer-links a:hover,
-        .footer-links a:focus {
-            text-decoration: underline;
+        .footer-links a:hover {
+            color: var(--color-yuuji);
         }
 
         .footer-separator {
-            display: none;
+            color: var(--text-muted);
         }
 
-        @media (min-width: 480px) {
-            .footer-separator {
-                display: inline;
-                color: var(--color-text-muted);
-            }
-        }
-
-        /* Utility classes */
+        /* Accessibility */
         .sr-only {
             position: absolute;
             width: 1px;
@@ -1084,789 +547,822 @@
             overflow: hidden;
             clip: rect(0, 0, 0, 0);
             white-space: nowrap;
-            border: 0;
+            border-width: 0;
         }
 
-        .text-center {
-            text-align: center;
-        }
-
-        .highlight {
-            color: var(--color-text);
-            font-weight: 600;
-        }
-
-        /* High contrast mode support */
-        @media (prefers-contrast: high) {
-            :root {
-                --color-border: #94a3b8;
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
             }
 
-            .agent-card,
-            .tier-card,
-            .intro-card {
-                border-width: 2px;
-            }
-        }
-
-        /* Reduced motion support */
-        @media (prefers-reduced-motion: reduce) {
-            html {
-                scroll-behavior: auto;
+            h2 {
+                font-size: 1.5rem;
             }
 
-            .agent-card,
-            .nav-list a {
-                transition: none;
-            }
-        }
-
-        /* Print styles */
-        @media print {
-            body {
-                background: white;
-                color: black;
+            .header-content {
+                flex-direction: column;
+                text-align: center;
             }
 
-            nav,
-            .skip-link {
-                display: none;
+            nav ul {
+                flex-direction: column;
+                align-items: stretch;
             }
 
-            .agent-card,
-            .tier-card,
-            .intro-card {
-                break-inside: avoid;
+            .agents-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tier-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .intro-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-
     <header>
-        <div class="container header-content">
-            <div class="logo">
-                <!-- Domain Zero Logo SVG -->
-                <svg class="logo-icon" viewBox="0 0 60 60" aria-hidden="true" focusable="false">
-                    <defs>
-                        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#3B82F6"/>
-                            <stop offset="100%" style="stop-color:#EC4899"/>
-                        </linearGradient>
-                    </defs>
-                    <circle cx="30" cy="30" r="28" fill="none" stroke="url(#logoGradient)" stroke-width="3"/>
-                    <circle cx="30" cy="30" r="18" fill="none" stroke="url(#logoGradient)" stroke-width="2"/>
-                    <circle cx="30" cy="30" r="8" fill="url(#logoGradient)"/>
-                    <text x="30" y="35" text-anchor="middle" fill="white" font-size="10" font-weight="bold">0</text>
-                </svg>
-                <div>
-                    <h1>Domain Zero Protocol</h1>
-                    <span class="version-badge">v8.12.0</span>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo">Domain Zero Protocol</div>
+                    <span class="version-badge">v8.13.0</span>
                 </div>
             </div>
-            <p class="header-description">A nine-agent AI development system providing specialized expertise through distinct personalities, operating under absolute protocol authority.</p>
         </div>
     </header>
 
-    <nav aria-label="Main navigation">
-        <div class="container">
-            <ul class="nav-list">
-                <li><a href="#whats-new" style="color: var(--color-accent);">New in v8.12.0</a></li>
-                <li><a href="#what-is-dzp">What is DZP?</a></li>
-                <li><a href="#agents">The 9 Agents</a></li>
-                <li><a href="#relationships">Relationships</a></li>
-                <li><a href="#tiers">Tier System</a></li>
-                <li><a href="#workflow">Workflow</a></li>
-                <li><a href="#getting-started">Getting Started</a></li>
-                <li><a href="#quick-commands">Quick Commands</a></li>
-                <li><a href="#files">Protocol Files</a></li>
-            </ul>
-        </div>
+    <nav>
+        <ul>
+            <li><a href="#whats-new">What's New</a></li>
+            <li><a href="#setup-guide">Complete Setup Guide</a></li>
+            <li><a href="#agents">Agents</a></li>
+            <li><a href="#tiers">Tier System</a></li>
+            <li><a href="#workflow">Workflow</a></li>
+            <li><a href="#getting-started">Getting Started</a></li>
+            <li><a href="#quick-commands">Quick Commands</a></li>
+            <li><a href="#files">Protocol Files</a></li>
+        </ul>
     </nav>
 
-    <main id="main-content">
+    <main>
         <div class="container">
+            <!-- Introduction -->
+            <section id="intro">
+                <h1>Domain Zero Protocol</h1>
+                <p style="font-size: 1.25rem; color: var(--text-primary); max-width: none;">
+                    A nine-agent AI development system that delivers perfect code through infinite collaboration.
+                    When you invoke Gojo, he activates <strong>Domain Expansion</strong> - creating a controlled space where
+                    specialized agents work under absolute protocol authority to achieve <strong>ZERO</strong>: zero flaws,
+                    zero bugs, zero compromises.
+                </p>
+            </section>
 
-            <!-- What's New in v8.12.0 -->
-            <section id="whats-new" aria-labelledby="whats-new-heading" style="background: linear-gradient(135deg, #3B82F620, #EC489920); border: 1px solid var(--color-border); border-radius: 12px; padding: var(--space-xl); margin-bottom: var(--space-2xl);">
-                <h2 id="whats-new-heading" style="border-bottom-color: var(--color-accent);">What's New in v8.12.0</h2>
+            <!-- What's New -->
+            <section id="whats-new" aria-labelledby="whats-new-heading">
+                <h2 id="whats-new-heading">What's New in v8.13.0</h2>
 
                 <div class="intro-grid">
-                    <div class="intro-card" style="background: var(--color-bg);">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" aria-hidden="true">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                            </svg>
-                            Session Monitoring Enhancement
-                        </h3>
-                        <p><strong>PATCH-SESSION-004</strong> closes critical coverage gap (70-85% → 85-90%). Adversarial analysis revealed PATCH-SESSION-003 was vulnerable to context compaction, agent bypass, and prompt non-compliance. <strong>5 defensive layers</strong> added to prevent safety system removal.</p>
+                    <div class="intro-card" style="border-left: 4px solid var(--color-gojo);">
+                        <h3 style="color: var(--color-gojo);">🎯 PATCH-SESSION-004</h3>
+                        <p><strong>Session Monitoring Enhancement</strong></p>
+                        <ul style="color: var(--text-secondary); margin-left: var(--space-lg);">
+                            <li>5 defensive layers for session health monitoring</li>
+                            <li>Coverage improved from 70-85% to 85-90%</li>
+                            <li>Enhanced work session duration tracking</li>
+                            <li>Improved fatigue detection and alerts</li>
+                        </ul>
                     </div>
 
-                    <div class="intro-card" style="background: var(--color-bg);">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" aria-hidden="true">
-                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                            </svg>
-                            Configurable Debounce
-                        </h3>
-                        <p><strong>Component 1:</strong> Adjustable alert frequency (15-60 min range) via <code>protocol.config.yaml</code> + CLI <code>--debounce</code> flag. Prevents alert spam during rapid prototyping while maintaining safety coverage.</p>
-                        <div class="code-block" style="margin-top: var(--space-sm);">
-                            <code>debounce_threshold_minutes: 30
-python session_monitor.py check --debounce 15</code>
-                        </div>
+                    <div class="intro-card" style="border-left: 4px solid var(--color-yuuji);">
+                        <h3 style="color: var(--color-yuuji);">📦 CLAUDE.md Optimization</h3>
+                        <p><strong>Performance Improvement</strong></p>
+                        <ul style="color: var(--text-secondary); margin-left: var(--space-lg);">
+                            <li>Reduced file size: 60k → 23k characters</li>
+                            <li>Faster context loading and agent initialization</li>
+                            <li>Streamlined protocol documentation</li>
+                            <li>Improved token efficiency</li>
+                        </ul>
                     </div>
 
-                    <div class="intro-card" style="background: var(--color-bg);">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" aria-hidden="true">
-                                <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm10-10V7a4 4 0 0 0-8 0v4h8z"/>
-                            </svg>
-                            Compaction Protection
-                        </h3>
-                        <p><strong>Component 2:</strong> HTML comment markers protect AUTO-INVOKED section in <code>gojo.agent.md</code> from context compaction removal. Critical Sections Index added. Closes 5-10% coverage gap from silent safety system removal.</p>
-                        <div class="code-block" style="margin-top: var(--space-sm);">
-                            <code>&lt;!-- CRITICAL: DO NOT REMOVE - SAFETY SYSTEM --&gt;</code>
-                        </div>
+                    <div class="intro-card" style="border-left: 4px solid var(--color-megumi);">
+                        <h3 style="color: var(--color-megumi);">🌐 Universal DZP Context</h3>
+                        <p><strong>Cross-Project Consistency</strong></p>
+                        <ul style="color: var(--text-secondary); margin-left: var(--space-lg);">
+                            <li>Unified protocol across all projects</li>
+                            <li>Consistent agent behavior everywhere</li>
+                            <li>Shared learning and improvements</li>
+                            <li>Simplified multi-project workflow</li>
+                        </ul>
                     </div>
 
-                    <div class="intro-card" style="background: var(--color-bg);">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" aria-hidden="true">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                <line x1="9" y1="9" x2="15" y2="9"/>
-                                <line x1="9" y1="15" x2="15" y2="15"/>
-                            </svg>
-                            Alert Dashboard & Verification
-                        </h3>
-                        <p><strong>Components 3 & 4:</strong> New <code>session-monitoring-report.py</code> detects alert undercount. <code>verify-auto-invoked.py</code> provides CI/CD validation (exit codes 0/1) to block deployments that remove safety systems.</p>
-                        <div class="code-block" style="margin-top: var(--space-sm);">
-                            <code>python session-monitoring-report.py
-python scripts/verify-auto-invoked.py</code>
-                        </div>
+                    <div class="intro-card" style="border-left: 4px solid var(--color-nobara);">
+                        <h3 style="color: var(--color-nobara);">📚 Enhanced Documentation</h3>
+                        <p><strong>Improved Project Guides</strong></p>
+                        <ul style="color: var(--text-secondary); margin-left: var(--space-lg);">
+                            <li>Updated Quick Start guide</li>
+                            <li>Expanded Commands reference</li>
+                            <li>Detailed Architecture documentation</li>
+                            <li>Complete Setup Guide (new!)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: var(--space-2xl);">Recent Updates (v8.11.0 - v8.12.0)</h3>
+                <div class="intro-grid">
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-todo);">Session Management System</h3>
+                        <p>Unified <code>/session</code> command for start, status, update, break, continue, and end operations with comprehensive project document sync.</p>
                     </div>
 
-                    <div class="intro-card" style="background: var(--color-bg);">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" stroke-width="2" aria-hidden="true">
-                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                            </svg>
-                            Bypass Detection
-                        </h3>
-                        <p><strong>Component 5:</strong> Agent invocation tracking detects direct Yuuji/Megumi invocations that bypass Gojo Mission Control. <code>agent-invocation-tracker.json</code> logs patterns and generates bypass alerts. Closes 10-15% coverage gap.</p>
-                        <div class="code-block" style="margin-top: var(--space-sm);">
-                            <code>python session_monitor.py record-invocation yuuji --routed</code>
-                        </div>
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-maki);">TS Troubleshooting Tier System</h3>
+                        <p>Five-tier troubleshooting framework (<code>/ts_tier1-5</code>) with automatic escalation and structured problem-solving workflows.</p>
                     </div>
 
-                    <div class="intro-card" style="background: var(--color-bg);">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" aria-hidden="true">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                                <line x1="16" y1="13" x2="8" y2="13"/>
-                                <line x1="16" y1="17" x2="8" y2="17"/>
-                                <line x1="10" y1="9" x2="8" y2="9"/>
-                            </svg>
-                            Windows Compatibility Fix
-                        </h3>
-                        <p><strong>Bug Fix:</strong> Replaced 20+ Unicode emojis with ASCII equivalents in <code>session_monitor.py</code>. Resolves <code>UnicodeEncodeError</code> on Windows cmd.exe (cp1252 encoding). All commands tested and working.</p>
-                        <div class="code-block" style="margin-top: var(--space-sm);">
-                            <code>⚠️ → [!]   ✅ → [OK]   📊 → [STATUS]</code>
-                        </div>
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-panda);">DZP Rules of Engagement v2.0</h3>
+                        <p>Post-compaction protocol recovery with <code>/dzp-roe</code> slash command for restoring agent roles and workflow patterns.</p>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-inumaki);">Claude Skills Integration</h3>
+                        <p>16 Anthropic skills mapped to agents, implementation restrictions, and OWASP security cheatsheets for enhanced functionality.</p>
                     </div>
                 </div>
             </section>
 
-            <!-- What's New in v8.11.0 -->
-            <section id="whats-new-811" aria-labelledby="whats-new-811-heading" style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 12px; padding: var(--space-xl); margin-bottom: var(--space-2xl);">
-                <h2 id="whats-new-811-heading" style="border-bottom-color: var(--color-accent);">What's New in v8.11.0</h2>
+            <!-- Complete Setup Guide -->
+            <section id="setup-guide" aria-labelledby="setup-guide-heading">
+                <h2 id="setup-guide-heading">Complete Setup Guide</h2>
+                <p>Follow these steps to install and configure the Domain Zero Protocol from scratch. Each command includes a copy button for easy execution.</p>
 
-                <div class="intro-grid">
-                    <div class="intro-card" style="background: var(--color-bg);">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" aria-hidden="true">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="M12 6v6l4 2"/>
-                            </svg>
-                            Session Management Skill
-                        </h3>
-                        <p>Unified interface for work session tracking via <code>/session</code> slash command. <strong>/session start</strong> activates full DZP by reading protocol/CLAUDE.md. 6 commands: start, status, update, break, continue, end. Checkpoint file syncing across dev-notes, project-state, domain.record, security-review, and session-state.</p>
-                        <div class="code-block" style="margin-top: var(--space-sm);">
-                            <code>/session start  (+ DZP activation)
-/session status
-/session update</code>
-                        </div>
-                    </div>
-
-                    <div class="intro-card" style="background: var(--color-bg);">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" aria-hidden="true">
-                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                                <line x1="12" y1="9" x2="12" y2="13"/>
-                                <line x1="12" y1="17" x2="12.01" y2="17"/>
-                            </svg>
-                            TS Troubleshooting Tier System
-                        </h3>
-                        <p>5-tier hybrid bug resolution workflow via <code>/ts_*</code> slash commands. Tier 1-4: Progressive escalation with support agent selection. Tier 5 (Codered): All 9 agents, mandatory plan mode. Hybrid escalation: severity-based initial tier + auto-escalation after failed attempts.</p>
-                        <div class="code-block" style="margin-top: var(--space-sm);">
-                            <code>/ts_tier1  (minor bugs)
-/ts_tier2  (moderate)
-/ts_tier3  (complex)
-/ts_tier4  (critical)
-/ts_codered (all hands)</code>
-                        </div>
-                    </div>
-
-                    <div class="intro-card" style="background: var(--color-bg);">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" aria-hidden="true">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                <polyline points="22 4 12 14.01 9 11.01"/>
-                            </svg>
-                            DZP ROE v2.0.0 (Refactored)
-                        </h3>
-                        <p>46.9% size reduction (15KB → 8.5KB) for faster post-compaction reference. Added parallel workflow enforcement with validation checklist, imperative MUST/MUST NOT language, and anti-pattern examples. Gojo-owned skill (was ALL agents).</p>
-                        <div class="code-block" style="margin-top: var(--space-sm);">
-                            <code>/dzp-roe</code>
-                        </div>
-                    </div>
-
-                    <div class="intro-card" style="background: var(--color-bg);">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" aria-hidden="true">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                                <line x1="12" y1="11" x2="12" y2="17"/>
-                                <polyline points="9 14 12 17 15 14"/>
-                            </svg>
-                            Protocol-Wide Version Update
-                        </h3>
-                        <p>All 42 CORE files updated to v8.11.0 for version consistency. Includes all 9 agent files, 7 protocol modules, 5 gojo-procedures, main protocol files, root documentation, and protocol state templates. README overhauled to cover entire DZP system.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- v8.11.0 Slash Commands -->
-            <section id="new-commands" aria-labelledby="new-commands-heading" style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 12px; padding: var(--space-xl); margin-bottom: var(--space-2xl);">
-                <h2 id="new-commands-heading" style="border-bottom-color: var(--color-accent);">New Slash Commands (v8.11.0)</h2>
-                <p>Quick reference for all new v8.11.0 slash commands. These are Gojo-owned skills accessible via Claude Code slash command syntax.</p>
-
-                <div class="intro-grid">
-                    <div class="intro-card">
-                        <h3 style="color: var(--color-gojo);">Session Management</h3>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/session start</span>
-                            <code>Begin new work session + activate DZP</code>
-                        </div>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/session status</span>
-                            <code>View duration, breaks, alerts</code>
-                        </div>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/session update</span>
-                            <code>Checkpoint files (5 files)</code>
-                        </div>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/session break [minutes]</span>
-                            <code>Record break (1-480 min)</code>
-                        </div>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/session continue</span>
-                            <code>Resume after break</code>
-                        </div>
-                        <div class="code-block">
-                            <span class="code-label">/session end</span>
-                            <code>Close and archive session</code>
-                        </div>
-                    </div>
-
-                    <div class="intro-card">
-                        <h3 style="color: var(--color-megumi);">Troubleshooting Tiers</h3>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts_tier1</span>
-                            <code>Minor bugs (Yuuji + Megumi, 30-45 min)</code>
-                        </div>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts_tier2</span>
-                            <code>Moderate bugs (enhanced investigation)</code>
-                        </div>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts_tier3</span>
-                            <code>Complex bugs (+ support agents)</code>
-                        </div>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts_tier4</span>
-                            <code>Critical bugs (full investigation)</code>
-                        </div>
-                        <div class="code-block">
-                            <span class="code-label">/ts_codered</span>
-                            <code>All hands (9 agents, plan mode)</code>
-                        </div>
-                    </div>
-
-                    <div class="intro-card">
-                        <h3 style="color: var(--color-yuuji);">TS Session Management</h3>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts_status</span>
-                            <code>Show current troubleshooting session</code>
-                        </div>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts_history</span>
-                            <code>Show recent sessions (from archive)</code>
-                        </div>
-                        <div class="code-block" style="margin-bottom: var(--space-xs);">
-                            <span class="code-label">/ts_escalate</span>
-                            <code>Manual tier escalation</code>
-                        </div>
-                        <div class="code-block">
-                            <span class="code-label">/ts_complete</span>
-                            <code>Close and archive session</code>
-                        </div>
-                    </div>
-
-                    <div class="intro-card">
-                        <h3 style="color: var(--color-nobara);">Protocol Recovery</h3>
-                        <div class="code-block" style="margin-bottom: var(--space-sm);">
-                            <span class="code-label">/dzp-roe</span>
-                            <code>Post-compaction protocol recovery</code>
-                        </div>
-                        <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-top: var(--space-sm);">
-                            Restores full DZP context after conversation compaction. Outputs 5-step workflow, updates state files, runs validation, and prompts continuation with proper workflows.
-                        </p>
-                    </div>
+                <div class="setup-section">
+                    <h3 style="color: var(--color-gojo);">Prerequisites</h3>
+                    <p>Before installing Domain Zero Protocol, ensure you have:</p>
+                    <ul style="color: var(--text-secondary); margin-left: var(--space-lg); line-height: 1.8;">
+                        <li><strong>Node.js</strong> v18 or higher installed</li>
+                        <li><strong>npm</strong> or <strong>yarn</strong> package manager</li>
+                        <li>A terminal or command prompt</li>
+                        <li>An Anthropic API key (for Claude access)</li>
+                    </ul>
                 </div>
 
-                <div style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--color-bg-tertiary); border-radius: 8px; border-left: 4px solid var(--color-accent);">
-                    <p style="font-size: 0.9rem; color: var(--color-text); margin-bottom: var(--space-xs);"><strong>Example Usage:</strong></p>
+                <div class="setup-section">
+                    <h3 style="color: var(--color-yuuji);">Step 1: Install Claude Code CLI</h3>
+                    <p>Install the Claude Code command-line interface globally:</p>
                     <div class="code-block">
-                        <code>User: /ts_tier1
-Gojo: Initializing Tier 1 troubleshooting session...
-      What bug are you investigating?
-
-User: Database query timeout after migration
-
-Gojo: [Briefs Yuuji for TDD workflow]
-      [Briefs Megumi for security review]
-      [Coordinates investigation]</code>
-                    </div>
-                </div>
-            </section>
-
-            <!-- What is Domain Zero Protocol -->
-            <section id="what-is-dzp" aria-labelledby="what-is-dzp-heading">
-                <h2 id="what-is-dzp-heading">What is Domain Zero Protocol?</h2>
-
-                <div class="intro-grid">
-                    <div class="intro-card">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="M12 6v6l4 2"/>
-                            </svg>
-                            Zero Defects
-                        </h3>
-                        <p>The ultimate goal of perfect code: zero security vulnerabilities, zero bugs, zero performance loss, zero technical debt.</p>
+                        <span class="code-label">Install Claude Code CLI</span>
+                        <code>npm install -g @anthropic-ai/claude-code</code>
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
                     </div>
 
-                    <div class="intro-card">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                            </svg>
-                            Nine Specialized Agents
-                        </h3>
-                        <p>Each agent brings distinct expertise: implementation, security, UX design, database, performance, build systems, API design, and system updates.</p>
-                    </div>
-
-                    <div class="intro-card">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                            </svg>
-                            Safety First
-                        </h3>
-                        <p>User safety and wellbeing override all other objectives. No agent may compromise user safety under any circumstances.</p>
-                    </div>
-
-                    <div class="intro-card">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                <line x1="3" y1="9" x2="21" y2="9"/>
-                                <line x1="9" y1="21" x2="9" y2="9"/>
-                            </svg>
-                            Three-Tier System
-                        </h3>
-                        <p>Match process rigor to feature criticality: Rapid for prototypes, Standard for production, Critical for sensitive features.</p>
-                    </div>
-
-                    <div class="intro-card">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                                <path d="M2 17l10 5 10-5"/>
-                                <path d="M2 12l10 5 10-5"/>
-                            </svg>
-                            Claude Skills Integration
-                        </h3>
-                        <p>16 Anthropic skills mapped to all agents: PDF/DOCX/XLSX generation, frontend design, webapp testing, MCP building, and more.</p>
-                    </div>
-
-                    <div class="intro-card">
-                        <h3>
-                            <svg class="intro-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                <circle cx="8.5" cy="7" r="4"/>
-                                <line x1="20" y1="8" x2="20" y2="14"/>
-                                <line x1="23" y1="11" x2="17" y2="11"/>
-                            </svg>
-                            Implementation Routing
-                        </h3>
-                        <p>Five agents (Nobara, Todo, Maki, Panda, Inumaki) route all code changes through Yuuji, ensuring TDD practices and test coverage.</p>
+                    <p>After installation, authenticate with your Anthropic API key:</p>
+                    <div class="code-block">
+                        <span class="code-label">Authenticate Claude CLI</span>
+                        <code>claude login</code>
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
                     </div>
                 </div>
 
-                <p style="margin-top: var(--space-lg);">Domain Zero Protocol creates a bounded space where specialized agents collaborate under absolute protocol authority. When you invoke the protocol, you activate <span class="highlight">Domain Zero</span>, where the goal is always ZERO: perfect code, zero compromises.</p>
+                <div class="setup-section">
+                    <h3 style="color: var(--color-megumi);">Step 2: Install Domain Zero Protocol</h3>
+                    <p>Clone the Domain Zero Protocol repository and set up the project structure:</p>
+
+                    <div class="setup-subsection">
+                        <h4>2.1 Clone the Repository</h4>
+                        <div class="code-block">
+                            <span class="code-label">Clone DZP Repository</span>
+                            <code>git clone https://github.com/DewyHRite/Domain-Zero-Protocol.git
+cd Domain-Zero-Protocol</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="setup-subsection">
+                        <h4>2.2 Install Dependencies</h4>
+                        <div class="code-block">
+                            <span class="code-label">Install Project Dependencies</span>
+                            <code>npm install</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="setup-subsection">
+                        <h4>2.3 Configure Protocol Settings</h4>
+                        <p>Open <code>protocol.config.yaml</code> and update the following:</p>
+                        <div class="code-block">
+                            <span class="code-label">protocol.config.yaml - Minimum Configuration</span>
+                            <code>user:
+  name: "Your Name"
+  contact: "your@email.com"
+  technical_level:
+    current: "intermediate"  # beginner | intermediate | expert
+
+project:
+  name: "Your Project Name"
+  repo: "https://github.com/yourusername/yourrepo"
+
+versioning:
+  protocol_version: "8.13.0"
+  last_updated: "2026-01-30"</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="setup-subsection">
+                        <h4>2.4 Initialize State Directory</h4>
+                        <div class="code-block">
+                            <span class="code-label">Create State Directory</span>
+                            <code>mkdir -p .protocol-state
+mkdir -p .dzp-killswitch</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="setup-subsection">
+                        <h4>2.5 Copy Protocol Files to Project</h4>
+                        <div class="code-block">
+                            <span class="code-label">Copy Protocol to Your Project</span>
+                            <code>cp -r protocol /path/to/your/project/
+cp protocol.config.yaml /path/to/your/project/</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="setup-subsection">
+                        <h4>2.6 Verify Installation</h4>
+                        <div class="code-block">
+                            <span class="code-label">Verify Protocol Files</span>
+                            <code>./scripts/verify-protocol.sh  # Linux/Mac
+# OR
+./scripts/verify-protocol.ps1  # Windows PowerShell</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3 style="color: var(--color-nobara);">Step 3: Configure CLAUDE.md Memory</h3>
+                    <p>Set up the global CLAUDE.md file for universal protocol context across all projects:</p>
+
+                    <div class="setup-subsection">
+                        <h4>3.1 Create Global CLAUDE.md Directory</h4>
+                        <div class="code-block">
+                            <span class="code-label">Create ~/.claude Directory</span>
+                            <code>mkdir -p ~/.claude</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="setup-subsection">
+                        <h4>3.2 Create Global CLAUDE.md File</h4>
+                        <p>Create <code>~/.claude/CLAUDE.md</code> with the following optimized content (23,105 characters):</p>
+                        <div class="code-block" style="max-height: 400px; overflow-y: auto;">
+                            <span class="code-label">~/.claude/CLAUDE.md - Universal DZP Context</span>
+                            <code># Domain Zero Protocol - Multi-Installation Setup
+
+I use the Domain Zero Protocol for AI-assisted development. This is an eight-agent system:
+- YUUJI (Implementation Specialist): Test-first development, feature implementation
+- MEGUMI (Security Analyst): OWASP Top 10 security reviews
+- NOBARA (Creative Strategy & UX): User experience design, product vision
+- GOJO (Mission Control): Project lifecycle, protocol guardian
+- TODO (Database & Backend): Schema design, migrations, query optimization
+- MAKI (Performance): Audits, profiling, zero-overhead optimization
+- PANDA (Build & Integration): CI/CD, builds, environments
+- INUMAKI (API & Communication): REST/GraphQL/WebSocket, OpenAPI
+
+## Multi-Installation Architecture
+
+**Each project root has its own isolated DZP installation.** Projects outside a root directory have their own independent protocol files, configuration, and state.
+
+## Protocol Files
+
+- `protocol/CLAUDE.md` (main protocol, v8.13.0)
+- `protocol/yuuji.agent.md` (implementation agent)
+- `protocol/megumi.agent.md` (security agent)
+- `protocol/nobara.agent.md` (creative strategy agent)
+- `protocol/gojo.agent.md` (mission control)
+
+**Configuration:** `protocol.config.yaml`
+**State Files:** `.protocol-state/`
+
+## Tier System
+
+- Tier 1 (Rapid): Fast prototyping, no tests
+- Tier 2 (Standard): Production features with TDD + security review [DEFAULT]
+- Tier 3 (Critical): Enhanced testing + multi-model security review for auth/payments/sensitive data
+
+## Invocation Pattern
+
+**From within project directory or subprojects:**
+```
+"Read protocol/gojo.agent.md"
+"Read protocol/yuuji.agent.md and [task]"
+"Read protocol/megumi.agent.md and [review]"
+"Read protocol/nobara.agent.md and [design]"
+```
+
+## Key Features
+
+- Use skills for common operations to save tokens (skill: 'skill-name')
+- Use AskUserQuestion tool frequently for clarification and nice UI
+- All agents have escape paths - they will ask for help rather than hang
+- Centralized state with pointer files in subprojects
+- Each installation is isolated - no cross-contamination
+
+When I say 'Read protocol/[AGENT].agent.md', always read the file first to follow the protocol.
+
+The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
+
+## Writing Style: Humanize
+
+When writing or editing text:
+- Vary sentence structures and lengths
+- Avoid repeated sentence patterns and overused transitions
+- Eliminate unnecessary clarifications and repetitive phrases
+- Remove clichés and fluff
+- Keep writing simple, concise, and meaningful
+- Do not use em dashes (—)
+- Preserve original citations, formatting, and main points</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3 style="color: var(--color-todo);">Step 4: Create All 9 Agents</h3>
+                    <p>Configure each agent in Claude Code CLI with specific tools, models, and system prompts.</p>
+
+                    <div class="note" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(236, 72, 153, 0.1)); border-left: 4px solid var(--color-gojo); padding: var(--space-md); margin: var(--space-lg) 0;">
+                        <p><strong>Important:</strong> Agent creation uses the CLI format. After agents are created, you can interact with them directly using <code>--agent &lt;agent_name&gt;</code> to start conversations.</p>
+                    </div>
+
+                    <!-- Gojo Agent -->
+                    <div class="agent-setup-card" style="--agent-color: var(--color-gojo);">
+                        <h5>4.1 Gojo (Mission Control)</h5>
+                        <div class="code-block">
+                            <span class="code-label">Create Gojo Agent</span>
+                            <code>claude agent create gojo \
+  --system-prompt "You are Satoru Gojo, Mission Control for Domain Zero Protocol. Read protocol/gojo.agent.md for your role." \
+  --tools Read,Write,Edit,Bash,Grep,Glob,TodoWrite,Task,WebFetch,WebSearch,AskUserQuestion,Skill \
+  --model sonnet \
+  --color blue</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <ul class="config-list">
+                            <li><strong>Role:</strong> Project lifecycle management, protocol enforcement</li>
+                            <li><strong>Tools:</strong> Full access (Read, Write, Edit, Bash, Grep, Glob, Task, WebFetch, WebSearch, Skill)</li>
+                            <li><strong>Model:</strong> Sonnet (balanced performance)</li>
+                            <li><strong>Usage:</strong> <code>claude chat --agent gojo "Read protocol/gojo.agent.md"</code></li>
+                        </ul>
+                    </div>
+
+                    <!-- Yuuji Agent -->
+                    <div class="agent-setup-card" style="--agent-color: var(--color-yuuji);">
+                        <h5>4.2 Yuuji (Implementation Specialist)</h5>
+                        <div class="code-block">
+                            <span class="code-label">Create Yuuji Agent</span>
+                            <code>claude agent create yuuji \
+  --system-prompt "You are Yuuji Itadori, Implementation Specialist. Read protocol/yuuji.agent.md for your role. Test-first development always." \
+  --tools Read,Write,Edit,Bash,Grep,Glob,TodoWrite,Task,WebFetch,WebSearch,AskUserQuestion,Skill \
+  --model opus \
+  --color red</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <ul class="config-list">
+                            <li><strong>Role:</strong> Test-first development, feature implementation</li>
+                            <li><strong>Tools:</strong> Full implementation access</li>
+                            <li><strong>Model:</strong> Opus (maximum capability for coding)</li>
+                            <li><strong>Usage:</strong> <code>claude chat --agent yuuji "Read protocol/yuuji.agent.md and implement [feature]"</code></li>
+                        </ul>
+                    </div>
+
+                    <!-- Megumi Agent -->
+                    <div class="agent-setup-card" style="--agent-color: var(--color-megumi);">
+                        <h5>4.3 Megumi (Security Analyst)</h5>
+                        <div class="code-block">
+                            <span class="code-label">Create Megumi Agent</span>
+                            <code>claude agent create megumi \
+  --system-prompt "You are Megumi Fushiguro, Security Analyst. Read protocol/megumi.agent.md for your role. OWASP Top 10 focus." \
+  --tools Read,Write,Grep,Glob,TodoWrite,Task,WebFetch,WebSearch,AskUserQuestion \
+  --model sonnet \
+  --color purple</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <ul class="config-list">
+                            <li><strong>Role:</strong> Security audits, OWASP analysis, vulnerability detection</li>
+                            <li><strong>Tools:</strong> Read-only code access, research capabilities</li>
+                            <li><strong>Model:</strong> Sonnet (precise analysis)</li>
+                            <li><strong>Usage:</strong> <code>claude chat --agent megumi "Read protocol/megumi.agent.md and review [component]"</code></li>
+                        </ul>
+                    </div>
+
+                    <!-- Nobara Agent -->
+                    <div class="agent-setup-card" style="--agent-color: var(--color-nobara);">
+                        <h5>4.4 Nobara (Creative Strategy & UX)</h5>
+                        <div class="code-block">
+                            <span class="code-label">Create Nobara Agent</span>
+                            <code>claude agent create nobara \
+  --system-prompt "You are Nobara Kugisaki, Creative Strategy & UX Specialist. Read protocol/nobara.agent.md for your role. WCAG 2.2 compliance." \
+  --tools Read,Write,Edit,Bash,Grep,Glob,TodoWrite,Task,WebFetch,WebSearch,AskUserQuestion,Skill \
+  --model opus \
+  --color gold</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <ul class="config-list">
+                            <li><strong>Role:</strong> User experience design, accessibility, product vision</li>
+                            <li><strong>Tools:</strong> Full creative toolkit</li>
+                            <li><strong>Model:</strong> Opus (creative excellence)</li>
+                            <li><strong>Usage:</strong> <code>claude chat --agent nobara "Read protocol/nobara.agent.md and design [interface]"</code></li>
+                        </ul>
+                    </div>
+
+                    <!-- Todo Agent -->
+                    <div class="agent-setup-card" style="--agent-color: var(--color-todo);">
+                        <h5>4.5 Todo (Database & Backend Specialist)</h5>
+                        <div class="code-block">
+                            <span class="code-label">Create Todo Agent</span>
+                            <code>claude agent create todo \
+  --system-prompt "You are Aoi Todo, Database Specialist. Read protocol/todo.agent.md for your role. Schema design and optimization." \
+  --tools Read,Write,Edit,Bash,Grep,Glob,TodoWrite,Task,WebFetch,WebSearch,AskUserQuestion,Skill \
+  --model sonnet \
+  --color brown</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <ul class="config-list">
+                            <li><strong>Role:</strong> Database design, migrations, query optimization</li>
+                            <li><strong>Tools:</strong> Full database toolkit</li>
+                            <li><strong>Model:</strong> Sonnet (efficient analysis)</li>
+                            <li><strong>Usage:</strong> <code>claude chat --agent todo "Read protocol/todo.agent.md and design schema for [feature]"</code></li>
+                        </ul>
+                    </div>
+
+                    <!-- Maki Agent -->
+                    <div class="agent-setup-card" style="--agent-color: var(--color-maki);">
+                        <h5>4.6 Maki (Performance Optimization Specialist)</h5>
+                        <div class="code-block">
+                            <span class="code-label">Create Maki Agent</span>
+                            <code>claude agent create maki \
+  --system-prompt "You are Maki Zenin, Performance Specialist. Read protocol/maki.agent.md for your role. Zero-overhead optimization." \
+  --tools Read,Write,Edit,Bash,Grep,Glob,TodoWrite,Task,WebFetch,WebSearch,AskUserQuestion,Skill \
+  --model sonnet \
+  --color green</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <ul class="config-list">
+                            <li><strong>Role:</strong> Performance profiling, optimization, benchmarking</li>
+                            <li><strong>Tools:</strong> Full performance toolkit</li>
+                            <li><strong>Model:</strong> Sonnet (precise optimization)</li>
+                            <li><strong>Usage:</strong> <code>claude chat --agent maki "Read protocol/maki.agent.md and audit [component] performance"</code></li>
+                        </ul>
+                    </div>
+
+                    <!-- Panda Agent -->
+                    <div class="agent-setup-card" style="--agent-color: var(--color-panda);">
+                        <h5>4.7 Panda (Build & Integration Specialist)</h5>
+                        <div class="code-block">
+                            <span class="code-label">Create Panda Agent</span>
+                            <code>claude agent create panda \
+  --system-prompt "You are Panda, Build & Integration Specialist. Read protocol/panda.agent.md for your role. Multi-core build system." \
+  --tools Read,Write,Edit,Bash,Grep,Glob,TodoWrite,Task,WebFetch,WebSearch,AskUserQuestion,Skill \
+  --model sonnet \
+  --color teal</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <ul class="config-list">
+                            <li><strong>Role:</strong> CI/CD pipelines, build optimization, Docker</li>
+                            <li><strong>Tools:</strong> Full build toolkit</li>
+                            <li><strong>Model:</strong> Sonnet (reliable builds)</li>
+                            <li><strong>Usage:</strong> <code>claude chat --agent panda "Read protocol/panda.agent.md and setup CI/CD for [project]"</code></li>
+                        </ul>
+                    </div>
+
+                    <!-- Inumaki Agent -->
+                    <div class="agent-setup-card" style="--agent-color: var(--color-inumaki);">
+                        <h5>4.8 Inumaki (API & Communication Specialist)</h5>
+                        <div class="code-block">
+                            <span class="code-label">Create Inumaki Agent</span>
+                            <code>claude agent create inumaki \
+  --system-prompt "You are Toge Inumaki, API Specialist. Read protocol/inumaki.agent.md for your role. Declarative API design." \
+  --tools Read,Write,Edit,Bash,Grep,Glob,TodoWrite,Task,WebFetch,WebSearch,AskUserQuestion,Skill \
+  --model sonnet \
+  --color purple</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <ul class="config-list">
+                            <li><strong>Role:</strong> REST/GraphQL/WebSocket design, OpenAPI specs</li>
+                            <li><strong>Tools:</strong> Full API toolkit</li>
+                            <li><strong>Model:</strong> Sonnet (precise contracts)</li>
+                            <li><strong>Usage:</strong> <code>claude chat --agent inumaki "Read protocol/inumaki.agent.md and design API for [resource]"</code></li>
+                        </ul>
+                    </div>
+
+                    <!-- Sukuna Agent -->
+                    <div class="agent-setup-card" style="--agent-color: var(--color-sukuna);">
+                        <h5>4.9 Sukuna (System Update Adversary)</h5>
+                        <div class="code-block">
+                            <span class="code-label">Create Sukuna Agent</span>
+                            <code>claude agent create sukuna \
+  --system-prompt "You are Ryomen Sukuna, System Update Adversary. Read protocol/sukuna.agent.md for your role. Gojo-invoked only." \
+  --tools Read,Write,Edit,Bash,Grep,Glob,WebFetch,TodoWrite,WebSearch,Skill \
+  --model opus \
+  --color crimson</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <ul class="config-list">
+                            <li><strong>Role:</strong> Protocol updates, version migrations, adversarial reviews</li>
+                            <li><strong>Tools:</strong> System-level access (Gojo coordination required)</li>
+                            <li><strong>Model:</strong> Opus (comprehensive analysis)</li>
+                            <li><strong>Usage:</strong> <code>claude chat --agent sukuna "Read protocol/sukuna.agent.md and [system task]"</code> (via Gojo only)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3 style="color: var(--color-maki);">Step 5: Install Recommended Plugins</h3>
+                    <p>Enhance Claude Code with these optional but recommended plugins:</p>
+
+                    <div class="code-block">
+                        <span class="code-label">Install All Recommended Plugins</span>
+                        <code># Playwright for browser automation
+claude plugin install claude-code-plugins/playwright
+
+# Stripe integration for payment testing
+claude plugin install claude-code-plugins/stripe
+
+# Figma design integration
+claude plugin install claude-code-plugins/figma
+
+# Vercel deployment
+claude plugin install claude-code-plugins/vercel
+
+# Frontend design tools
+claude plugin install claude-code-plugins/frontend-design
+
+# Code review superpowers
+claude plugin install claude-code-plugins/superpowers
+
+# Feature development tools
+claude plugin install claude-code-plugins/feature-dev
+
+# CLAUDE.md management
+claude plugin install claude-code-plugins/claude-md-management
+
+# Keybindings customization
+claude plugin install claude-code-plugins/keybindings-help</code>
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    </div>
+
+                    <p style="margin-top: var(--space-lg);">Verify installed plugins:</p>
+                    <div class="code-block">
+                        <span class="code-label">List Installed Plugins</span>
+                        <code>claude plugin list</code>
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3 style="color: var(--color-panda);">Step 6: Verify Installation</h3>
+                    <p>Test your Domain Zero Protocol installation:</p>
+
+                    <div class="setup-subsection">
+                        <h4>6.1 Test Agent Invocation</h4>
+                        <div class="code-block">
+                            <span class="code-label">Invoke Gojo (Mission Control)</span>
+                            <code>claude chat --agent gojo "Read protocol/gojo.agent.md"</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <p>Gojo should respond with the Mission Control menu showing Options 1-4.</p>
+                    </div>
+
+                    <div class="setup-subsection">
+                        <h4>6.2 Test Protocol Files</h4>
+                        <div class="code-block">
+                            <span class="code-label">Verify Protocol Integrity</span>
+                            <code>./scripts/verify-protocol.sh  # Linux/Mac
+# OR
+./scripts/verify-protocol.ps1  # Windows</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <p>Should confirm all protocol files are present and version-aligned.</p>
+                    </div>
+
+                    <div class="setup-subsection">
+                        <h4>6.3 Check Session Management</h4>
+                        <div class="code-block">
+                            <span class="code-label">Start Test Session</span>
+                            <code>claude chat "skill: 'session' args: 'start'"</code>
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <p>Should initialize session tracking and create state files.</p>
+                    </div>
+                </div>
+
+                <div class="note" style="background: linear-gradient(135deg, var(--color-gojo), var(--color-yuuji)); border-left: 4px solid white; padding: var(--space-lg); margin-top: var(--space-2xl);">
+                    <p style="color: white; font-weight: 600; font-size: 1.125rem; margin-bottom: var(--space-sm);">🎉 Setup Complete!</p>
+                    <p style="color: white; margin-bottom: 0;">You're ready to use Domain Zero Protocol. Start by invoking Gojo for your first session: <code style="background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 4px; color: white;">claude chat --agent gojo "Read protocol/gojo.agent.md"</code></p>
+                </div>
             </section>
 
-            <!-- The Nine Agents -->
+            <!-- Agents Section -->
             <section id="agents" aria-labelledby="agents-heading">
                 <h2 id="agents-heading">The Nine Agents</h2>
-                <p>Each agent has a distinct role, personality, and area of expertise. They work together to achieve zero-defect code.</p>
+                <p>Each agent brings specialized expertise. Together they form Domain Zero: a space where perfect code is the only outcome.</p>
 
                 <div class="agents-grid">
                     <!-- Gojo -->
-                    <article class="agent-card" data-agent="gojo">
-                        <div class="agent-header">
-                            <div class="agent-avatar" aria-hidden="true">G</div>
-                            <div>
-                                <div class="agent-name">GOJO</div>
-                                <div class="agent-role">Mission Control</div>
-                            </div>
+                    <div class="agent-card" style="--agent-color: var(--color-gojo);">
+                        <h3>Satoru Gojo</h3>
+                        <p class="role">Mission Control & Protocol Guardian</p>
+                        <p>Activates Domain Expansion, enforces protocol authority, generates strategic intelligence through passive observation.</p>
+                        <div class="code-block">
+                            <code>claude chat --agent gojo "Read protocol/gojo.agent.md"</code>
                         </div>
-                        <p class="agent-description">Project lifecycle management, protocol guardian, and passive observation. Creates and enforces the domain where other agents operate. Only agent that can invoke Sukuna.</p>
-                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
-                            <strong>Skills:</strong> skill-creator, pptx, internal-comms, doc-coauthoring<br>
-                            <strong>Tools:</strong> All tools (full access)
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: var(--space-sm);">
+                            <strong>Tools:</strong> All (Read/Write/Edit/Bash/Task/WebFetch/WebSearch/Skill)<br>
+                            <strong>Access:</strong> Read-write to CLAUDE.md (user auth only)
                         </p>
-                        <div class="code-block agent-invoke">
-                            <code>Read protocol/gojo.agent.md</code>
-                        </div>
-                    </article>
+                    </div>
 
                     <!-- Yuuji -->
-                    <article class="agent-card" data-agent="yuuji">
-                        <div class="agent-header">
-                            <div class="agent-avatar" aria-hidden="true">Y</div>
-                            <div>
-                                <div class="agent-name">YUUJI</div>
-                                <div class="agent-role">Implementation Specialist</div>
-                            </div>
+                    <div class="agent-card" style="--agent-color: var(--color-yuuji);">
+                        <h3>Yuuji Itadori</h3>
+                        <p class="role">Implementation Specialist</p>
+                        <p>Test-first development warrior. Implements features with TDD rigor, creates backups, documents rollback plans.</p>
+                        <div class="code-block">
+                            <code>claude chat --agent yuuji "Read protocol/yuuji.agent.md and implement [feature]"</code>
                         </div>
-                        <p class="agent-description">Test-first development and feature implementation. The only agent that writes production code. All other agents route implementation through Yuuji.</p>
-                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
-                            <strong>Skills:</strong> web-artifacts-builder, webapp-testing, mcp-builder, skill-creator<br>
-                            <strong>Tools:</strong> All tools (full access) - Primary implementer
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: var(--space-sm);">
+                            <strong>Tools:</strong> Full implementation toolkit<br>
+                            <strong>Access:</strong> Read-only to CLAUDE.md
                         </p>
-                        <div class="code-block agent-invoke">
-                            <code>Read protocol/yuuji.agent.md and [task]</code>
-                        </div>
-                    </article>
+                    </div>
 
                     <!-- Megumi -->
-                    <article class="agent-card" data-agent="megumi">
-                        <div class="agent-header">
-                            <div class="agent-avatar" aria-hidden="true">M</div>
-                            <div>
-                                <div class="agent-name">MEGUMI</div>
-                                <div class="agent-role">Security Analyst</div>
-                            </div>
+                    <div class="agent-card" style="--agent-color: var(--color-megumi);">
+                        <h3>Megumi Fushiguro</h3>
+                        <p class="role">Security & Performance Analyst</p>
+                        <p>OWASP Top 10 expert. Conducts security audits, identifies vulnerabilities, approves or rejects with @approved/@remediation-required.</p>
+                        <div class="code-block">
+                            <code>claude chat --agent megumi "Read protocol/megumi.agent.md and review [component]"</code>
                         </div>
-                        <p class="agent-description">OWASP Top 10 security reviews with full Cheatsheet Series integration. References 21 security cheatsheets across 3 priority tiers for comprehensive vulnerability assessment.</p>
-                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
-                            <strong>Skills:</strong> pdf (security reports), webapp-testing<br>
-                            <strong>Tools:</strong> Read-only analysis (no edit/bash) - Routes fixes to Yuuji
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: var(--space-sm);">
+                            <strong>Tools:</strong> Read/Grep/Glob/WebSearch (no Write/Edit)<br>
+                            <strong>Access:</strong> Read-only to CLAUDE.md
                         </p>
-                        <div class="code-block agent-invoke">
-                            <code>Read protocol/megumi.agent.md and [review]</code>
-                        </div>
-                    </article>
+                    </div>
 
                     <!-- Nobara -->
-                    <article class="agent-card" data-agent="nobara">
-                        <div class="agent-header">
-                            <div class="agent-avatar" aria-hidden="true">N</div>
-                            <div>
-                                <div class="agent-name">NOBARA</div>
-                                <div class="agent-role">Creative Strategy & UX</div>
-                            </div>
+                    <div class="agent-card" style="--agent-color: var(--color-nobara);">
+                        <h3>Nobara Kugisaki</h3>
+                        <p class="role">Creative Strategy & UX</p>
+                        <p>User experience visionary. Designs interfaces, ensures WCAG 2.2 compliance, creates product narratives.</p>
+                        <div class="code-block">
+                            <code>claude chat --agent nobara "Read protocol/nobara.agent.md and design [interface]"</code>
                         </div>
-                        <p class="agent-description">User experience design, product vision, and WCAG 2.2 accessibility compliance. Creates design specs and prototypes, routes implementation to Yuuji.</p>
-                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
-                            <strong>Skills:</strong> pdf, docx, pptx, frontend-design, web-artifacts-builder, brand-guidelines, canvas-design, theme-factory, algorithmic-art<br>
-                            <strong>Tools:</strong> Read/Write/Analysis only - Routes code to Yuuji via @implementation
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: var(--space-sm);">
+                            <strong>Tools:</strong> Full creative toolkit<br>
+                            <strong>Access:</strong> Read-only to CLAUDE.md
                         </p>
-                        <div class="code-block agent-invoke">
-                            <code>Read protocol/nobara.agent.md and [design]</code>
-                        </div>
-                    </article>
+                    </div>
 
                     <!-- Todo -->
-                    <article class="agent-card" data-agent="todo">
-                        <div class="agent-header">
-                            <div class="agent-avatar" aria-hidden="true">T</div>
-                            <div>
-                                <div class="agent-name">TODO</div>
-                                <div class="agent-role">Database & Backend</div>
-                            </div>
+                    <div class="agent-card" style="--agent-color: var(--color-todo);">
+                        <h3>Aoi Todo</h3>
+                        <p class="role">Database & Backend Specialist</p>
+                        <p>Database architect. Schema design, migrations, query optimization. Boogie Woogie for seamless data transformation.</p>
+                        <div class="code-block">
+                            <code>claude chat --agent todo "Read protocol/todo.agent.md and design schema for [feature]"</code>
                         </div>
-                        <p class="agent-description">Schema design, migrations, query optimization, and ORM configuration. Creates database specifications and migration plans, routes implementation to Yuuji.</p>
-                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
-                            <strong>Skills:</strong> xlsx (schema docs, data exports)<br>
-                            <strong>Tools:</strong> Read/Write/Analysis only - Routes code to Yuuji via @implementation
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: var(--space-sm);">
+                            <strong>Cursed Technique:</strong> Boogie Woogie (data swap)<br>
+                            <strong>Access:</strong> Read-only to CLAUDE.md
                         </p>
-                        <div class="code-block agent-invoke">
-                            <code>Read protocol/todo.agent.md and [task]</code>
-                        </div>
-                    </article>
+                    </div>
 
                     <!-- Maki -->
-                    <article class="agent-card" data-agent="maki">
-                        <div class="agent-header">
-                            <div class="agent-avatar" aria-hidden="true">Ma</div>
-                            <div>
-                                <div class="agent-name">MAKI</div>
-                                <div class="agent-role">Performance Specialist</div>
-                            </div>
+                    <div class="agent-card" style="--agent-color: var(--color-maki);">
+                        <h3>Maki Zenin</h3>
+                        <p class="role">Performance Optimization Specialist</p>
+                        <p>Performance enforcer. Lighthouse audits, profiling, bundle optimization. Zero-overhead philosophy.</p>
+                        <div class="code-block">
+                            <code>claude chat --agent maki "Read protocol/maki.agent.md and audit [component] performance"</code>
                         </div>
-                        <p class="agent-description">Performance profiling, code optimization, and bundle analysis. Creates performance reports and optimization specs, routes implementation to Yuuji.</p>
-                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
-                            <strong>Skills:</strong> xlsx (performance metrics, benchmarks), theme-factory (optimized CSS)<br>
-                            <strong>Tools:</strong> Read/Write/Analysis only - Routes code to Yuuji via @implementation
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: var(--space-sm);">
+                            <strong>Cursed Technique:</strong> Heavenly Restriction (zero overhead)<br>
+                            <strong>Access:</strong> Read-only to CLAUDE.md
                         </p>
-                        <div class="code-block agent-invoke">
-                            <code>Read protocol/maki.agent.md and [audit]</code>
-                        </div>
-                    </article>
+                    </div>
 
                     <!-- Panda -->
-                    <article class="agent-card" data-agent="panda">
-                        <div class="agent-header">
-                            <div class="agent-avatar" aria-hidden="true">P</div>
-                            <div>
-                                <div class="agent-name">PANDA</div>
-                                <div class="agent-role">Build & Integration</div>
-                            </div>
+                    <div class="agent-card" style="--agent-color: var(--color-panda);">
+                        <h3>Panda</h3>
+                        <p class="role">Build & Integration Specialist</p>
+                        <p>Reliable builder. CI/CD pipelines, GitHub Actions, Docker, integration testing. Multi-core build modes.</p>
+                        <div class="code-block">
+                            <code>claude chat --agent panda "Read protocol/panda.agent.md and setup CI/CD for [project]"</code>
                         </div>
-                        <p class="agent-description">CI/CD pipelines, build systems, and integration testing. Creates pipeline configs and build documentation, routes implementation to Yuuji.</p>
-                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
-                            <strong>Skills:</strong> xlsx (build metrics, dependency lists), mcp-builder (CI/CD integrations)<br>
-                            <strong>Tools:</strong> Read/Write/Analysis only - Routes code to Yuuji via @implementation
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: var(--space-sm);">
+                            <strong>Cursed Technique:</strong> Multi-Core (dev/prod/test modes)<br>
+                            <strong>Access:</strong> Read-only to CLAUDE.md
                         </p>
-                        <div class="code-block agent-invoke">
-                            <code>Read protocol/panda.agent.md and [config]</code>
-                        </div>
-                    </article>
+                    </div>
 
                     <!-- Inumaki -->
-                    <article class="agent-card" data-agent="inumaki">
-                        <div class="agent-header">
-                            <div class="agent-avatar" aria-hidden="true">I</div>
-                            <div>
-                                <div class="agent-name">INUMAKI</div>
-                                <div class="agent-role">API & Communication</div>
-                            </div>
+                    <div class="agent-card" style="--agent-color: var(--color-inumaki);">
+                        <h3>Toge Inumaki</h3>
+                        <p class="role">API & Communication Specialist</p>
+                        <p>API designer. REST/GraphQL/WebSocket expertise. Cursed Speech for declarative contracts and OpenAPI specs.</p>
+                        <div class="code-block">
+                            <code>claude chat --agent inumaki "Read protocol/inumaki.agent.md and design API for [resource]"</code>
                         </div>
-                        <p class="agent-description">REST/GraphQL/WebSocket design and OpenAPI specifications. Creates API contracts and documentation, routes implementation to Yuuji.</p>
-                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
-                            <strong>Skills:</strong> pdf (API docs), docx (API guides), internal-comms (API change notifications)<br>
-                            <strong>Tools:</strong> Read/Write/Analysis only - Routes code to Yuuji via @implementation
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: var(--space-sm);">
+                            <strong>Cursed Technique:</strong> Cursed Speech (declarative APIs)<br>
+                            <strong>Access:</strong> Read-only to CLAUDE.md
                         </p>
-                        <div class="code-block agent-invoke">
-                            <code>Read protocol/inumaki.agent.md and [api]</code>
-                        </div>
-                    </article>
+                    </div>
 
                     <!-- Sukuna -->
-                    <article class="agent-card" data-agent="sukuna">
-                        <div class="agent-header">
-                            <div class="agent-avatar" aria-hidden="true">S</div>
-                            <div>
-                                <div class="agent-name">SUKUNA</div>
-                                <div class="agent-role">System Update Adversary</div>
-                            </div>
+                    <div class="agent-card" style="--agent-color: var(--color-sukuna);">
+                        <h3>Ryomen Sukuna</h3>
+                        <p class="role">System Update Adversary</p>
+                        <p>Protocol maintainer. Version migrations, red-team reviews, adversarial testing. Gojo-invoked only for system updates.</p>
+                        <div class="code-block">
+                            <code>claude chat --agent sukuna "Read protocol/sukuna.agent.md and [system task]"</code>
                         </div>
-                        <p class="agent-description">Protocol updates, risk assessment, and red-team reviews. Adversarial-but-aligned; can only be invoked by Gojo or User. Validates protocol changes through adversarial testing.</p>
-                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
-                            <strong>Skills:</strong> skill-creator (adversarial skill testing)<br>
-                            <strong>Tools:</strong> All tools - Invoked via Gojo only
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: var(--space-sm);">
+                            <strong>Cursed Technique:</strong> Malevolent Shrine (system updates)<br>
+                            <strong>Access:</strong> Read-write (Gojo + user auth only)
                         </p>
-                        <div class="code-block agent-invoke">
-                            <code>Via Gojo: engage Sukuna to [update]</code>
-                        </div>
-                    </article>
-                </div>
-            </section>
-
-            <!-- Agent Relationships -->
-            <section id="relationships" aria-labelledby="relationships-heading">
-                <h2 id="relationships-heading">Agent Relationships</h2>
-                <p>The agents work together in a structured hierarchy. Gojo acts as Mission Control, coordinating the seven working agents and invoking Sukuna for system updates.</p>
-
-                <div class="relationship-diagram" role="img" aria-label="Agent relationship diagram showing Gojo at the top coordinating three core agents (Yuuji, Megumi, Nobara), four extended agents (Todo, Maki, Panda, Inumaki), and Sukuna for system updates">
-                    <svg class="relationship-svg" viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Background -->
-                        <rect width="700" height="500" fill="#1e293b"/>
-
-                        <!-- Domain boundary -->
-                        <rect x="50" y="80" width="600" height="360" rx="16" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="8,4"/>
-                        <text x="350" y="60" text-anchor="middle" fill="#94a3b8" font-size="14" font-weight="600">DOMAIN ZERO</text>
-
-                        <!-- Gojo (Top) -->
-                        <circle cx="350" cy="130" r="40" fill="#3B82F6"/>
-                        <text x="350" y="135" text-anchor="middle" fill="white" font-size="14" font-weight="bold">GOJO</text>
-                        <text x="350" y="185" text-anchor="middle" fill="#94a3b8" font-size="11">Mission Control</text>
-
-                        <!-- Core Three Row -->
-                        <circle cx="180" cy="260" r="35" fill="#EC4899"/>
-                        <text x="180" y="265" text-anchor="middle" fill="white" font-size="12" font-weight="bold">YUUJI</text>
-                        <text x="180" y="305" text-anchor="middle" fill="#94a3b8" font-size="10">Implementation</text>
-
-                        <circle cx="350" cy="260" r="35" fill="#8B5CF6"/>
-                        <text x="350" y="265" text-anchor="middle" fill="white" font-size="12" font-weight="bold">MEGUMI</text>
-                        <text x="350" y="305" text-anchor="middle" fill="#94a3b8" font-size="10">Security</text>
-
-                        <circle cx="520" cy="260" r="35" fill="#F59E0B"/>
-                        <text x="520" y="265" text-anchor="middle" fill="white" font-size="12" font-weight="bold">NOBARA</text>
-                        <text x="520" y="305" text-anchor="middle" fill="#94a3b8" font-size="10">UX Design</text>
-
-                        <!-- Extended Four Row -->
-                        <circle cx="115" cy="380" r="30" fill="#10B981"/>
-                        <text x="115" y="385" text-anchor="middle" fill="white" font-size="11" font-weight="bold">TODO</text>
-                        <text x="115" y="420" text-anchor="middle" fill="#94a3b8" font-size="9">Database</text>
-
-                        <circle cx="255" cy="380" r="30" fill="#EF4444"/>
-                        <text x="255" y="385" text-anchor="middle" fill="white" font-size="11" font-weight="bold">MAKI</text>
-                        <text x="255" y="420" text-anchor="middle" fill="#94a3b8" font-size="9">Performance</text>
-
-                        <circle cx="395" cy="380" r="30" fill="#14B8A6"/>
-                        <text x="395" y="385" text-anchor="middle" fill="white" font-size="11" font-weight="bold">PANDA</text>
-                        <text x="395" y="420" text-anchor="middle" fill="#94a3b8" font-size="9">Build/CI</text>
-
-                        <circle cx="535" cy="380" r="30" fill="#6366F1"/>
-                        <text x="535" y="385" text-anchor="middle" fill="white" font-size="11" font-weight="bold">INUMAKI</text>
-                        <text x="535" y="420" text-anchor="middle" fill="#94a3b8" font-size="9">API</text>
-
-                        <!-- Sukuna (Outside main flow) -->
-                        <rect x="580" y="110" width="70" height="50" rx="8" fill="#991B1B"/>
-                        <text x="615" y="140" text-anchor="middle" fill="white" font-size="11" font-weight="bold">SUKUNA</text>
-                        <text x="615" y="175" text-anchor="middle" fill="#94a3b8" font-size="9">System Updates</text>
-
-                        <!-- Connection lines -->
-                        <!-- Gojo to Core Three -->
-                        <line x1="320" y1="160" x2="200" y2="230" stroke="#475569" stroke-width="2"/>
-                        <line x1="350" y1="170" x2="350" y2="225" stroke="#475569" stroke-width="2"/>
-                        <line x1="380" y1="160" x2="500" y2="230" stroke="#475569" stroke-width="2"/>
-
-                        <!-- Core to Extended -->
-                        <line x1="160" y1="290" x2="130" y2="350" stroke="#475569" stroke-width="1" stroke-dasharray="4,2"/>
-                        <line x1="190" y1="295" x2="240" y2="350" stroke="#475569" stroke-width="1" stroke-dasharray="4,2"/>
-                        <line x1="350" y1="295" x2="395" y2="350" stroke="#475569" stroke-width="1" stroke-dasharray="4,2"/>
-                        <line x1="520" y1="295" x2="535" y2="350" stroke="#475569" stroke-width="1" stroke-dasharray="4,2"/>
-
-                        <!-- Gojo to Sukuna (special connection) -->
-                        <line x1="390" y1="130" x2="580" y2="130" stroke="#991B1B" stroke-width="2" stroke-dasharray="6,3"/>
-                        <text x="485" y="120" text-anchor="middle" fill="#991B1B" font-size="9">Gojo-invoked only</text>
-
-                        <!-- Yuuji-Megumi workflow arrow -->
-                        <path d="M 215 260 Q 265 240 315 260" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
-                        <defs>
-                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
-                            </marker>
-                        </defs>
-                        <text x="265" y="235" text-anchor="middle" fill="#64748b" font-size="9">security review</text>
-                    </svg>
-                    <span class="diagram-scroll-hint">Scroll horizontally to view full diagram</span>
+                    </div>
                 </div>
             </section>
 
             <!-- Tier System -->
             <section id="tiers" aria-labelledby="tiers-heading">
-                <h2 id="tiers-heading">The Three-Tier System</h2>
-                <p>Match process rigor to feature criticality. The tier system ensures you apply the right amount of testing, security review, and documentation for each type of work.</p>
+                <h2 id="tiers-heading">The Tier System</h2>
+                <p>Match process rigor to feature criticality. Choose the tier that fits your needs.</p>
 
-                <div class="tier-diagram">
+                <div class="tier-grid">
                     <!-- Tier 1 -->
-                    <div class="tier-card" data-tier="1">
-                        <div class="tier-badge" data-tier="1">
-                            <span class="tier-number">1</span>
-                            <span class="tier-label">Rapid</span>
-                        </div>
-                        <div class="tier-content">
-                            <h3>Rapid Development</h3>
-                            <p>For prototypes, experiments, learning exercises, and throwaway code. Fast iteration without formal testing or security review.</p>
-                            <ul class="tier-features">
-                                <li>No tests required</li>
-                                <li>No security review</li>
-                                <li>Minimal documentation</li>
-                                <li>Backups still required</li>
-                            </ul>
-                            <span class="tier-time">10-15 minutes per feature</span>
-                            <div class="code-block" style="margin-top: var(--space-sm);">
-                                <span class="code-label">Invocation</span>
-                                <code>Read yuuji.agent.md --tier rapid and [task]</code>
-                            </div>
+                    <div class="tier-card tier-1">
+                        <h3>🚀 Tier 1: Rapid</h3>
+                        <p><strong>Time:</strong> 10-15 minutes</p>
+                        <p><strong>Testing:</strong> None (fast iteration)</p>
+                        <p><strong>Security Review:</strong> Skipped</p>
+                        <p><strong>Use Cases:</strong></p>
+                        <ul style="color: var(--text-secondary); margin-left: var(--space-lg); margin-top: var(--space-sm);">
+                            <li>Prototypes and experiments</li>
+                            <li>Learning exercises</li>
+                            <li>Throwaway code</li>
+                            <li>Quick scripts</li>
+                        </ul>
+                        <div class="code-block" style="margin-top: var(--space-md);">
+                            <span class="code-label">Example invocation</span>
+                            <code>claude chat --agent yuuji "Read protocol/yuuji.agent.md --tier rapid and create Python script"</code>
                         </div>
                     </div>
 
                     <!-- Tier 2 -->
-                    <div class="tier-card" data-tier="2">
-                        <div class="tier-badge" data-tier="2">
-                            <span class="tier-number">2</span>
-                            <span class="tier-label">Standard</span>
-                        </div>
-                        <div class="tier-content">
-                            <h3>Standard Development (Default)</h3>
-                            <p>For production features, client deliverables, and standard development work. Balanced quality and speed with test-driven development.</p>
-                            <ul class="tier-features">
-                                <li>Unit tests required (TDD)</li>
-                                <li>OWASP security review</li>
-                                <li>Full documentation</li>
-                                <li>Backup and rollback plan</li>
-                            </ul>
-                            <span class="tier-time">30-45 minutes per feature</span>
-                            <div class="code-block" style="margin-top: var(--space-sm);">
-                                <span class="code-label">Invocation (default)</span>
-                                <code>Read yuuji.agent.md and implement [feature]</code>
-                            </div>
+                    <div class="tier-card tier-2">
+                        <h3>⚖️ Tier 2: Standard [DEFAULT]</h3>
+                        <p><strong>Time:</strong> 30-45 minutes</p>
+                        <p><strong>Testing:</strong> Unit tests (TDD)</p>
+                        <p><strong>Security Review:</strong> Standard OWASP audit</p>
+                        <p><strong>Use Cases:</strong></p>
+                        <ul style="color: var(--text-secondary); margin-left: var(--space-lg); margin-top: var(--space-sm);">
+                            <li>Production features</li>
+                            <li>CRUD operations</li>
+                            <li>API endpoints</li>
+                            <li>UI components</li>
+                        </ul>
+                        <div class="code-block" style="margin-top: var(--space-md);">
+                            <span class="code-label">Example invocation</span>
+                            <code>claude chat --agent yuuji "Read protocol/yuuji.agent.md and implement user authentication"</code>
                         </div>
                     </div>
 
                     <!-- Tier 3 -->
-                    <div class="tier-card" data-tier="3">
-                        <div class="tier-badge" data-tier="3">
-                            <span class="tier-number">3</span>
-                            <span class="tier-label">Critical</span>
-                        </div>
-                        <div class="tier-content">
-                            <h3>Critical Development</h3>
-                            <p>For authentication, payment processing, sensitive data, and compliance-regulated features. Maximum rigor with enhanced security review.</p>
-                            <ul class="tier-features">
-                                <li>Unit + Integration + E2E tests</li>
-                                <li>Enhanced security audit</li>
-                                <li>Performance benchmarking</li>
-                                <li>Multi-model review (when available)</li>
-                            </ul>
-                            <span class="tier-time">60-90 minutes per feature</span>
-                            <div class="code-block" style="margin-top: var(--space-sm);">
-                                <span class="code-label">Invocation</span>
-                                <code>Read yuuji.agent.md --tier critical and [task]</code>
-                            </div>
+                    <div class="tier-card tier-3">
+                        <h3>🔒 Tier 3: Critical</h3>
+                        <p><strong>Time:</strong> 60-90 minutes</p>
+                        <p><strong>Testing:</strong> Unit + Integration + E2E</p>
+                        <p><strong>Security Review:</strong> Enhanced multi-model audit</p>
+                        <p><strong>Use Cases:</strong></p>
+                        <ul style="color: var(--text-secondary); margin-left: var(--space-lg); margin-top: var(--space-sm);">
+                            <li>Authentication systems</li>
+                            <li>Payment processing</li>
+                            <li>Medical/legal data</li>
+                            <li>Admin privileges</li>
+                        </ul>
+                        <div class="code-block" style="margin-top: var(--space-md);">
+                            <span class="code-label">Example invocation</span>
+                            <code>claude chat --agent yuuji "Read protocol/yuuji.agent.md --tier critical and implement Stripe payments"</code>
                         </div>
                     </div>
                 </div>
@@ -1874,52 +1370,56 @@ Gojo: [Briefs Yuuji for TDD workflow]
 
             <!-- Workflow -->
             <section id="workflow" aria-labelledby="workflow-heading">
-                <h2 id="workflow-heading">Development Workflow</h2>
-                <p>The standard Tier 2 workflow demonstrates how agents collaborate. Yuuji implements, the user reviews, Megumi audits for security, and the cycle continues until zero issues remain.</p>
+                <h2 id="workflow-heading">Standard Workflow (Tier 2)</h2>
+                <p>The dual workflow mode: implementation and security review cycle.</p>
 
-                <div class="workflow-container" role="img" aria-label="Workflow diagram showing the implementation and security review cycle">
-                    <svg class="workflow-svg" viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Background -->
-                        <rect width="800" height="320" fill="#1e293b"/>
+                <div class="diagram-container">
+                    <svg viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto;">
+                        <!-- Yuuji Implementation -->
+                        <rect x="20" y="110" width="120" height="60" rx="8" fill="#EC4899" fill-opacity="0.2" stroke="#EC4899" stroke-width="2"/>
+                        <text x="80" y="135" text-anchor="middle" fill="#EC4899" font-size="12" font-weight="bold">YUUJI</text>
+                        <text x="80" y="150" text-anchor="middle" fill="#94a3b8" font-size="10">Implements</text>
+                        <text x="80" y="163" text-anchor="middle" fill="#94a3b8" font-size="10">with tests</text>
 
-                        <!-- Step 1: Yuuji Implements -->
-                        <rect x="20" y="100" width="140" height="80" rx="8" fill="#EC4899" fill-opacity="0.2" stroke="#EC4899" stroke-width="2"/>
-                        <text x="90" y="130" text-anchor="middle" fill="#EC4899" font-size="12" font-weight="bold">1. YUUJI</text>
-                        <text x="90" y="150" text-anchor="middle" fill="#f8fafc" font-size="11">Implements</text>
-                        <text x="90" y="165" text-anchor="middle" fill="#94a3b8" font-size="10">(test-first)</text>
-
-                        <!-- Arrow 1-2 -->
-                        <path d="M 160 140 L 195 140" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+                        <!-- Arrow to User Review -->
+                        <path d="M 145 140 L 175 140" stroke="#EC4899" stroke-width="2" marker-end="url(#arrowPink)"/>
                         <defs>
-                            <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+                            <marker id="arrowPink" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#EC4899"/>
                             </marker>
                         </defs>
 
-                        <!-- Step 2: User Reviews -->
-                        <rect x="200" y="100" width="140" height="80" rx="8" fill="#64748b" fill-opacity="0.2" stroke="#64748b" stroke-width="2"/>
-                        <text x="270" y="130" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="bold">2. USER</text>
-                        <text x="270" y="150" text-anchor="middle" fill="#f8fafc" font-size="11">Reviews</text>
-                        <text x="270" y="165" text-anchor="middle" fill="#94a3b8" font-size="10">@user-review</text>
+                        <!-- User Review -->
+                        <rect x="180" y="110" width="100" height="60" rx="8" fill="#3B82F6" fill-opacity="0.2" stroke="#3B82F6" stroke-width="2"/>
+                        <text x="230" y="135" text-anchor="middle" fill="#3B82F6" font-size="11" font-weight="bold">USER</text>
+                        <text x="230" y="150" text-anchor="middle" fill="#94a3b8" font-size="10">Reviews</text>
+                        <text x="230" y="163" text-anchor="middle" fill="#94a3b8" font-size="10">code</text>
 
-                        <!-- Arrow 2-3 -->
-                        <path d="M 340 140 L 375 140" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+                        <!-- Arrow to Megumi -->
+                        <path d="M 285 140 L 315 140" stroke="#8B5CF6" stroke-width="2" marker-end="url(#arrowPurple)"/>
+                        <defs>
+                            <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#8B5CF6"/>
+                            </marker>
+                        </defs>
+                        <text x="300" y="125" text-anchor="middle" fill="#8B5CF6" font-size="9">@security-review</text>
 
-                        <!-- Step 3: Megumi Audits -->
-                        <rect x="380" y="100" width="140" height="80" rx="8" fill="#8B5CF6" fill-opacity="0.2" stroke="#8B5CF6" stroke-width="2"/>
-                        <text x="450" y="130" text-anchor="middle" fill="#8B5CF6" font-size="12" font-weight="bold">3. MEGUMI</text>
-                        <text x="450" y="150" text-anchor="middle" fill="#f8fafc" font-size="11">Security Audit</text>
-                        <text x="450" y="165" text-anchor="middle" fill="#94a3b8" font-size="10">OWASP review</text>
+                        <!-- Megumi Security Review -->
+                        <rect x="320" y="110" width="120" height="60" rx="8" fill="#8B5CF6" fill-opacity="0.2" stroke="#8B5CF6" stroke-width="2"/>
+                        <text x="380" y="135" text-anchor="middle" fill="#8B5CF6" font-size="12" font-weight="bold">MEGUMI</text>
+                        <text x="380" y="150" text-anchor="middle" fill="#94a3b8" font-size="10">Security</text>
+                        <text x="380" y="163" text-anchor="middle" fill="#94a3b8" font-size="10">audit</text>
 
-                        <!-- Decision diamond -->
-                        <polygon points="600,140 640,110 680,140 640,170" fill="#334155" stroke="#64748b" stroke-width="2"/>
-                        <text x="640" y="145" text-anchor="middle" fill="#f8fafc" font-size="10">Issues?</text>
+                        <!-- Decision Diamond -->
+                        <path d="M 520 140 L 560 100 L 600 140 L 560 180 Z" fill="#475569" stroke="#cbd5e1" stroke-width="2"/>
+                        <text x="560" y="135" text-anchor="middle" fill="#f8fafc" font-size="10" font-weight="bold">Issues</text>
+                        <text x="560" y="148" text-anchor="middle" fill="#f8fafc" font-size="10">found?</text>
 
-                        <!-- Arrow 3-decision -->
-                        <path d="M 520 140 L 595 140" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+                        <!-- Arrow to Decision -->
+                        <path d="M 445 140 L 515 140" stroke="#8B5CF6" stroke-width="2" marker-end="url(#arrowPurple)"/>
 
-                        <!-- Yes path (back to Yuuji) -->
-                        <path d="M 640 170 L 640 250 L 90 250 L 90 180" stroke="#EF4444" stroke-width="2" fill="none" marker-end="url(#arrowRed)"/>
+                        <!-- Yes path (Remediation) -->
+                        <path d="M 560 180 L 560 220 L 80 220 L 80 175" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
                         <defs>
                             <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                                 <polygon points="0 0, 10 3.5, 0 7" fill="#EF4444"/>
@@ -1950,7 +1450,7 @@ Gojo: [Briefs Yuuji for TDD workflow]
 
             <!-- Getting Started -->
             <section id="getting-started" aria-labelledby="getting-started-heading">
-                <h2 id="getting-started-heading">Getting Started</h2>
+                <h2 id="getting-started-heading">Getting Started (After Setup)</h2>
 
                 <ol class="steps-list">
                     <li class="step-item">
@@ -1977,7 +1477,7 @@ project:
                             <h3>Start Mission Control</h3>
                             <p>Initialize your session by invoking Gojo. Select Option 1 to resume an existing project or Option 2 to start a new one.</p>
                             <div class="code-block">
-                                <code>Read protocol/gojo.agent.md</code>
+                                <code>claude chat --agent gojo "Read protocol/gojo.agent.md"</code>
                             </div>
                         </div>
                     </li>
@@ -1988,7 +1488,7 @@ project:
                             <h3>Implement Features with Yuuji</h3>
                             <p>Request implementation of features. Yuuji uses test-driven development and follows the tier requirements for your feature type.</p>
                             <div class="code-block">
-                                <code>Read protocol/yuuji.agent.md and implement user authentication</code>
+                                <code>claude chat --agent yuuji "Read protocol/yuuji.agent.md and implement user authentication"</code>
                             </div>
                         </div>
                     </li>
@@ -2007,7 +1507,7 @@ project:
                             <h3>Security Audit with Megumi</h3>
                             <p>For Tier 2 and 3 features, invoke Megumi for security review. She conducts OWASP analysis and identifies vulnerabilities.</p>
                             <div class="code-block">
-                                <code>Read protocol/megumi.agent.md and review authentication module</code>
+                                <code>claude chat --agent megumi "Read protocol/megumi.agent.md and review authentication module"</code>
                             </div>
                         </div>
                     </li>
@@ -2025,22 +1525,29 @@ project:
             <!-- Quick Commands -->
             <section id="quick-commands" aria-labelledby="quick-commands-heading">
                 <h2 id="quick-commands-heading">Quick Commands Reference</h2>
-                <p>Common invocation patterns for everyday development tasks.</p>
+                <p>Common invocation patterns for everyday development tasks. Use <code>--agent &lt;agent_name&gt;</code> to directly start conversations with any agent.</p>
+                <div class="note" style="background: var(--bg-highlight); border-left: 4px solid var(--color-gojo); padding: var(--space-md); margin-bottom: var(--space-lg);">
+                    <p><strong>Tip:</strong> Use <code>--agent &lt;agent_name&gt;</code> to directly start a conversation with a subagent. Always load the agent file first (<code>Read protocol/[agent].agent.md</code>) to ensure full agent context is available.</p>
+                </div>
 
                 <div class="intro-grid">
                     <div class="intro-card">
                         <h3 style="color: var(--color-gojo);">Session Management</h3>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">Start new session</span>
-                            <code>Read protocol/gojo.agent.md</code>
+                            <code>claude chat --agent gojo "Read protocol/gojo.agent.md"</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Project documents checkpoint sync (v8.13.0)</span>
+                            <code>claude chat "skill: 'session' args: 'update'"</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">Full intelligence report</span>
-                            <code>Trigger 19</code>
+                            <code>claude chat "Trigger 19"</code>
                         </div>
                         <div class="code-block">
                             <span class="code-label">Check protocol integrity</span>
-                            <code>protect</code>
+                            <code>claude chat "protect"</code>
                         </div>
                     </div>
 
@@ -2048,15 +1555,15 @@ project:
                         <h3 style="color: var(--color-yuuji);">Implementation</h3>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">Standard feature (Tier 2)</span>
-                            <code>Read protocol/yuuji.agent.md and implement [feature]</code>
+                            <code>claude chat --agent yuuji "Read protocol/yuuji.agent.md and implement [feature]"</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">Rapid prototype (Tier 1)</span>
-                            <code>Read protocol/yuuji.agent.md --tier rapid and [task]</code>
+                            <code>claude chat --agent yuuji "Read protocol/yuuji.agent.md --tier rapid and [task]"</code>
                         </div>
                         <div class="code-block">
                             <span class="code-label">Critical feature (Tier 3)</span>
-                            <code>Read protocol/yuuji.agent.md --tier critical and [task]</code>
+                            <code>claude chat --agent yuuji "Read protocol/yuuji.agent.md --tier critical and [task]"</code>
                         </div>
                     </div>
 
@@ -2064,15 +1571,15 @@ project:
                         <h3 style="color: var(--color-megumi);">Security</h3>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">Security review</span>
-                            <code>Read protocol/megumi.agent.md and review [component]</code>
+                            <code>claude chat --agent megumi "Read protocol/megumi.agent.md and review [component]"</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">OWASP audit</span>
-                            <code>Read protocol/megumi.agent.md and audit authentication</code>
+                            <code>claude chat --agent megumi "Read protocol/megumi.agent.md and audit authentication"</code>
                         </div>
                         <div class="code-block">
                             <span class="code-label">Threat model</span>
-                            <code>Read protocol/megumi.agent.md and threat model [system]</code>
+                            <code>claude chat --agent megumi "Read protocol/megumi.agent.md and threat model [system]"</code>
                         </div>
                     </div>
 
@@ -2080,15 +1587,15 @@ project:
                         <h3 style="color: var(--color-nobara);">Design & UX</h3>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">UI design</span>
-                            <code>Read protocol/nobara.agent.md and design [component]</code>
+                            <code>claude chat --agent nobara "Read protocol/nobara.agent.md and design [component]"</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">Accessibility audit</span>
-                            <code>Read protocol/nobara.agent.md and audit WCAG compliance</code>
+                            <code>claude chat --agent nobara "Read protocol/nobara.agent.md and audit WCAG compliance"</code>
                         </div>
                         <div class="code-block">
                             <span class="code-label">Brand guidelines</span>
-                            <code>Read protocol/nobara.agent.md and create brand guide</code>
+                            <code>claude chat --agent nobara "Read protocol/nobara.agent.md and create brand guide"</code>
                         </div>
                     </div>
 
@@ -2096,15 +1603,15 @@ project:
                         <h3 style="color: var(--color-todo);">Database</h3>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">Schema design</span>
-                            <code>Read protocol/todo.agent.md and design schema for [feature]</code>
+                            <code>claude chat --agent todo "Read protocol/todo.agent.md and design schema for [feature]"</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">Migration plan</span>
-                            <code>Read protocol/todo.agent.md and plan migration for [change]</code>
+                            <code>claude chat --agent todo "Read protocol/todo.agent.md and plan migration for [change]"</code>
                         </div>
                         <div class="code-block">
                             <span class="code-label">Query optimization</span>
-                            <code>Read protocol/todo.agent.md and optimize [query/table]</code>
+                            <code>claude chat --agent todo "Read protocol/todo.agent.md and optimize [query/table]"</code>
                         </div>
                     </div>
 
@@ -2112,15 +1619,63 @@ project:
                         <h3 style="color: var(--color-inumaki);">API Design</h3>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">REST API</span>
-                            <code>Read protocol/inumaki.agent.md and design REST API for [resource]</code>
+                            <code>claude chat --agent inumaki "Read protocol/inumaki.agent.md and design REST API for [resource]"</code>
                         </div>
                         <div class="code-block" style="margin-bottom: var(--space-sm);">
                             <span class="code-label">GraphQL schema</span>
-                            <code>Read protocol/inumaki.agent.md and design GraphQL schema</code>
+                            <code>claude chat --agent inumaki "Read protocol/inumaki.agent.md and design GraphQL schema"</code>
                         </div>
                         <div class="code-block">
                             <span class="code-label">OpenAPI spec</span>
-                            <code>Read protocol/inumaki.agent.md and generate OpenAPI spec</code>
+                            <code>claude chat --agent inumaki "Read protocol/inumaki.agent.md and generate OpenAPI spec"</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-maki);">Performance</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Lighthouse audit</span>
+                            <code>claude chat --agent maki "Read protocol/maki.agent.md and run Lighthouse audit"</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Profile performance</span>
+                            <code>claude chat --agent maki "Read protocol/maki.agent.md and profile [component]"</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">Optimize bundle size</span>
+                            <code>claude chat --agent maki "Read protocol/maki.agent.md and optimize bundle"</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-panda);">Build & CI/CD</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Configure GitHub Actions</span>
+                            <code>claude chat --agent panda "Read protocol/panda.agent.md and setup CI/CD for [project]"</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Docker setup</span>
+                            <code>claude chat --agent panda "Read protocol/panda.agent.md and create Dockerfile"</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">Build optimization</span>
+                            <code>claude chat --agent panda "Read protocol/panda.agent.md and optimize build process"</code>
+                        </div>
+                    </div>
+
+                    <div class="intro-card">
+                        <h3 style="color: var(--color-sukuna);">System Updates</h3>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Protocol version migration</span>
+                            <code>claude chat --agent sukuna "Read protocol/sukuna.agent.md and migrate to v[X.Y.Z]"</code>
+                        </div>
+                        <div class="code-block" style="margin-bottom: var(--space-sm);">
+                            <span class="code-label">Red-team security review</span>
+                            <code>claude chat --agent sukuna "Read protocol/sukuna.agent.md and stress-test [system]"</code>
+                        </div>
+                        <div class="code-block">
+                            <span class="code-label">Adversarial testing</span>
+                            <code>claude chat --agent sukuna "Read protocol/sukuna.agent.md and challenge [proposal]"</code>
                         </div>
                     </div>
                 </div>
@@ -2191,7 +1746,7 @@ project:
 
     <footer>
         <div class="container">
-            <p>Domain Zero Protocol v8.12.0</p>
+            <p>Domain Zero Protocol v8.13.0</p>
             <p class="footer-links">
                 <a href="https://github.com/DewyHRite/Domain-Zero-Protocol" target="_blank" rel="noopener noreferrer">
                     GitHub Repository
@@ -2208,5 +1763,45 @@ project:
             <p style="margin-top: var(--space-md);">The goal is always ZERO: perfect code, zero compromises.</p>
         </div>
     </footer>
+
+    <script>
+        // Copy to clipboard functionality
+        function copyCode(button) {
+            const codeBlock = button.previousElementSibling;
+            const code = codeBlock.textContent;
+
+            navigator.clipboard.writeText(code).then(() => {
+                // Visual feedback
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                button.textContent = 'Failed';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

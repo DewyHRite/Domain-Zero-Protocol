@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.13.0 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 8.12.0
+**Version**: 8.13.0
 **Status**: Production
 **Last Updated**: 2025-12-31
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
@@ -50,13 +50,13 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 
 ---
 
-## 📦 SYSTEM UPDATES (v8.12.0)
+## 📦 SYSTEM UPDATES (v8.13.0)
 
 ### PATCH-STATE-001 (2025-12-31): State File Consolidation
 
 **Release Date**: 2025-12-31
 **Patch ID**: PATCH-STATE-001
-**Branch**: fix/post-implementation-cleanup-v8.12.0
+**Branch**: fix/post-implementation-cleanup-v8.13.0
 **Status**: COMPLETED
 **Violation Flag**: false (followed System Update Framework)
 **Testing**: 5-phase comprehensive testing with unanimous @approved from Megumi, Maki, and Nobara
@@ -119,7 +119,7 @@ State fragmentation across 4 separate JSON files caused:
 **Nested Namespace Architecture**:
 ```json
 {
-  "protocol_version": "8.12.0",
+  "protocol_version": "8.13.0",
   "session_tracking": {
     "current_session": {},
     "metrics": {},
@@ -319,7 +319,7 @@ ls -l .protocol-state/agent-invocation-tracker.json
 
 **Migration Notes for Users**:
 
-**For Existing Users (v8.12.0)**:
+**For Existing Users (v8.13.0)**:
 1. **Migration is OPTIONAL but recommended**
 2. All scripts support both consolidated AND legacy state files (automatic fallback)
 3. Run migration at your convenience - no urgency
@@ -327,7 +327,7 @@ ls -l .protocol-state/agent-invocation-tracker.json
 5. Legacy files preserved in backups after migration
 6. See `AI_INSTRUCTIONS.md` for detailed migration path
 
-**For Fresh Installations (v8.12.0+)**:
+**For Fresh Installations (v8.13.0+)**:
 1. **No migration needed** - project-state.json created automatically with consolidated structure
 2. All scripts use ProjectStateManager by default
 3. No legacy files created
@@ -340,7 +340,7 @@ ls -l .protocol-state/agent-invocation-tracker.json
 - **Zero breaking changes** - existing DZP instances continue working
 
 **Deprecation Timeline**:
-- **v8.12.0**: Legacy file support MAINTAINED (automatic fallback)
+- **v8.13.0**: Legacy file support MAINTAINED (automatic fallback)
 - **v8.13.0**: Legacy file support MAINTAINED (warnings logged when using legacy files)
 - **v8.14.0**: Legacy file support OPTIONAL (can be disabled via config flag)
 - **v9.0.0**: Legacy file support REMOVED (breaking change, requires migration)
@@ -400,7 +400,7 @@ ls -l .protocol-state/agent-invocation-tracker.json
 - **Nobara Kugisaki (UX)**: 32-page comprehensive UX evaluation, 3 Priority 1 issues identified, improvement roadmap created
 - **Gojo Satoru (Mission Control)**: 5-phase testing orchestration, unanimous @approved coordination
 
-**Deployment Status**: ✅ READY FOR PRODUCTION DEPLOYMENT (v8.12.0 with 85/100 UX score)
+**Deployment Status**: ✅ READY FOR PRODUCTION DEPLOYMENT (v8.13.0 with 85/100 UX score)
 
 ---
 
@@ -1738,8 +1738,8 @@ The fix is simple but critical:
 | PATCH-DOC-001 | ACTIVE | v8.8.0+ | 2025-12-19 |
 | PATCH-DOC-002 | ACTIVE | v8.9.0+ | 2025-12-22 |
 | PATCH-COMP-001 | ACTIVE | v8.10.0+ | 2025-12-25 |
-| PATCH-SESSION-005-v2 | ACTIVE | v8.12.0+ | 2025-12-31 |
-| PATCH-TS-001 | ACTIVE | v8.12.0+ | 2025-12-31 |
+| PATCH-SESSION-005-v2 | ACTIVE | v8.13.0+ | 2025-12-31 |
+| PATCH-TS-001 | ACTIVE | v8.13.0+ | 2025-12-31 |
 
 ---
 
@@ -2997,7 +2997,7 @@ cp .protocol-state/backups/patch-session-003_20251229_102931/* <original-locatio
 
 ---
 
-## 🚨 PATCH-SESSION-004: Session Monitoring v8.12.0 Configuration Enhancements (2025-12-29)
+## 🚨 PATCH-SESSION-004: Session Monitoring v8.13.0 Configuration Enhancements (2025-12-29)
 
 **Patch ID**: PATCH-SESSION-004
 **Date**: 2025-12-29
@@ -3105,7 +3105,7 @@ os.replace(tmp_path, self.invocation_tracker_file)
 **CORE Files** (committed to git):
 1. `protocol.config.yaml` - Added alert_thresholds (lines 93-102), alert_customization (lines 107-115)
 2. `protocol/gojo-procedures/SESSION_MONITORING.md` - Added configuration documentation (~200 lines)
-3. `.protocol-state/security-review-v8.12.0.md` - Megumi's security analysis (@approved)
+3. `.protocol-state/security-review-v8.13.0.md` - Megumi's security analysis (@approved)
 
 **INTERNAL Files** (not committed):
 1. `.protocol-state/session_monitor.py` - 3 config loaders, 8 method guards, atomic writes (~300 lines)
@@ -3168,10 +3168,10 @@ python .protocol-state/session_monitor.py check
 
 ---
 
-## 🔧 SESSION MANAGEMENT PATCHES (v8.12.0+)
+## 🔧 SESSION MANAGEMENT PATCHES (v8.13.0+)
 
 ### PATCH-SESSION-005-v2: Complete Stale Timestamp Fix + State Management + Permission System
-**Applies To**: v8.12.0+
+**Applies To**: v8.13.0+
 **Priority**: P0-Critical (User Safety)
 **Category**: Bug Fix + Feature Enhancement
 **Status**: ACTIVE
@@ -3419,10 +3419,130 @@ This patch fixes a **complete user safety system failure** where sessions could 
 
 ---
 
-## 📊 TROUBLESHOOTING MANAGEMENT PATCHES (v8.12.0+)
+### PATCH-SESSION-006: Timezone Awareness Bug Fix (DateTime Subtraction Crash)
+**Applies To**: v8.13.0+
+**Priority**: P1-HIGH (User Safety)
+**Category**: Bug Fix
+**Status**: ACTIVE
+**Required For**: All Installations
+**Date Applied**: 2026-02-01
+**Discoverer**: Sukuna (System Update Adversary)
+**Related**: BugReport.md (SUKUNA-2026-02-01-001) - documentation-only fix that was never applied
+
+**Description**: Fixes critical timezone mismatch bug in session_monitor.py that causes TypeError crashes and 3200% session duration miscalculation errors.
+
+**Critical Discovery**: Previous bug report (2026-02-01 08:19:46 UTC) documented this fix but **never actually applied it to code**. This patch implements the actual fix.
+
+**Bugs Fixed** (2 Critical Session Monitoring Failures):
+
+1. **BUG #1: Timezone Mismatch TypeError** (P1-HIGH)
+   - **Symptom**: `TypeError: can't subtract offset-naive and offset-aware datetimes` at session_monitor.py:585
+   - **Impact**: Session monitoring crashes, user safety alerts completely disabled
+   - **Root Cause**: Line 564 creates timezone-AWARE datetime (`datetime.now(timezone.utc)`), line 577 creates timezone-NAIVE datetime (`datetime.fromisoformat(start_time)`), line 585 crashes on subtraction
+   - **Fix**: Add timezone awareness check after datetime parsing
+
+2. **BUG #2: Session Duration Miscalculation** (P1-HIGH)
+   - **Symptom**: 79 minutes reported vs 2610 minutes actual (3200% undercount error)
+   - **Impact**: Users have incorrect session duration visibility, alerts fire at wrong times
+   - **Root Cause**: Same timezone mismatch issue (side effect of BUG #1)
+   - **Fix**: Same timezone awareness fix resolves both issues
+
+**Implementation**:
+
+**Fix Location 1: `update_interaction()` method** (after line 577):
+```python
+try:
+    start = datetime.fromisoformat(start_time)
+except (ValueError, TypeError):
+    print("[!] Invalid session start_time format. Resetting session.")
+    try:
+        return self.update_interaction(_retry_count=_retry_count + 1, _max_retries=_max_retries)
+    except Exception as e:
+        raise RuntimeError(f"Failed to reset session (invalid start_time format): {e}")
+
+# BUG FIX: Ensure timezone awareness (PATCH-SESSION-006)
+if start.tzinfo is None:
+    start = start.replace(tzinfo=timezone.utc)
+
+duration_minutes = (now - start).total_seconds() / 60
+```
+
+**Fix Location 2: `update_interaction()` method** (after line 590):
+```python
+# Update continuous work time (time since last break)
+if state['session_metrics']['break_timestamps']:
+    last_break = datetime.fromisoformat(state['session_metrics']['break_timestamps'][-1])
+    # BUG FIX: Ensure timezone awareness (PATCH-SESSION-006)
+    if last_break.tzinfo is None:
+        last_break = last_break.replace(tzinfo=timezone.utc)
+    continuous_minutes = (now - last_break).total_seconds() / 60
+else:
+    continuous_minutes = duration_minutes
+```
+
+**Validation**:
+```bash
+# Test 1: Verify system check works without crash
+python .protocol-state/session_monitor.py check
+# Expected: [OK] No alert needed
+
+# Test 2: Create new session and verify timezone-aware timestamp
+python .protocol-state/session_monitor.py update
+# Expected: Session updated: 0 minutes
+
+# Test 3: Verify timestamp format includes timezone
+python -c "import json; data = json.load(open('.protocol-state/project-state.json')); \
+print(data['session_tracking']['current_session']['start_time'])"
+# Expected: 2026-02-02T01:36:17.315363+00:00 (note +00:00 suffix)
+
+# Test 4: Verify duration calculation accuracy (wait 5 minutes, then update)
+sleep 300 && python .protocol-state/session_monitor.py update
+# Expected: Session updated: ~5 minutes (not 0 or incorrect value)
+```
+
+**Rollback**:
+```bash
+# Restore from backup (3-5 minutes)
+# Backup location: .protocol-state/backups/sukuna-timezone-fix-YYYYMMDD-HHMMSS/
+
+# Step 1: Find your backup (replace timestamp)
+ls -lh .protocol-state/backups/ | grep sukuna-timezone-fix
+
+# Step 2: Restore session_monitor.py
+cp .protocol-state/backups/sukuna-timezone-fix-20260201-203102/session_monitor.py.backup \
+   .protocol-state/session_monitor.py
+
+# Step 3: Verify restoration
+python .protocol-state/session_monitor.py help
+# Expected: Help text displays without errors
+```
+
+**Files Modified**:
+- `.protocol-state/session_monitor.py` (INTERNAL): +6 lines (2 timezone awareness checks)
+
+**Backups Created**:
+- `.protocol-state/backups/sukuna-timezone-fix-20260201-203102/`
+  - session_monitor.py.backup (94K)
+  - project-state.json.backup (628K)
+
+**Impact**:
+- ✅ **Session Monitoring RESTORED**: No more TypeError crashes on timezone mismatch
+- ✅ **Duration Accuracy RESTORED**: Session duration calculation now accurate (3200% error eliminated)
+- ✅ **User Safety FUNCTIONAL**: Alerts fire at correct thresholds based on actual session time
+- ✅ **Backward Compatibility MAINTAINED**: Handles both timezone-aware and timezone-naive timestamps
+
+**Critical User Safety Notice**:
+This patch fixes a **session monitoring crash bug** that completely disabled user safety alerts when old timezone-naive timestamps were present in session state. The system would crash before any safety checks could execute.
+
+**Auto-Patch Instructions**:
+AI agents performing fresh DZP installations or upgrades should automatically apply this patch by reading the Implementation section and applying both code fixes to `.protocol-state/session_monitor.py`.
+
+---
+
+## 📊 TROUBLESHOOTING MANAGEMENT PATCHES (v8.13.0+)
 
 ### PATCH-TS-001: Troubleshooting Session Tracker + Historical Statistics
-**Applies To**: v8.12.0+
+**Applies To**: v8.13.0+
 **Priority**: P1-High (Workflow Enhancement)
 **Category**: Feature Addition
 **Status**: ACTIVE
@@ -3568,7 +3688,7 @@ def get_stats(self) -> str:
   ],
   "metadata": {
     "created": "2025-12-28T00:00:00Z",
-    "protocol_version": "8.12.0",
+    "protocol_version": "8.13.0",
     "last_updated": "2025-12-31T09:40:35.549166",
     "total_sessions_all_time": 1
   }

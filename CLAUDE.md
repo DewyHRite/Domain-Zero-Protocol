@@ -27,13 +27,46 @@ If this is a new project setup or you are updating from an older version:
 
 All files and folders should be fully synced verbatim with the canonical source at all times.
 
-### File Hierarchy
+### File Hierarchy (v8.13.0+)
 
-- **Global Reference**: `~/.claude/CLAUDE.md` (lightweight invocation guide - points to project protocol files)
-- **Project Authority**: `protocol/CLAUDE.md` (this file - authoritative protocol documentation)
-- **Invocation Pattern**: Always use `protocol/` directory path (e.g., "Read protocol/gojo.agent.md")
+- **Project Root**: `./CLAUDE.md` (primary location since v8.13.0)
+- **Protocol Directory**: `./protocol/CLAUDE.md` (legacy location, kept for compatibility)
+- **Global Reference**: `~/.claude/CLAUDE.md` (lightweight universal DZP context)
 
-The global CLAUDE.md serves as a lightweight reminder of the invocation pattern. The authoritative protocol documentation lives in each project's `protocol/` directory and must be kept in sync with the canonical source.
+**Note**: Both root and protocol CLAUDE.md files are kept in sync. The authoritative documentation is maintained in both locations for maximum compatibility.
+
+**Invocation Pattern**: Always use `protocol/` directory path for agents (e.g., "Read protocol/gojo.agent.md")
+
+---
+
+## 🚀 QUICK START
+
+### First Time Setup (2 minutes)
+
+1. **Configure Your Project**:
+   ```bash
+   # Edit protocol.config.yaml with your details
+   code protocol.config.yaml
+   ```
+   Update: `user.name`, `user.email`, `project.name`, `project.repo`
+
+2. **Verify Installation**:
+   ```powershell
+   # Windows
+   .\scripts\verify-protocol.ps1
+   ```
+   ```bash
+   # macOS/Linux
+   ./scripts/verify-protocol.sh
+   ```
+
+3. **Start Your First Session**:
+   ```
+   Read protocol/gojo.agent.md
+   ```
+   Select Option 2 (New Project Initialization) for first-time setup.
+
+**See also**: [PROTOCOL_QUICKSTART.md](PROTOCOL_QUICKSTART.md) for detailed setup instructions.
 
 ---
 
@@ -85,6 +118,57 @@ When syncing project documents:
 ## 📋 QUICK REFERENCE: EXECUTABLE PROCEDURES
 
 This section provides immediate access to all actionable procedures. Use this for quick reference during development sessions.
+
+---
+
+### 🔧 ESSENTIAL COMMANDS
+
+#### Protocol Verification
+```powershell
+# Windows: Verify protocol integrity
+.\scripts\verify-protocol.ps1
+
+# Check mask mode (JJK theme vs professional)
+.\scripts\verify-mask-off.ps1
+
+# Validate custom agents
+.\scripts\validate-custom-agents.py
+```
+```bash
+# macOS/Linux: Verify protocol integrity
+./scripts/verify-protocol.sh
+
+# Check mask mode
+./scripts/verify-mask-off.sh
+```
+
+#### Skills System (Slash Commands)
+```
+/session start      # Start new work session
+/session update     # Sync project documents (v8.13.0)
+/session status     # View current session info
+/session end        # End work session
+
+/ts-tier1          # Start Tier 1 troubleshooting (minor bugs)
+/ts-tier2          # Start Tier 2 troubleshooting (moderate bugs)
+/ts-tier3          # Start Tier 3 troubleshooting (complex bugs)
+/ts-tier4          # Start Tier 4 troubleshooting (critical bugs)
+/ts-codered        # Start Tier 5 troubleshooting (catastrophic)
+
+/dzp-roe           # Restore agent context after compaction
+
+/gojo              # Invoke Gojo (Mission Control)
+/yuuji             # Invoke Yuuji (Implementation)
+/megumi            # Invoke Megumi (Security)
+/nobara            # Invoke Nobara (UX/Creative)
+/todo              # Invoke Todo (Database)
+/maki              # Invoke Maki (Performance)
+/panda             # Invoke Panda (Build/CI)
+/inumaki           # Invoke Inumaki (API)
+/sukuna            # Invoke Sukuna (System Updates)
+```
+
+**See also**: `.claude/commands/` directory for full slash command definitions
 
 ---
 
@@ -1422,6 +1506,61 @@ All protocol settings are stored in `protocol.config.yaml`:
 - `safety`: Session monitoring thresholds
 - `research`: Research mode settings
 - `mask_mode`: JJK theme vs professional mode
+
+### Technical Architecture
+
+**Project Structure**:
+```
+Domain_Zero/
+├── protocol/              # Agent definition files (.agent.md)
+│   ├── gojo.agent.md             # Mission Control
+│   ├── yuuji.agent.md            # Implementation Specialist
+│   ├── megumi.agent.md           # Security Analyst
+│   ├── nobara.agent.md           # Creative Strategy & UX
+│   ├── todo.agent.md             # Database Specialist
+│   ├── maki.agent.md             # Performance Specialist
+│   ├── panda.agent.md            # Build Specialist
+│   ├── inumaki.agent.md          # API Specialist
+│   ├── sukuna.agent.md           # System Update Adversary
+│   └── skills/                   # Slash command definitions
+├── .protocol-state/       # State management & Python scripts
+│   ├── session_monitor.py        # Session tracking (v8.13.0 enhanced)
+│   ├── project_state_manager.py  # Atomic state operations
+│   ├── custom_agent_monitor.py   # Custom agent registry
+│   ├── dev-notes.md              # Implementation log (Yuuji)
+│   └── security-review.md        # Security findings (Megumi)
+├── .dzp-domain/          # Domain records & strategic notes
+│   └── domain.record.md          # Gojo + Sukuna strategic log
+├── .dzp-killswitch/      # Emergency stop state
+│   ├── state.json                # Kill switch status
+│   └── checkpoint.json           # Emergency checkpoint
+├── scripts/              # Verification & validation scripts
+│   ├── verify-protocol.(ps1|sh)  # Protocol integrity check
+│   ├── validate-agents.ps1       # Agent file validation
+│   └── validate-custom-agents.py # Custom agent validation
+├── docs/                 # Documentation
+│   ├── getting-started.html      # Interactive guide
+│   └── installation/             # Setup guides
+├── CLAUDE.md             # This file (project authority)
+└── protocol.config.yaml  # Central configuration
+```
+
+**State Management**:
+- All state operations use `ProjectStateManager` for atomic updates
+- File locking prevents TOCTOU (Time-of-Check-Time-of-Use) issues
+- Timestamped backups created before all modifications
+- Consolidated state namespaces (PATCH-STATE-001)
+
+**Key Technologies**:
+- Python 3.8+ (state management scripts)
+- YAML (configuration)
+- JSON (state storage)
+- Markdown (documentation & agent files)
+
+**State Consolidation (v8.13.0)**:
+- Legacy files preserved as backups in `.protocol-state/backups/`
+- Automatic fallback to legacy files if consolidated state unavailable
+- Migration scripts available in `.protocol-state/`
 
 ### State Files
 
