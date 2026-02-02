@@ -3419,6 +3419,126 @@ This patch fixes a **complete user safety system failure** where sessions could 
 
 ---
 
+### PATCH-SESSION-006: Timezone Awareness Bug Fix (DateTime Subtraction Crash)
+**Applies To**: v8.13.0+
+**Priority**: P1-HIGH (User Safety)
+**Category**: Bug Fix
+**Status**: ACTIVE
+**Required For**: All Installations
+**Date Applied**: 2026-02-01
+**Discoverer**: Sukuna (System Update Adversary)
+**Related**: BugReport.md (SUKUNA-2026-02-01-001) - documentation-only fix that was never applied
+
+**Description**: Fixes critical timezone mismatch bug in session_monitor.py that causes TypeError crashes and 3200% session duration miscalculation errors.
+
+**Critical Discovery**: Previous bug report (2026-02-01 08:19:46 UTC) documented this fix but **never actually applied it to code**. This patch implements the actual fix.
+
+**Bugs Fixed** (2 Critical Session Monitoring Failures):
+
+1. **BUG #1: Timezone Mismatch TypeError** (P1-HIGH)
+   - **Symptom**: `TypeError: can't subtract offset-naive and offset-aware datetimes` at session_monitor.py:585
+   - **Impact**: Session monitoring crashes, user safety alerts completely disabled
+   - **Root Cause**: Line 564 creates timezone-AWARE datetime (`datetime.now(timezone.utc)`), line 577 creates timezone-NAIVE datetime (`datetime.fromisoformat(start_time)`), line 585 crashes on subtraction
+   - **Fix**: Add timezone awareness check after datetime parsing
+
+2. **BUG #2: Session Duration Miscalculation** (P1-HIGH)
+   - **Symptom**: 79 minutes reported vs 2610 minutes actual (3200% undercount error)
+   - **Impact**: Users have incorrect session duration visibility, alerts fire at wrong times
+   - **Root Cause**: Same timezone mismatch issue (side effect of BUG #1)
+   - **Fix**: Same timezone awareness fix resolves both issues
+
+**Implementation**:
+
+**Fix Location 1: `update_interaction()` method** (after line 577):
+```python
+try:
+    start = datetime.fromisoformat(start_time)
+except (ValueError, TypeError):
+    print("[!] Invalid session start_time format. Resetting session.")
+    try:
+        return self.update_interaction(_retry_count=_retry_count + 1, _max_retries=_max_retries)
+    except Exception as e:
+        raise RuntimeError(f"Failed to reset session (invalid start_time format): {e}")
+
+# BUG FIX: Ensure timezone awareness (PATCH-SESSION-006)
+if start.tzinfo is None:
+    start = start.replace(tzinfo=timezone.utc)
+
+duration_minutes = (now - start).total_seconds() / 60
+```
+
+**Fix Location 2: `update_interaction()` method** (after line 590):
+```python
+# Update continuous work time (time since last break)
+if state['session_metrics']['break_timestamps']:
+    last_break = datetime.fromisoformat(state['session_metrics']['break_timestamps'][-1])
+    # BUG FIX: Ensure timezone awareness (PATCH-SESSION-006)
+    if last_break.tzinfo is None:
+        last_break = last_break.replace(tzinfo=timezone.utc)
+    continuous_minutes = (now - last_break).total_seconds() / 60
+else:
+    continuous_minutes = duration_minutes
+```
+
+**Validation**:
+```bash
+# Test 1: Verify system check works without crash
+python .protocol-state/session_monitor.py check
+# Expected: [OK] No alert needed
+
+# Test 2: Create new session and verify timezone-aware timestamp
+python .protocol-state/session_monitor.py update
+# Expected: Session updated: 0 minutes
+
+# Test 3: Verify timestamp format includes timezone
+python -c "import json; data = json.load(open('.protocol-state/project-state.json')); \
+print(data['session_tracking']['current_session']['start_time'])"
+# Expected: 2026-02-02T01:36:17.315363+00:00 (note +00:00 suffix)
+
+# Test 4: Verify duration calculation accuracy (wait 5 minutes, then update)
+sleep 300 && python .protocol-state/session_monitor.py update
+# Expected: Session updated: ~5 minutes (not 0 or incorrect value)
+```
+
+**Rollback**:
+```bash
+# Restore from backup (3-5 minutes)
+# Backup location: .protocol-state/backups/sukuna-timezone-fix-YYYYMMDD-HHMMSS/
+
+# Step 1: Find your backup (replace timestamp)
+ls -lh .protocol-state/backups/ | grep sukuna-timezone-fix
+
+# Step 2: Restore session_monitor.py
+cp .protocol-state/backups/sukuna-timezone-fix-20260201-203102/session_monitor.py.backup \
+   .protocol-state/session_monitor.py
+
+# Step 3: Verify restoration
+python .protocol-state/session_monitor.py help
+# Expected: Help text displays without errors
+```
+
+**Files Modified**:
+- `.protocol-state/session_monitor.py` (INTERNAL): +6 lines (2 timezone awareness checks)
+
+**Backups Created**:
+- `.protocol-state/backups/sukuna-timezone-fix-20260201-203102/`
+  - session_monitor.py.backup (94K)
+  - project-state.json.backup (628K)
+
+**Impact**:
+- ✅ **Session Monitoring RESTORED**: No more TypeError crashes on timezone mismatch
+- ✅ **Duration Accuracy RESTORED**: Session duration calculation now accurate (3200% error eliminated)
+- ✅ **User Safety FUNCTIONAL**: Alerts fire at correct thresholds based on actual session time
+- ✅ **Backward Compatibility MAINTAINED**: Handles both timezone-aware and timezone-naive timestamps
+
+**Critical User Safety Notice**:
+This patch fixes a **session monitoring crash bug** that completely disabled user safety alerts when old timezone-naive timestamps were present in session state. The system would crash before any safety checks could execute.
+
+**Auto-Patch Instructions**:
+AI agents performing fresh DZP installations or upgrades should automatically apply this patch by reading the Implementation section and applying both code fixes to `.protocol-state/session_monitor.py`.
+
+---
+
 ## 📊 TROUBLESHOOTING MANAGEMENT PATCHES (v8.13.0+)
 
 ### PATCH-TS-001: Troubleshooting Session Tracker + Historical Statistics
