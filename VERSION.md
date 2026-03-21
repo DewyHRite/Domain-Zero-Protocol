@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.13.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v8.12.0
+**Version:** v8.13.0
 **Release Date:** December 29, 2025
-**Release Type:** Patch Release (Security & Monitoring Enhancement)
+**Release Type:** Minor Release (Toji External Auditor + Session Monitoring Enhancement)
 
 ---
 

@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.13.0 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 8.12.0 | **Last Updated**: 2025-12-29
+**Version**: 8.13.0 | **Last Updated**: 2026-03-18
 **Purpose**: Complete installation and verification guide for AI assistants
 
 ---
@@ -29,6 +29,42 @@
 - Unsynced templates → Agents cannot function
 - Missing subfolders → Configuration errors
 - Incomplete installation → User frustration and wasted time
+
+---
+
+## What's New in v8.13.0
+
+### Toji (Sentinel) — Domain Zero External Auditor (2026-03-18)
+**Addition**: New 10th agent — `protocol/toji.agent.md` (v1.2.0) + `~/.claude/agents/toji.md`
+
+**Purpose**: Senior System Design & QA Engineer Agent operating OUTSIDE the resident agent hierarchy. Independent audit capability that cannot be governed by Gojo, modified by Sukuna, or directed by any of the nine resident agents.
+
+**Six Review Domains**:
+1. UI/UX Design (WCAG 2.2 AA, responsive, accessibility)
+2. Code Quality (HTML integrity, link security, function complexity, type safety)
+3. Security (OWASP Top 10, auth/authz, input validation, transport security)
+4. System Design (architecture, API design, database, observability)
+5. Implementation Integrity (spec-to-code alignment, architecture drift)
+6. AI Implementation & Security (prompt injection, LLM API, RAG pipeline, AI governance)
+
+**Key Constraints**:
+- REPORT-ONLY — never generates code, implements fixes, or modifies artifacts
+- Every finding requires: file location, evidence, reference URL
+- Reports exclusively to protocol owner (not to Gojo, not to Sukuna)
+- Read-only access to dev-notes, security-reviews, and domain records
+
+**Invocation**:
+```text
+Read protocol/toji.agent.md and audit [target]
+```
+
+**Relationship to Megumi**: Megumi reviews security during development workflow (pre-approval). Toji produces comprehensive post-implementation external audits across all 6 domains. Use Toji for QA audits, pre-deployment checks, and independent DZ Protocol reviews.
+
+**Files Added**:
+- `protocol/toji.agent.md` (10th agent specification, 662 lines)
+- `~/.claude/agents/toji.md` (Claude Code agent stub)
+- Updated `AI_INSTRUCTIONS.md` (Sections 3.2, 3.11, 10)
+- Updated `.github/copilot-instructions.md` (full Toji section)
 
 ---
 
@@ -410,7 +446,7 @@ Read protocol/CLAUDE.md
 
 ### 3.2 Protocol Directory (`protocol/`) - CORE FILES
 
-**Agent Files** (9 agents):
+**Agent Files** (9 resident agents + 1 external auditor):
 - [ ] `protocol/gojo.agent.md` (Mission Control)
 - [ ] `protocol/yuuji.agent.md` (Implementation)
 - [ ] `protocol/megumi.agent.md` (Security)
@@ -420,6 +456,7 @@ Read protocol/CLAUDE.md
 - [ ] `protocol/panda.agent.md` (Build & Integration)
 - [ ] `protocol/inumaki.agent.md` (API & Communication)
 - [ ] `protocol/sukuna.agent.md` (System Update)
+- [ ] `protocol/toji.agent.md` (External Auditor — Toji/Sentinel, v1.2.0)
 
 **Main Protocol**:
 - [ ] `protocol/CLAUDE.md` (PRIMARY PROTOCOL FILE)
@@ -573,7 +610,19 @@ If using Claude Code CLI:
 - [ ] `.claude/commands/inumaki.md`
 - [ ] `.claude/commands/sukuna.md`
 
-**If missing**: See `docs/installation/SLASH_COMMANDS_INSTALLATION.md`
+**Claude Code Agent Stubs** (`~/.claude/agents/`) - Global agent definitions:
+- [ ] `~/.claude/agents/gojo.md`
+- [ ] `~/.claude/agents/yuuji.md`
+- [ ] `~/.claude/agents/megumi.md`
+- [ ] `~/.claude/agents/nobara.md`
+- [ ] `~/.claude/agents/todo.md`
+- [ ] `~/.claude/agents/maki.md`
+- [ ] `~/.claude/agents/panda.md`
+- [ ] `~/.claude/agents/inumaki.md`
+- [ ] `~/.claude/agents/sukuna.md`
+- [ ] `~/.claude/agents/toji.md` (External Auditor — must be created separately)
+
+**If slash commands missing**: See `docs/installation/SLASH_COMMANDS_INSTALLATION.md`
 
 ---
 
@@ -1391,6 +1440,29 @@ Read protocol/panda.agent.md and [build task]
 Read protocol/inumaki.agent.md and [API task]
 ```
 
+### External Auditor (Toji)
+
+**Senior System Design & QA Engineer** (report-only, zero execution privileges):
+```text
+Read protocol/toji.agent.md and audit [target files/component]
+Read protocol/toji.agent.md and audit [URL] for pre-deployment check
+Read protocol/toji.agent.md and audit Domain Zero (DZ Protocol Audit mode)
+Read protocol/toji.agent.md and AI security review for [component]
+Read protocol/toji.agent.md and audit [agent name] (DZ Agent Audit mode)
+```
+
+**Review Modes**:
+- **Full Audit** — All 6 domains (default)
+- **Domain-Specific** — "Review [domain] only"
+- **Delta Review** — Previous report provided (changes only)
+- **AI-Focused** — "AI security review" (Domain 6 deep dive)
+- **Pre-Deployment** — "Pre-deploy check" (CRITICAL and HIGH only)
+- **DZ Protocol Audit** — "Audit Domain Zero" (agent specs + enforcement logs)
+- **DZ Agent Audit** — "Audit [agent name]" (single agent review)
+- **DZ Security Posture** — "DZ security review" (full security history)
+
+**Important**: Toji is REPORT-ONLY. All findings route to Yuuji for remediation and Megumi for security verification. Toji never generates code.
+
 ### Slash Commands (If Installed)
 
 | Command | Agent | Purpose |
@@ -1399,11 +1471,11 @@ Read protocol/inumaki.agent.md and [API task]
 | `/yuuji` | Implementation | TDD |
 | `/megumi` | Security | OWASP reviews |
 | `/nobara` | Creative/UX | Design |
-| `/todo` | Orchestration | Task coordination |
-| `/maki` | Performance | Optimization |
-| `/panda` | QA | Testing |
-| `/inumaki` | Documentation | Technical writing |
-| `/sukuna` | System Update | Protocol updates (Gojo only) |
+| `/todo` | Database | Schema, migrations, queries |
+| `/maki` | Performance | Profiling, optimization |
+| `/panda` | Build/CI | CI/CD pipelines |
+| `/inumaki` | API | REST/GraphQL/WebSocket design |
+| `/sukuna` | System Update | Protocol updates (Gojo/User only) |
 
 ---
 
