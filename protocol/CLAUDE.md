@@ -27,13 +27,15 @@ If this is a new project setup or you are updating from an older version:
 
 All files and folders should be fully synced verbatim with the canonical source at all times.
 
-### File Hierarchy
+### File Hierarchy (v8.13.0+)
 
-- **Global Reference**: `~/.claude/CLAUDE.md` (lightweight invocation guide - points to project protocol files)
-- **Project Authority**: `protocol/CLAUDE.md` (this file - authoritative protocol documentation)
-- **Invocation Pattern**: Always use `protocol/` directory path (e.g., "Read protocol/gojo.agent.md")
+- **Project Root**: `./CLAUDE.md` (primary authority since v8.13.0)
+- **Protocol Directory**: `./protocol/CLAUDE.md` (this file - synced mirror, kept for compatibility)
+- **Global Reference**: `~/.claude/CLAUDE.md` (lightweight universal DZP context)
 
-The global CLAUDE.md serves as a lightweight reminder of the invocation pattern. The authoritative protocol documentation lives in each project's `protocol/` directory and must be kept in sync with the canonical source.
+**Note**: The root `./CLAUDE.md` is the single source of truth. This protocol copy is kept in sync for backward compatibility. If discrepancies arise, the root file takes precedence.
+
+**Invocation Pattern**: Always use `protocol/` directory path for agents (e.g., "Read protocol/gojo.agent.md")
 
 ---
 

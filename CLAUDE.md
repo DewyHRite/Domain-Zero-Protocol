@@ -33,7 +33,7 @@ All files and folders should be fully synced verbatim with the canonical source 
 - **Protocol Directory**: `./protocol/CLAUDE.md` (legacy location, kept for compatibility)
 - **Global Reference**: `~/.claude/CLAUDE.md` (lightweight universal DZP context)
 
-**Note**: Both root and protocol CLAUDE.md files are kept in sync. The authoritative documentation is maintained in both locations for maximum compatibility.
+**Note**: The root `./CLAUDE.md` is the single source of truth. The protocol copy is a synced mirror kept for backward compatibility. If discrepancies arise, the root file takes precedence.
 
 **Invocation Pattern**: Always use `protocol/` directory path for agents (e.g., "Read protocol/gojo.agent.md")
 

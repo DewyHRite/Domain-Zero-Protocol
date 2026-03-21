@@ -1,9 +1,9 @@
 # Domain Zero Protocol
-<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v8.13.0 -->
 
-**Version**: 8.12.0 | **Last Updated**: 2025-12-29
+**Version**: 8.13.0 | **Last Updated**: 2026-03-20
 
-A nine-agent AI development system inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
+A nine-agent AI development system plus one external auditor inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
 
 ---
 
@@ -185,7 +185,7 @@ Read protocol/yuuji.agent.md and implement payment processing --tier critical
 
 ## 🛠️ Skills System
 
-**Active Skills** (v8.12.0):
+**Active Skills** (v8.13.0):
 
 | Skill | Commands | Purpose | Owner |
 |-------|----------|---------|-------|
@@ -291,6 +291,22 @@ See [SKILL_REGISTRY.md](protocol/skills/SKILL_REGISTRY.md) for all skills.
 
 ---
 
+## 📦 What's New in v8.13.0
+
+### PATCH-SESSION-005: Toji External Auditor
+Added Toji Fushiguro (Sentinel) as the 10th Domain Zero agent — an independent external auditor with zero execution privileges.
+
+**Key Additions**:
+- `protocol/toji.agent.md` (v1.2.0) — 6 review domains, 8 review modes, structured report output
+- Position: EXTERNAL — not governed by Gojo, Sukuna, or any resident agent
+- REPORT-ONLY: Never generates code, implements fixes, or modifies artifacts
+- Tool Access Matrix expanded to 10 columns
+- `.github/copilot-instructions.md` fully synced to v8.13.0
+- `AI_INSTRUCTIONS.md` updated with Toji references
+- `~/.claude/agents/toji.md` Claude Code agent stub created
+
+---
+
 ## 📦 What's New in v8.12.0
 
 ### PATCH-SESSION-004: Session Monitoring Enhancement
@@ -369,6 +385,6 @@ Contributions welcome! Please read the contribution guidelines and submit pull r
 
 ---
 
-**Domain Zero Protocol v8.12.0**
+**Domain Zero Protocol v8.13.0**
 **AI-Assisted Development Done Right**
 
