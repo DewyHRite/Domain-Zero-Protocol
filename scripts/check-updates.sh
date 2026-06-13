@@ -9,7 +9,9 @@
 set -euo pipefail
 
 CANON="https://github.com/DewyHRite/Domain-Zero-Protocol"
-RELEASE_VERSION_RAW="https://raw.githubusercontent.com/DewyHRite/Domain-Zero-Protocol/release/VERSION.md"
+# HEAD resolves to the repo's DEFAULT branch (the latest published DZP-vX.Y.Z), so this
+# stays correct as published version branches are added — no hard-coded branch name.
+RELEASE_VERSION_RAW="https://raw.githubusercontent.com/DewyHRite/Domain-Zero-Protocol/HEAD/VERSION.md"
 ISSUES="$CANON/issues"
 SECURITY="$CANON/security/advisories"
 

@@ -6,7 +6,8 @@
 $ErrorActionPreference = "SilentlyContinue"
 
 $Canon   = "https://github.com/DewyHRite/Domain-Zero-Protocol"
-$RawVer  = "https://raw.githubusercontent.com/DewyHRite/Domain-Zero-Protocol/release/VERSION.md"
+# HEAD = repo default branch (latest published DZP-vX.Y.Z) — name-agnostic.
+$RawVer  = "https://raw.githubusercontent.com/DewyHRite/Domain-Zero-Protocol/HEAD/VERSION.md"
 $Issues  = "$Canon/issues"
 $Security = "$Canon/security/advisories"
 
