@@ -862,11 +862,12 @@ Every significant protocol update MUST include a version number increment to mai
 - ✅ **Document patches in `protocol/SUKUNA-REPORT.md`** patch manifest for AI-assisted application
 - ✅ Document changes in version control commit message
 
-**MANDATORY BRANCH NAMING SCHEME** (for every version bump):
+**MANDATORY BRANCH & PR NAMING SCHEME** (for every version bump):
 - ✅ Each version bump is developed on a branch named **`Main-vX.Y.Z`** (e.g. `Main-v9.0.0`, `Main-v9.1.0`). No other naming for version-bump branches.
+- ✅ **Any Pull Request for a version-bump branch MUST be titled identically to the branch — `Main-vX.Y.Z`** (PR name = branch name). No divergent PR titles for version bumps.
 - ✅ The previous `Main-v<old>` branch is retained for history; the new `Main-v<new>` becomes the active development line.
-- ✅ Feature/fix branches may use any name, but the **version-bump integration branch MUST be `Main-vX.Y.Z`**.
-- ✅ The published distribution branch is always **`release`** (single, reused across versions); only the version-bump *dev* branch follows `Main-vX.Y.Z`.
+- ✅ Feature/fix branches may use any name, but the **version-bump integration branch and its PR MUST both be `Main-vX.Y.Z`**.
+- ✅ The published distribution branch is always **`release`** (single, reused across versions); only the version-bump *dev* branch + its PR follow `Main-vX.Y.Z`.
 
 ### Version Numbering System
 
