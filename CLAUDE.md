@@ -868,6 +868,7 @@ Every significant protocol update MUST include a version number increment to mai
 - ✅ The previous `Main-v<old>` branch is retained for history; the new `Main-v<new>` becomes the active development line.
 - ✅ Feature/fix branches may use any name, but the **version-bump integration branch and its PR MUST both be `Main-vX.Y.Z`**.
 - ✅ The published distribution branch is always **`release`** (single, reused across versions); only the version-bump *dev* branch + its PR follow `Main-vX.Y.Z`.
+- 🔒 **Version-bump branches carry dev-only content (PII, `internal-docs/`, registry, PATCH reports) and MUST NOT be pushed to the PUBLIC canonical.** They stay **local-only** until a **private** dev remote is configured; PRs (named `Main-vX.Y.Z`) are opened only on that private remote. The public canonical receives **only** the sanitized `release` branch. (Current state: no dev remote — dev branches are local; no public PRs.)
 
 ### Version Numbering System
 
