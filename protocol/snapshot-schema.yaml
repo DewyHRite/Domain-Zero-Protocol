@@ -1,0 +1,328 @@
+# Domain Zero Protocol - Snapshot Schema
+# JSON Schema definition for snapshot validation
+#
+# Version: 1.0.0
+# Created: 2025-12-06
+# Part of: DZP v8.10.0 Validation Framework - Phase 2
+#
+# This file defines the JSON schema for validating Domain Zero Protocol snapshot files.
+# Snapshots capture complete system state for cold-start recovery in <30 seconds.
+
+schemas:
+  # =============================================================================
+  # Snapshot Schema: snapshot-{timestamp}.json.gz
+  # =============================================================================
+  snapshot:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    $id: "dzp://schemas/snapshot.json"
+    title: "Snapshot Schema"
+    description: "Validates snapshot files - complete system state capture with compression"
+    type: object
+    required:
+      - snapshot_id
+      - created_at
+      - tier
+      - trigger
+      - protocol_version
+      - state_files
+      - metadata
+      - checksum
+    properties:
+      snapshot_id:
+        type: string
+        format: uuid
+        description: "Unique snapshot identifier (UUID v4)"
+        pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+
+      created_at:
+        type: string
+        format: date-time
+        description: "Snapshot creation timestamp (ISO 8601)"
+
+      tier:
+        type: integer
+        minimum: 1
+        maximum: 3
+        description: "Active tier when snapshot was created (1=Rapid, 2=Standard, 3=Critical)"
+
+      trigger:
+        type: string
+        enum:
+          - operation_count
+          - tier_change
+          - manual
+          - critical_operation
+          - session_start
+          - session_end
+        description: "What triggered this snapshot creation"
+
+      operation_count:
+        type: integer
+        minimum: 0
+        description: "Number of operations completed when snapshot created (for operation_count trigger)"
+
+      protocol_version:
+        type: string
+        pattern: '^\d+\.\d+\.\d+$'
+        description: "Protocol version when snapshot created (semantic version)"
+
+      state_files:
+        type: object
+        description: "Embedded copies of all state files"
+        properties:
+          project_state:
+            type: object
+            description: "Embedded copy of project-state.json"
+
+          session_state:
+            type: object
+            description: "Embedded copy of session-state.json"
+
+          validation_state:
+            type: object
+            description: "Embedded copy of validation-state.json"
+
+          agent_states:
+            type: object
+            description: "Embedded copies of agent memory files from /memories/agents/"
+            patternProperties:
+              '^[a-z]+$':
+                type: object
+                description: "Agent-specific state (gojo, yuuji, megumi, etc.)"
+
+      metadata:
+        type: object
+        required:
+          - total_files
+          - compressed_size_bytes
+          - uncompressed_size_bytes
+          - compression_ratio
+          - files_included
+        properties:
+          total_files:
+            type: integer
+            minimum: 0
+            description: "Total number of files included in snapshot"
+
+          compressed_size_bytes:
+            type: integer
+            minimum: 0
+            description: "Snapshot file size after gzip compression"
+
+          uncompressed_size_bytes:
+            type: integer
+            minimum: 0
+            description: "Total size of all files before compression"
+
+          compression_ratio:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: "Compression ratio (compressed / uncompressed) - target 0.30 (70% reduction)"
+
+          files_included:
+            type: array
+            items:
+              type: string
+            description: "List of all file paths included in snapshot"
+
+          tags:
+            type: array
+            items:
+              type: string
+            description: "User-defined tags for snapshot preservation (tagged snapshots exempt from cleanup)"
+
+          description:
+            type: string
+            description: "Optional user-provided description of snapshot"
+
+      checksum:
+        type: string
+        pattern: '^[a-f0-9]{64}$'
+        description: "SHA-256 hash of entire snapshot content (before compression) for integrity verification"
+
+      restoration_metadata:
+        type: object
+        description: "Optional metadata for tracking restoration history"
+        properties:
+          restored_at:
+            type: string
+            format: date-time
+            description: "When this snapshot was last restored (ISO 8601)"
+
+          restored_by:
+            type: string
+            description: "Who/what restored this snapshot (user identifier or automation)"
+
+          restoration_count:
+            type: integer
+            minimum: 0
+            description: "Number of times this snapshot has been restored"
+
+  # =============================================================================
+  # Snapshot Manifest Schema: snapshot-manifest.json
+  # =============================================================================
+  snapshot-manifest:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    $id: "dzp://schemas/snapshot-manifest.json"
+    title: "Snapshot Manifest Schema"
+    description: "Validates snapshot-manifest.json - index of all available snapshots"
+    type: object
+    required:
+      - manifest_version
+      - last_updated
+      - snapshots
+      - retention_policy
+    properties:
+      manifest_version:
+        type: string
+        pattern: '^\d+\.\d+\.\d+$'
+        description: "Manifest format version (semantic version)"
+
+      last_updated:
+        type: string
+        format: date-time
+        description: "Last time manifest was updated (ISO 8601)"
+
+      snapshots:
+        type: array
+        description: "List of all available snapshots"
+        items:
+          type: object
+          required:
+            - snapshot_id
+            - created_at
+            - tier
+            - trigger
+            - file_path
+            - compressed_size_bytes
+          properties:
+            snapshot_id:
+              type: string
+              format: uuid
+              description: "Snapshot unique identifier"
+
+            created_at:
+              type: string
+              format: date-time
+              description: "When snapshot was created"
+
+            tier:
+              type: integer
+              minimum: 1
+              maximum: 3
+              description: "Tier when snapshot created"
+
+            trigger:
+              type: string
+              enum:
+                - operation_count
+                - tier_change
+                - manual
+                - critical_operation
+                - session_start
+                - session_end
+              description: "Snapshot creation trigger"
+
+            file_path:
+              type: string
+              description: "Relative path to snapshot file from project root"
+
+            compressed_size_bytes:
+              type: integer
+              minimum: 0
+              description: "Snapshot file size (compressed)"
+
+            tags:
+              type: array
+              items:
+                type: string
+              description: "User-defined tags (prevents auto-cleanup)"
+
+            protected:
+              type: boolean
+              description: "Whether snapshot is protected from auto-cleanup"
+
+            protection_reason:
+              type: string
+              enum:
+                - tagged
+                - tier_change
+                - pre_critical_operation
+                - manual_protection
+              description: "Why snapshot is protected"
+
+            protection_expires:
+              type: string
+              format: date-time
+              description: "When protection expires (ISO 8601) - null means never expires"
+
+      retention_policy:
+        type: object
+        required:
+          - tier_1_max
+          - tier_2_max
+          - tier_3_max
+        properties:
+          tier_1_max:
+            type: integer
+            minimum: 1
+            description: "Maximum snapshots for Tier 1 (default: 10)"
+
+          tier_2_max:
+            type: integer
+            minimum: 1
+            description: "Maximum snapshots for Tier 2 (default: 30)"
+
+          tier_3_max:
+            type: integer
+            minimum: 1
+            description: "Maximum snapshots for Tier 3 (default: 50)"
+
+          total_storage_limit_mb:
+            type: integer
+            minimum: 0
+            description: "Total storage limit for all snapshots in MB (0 = no limit)"
+
+          cleanup_strategy:
+            type: string
+            enum:
+              - oldest_first
+              - largest_first
+              - least_used
+            description: "How to select snapshots for cleanup when limit exceeded"
+
+# =============================================================================
+# Schema Usage Notes
+# =============================================================================
+#
+# Snapshot File Naming Convention:
+#   snapshot-{ISO8601-timestamp}.json.gz
+#   Example: snapshot-2025-12-06T14-30-00Z.json.gz
+#
+# Snapshot Storage Location:
+#   .protocol-state/snapshots/
+#
+# Compression:
+#   - Use gzip compression (target 70% size reduction)
+#   - Decompress on-the-fly during restoration
+#   - Store compressed size and ratio in metadata
+#
+# Integrity Verification:
+#   - SHA-256 checksum calculated on uncompressed content
+#   - Verify checksum before restoration
+#   - Fail restoration if checksum mismatch
+#
+# Retention Policy:
+#   - Tier 1: Max 10 snapshots (manual only)
+#   - Tier 2: Max 30 snapshots (every 10 operations)
+#   - Tier 3: Max 50 snapshots (continuous)
+#   - Tagged snapshots exempt from auto-cleanup
+#   - Protected snapshots preserved for specified duration
+#
+# Performance Targets:
+#   - Snapshot creation: <2 seconds
+#   - Snapshot restoration: <30 seconds (cold-start recovery)
+#   - Compression ratio: >60% (target 70%)
+#
+# =============================================================================

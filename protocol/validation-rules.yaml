@@ -1,0 +1,735 @@
+# Domain Zero Protocol - Validation Rules
+# JSON Schema definitions for state file validation
+#
+# Version: 2.0.0
+# Created: 2025-12-05
+# Part of: DZP v8.10.0 Validation Framework
+#
+# This file defines JSON schemas for validating Domain Zero Protocol state files.
+# Each schema enforces structure, types, required fields, and constraints.
+
+schemas:
+  # =============================================================================
+  # Schema 1: project-state.json
+  # =============================================================================
+  project-state:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    $id: "dzp://schemas/project-state.json"
+    title: "Project State Schema"
+    description: "Validates project-state.json - primary project configuration and metadata"
+    type: object
+    required:
+      - project_metadata
+      - protocol_version
+      - tier_settings
+      - tier_usage_statistics
+      - validation_state
+      - agent_registry
+    properties:
+      project_metadata:
+        type: object
+        required:
+          - name
+          - created
+          - last_updated
+        properties:
+          name:
+            type: string
+            minLength: 1
+            description: "Project name"
+          created:
+            type: string
+            format: date-time
+            description: "Project creation timestamp (ISO 8601)"
+          last_updated:
+            type: string
+            format: date-time
+            description: "Last modification timestamp (ISO 8601)"
+          description:
+            type: string
+            description: "Optional project description"
+
+      protocol_version:
+        type: string
+        pattern: '^\d+\.\d+\.\d+$'
+        description: "Semantic version (e.g., 8.8.0)"
+
+      tier_settings:
+        type: object
+        required:
+          - default_tier
+        properties:
+          default_tier:
+            type: integer
+            minimum: 1
+            maximum: 3
+            description: "Default tier for new tasks (1, 2, or 3)"
+          tier_overrides:
+            type: object
+            description: "Agent-specific tier overrides"
+            patternProperties:
+              '^[a-z]+$':
+                type: integer
+                minimum: 1
+                maximum: 3
+          bypass_tracking:
+            type: object
+            description: "Tier bypass tracking (statistics only, no enforcement)"
+            required:
+              - enabled
+              - current_month
+              - bypass_count
+            properties:
+              enabled:
+                type: boolean
+                description: "Whether bypass tracking is enabled"
+              current_month:
+                type: string
+                pattern: '^\d{4}-\d{2}$'
+                description: "Current month for bypass tracking (YYYY-MM)"
+              bypass_count:
+                type: integer
+                minimum: 0
+                description: "Number of bypasses this month (statistics only, no limit)"
+              last_bypass:
+                type: string
+                format: date-time
+                description: "Timestamp of last bypass (ISO 8601)"
+
+      tier_usage_statistics:
+        type: object
+        required:
+          - tier_1_tasks
+          - tier_2_tasks
+          - tier_3_tasks
+        properties:
+          tier_1_tasks:
+            type: integer
+            minimum: 0
+            description: "Count of Tier 1 tasks completed"
+          tier_2_tasks:
+            type: integer
+            minimum: 0
+            description: "Count of Tier 2 tasks completed"
+          tier_3_tasks:
+            type: integer
+            minimum: 0
+            description: "Count of Tier 3 tasks completed"
+          last_updated:
+            type: string
+            format: date-time
+            description: "Last statistics update (ISO 8601)"
+
+      validation_state:
+        type: object
+        required:
+          - enabled
+        properties:
+          enabled:
+            type: boolean
+            description: "Whether validation is enabled"
+          last_validation:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: "null"
+            description: "Last validation run timestamp (ISO 8601) or null if never validated"
+          drift_detected:
+            type: boolean
+            description: "Whether drift was detected in last validation"
+
+      agent_registry:
+        type: object
+        description: "Registry of all agents with their status"
+        patternProperties:
+          '^[a-z]+$':
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                enum:
+                  - active
+                  - inactive
+                  - disabled
+                description: "Agent status"
+              last_used:
+                type: string
+                format: date-time
+                description: "Last time agent was invoked (ISO 8601)"
+
+  # =============================================================================
+  # Schema 2: session-state.json (UPDATED v8.10.0 - PATCH-COMP-001)
+  # =============================================================================
+  session-state:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    $id: "dzp://schemas/session-state.json"
+    title: "Session State Schema"
+    description: "Validates session-state.json - work session monitoring with safety features (break enforcement, high-risk operation blocking)"
+    type: object
+    required:
+      - _comment
+      - current_session
+      - session_metrics
+      - thresholds
+      - session_history
+      - last_updated
+      - protocol_version
+    properties:
+      _comment:
+        type: string
+        description: "File comment describing purpose and version"
+
+      current_session:
+        type: object
+        description: "Active work session tracking with alert escalation"
+        required:
+          - session_id
+          - session_active
+          - start_time
+          - last_interaction_time
+          - last_alert_time
+          - alert_count
+          - escalation_level
+          - user_last_choice
+          - break_acknowledged
+          - high_risk_operations_blocked
+        properties:
+          session_id:
+            oneOf:
+              - type: string
+              - type: "null"
+            description: "Unique session identifier (UUID) or null if no active session"
+
+          session_active:
+            type: boolean
+            description: "Whether a work session is currently active"
+
+          start_time:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: "null"
+            description: "Session start timestamp (ISO 8601) or null if inactive"
+
+          last_interaction_time:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: "null"
+            description: "Last user interaction timestamp (ISO 8601) or null"
+
+          last_alert_time:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: "null"
+            description: "Last work session alert timestamp (ISO 8601) or null"
+
+          alert_count:
+            type: integer
+            minimum: 0
+            description: "Number of alerts issued in current session"
+
+          escalation_level:
+            type: integer
+            minimum: 0
+            maximum: 3
+            description: "Alert escalation level (0=none, 1=initial, 2=escalated, 3=critical)"
+
+          user_last_choice:
+            oneOf:
+              - type: string
+                enum:
+                  - continue
+                  - break
+              - type: "null"
+            description: "User's last response to work session alert or null"
+
+          break_acknowledged:
+            type: boolean
+            description: "Whether user acknowledged break requirement"
+
+          high_risk_operations_blocked:
+            type: boolean
+            description: "Whether high-risk operations are blocked due to extended session (safety feature)"
+
+      session_metrics:
+        type: object
+        description: "Cumulative session metrics and user response tracking"
+        required:
+          - total_duration_minutes
+          - continuous_work_minutes
+          - break_timestamps
+          - total_breaks
+          - alerts_issued
+          - alerts_ignored
+          - continues_chosen
+          - breaks_chosen
+        properties:
+          total_duration_minutes:
+            type: number
+            minimum: 0
+            description: "Total session duration in minutes"
+
+          continuous_work_minutes:
+            type: number
+            minimum: 0
+            description: "Continuous work duration without breaks"
+
+          break_timestamps:
+            type: array
+            items:
+              type: string
+              format: date-time
+            description: "Array of break timestamps (ISO 8601)"
+
+          total_breaks:
+            type: integer
+            minimum: 0
+            description: "Total number of breaks taken"
+
+          alerts_issued:
+            type: integer
+            minimum: 0
+            description: "Total work session alerts issued"
+
+          alerts_ignored:
+            type: integer
+            minimum: 0
+            description: "Number of alerts ignored (user chose 'continue')"
+
+          continues_chosen:
+            type: integer
+            minimum: 0
+            description: "Number of times user chose to continue working"
+
+          breaks_chosen:
+            type: integer
+            minimum: 0
+            description: "Number of times user chose to take a break"
+
+      thresholds:
+        type: object
+        description: "Work session monitoring thresholds (user-configurable via protocol.config.yaml)"
+        required:
+          - initial_alert_minutes
+          - escalated_alert_minutes
+          - critical_session_minutes
+          - max_continuous_minutes
+          - late_night_hour
+          - minimum_break_minutes
+        properties:
+          initial_alert_minutes:
+            type: integer
+            minimum: 60
+            maximum: 480
+            description: "Minutes before initial alert (default: 240 = 4 hours)"
+
+          escalated_alert_minutes:
+            type: integer
+            minimum: 30
+            maximum: 120
+            description: "Minutes before escalated alert after initial (default: 45 minutes)"
+
+          critical_session_minutes:
+            type: integer
+            minimum: 180
+            maximum: 720
+            description: "Minutes before critical session alert (default: 360 = 6 hours)"
+
+          max_continuous_minutes:
+            type: integer
+            minimum: 240
+            maximum: 1440
+            description: "Maximum continuous work minutes before forced break (default: 480 = 8 hours)"
+
+          late_night_hour:
+            type: integer
+            minimum: 20
+            maximum: 23
+            description: "Hour (24h format) when late-night alerts trigger (default: 22:00)"
+
+          minimum_break_minutes:
+            type: integer
+            minimum: 5
+            maximum: 60
+            description: "Minimum break duration in minutes (default: 15 minutes)"
+
+      session_history:
+        type: array
+        description: "Historical session records (array of session objects)"
+        items:
+          type: object
+          description: "Past session record with metrics"
+
+      last_updated:
+        type: string
+        format: date-time
+        description: "Last state file update timestamp (ISO 8601)"
+
+      protocol_version:
+        type: string
+        pattern: '^\d+\.\d+\.\d+$'
+        description: "Domain Zero Protocol version (semantic versioning)"
+
+  # =============================================================================
+  # Schema 3: validation-state.json
+  # =============================================================================
+  validation-state:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    $id: "dzp://schemas/validation-state.json"
+    title: "Validation State Schema"
+    description: "Validates validation-state.json - validation history, drift alerts, and auto-fix tracking"
+    type: object
+    required:
+      - validation_enabled
+      - last_full_validation
+      - last_validation_result
+      - state_file_integrity
+      - drift_alerts
+      - auto_fix_history
+    properties:
+      validation_enabled:
+        type: boolean
+        description: "Whether validation framework is enabled"
+
+      last_full_validation:
+        type: string
+        format: date-time
+        description: "Timestamp of last complete validation run (ISO 8601)"
+
+      last_validation_result:
+        type: string
+        enum:
+          - not_run
+          - passed
+          - failed
+        description: "Result of last validation run"
+
+      state_file_integrity:
+        type: object
+        description: "Per-file integrity checksums and validation status"
+        patternProperties:
+          '\.json$':
+            type: object
+            required:
+              - checksum
+              - last_validated
+              - status
+            properties:
+              checksum:
+                type: string
+                pattern: '^[a-f0-9]{64}$'
+                description: "SHA-256 checksum of file contents"
+              last_validated:
+                type: string
+                format: date-time
+                description: "Last validation timestamp for this file (ISO 8601)"
+              status:
+                type: string
+                enum:
+                  - valid
+                  - invalid
+                  - drift_detected
+                  - missing
+                description: "File validation status"
+              errors:
+                type: array
+                description: "Validation errors found (if any)"
+                items:
+                  type: string
+
+      drift_alerts:
+        type: array
+        description: "History of drift detection events"
+        items:
+          type: object
+          required:
+            - file
+            - detected_at
+            - changes
+          properties:
+            file:
+              type: string
+              description: "File path where drift was detected"
+            detected_at:
+              type: string
+              format: date-time
+              description: "Drift detection timestamp (ISO 8601)"
+            changes:
+              type: array
+              description: "List of changes detected"
+              items:
+                type: string
+            severity:
+              type: string
+              enum:
+                - low
+                - medium
+                - high
+                - critical
+              description: "Drift severity level"
+
+      auto_fix_history:
+        type: array
+        description: "History of auto-fix operations"
+        items:
+          type: object
+          required:
+            - fix_id
+            - timestamp
+            - file
+            - fix_type
+            - confidence
+            - applied
+          properties:
+            fix_id:
+              type: string
+              description: "Unique fix identifier"
+            timestamp:
+              type: string
+              format: date-time
+              description: "Fix application timestamp (ISO 8601)"
+            file:
+              type: string
+              description: "File that was fixed"
+            fix_type:
+              type: string
+              description: "Type of fix applied"
+            confidence:
+              type: string
+              enum:
+                - HIGH
+                - MEDIUM
+                - LOW
+              description: "Fix confidence level"
+            applied:
+              type: boolean
+              description: "Whether fix was applied (true) or skipped (false)"
+            user_approved:
+              type: boolean
+              description: "Whether user approved fix (for MEDIUM confidence)"
+            description:
+              type: string
+              description: "Human-readable fix description"
+
+  # =============================================================================
+  # Schema 4: snapshot-manifest.json
+  # =============================================================================
+  snapshot-manifest:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    $id: "dzp://schemas/snapshot-manifest.json"
+    title: "Snapshot Manifest Schema"
+    description: "Validates snapshot-manifest.json - snapshot inventory and retention policies"
+    type: object
+    required:
+      - total_snapshots
+      - last_snapshot_created
+      - retention_policy
+      - snapshots
+    properties:
+      total_snapshots:
+        type: integer
+        minimum: 0
+        description: "Total number of snapshots currently stored"
+
+      last_snapshot_created:
+        type: string
+        format: date-time
+        description: "Timestamp of most recent snapshot (ISO 8601)"
+
+      retention_policy:
+        type: object
+        required:
+          - tier_1_max
+          - tier_2_max
+          - tier_3_max
+        properties:
+          tier_1_max:
+            type: integer
+            minimum: 0
+            description: "Maximum snapshots to retain for Tier 1 (manual only)"
+          tier_2_max:
+            type: integer
+            minimum: 0
+            description: "Maximum snapshots to retain for Tier 2"
+          tier_3_max:
+            type: integer
+            minimum: 0
+            description: "Maximum snapshots to retain for Tier 3"
+          cleanup_strategy:
+            type: string
+            enum:
+              - oldest_first
+              - lowest_tier_first
+            description: "Snapshot cleanup strategy when limit exceeded"
+
+      snapshots:
+        type: array
+        description: "List of all snapshot metadata"
+        items:
+          type: object
+          required:
+            - snapshot_id
+            - created_at
+            - tier
+            - reason
+            - file_path
+          properties:
+            snapshot_id:
+              type: string
+              format: uuid
+              description: "Unique snapshot identifier (UUID)"
+            created_at:
+              type: string
+              format: date-time
+              description: "Snapshot creation timestamp (ISO 8601)"
+            tier:
+              type: integer
+              minimum: 1
+              maximum: 3
+              description: "Tier at time of snapshot (1, 2, or 3)"
+            reason:
+              type: string
+              enum:
+                - manual
+                - operation_count
+                - tier_change
+              description: "Reason snapshot was created"
+            file_path:
+              type: string
+              description: "Relative path to snapshot file"
+            size_bytes:
+              type: integer
+              minimum: 0
+              description: "Snapshot file size in bytes"
+            description:
+              type: string
+              description: "Optional user-provided description"
+
+  # =============================================================================
+  # Schema 5: snapshot-{timestamp}.json
+  # =============================================================================
+  snapshot:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    $id: "dzp://schemas/snapshot.json"
+    title: "Snapshot Schema"
+    description: "Validates individual snapshot files - complete state backups with integrity checksums"
+    type: object
+    required:
+      - snapshot_id
+      - created_at
+      - tier
+      - reason
+      - state_files
+      - checksum
+    properties:
+      snapshot_id:
+        type: string
+        format: uuid
+        description: "Unique snapshot identifier (UUID)"
+
+      created_at:
+        type: string
+        format: date-time
+        description: "Snapshot creation timestamp (ISO 8601)"
+
+      tier:
+        type: integer
+        minimum: 1
+        maximum: 3
+        description: "Active tier when snapshot was created (1, 2, or 3)"
+
+      reason:
+        type: string
+        enum:
+          - manual
+          - operation_count
+          - tier_change
+        description: "Reason for snapshot creation"
+
+      state_files:
+        type: object
+        description: "Embedded copies of all state files"
+        properties:
+          project-state:
+            type: object
+            description: "Snapshot of project-state.json"
+          session-state:
+            type: object
+            description: "Snapshot of session-state.json"
+          validation-state:
+            type: object
+            description: "Snapshot of validation-state.json"
+        additionalProperties:
+          type: object
+          description: "Additional state files"
+
+      checksum:
+        type: string
+        pattern: '^[a-f0-9]{64}$'
+        description: "SHA-256 checksum of entire snapshot for integrity verification"
+
+      metadata:
+        type: object
+        description: "Optional snapshot metadata"
+        properties:
+          description:
+            type: string
+            description: "User-provided snapshot description"
+          tags:
+            type: array
+            items:
+              type: string
+            description: "User-provided tags for snapshot categorization"
+          creator:
+            type: string
+            description: "Agent or user who created snapshot"
+
+# =============================================================================
+# Validation Rules Metadata
+# =============================================================================
+metadata:
+  version: "2.0.0"
+  created: "2025-12-05"
+  last_updated: "2025-12-25"
+  schema_count: 5
+  framework_version: "8.10.0"
+  description: "JSON Schema validation rules for Domain Zero Protocol state files"
+
+  # Schema-to-file mapping
+  file_mappings:
+    project-state: ".protocol-state/project-state.json"
+    session-state: ".protocol-state/session-state.json"
+    validation-state: ".protocol-state/validation/validation-state.json"
+    snapshot-manifest: ".protocol-state/snapshots/snapshot-manifest.json"
+    snapshot: ".protocol-state/snapshots/snapshot-*.json"
+
+  # Validation priority order (validate in this sequence)
+  validation_order:
+    - project-state
+    - session-state
+    - validation-state
+    - snapshot-manifest
+    - snapshot
+
+  # Changelog
+  changelog:
+    - version: "2.0.0"
+      date: "2025-12-25"
+      changes:
+        - "BREAKING: session-state schema updated to match work session monitoring implementation (PATCH-COMP-001)"
+        - "Replaced flat task queue structure with nested work session monitoring structure"
+        - "Added validation for safety features: break enforcement, high-risk operation blocking"
+        - "Added validation for alert escalation, session metrics, and configurable thresholds"
+        - "Ensures work session monitoring safety features are validated and protected"
+      patch_reference: "protocol/SUKUNA-REPORT.md#PATCH-COMP-001"
+
+    - version: "1.0.0"
+      date: "2025-12-05"
+      changes:
+        - "Initial validation framework for DZP v8.8.0"
+        - "Created schemas for project-state, session-state, validation-state, snapshot-manifest, snapshot"
+        - "Established schema-to-file mapping and validation order"

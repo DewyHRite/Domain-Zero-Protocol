@@ -1,0 +1,399 @@
+# Domain Zero Protocol - Tier Defaults Configuration
+# Version: 8.10.0
+# Created: 2025-12-06
+# Part of: DZP v8.10.0 Phase 4 - Component 1 (Tier Validation System)
+#
+# This file defines the default tier profiles for the Domain Zero Protocol
+# tier system, which provides adaptive workflow complexity based on feature
+# criticality.
+#
+# Three Tiers:
+# - Tier 1 (Rapid): Fast prototyping, no tests required
+# - Tier 2 (Standard): Production features with TDD + security review [DEFAULT]
+# - Tier 3 (Critical): Enhanced testing + multi-model security for sensitive features
+
+tier_profiles:
+  # ===========================================================================
+  # TIER 1: RAPID PROTOTYPING
+  # ===========================================================================
+  tier_1_rapid:
+    description: "Rapid prototyping - no tests required"
+
+    # Requirements: What agents must do for Tier 1 features
+    requirements:
+      tests: false                  # No test-first development required
+      security_review: false        # Security review deliberately skipped
+      code_coverage: null           # No coverage requirements
+      documentation: minimal        # 1-2 sentence summary only
+      backup_required: true         # Always create backup (safety baseline)
+      rollback_plan: required       # Always document rollback steps
+
+    # Validation: How tier compliance is checked
+    validation:
+      tier_syntax_check: true       # Verify --tier rapid flag is valid
+      tier_requirements_check: false # No enforcement for Tier 1 (speed prioritized)
+      pre_deployment_check: false   # No pre-deployment validation
+
+    # Snapshots: Automatic state capture frequency
+    snapshots:
+      frequency: manual             # User-triggered only (no automatic)
+      max_snapshots: 10             # Retain last 10 Tier 1 snapshots
+      auto_cleanup: true            # Delete oldest when limit exceeded
+      retention_days: 7             # Keep for 7 days max
+
+    # Typical use cases for Tier 1
+    typical_use_cases:
+      - "Quick prototypes and proof-of-concepts"
+      - "Throwaway code and experiments"
+      - "Learning exercises and tutorials"
+      - "HTML/CSS mockups and wireframes"
+      - "Simple utility scripts (file renaming, etc.)"
+      - "Local development helpers"
+
+    # Agent behavior adjustments for Tier 1
+    agent_behaviors:
+      yuuji:
+        - "Skip test-first development"
+        - "Implement directly without tests"
+        - "Minimal documentation (1-2 sentences)"
+        - "Always create backup before changes"
+        - "Document rollback plan"
+      megumi:
+        - "Security review not invoked for Tier 1"
+        - "No OWASP review required"
+        - "User explicitly accepts prototype risk"
+      gojo:
+        - "Do not prompt for security review"
+        - "Track Tier 1 usage statistics"
+        - "Remind user: Tier 1 = prototype only, not production"
+
+    # Time estimates
+    estimated_time:
+      implementation: "10-15 minutes"
+      total_workflow: "10-15 minutes"
+
+    # Risk acceptance
+    risk_profile:
+      level: "high"
+      acceptable_for: "prototypes, experiments, throwaway code"
+      unacceptable_for: "production deployments, client deliverables"
+
+  # ===========================================================================
+  # TIER 2: STANDARD PRODUCTION FEATURES [DEFAULT]
+  # ===========================================================================
+  tier_2_standard:
+    description: "Production features - TDD + security review"
+
+    # Requirements: What agents must do for Tier 2 features
+    requirements:
+      tests: true                   # Test-first development REQUIRED
+      security_review: true         # Megumi security review REQUIRED
+      code_coverage: 80             # Minimum 80% test coverage
+      documentation: standard       # Complete feature documentation
+      backup_required: true         # Always create backup
+      rollback_plan: required       # Always document rollback steps
+      integration_tests: recommended # Recommended but not required
+
+    # Validation: How tier compliance is checked
+    validation:
+      tier_syntax_check: true       # Verify --tier standard flag (or default)
+      tier_requirements_check: true # Enforce test-first + security review
+      pre_deployment_check: true    # Validate before deployment
+      enforce_test_first: true      # Block implementation before tests
+
+    # Snapshots: Automatic state capture frequency
+    snapshots:
+      frequency: every_10_operations # Auto-snapshot every 10 operations
+      max_snapshots: 30             # Retain last 30 Tier 2 snapshots
+      auto_cleanup: true            # Delete oldest when limit exceeded
+      retention_days: 30            # Keep for 30 days
+      tag_protection: true          # Tagged snapshots exempt from cleanup
+
+    # Typical use cases for Tier 2
+    typical_use_cases:
+      - "Production features and enhancements"
+      - "Bug fixes and patches"
+      - "Refactoring existing code"
+      - "CRUD API endpoints"
+      - "User registration and login (non-sensitive)"
+      - "Database operations"
+      - "UI components"
+      - "Email services"
+      - "Standard business logic"
+
+    # Agent behavior adjustments for Tier 2
+    agent_behaviors:
+      yuuji:
+        - "MUST write tests BEFORE implementation"
+        - "Create backup before changes"
+        - "Document rollback plan with verification steps"
+        - "Tag @user-review after implementation"
+        - "Tag @security-review to invoke Megumi"
+        - "Fix remediation issues when tagged @remediation-required"
+        - "Tag @re-review after fixes"
+        - "Achieve minimum 80% code coverage"
+      megumi:
+        - "Conduct OWASP Top 10 security review"
+        - "Document findings in security-review.md with SEC-IDs"
+        - "Tag @approved when zero issues found"
+        - "Tag @remediation-required when issues found"
+        - "Verify fixes on @re-review"
+        - "Use standard single-model review"
+      gojo:
+        - "Enforce test-first requirement (block if violated)"
+        - "Prompt for security review after implementation"
+        - "Track Tier 2 usage statistics"
+        - "Monitor remediation cycle count (target <3)"
+        - "Alert if security review skipped"
+
+    # Time estimates
+    estimated_time:
+      implementation: "20-30 minutes"
+      security_review: "10-15 minutes"
+      total_workflow: "30-45 minutes"
+
+    # Risk acceptance
+    risk_profile:
+      level: "low"
+      acceptable_for: "production deployments, client deliverables, standard features"
+      target_vulnerability_detection: "~80% (single-model review)"
+
+  # ===========================================================================
+  # TIER 3: CRITICAL SECURITY FEATURES
+  # ===========================================================================
+  tier_3_critical:
+    description: "Critical paths - enhanced testing + multi-model security"
+
+    # Requirements: What agents must do for Tier 3 features
+    requirements:
+      tests: true                   # Test-first development REQUIRED
+      security_review: true         # Enhanced security review REQUIRED
+      code_coverage: 95             # Minimum 95% test coverage
+      documentation: comprehensive  # Extensive documentation required
+      backup_required: true         # Always create backup (code + database)
+      rollback_plan: required       # Extensive rollback plan with verification
+      integration_tests: required   # Integration tests REQUIRED
+      e2e_tests: required           # End-to-end tests REQUIRED
+      performance_benchmarks: required # Performance testing REQUIRED
+      multi_model_review: true      # Dual LLM security review (Opus + Sonnet)
+
+    # Validation: How tier compliance is checked
+    validation:
+      tier_syntax_check: true       # Verify --tier critical flag
+      tier_requirements_check: true # Strict enforcement of all requirements
+      pre_deployment_check: true    # Mandatory pre-deployment validation
+      continuous_validation: true   # Ongoing validation during development
+      enforce_test_first: true      # Block implementation before tests
+      enforce_e2e_tests: true       # Block deployment without E2E tests
+
+    # Snapshots: Automatic state capture frequency
+    snapshots:
+      frequency: every_operation    # Auto-snapshot on EVERY operation
+      max_snapshots: 50             # Retain last 50 Tier 3 snapshots
+      auto_cleanup: true            # Delete oldest when limit exceeded
+      retention_days: 90            # Keep for 90 days
+      tag_protection: true          # Tagged snapshots exempt from cleanup
+      pre_operation_required: true  # Always snapshot before critical operations
+
+    # Typical use cases for Tier 3
+    typical_use_cases:
+      - "Authentication systems (JWT, OAuth, session management)"
+      - "Payment processing (Stripe, PayPal, credit cards)"
+      - "Data encryption and cryptography"
+      - "Security-critical features (admin privileges, access control)"
+      - "Medical record systems (HIPAA compliance)"
+      - "Financial calculations and transactions"
+      - "Legal document handling"
+      - "API rate limiting (security-focused)"
+      - "Database encryption and key management"
+      - "Password reset and account recovery"
+
+    # Agent behavior adjustments for Tier 3
+    agent_behaviors:
+      yuuji:
+        - "MUST write tests BEFORE implementation (strict enforcement)"
+        - "MUST write integration tests"
+        - "MUST write E2E tests (Playwright/Cypress)"
+        - "MUST include performance benchmarks"
+        - "Create comprehensive backup (code + database)"
+        - "Document extensive rollback plan with step-by-step verification"
+        - "Tag @user-review after implementation"
+        - "Tag @security-review-critical to invoke enhanced Megumi review"
+        - "Fix remediation issues with verification at each step"
+        - "Tag @re-review after fixes"
+        - "Achieve minimum 95% code coverage"
+      megumi:
+        - "Conduct enhanced OWASP Top 10 security review"
+        - "Request Opus second opinion (multi-model review when available)"
+        - "Use risk-based prioritization (P0/P1/P2/P3 severity)"
+        - "Document findings in security-review.md with detailed SEC-IDs"
+        - "Tag @approved only after zero issues + checklist complete"
+        - "Tag @remediation-required with detailed remediation steps"
+        - "Verify fixes comprehensively on @re-review"
+        - "Complete final security checklist before approval"
+      gojo:
+        - "Enforce test-first requirement (hard block if violated)"
+        - "Enforce E2E test requirement (hard block if missing)"
+        - "Prompt for enhanced security review after implementation"
+        - "Track Tier 3 usage statistics"
+        - "Monitor remediation cycle count (target <2 for critical)"
+        - "Alert if any Tier 3 requirement skipped"
+        - "Create pre-operation snapshot automatically"
+
+    # Time estimates
+    estimated_time:
+      implementation: "30-45 minutes"
+      integration_e2e_tests: "15-20 minutes"
+      performance_benchmarks: "10-15 minutes"
+      security_review: "20-30 minutes"
+      total_workflow: "60-90 minutes"
+
+    # Risk acceptance
+    risk_profile:
+      level: "minimal"
+      acceptable_for: "security-critical features, sensitive data, authentication, payments"
+      target_vulnerability_detection: "~95% (dual-model review)"
+
+# =============================================================================
+# GLOBAL TIER SYSTEM SETTINGS
+# =============================================================================
+tier_system:
+  # Default tier when no --tier flag specified
+  default_tier: 2  # Tier 2 (Standard) is default
+
+  # Allow tier downgrade (Tier 3 -> Tier 2 or Tier 1)
+  allow_tier_downgrade: false  # Block downgrades to prevent security bypasses
+
+  # Allow tier upgrade (Tier 1 -> Tier 2 or Tier 3)
+  allow_tier_upgrade: true  # Always allow upgrading to higher security
+
+  # Tier enforcement mode
+  enforcement:
+    enabled: true              # Tier validation enforcement active
+    strict_mode: true          # Block non-compliant operations
+    warnings_only: false       # False = block, True = warn only
+
+  # Tier statistics tracking
+  statistics:
+    enabled: true              # Track tier usage statistics
+    auto_update: true          # Auto-increment on task completion (Phase 4 Component 2)
+    report_frequency: weekly   # Include in weekly Trigger 19 reports
+
+  # Tier transition rules
+  transitions:
+    tier_1_to_2_allowed: true  # Allow upgrading prototype to production
+    tier_1_to_3_allowed: true  # Allow upgrading prototype to critical
+    tier_2_to_3_allowed: true  # Allow upgrading standard to critical
+    tier_3_to_2_allowed: false # Block downgrading critical to standard
+    tier_3_to_1_allowed: false # Block downgrading critical to prototype
+    tier_2_to_1_allowed: false # Block downgrading standard to prototype
+
+# =============================================================================
+# TIER VALIDATION RULES
+# =============================================================================
+validation_rules:
+  # Test-first enforcement
+  test_first:
+    tier_1: false  # No enforcement for Tier 1
+    tier_2: true   # Enforce test-first for Tier 2
+    tier_3: true   # Enforce test-first for Tier 3
+    block_implementation: true  # Block implementation if tests missing
+
+  # Security review enforcement
+  security_review:
+    tier_1: false  # No security review for Tier 1
+    tier_2: true   # Standard security review for Tier 2
+    tier_3: true   # Enhanced security review for Tier 3
+    block_deployment: true  # Block deployment without security approval
+
+  # Code coverage thresholds
+  code_coverage:
+    tier_1: null   # No coverage requirement
+    tier_2: 80     # 80% minimum for Tier 2
+    tier_3: 95     # 95% minimum for Tier 3
+    enforce_minimum: true  # Block if coverage below minimum
+
+  # E2E test requirements
+  e2e_tests:
+    tier_1: false  # No E2E tests for Tier 1
+    tier_2: false  # E2E tests recommended but not required for Tier 2
+    tier_3: true   # E2E tests REQUIRED for Tier 3
+    block_deployment: true  # Block Tier 3 deployment without E2E tests
+
+# =============================================================================
+# BACKWARD COMPATIBILITY (v8.8.0 Migration Support)
+# =============================================================================
+backward_compatibility:
+  # Optional flag to disable tier enforcement for existing users during migration
+  # Set to true to allow gradual adoption of tier validation
+  # Set to false for strict tier enforcement (recommended after migration)
+  allow_tier_bypass: false  # Default: strict enforcement
+
+  # Grace period for migration (days)
+  # During grace period, tier violations generate warnings instead of blocks
+  migration_grace_period_days: 30  # 30-day grace period
+  migration_start_date: "2025-12-06"  # When v8.8.0 tier validation began
+
+  # Legacy mode (pre-v8.8.0 behavior)
+  # Enable to revert to pre-tier-validation workflow (NOT recommended)
+  legacy_mode_enabled: false  # Default: use tier system
+
+# =============================================================================
+# TIER SELECTION GUIDANCE
+# =============================================================================
+tier_selection_guide:
+  decision_tree:
+    question_1:
+      text: "Is this code going to production?"
+      no: "tier_1_rapid"
+      yes: "question_2"
+
+    question_2:
+      text: "Does this code handle sensitive data or operations?"
+      yes: "tier_3_critical"
+      no: "question_3"
+
+    question_3:
+      text: "Is this a standard production feature?"
+      yes: "tier_2_standard"
+      unsure: "tier_2_standard"  # Default to Tier 2 when unsure
+
+  sensitive_data_indicators:
+    - "Authentication (passwords, tokens, sessions)"
+    - "Payment processing (credit cards, transactions)"
+    - "Medical records (HIPAA compliance)"
+    - "Legal documents"
+    - "Financial calculations"
+    - "Admin privileges and access control"
+    - "Encryption and cryptography"
+    - "API rate limiting (security)"
+
+  tier_1_warning:
+    message: "Tier 1 is for PROTOTYPES ONLY. Do NOT use for production deployments."
+    reminder_frequency: "every invocation"
+
+  tier_3_checklist:
+    message: "Tier 3 requires: tests, integration tests, E2E tests, performance benchmarks, enhanced security review."
+    display_before_start: true
+
+# =============================================================================
+# VERSION INFORMATION
+# =============================================================================
+version_info:
+  tier_defaults_version: "1.0.0"
+  protocol_version: "8.10.0"
+  created: "2025-12-06"
+  last_updated: "2025-12-25"
+  part_of: "DZP v8.10.0 Phase 4 - Component 1 (Tier Validation System)"
+
+  changelog:
+    - version: "1.0.0"
+      date: "2025-12-06"
+      changes:
+        - "Initial tier-defaults.yaml creation"
+        - "Three-tier system defined (Rapid/Standard/Critical)"
+        - "Validation rules specified per tier"
+        - "Snapshot behavior configured per tier"
+        - "Agent behaviors documented per tier"
+        - "Backward compatibility flag added for v8.8.0 migration"
+        - "Tier selection decision tree implemented"

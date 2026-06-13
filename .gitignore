@@ -1,0 +1,16 @@
+# Domain Zero Protocol - per-install privacy (distro template)
+# Shipped as the published repo's .gitignore so fresh installs keep local data local.
+.protocol-state/trigger-19.md
+.protocol-state/authorization/session-state.json
+.protocol-state/authorization/authorization.log
+.protocol-state/custom-agent-registry.json
+.protocol-state/security/*.lock
+.protocol-state/research/**/*.raw.log
+.protocol-state/backups/
+*.backup
+*.backup.*
+.dzp-killswitch/
+.protocol-state/brain/brain.db
+.protocol-state/brain/cortex-snapshot.md
+__pycache__/
+*.pyc

@@ -1,0 +1,209 @@
+# Domain Zero - Agent Skills Mapping (v4)
+# Purpose: Map Claude Skills (Anthropic + custom) to each DZP agent
+# Reference: https://github.com/anthropics/skills/tree/main/skills
+# Updated for v8.10.0 - DZP ROE skill added to all agents
+
+version: 5
+updated: 2025-12-29
+protocol_version: "8.12.0"
+
+canonical_reference:
+  overview: https://claude.com/blog/skills
+  repository: https://github.com/anthropics/skills/tree/main/skills
+
+# Available Anthropic Skills (16 total)
+anthropic_skills_index:
+  - pdf                    # PDF document creation
+  - docx                   # Word document creation
+  - xlsx                   # Excel spreadsheet creation
+  - pptx                   # PowerPoint creation
+  - frontend-design        # UI/UX design artifacts
+  - web-artifacts-builder  # Interactive web components
+  - webapp-testing         # Web application testing
+  - mcp-builder            # MCP server creation
+  - skill-creator          # New skill development
+  - brand-guidelines       # Brand documentation
+  - canvas-design          # Visual design canvas
+  - doc-coauthoring        # Collaborative document editing
+  - internal-comms         # Internal communication templates
+  - theme-factory          # Theme/styling generation
+  - algorithmic-art        # Generative art creation
+  - slack-gif-creator      # Animated GIF creation
+
+agents:
+  gojo:
+    role: "Mission Control"
+    anthropic_skills:
+      - skill-creator        # Create new protocol skills
+      - pptx                 # Project summary presentations
+      - internal-comms       # Protocol announcements
+      - doc-coauthoring      # Collaborative documentation
+    document_skills:
+      - pptx
+    custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
+      - skill-builder        # Create new skills rapidly
+      - protocol-verify      # Protocol validation
+      - release-briefing     # Release documentation
+      - version-audit        # Version consistency check
+      - work-session-monitoring
+      - validate-protocol    # Protocol integrity verification
+      - verify-installation  # Installation completeness check
+      - dependency-scanner   # Security vulnerability scanning
+      - file-rotate          # Rotate dev-notes/security-review
+      - verify-auto-invoked  # CI/CD AUTO-INVOKED validation (v8.12.0)
+      - validate-custom-agents  # Custom agent security validation
+      - verify-working-directory  # Tier system pwd validation
+      - create-snapshot      # State snapshot creation
+      - restore-snapshot     # State snapshot restoration
+      - domain-record-rotate # Domain record archival
+      - memory-path-validator  # Memory tool path validation
+
+  yuuji:
+    role: "Implementation Specialist"
+    anthropic_skills:
+      - web-artifacts-builder  # Interactive component building
+      - webapp-testing         # Test implementation
+      - mcp-builder            # MCP server development
+      - skill-creator          # Custom skill implementation
+      - doc-coauthoring        # Dev notes documentation
+    document_skills:
+      - docx
+      - pdf
+    custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
+      - codegen-standards
+      - tdd-checklist
+      - async-patterns
+      - testing-fixtures
+
+  megumi:
+    role: "Security Analyst"
+    anthropic_skills:
+      - pdf                  # Security reports
+      - webapp-testing       # Security testing
+      - doc-coauthoring      # Security review documentation
+    document_skills:
+      - pdf
+    custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
+      - owasp-checklist      # OWASP Top 10 verification
+      - threat-modeling      # Threat model creation
+      - jwt-audit            # JWT security review
+      - secrets-review       # Secrets management audit
+      - dependency-audit     # Dependency vulnerability scan
+
+  nobara:
+    role: "Creative Strategy & UX"
+    anthropic_skills:
+      - pdf                  # Design documentation
+      - docx                 # User documentation
+      - pptx                 # Design presentations
+      - frontend-design      # UI mockups
+      - web-artifacts-builder  # Interactive prototypes
+      - brand-guidelines     # Brand standards
+      - canvas-design        # Visual layouts
+      - theme-factory        # Theme generation
+      - algorithmic-art      # Decorative elements
+      - slack-gif-creator    # Animated content
+      - doc-coauthoring      # Design specs
+    document_skills:
+      - pdf
+      - docx
+      - pptx
+    custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
+      - ux-writing           # UX copy and microcopy
+      - a11y-review          # Accessibility audit
+      - onboarding-flows     # User onboarding design
+      - design-system-glossary
+
+  todo:
+    role: "Database & Backend"
+    anthropic_skills:
+      - xlsx                 # Schema documentation, data exports
+      - doc-coauthoring      # Database documentation
+    document_skills:
+      - xlsx
+    custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
+      - schema-design        # Database schema design
+      - migration-planner    # Data migration planning
+      - query-optimization   # SQL/NoSQL optimization
+      - orm-configuration    # ORM setup
+      - data-normalization   # Normalization strategies
+
+  maki:
+    role: "Performance Specialist"
+    anthropic_skills:
+      - xlsx                 # Performance metrics, benchmarks
+      - theme-factory        # Optimized CSS generation
+      - doc-coauthoring      # Performance reports
+    document_skills:
+      - xlsx
+    custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
+      - lighthouse-audit     # Web performance auditing
+      - bundle-analysis      # Bundle optimization
+      - profiling-tools      # Profiler usage
+      - memory-optimization  # Memory leak detection
+      - critical-path        # Critical rendering path
+
+  panda:
+    role: "Build & Integration"
+    anthropic_skills:
+      - xlsx                 # Build metrics, dependency lists
+      - mcp-builder          # CI/CD MCP integrations
+      - doc-coauthoring      # Build documentation
+    document_skills:
+      - xlsx
+    custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
+      - github-actions       # GitHub Actions workflows
+      - vite-config          # Vite configuration
+      - docker-builds        # Docker containerization
+      - build-caching        # Build cache optimization
+      - test-pipelines       # Test automation
+
+  inumaki:
+    role: "API & Communication"
+    anthropic_skills:
+      - pdf                  # API documentation
+      - docx                 # API guides
+      - internal-comms       # API change notifications
+      - doc-coauthoring      # OpenAPI specs
+    document_skills:
+      - pdf
+      - docx
+    custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
+      - openapi-design       # OpenAPI 3.0 specification
+      - graphql-schema       # GraphQL design
+      - rest-patterns        # RESTful API patterns
+      - api-validation       # Request/response validation
+      - websocket-design     # Real-time communication
+
+  sukuna:
+    role: "System Update Adversary"
+    anthropic_skills:
+      - skill-creator        # Adversarial skill testing
+      - doc-coauthoring      # Update documentation
+    document_skills: []
+    custom_skills:
+      - dzp-roe              # Post-compaction DZP rules reinforcement
+      - adversarial-review   # Challenge protocol changes
+      - update-validation    # Validate system updates
+      - protocol-stress-test # Test protocol under stress
+
+policy:
+  execution_risk:
+    code_skills_require_review: true
+    sast_sca_required: true
+  versioning:
+    pin_versions: true
+    registry_file: SKILL_REGISTRY.md
+  governance:
+    owners:
+      - gojo
+      - megumi
+    review_interval_days: 90
