@@ -1,9 +1,9 @@
 # Offline Reference Documentation
-<!-- Domain Zero Protocol v8.13.0 -->
+<!-- Domain Zero Protocol v9.0.0 -->
 
 **Purpose**: Comprehensive offline documentation for DZP agents to reference authoritative best practices without requiring internet access.
 
-**Version**: 8.13.0
+**Version**: 9.0.0
 **Last Updated**: 2026-03-20
 
 ---

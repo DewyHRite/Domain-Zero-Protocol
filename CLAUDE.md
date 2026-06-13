@@ -856,10 +856,17 @@ Every significant protocol update MUST include a version number increment to mai
 - ✅ Update version number in `protocol.config.yaml` (versioning section)
 - ✅ Update version number in `CLAUDE.md` header (line 1 and line 4)
 - ✅ Update `last_updated` date in both files
-- ✅ Update version references in all affected agent files
+- ✅ Update version references in all affected agent files **and all `<!-- [CORE FILE] - Domain Zero Protocol vX.Y.Z -->` stamps + `**Version**` headers** across the repo (README, modules, gojo-procedures, skills, etc.)
+- ✅ **Run `scripts/distro/assert_version.py --root .`** — it must pass (gates CLAUDE.md ×2, VERSION.md, protocol.config.yaml, AI_INSTRUCTIONS.md, README.md, project-state.json)
 - ✅ **Conduct Sukuna adversarial review** for all protocol modifications (risk assessment and validation)
 - ✅ **Document patches in `protocol/SUKUNA-REPORT.md`** patch manifest for AI-assisted application
 - ✅ Document changes in version control commit message
+
+**MANDATORY BRANCH NAMING SCHEME** (for every version bump):
+- ✅ Each version bump is developed on a branch named **`Main-vX.Y.Z`** (e.g. `Main-v9.0.0`, `Main-v9.1.0`). No other naming for version-bump branches.
+- ✅ The previous `Main-v<old>` branch is retained for history; the new `Main-v<new>` becomes the active development line.
+- ✅ Feature/fix branches may use any name, but the **version-bump integration branch MUST be `Main-vX.Y.Z`**.
+- ✅ The published distribution branch is always **`release`** (single, reused across versions); only the version-bump *dev* branch follows `Main-vX.Y.Z`.
 
 ### Version Numbering System
 

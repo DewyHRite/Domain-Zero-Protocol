@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.13.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.0.0 -->
 # Safety-First Principles
 ## Domain Zero Protocol v8.13.0
 

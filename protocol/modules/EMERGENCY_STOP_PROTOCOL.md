@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.13.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.0.0 -->
 # Emergency Stop Protocol (Kill Switch)
 ## Domain Zero Protocol v8.13.0
 
