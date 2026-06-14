@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0",
+  "rotation_threshold": 5000,
+  "rotation_enabled": true,
+  "last_rotation": null,
+  "total_rotations": 0,
+  "archives": []
+}
