@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.1.0] - 2026-06-14
+
+### MINOR — DZP Cortex: Local Semantic Memory (PLAN-BRAIN-002)
+
+#### PLAN-BRAIN-002: DZP Cortex Brain Feature
+- Local semantic-memory index using sqlite-vec + fastembed (no external API after first model download). The Cortex **engine** lives at `.protocol-state/brain/` (`brain.py` + `cortex/*.py` + `requirements-brain.txt`) and is **tracked + shipped**. Only the runtime **data** (DB, memories, model cache, logs, snapshots) lives in the external dir `%LOCALAPPDATA%/dzp-cortex/<install-id>/` (XDG equivalent on macOS/Linux) and is never committed.
+- `/brain` slash command (`.claude/commands/brain.md`) and skill (`protocol/skills/brain.md`) for query, index, remember, status, and export operations.
+- `scripts/brain-index-hook.{sh,ps1}` — incremental index hook (fail-soft, lock-guarded, 30s timeout).
+- `scripts/brain.{sh,ps1}` — CLI wrappers for direct brain use without invoking the full agent stack.
+- `tests/brain/` — unit + integration tests for brain indexing and retrieval (excluded from distro).
+- **Phase 10 agent doc blocks**: all 10 `protocol/*.agent.md` files updated with Cortex context sections (when/how to invoke brain retrieval during agent workflows).
+
+#### Cortex Distro Shipping + Workflow Integration
+- **Engine now ships in the distro**: `scripts/distro/publish-manifest.yaml` allowlists the `.protocol-state/brain/` engine + `scripts/brain*.{ps1,sh}` wrappers/hooks (security-cleared by Megumi). Previously the docs shipped without the engine — a publish-readiness defect caught by the distro dry-run.
+- **SEC-BRAIN-012** (@approved): `tests/brain` added as an explicit `forbid_tokens` tripwire (its `__pycache__` `.pyc` bytecode bakes owner filesystem paths). Scoped to `tests/brain` (not bare `tests`) to avoid collision with vendored `node_modules/.../tests`.
+- **Publish-gate hardening**: `scripts/dzp-publish.ps1` now checks `$LASTEXITCODE` after the audit stage and both `assert_version` calls — a failed PII/exclude/version audit can no longer reach `git commit`/`push` (previously the gate did not block on a native non-zero exit).
+- **Cortex Integration Contract** added to `protocol/skills/brain.md` — canonical fail-soft / status-gated / trust-level rules referenced by all skills and launchers.
+- **Workflow integration**: RECALL/REMEMBER/INDEX hooks added to `protocol/skills/{ts,session,dzp-roe}.md`; a Cortex pointer footer added to all slash-command launchers (28 in `.claude/commands/` + 26 in `slash-commands/` = 54 files); `brain.md`/`dzp-roe.md` added to the `slash-commands/` mirror.
+- **DZP↔Cortex gap closures** (red-team): `/session end` now runs `export --snapshot` so Toji's read-only snapshot exists; Cortex onboarding (install deps, first index, model-download note, **and the auto-index hook setup**) added to `README.md`.
+- **Sanitized settings template ships**: new `.claude/settings.template.json` (PII-free starter pre-wiring the `SessionEnd` auto-index hook + `brain` command allow-list) is git-tracked (via `.gitignore` negation) and shipped in the distro (manifest `include_files`). Users `cp` it to `.claude/settings.json` to enable auto-indexing. The **real** `.claude/settings.json` stays gitignored (local paths + personal permission allowlist) and never commits/ships. This makes GAP-01 a shipped artifact, not just documentation.
+
+#### Security Remediation (Cortex)
+- **SEC-BRAIN-007** (@approved): `.gitignore` backstop entries (model cache, `*.db`, memories, snapshot) confirmed in `.protocol-state/brain/.gitignore` and `scripts/distro/distro.gitignore`.
+- **SEC-BRAIN-008** (@approved): AWS secret patterns (`access_key_id` / `secret_access_key`) added to the Cortex ingest scrub in `.protocol-state/brain/cortex/ingest.py` (shared with the memory write path). Residual secret-format coverage (GCP/Azure/bare tokens) logged as a future non-blocking sweep — **not yet implemented**.
+- **SEC-BRAIN-011** (P3, accepted): `brain-index-hook.sh` inline-Python shell-metachar hardening — future non-blocking item.
+
+#### Performance Gate (no-daemon CLI)
+- Targets formally defined for the no-daemon CLI: `query`/`remember` <3s, full index ≤5min, incremental no-op <5s. Canonical benchmarks pass; STUB p95 (k=5) = 0.270s. Sub-1s warm latency deferred to a future daemon. (Supersedes an earlier "sub-500ms" figure, which was a documentation error.)
+
+### Deferred / Gated
+- **Distro publication**: `DZP-v9.1.0` publish branch NOT yet created. Public release remains GATED on user acceptance testing of Cortex. Distro **dry-run passes all gates** (stage/identity/content scrub, PII audit, path audit, version assert at v9.1.0); no commit/push performed.
+
+---
+
 ## [9.0.0] - 2026-06-13
 
 ### MAJOR — Distribution Architecture + Version Reconciliation

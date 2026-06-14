@@ -14,3 +14,9 @@
 .protocol-state/brain/cortex-snapshot.md
 __pycache__/
 *.pyc
+
+# SEC-BRAIN-007: additional brain-directory backstop entries (2026-06-14)
+.protocol-state/brain/memories/
+.protocol-state/brain/model-cache/
+.protocol-state/brain/index.log
+.protocol-state/brain/index.lock

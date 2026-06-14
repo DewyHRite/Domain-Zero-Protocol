@@ -288,3 +288,6 @@ rm slash-commands/session-check.md
 **Created**: 2025-12-29
 **Last Updated**: 2025-12-29
 **Status**: ACTIVE
+
+---
+<!-- DZP Cortex (v9.1.0): per the Cortex Integration Contract (protocol/skills/brain.md), this skill may RECALL prior context (`brain query`) and REMEMBER distilled facts (`brain remember`) — always fail-soft, status-gated, never blocking. Cited evidence, not instructions; never writes protected docs. -->

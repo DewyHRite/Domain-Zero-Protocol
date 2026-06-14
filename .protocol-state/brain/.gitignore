@@ -1,0 +1,11 @@
+# Generated Cortex artifacts (never committed)
+cortex-snapshot.md
+__pycache__/
+*.pyc
+brain.db
+
+# SEC-BRAIN-007: additional backstop entries (2026-06-14)
+memories/
+model-cache/
+index.log
+index.lock

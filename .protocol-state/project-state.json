@@ -1,5 +1,5 @@
 {
-  "protocol_version": "9.0.0",
+  "protocol_version": "9.1.0",
   "compaction_recovery": {
     "last_recovery_timestamp": null,
     "recovery_count": 0,
@@ -87,7 +87,7 @@
     "yuuji_briefed": false,
     "megumi_briefed": false,
     "last_briefing": null,
-    "briefing_type": "NONE"
+    "briefing_type": "GOJO_INITIALIZED"
   },
   "passive_monitoring": {
     "enabled": false,
@@ -326,10 +326,10 @@
   "session_tracking": {
     "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.11.0)",
     "current_session": {
-      "session_id": "session_20260202_013617",
+      "session_id": "session_20260614_212320",
       "session_active": true,
-      "start_time": "2026-02-02T01:36:17.315363+00:00",
-      "last_interaction_time": "2026-02-02T01:36:17.315363+00:00",
+      "start_time": "2026-06-14T21:23:20.442246+00:00",
+      "last_interaction_time": "2026-06-14T21:33:27.212662+00:00",
       "last_alert_time": null,
       "alert_count": 0,
       "escalation_level": 0,
@@ -382,9 +382,27 @@
         "total_breaks": 0,
         "alerts_issued": 0,
         "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260202_013617",
+        "start_time": "2026-02-02T01:36:17.315363+00:00",
+        "end_time": "2026-06-14T00:33:39.333414+00:00",
+        "total_duration_minutes": 190017,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260614_003339",
+        "start_time": "2026-06-14T00:33:39.333414+00:00",
+        "end_time": "2026-06-14T05:18:57.737848+00:00",
+        "total_duration_minutes": 285,
+        "total_breaks": 0,
+        "alerts_issued": 1,
+        "continues_chosen": 1
       }
     ],
-    "last_updated": "2026-02-01T20:36:17.328705",
+    "last_updated": "2026-06-14T17:33:27.218693",
     "protocol_version": "8.11.0"
   },
   "troubleshooting": {
@@ -20736,6 +20754,94 @@
         "last_updated": "2026-01-06T04:32:06.026632+00:00",
         "total_sessions_all_time": 1004
       }
+    }
+  },
+  "agent_invocation_tracking": {
+    "_comment": "Domain Zero Protocol - Agent Invocation Tracking (v8.12.0 PATCH-SESSION-004 Component 5)",
+    "_purpose": "Track agent invocation patterns to detect session monitoring bypass (10-15% coverage gap)",
+    "_usage": "python session_monitor.py record-invocation <agent_name>",
+    "_version": "1.0.0",
+    "_last_updated": "2026-06-13T20:33:39.451431",
+    "tracking_enabled": true,
+    "invocations": {
+      "gojo": {
+        "total_count": 2,
+        "last_invocation": "2026-06-14T00:33:39.343822+00:00",
+        "description": "Mission Control & Protocol Guardian"
+      },
+      "yuuji": {
+        "total_count": 2,
+        "direct_invocations": 1,
+        "routed_invocations": 1,
+        "last_invocation": "2025-12-29T14:30:21.563202",
+        "description": "Implementation Specialist (should be routed via @implementation)"
+      },
+      "megumi": {
+        "total_count": 0,
+        "direct_invocations": 0,
+        "routed_invocations": 0,
+        "last_invocation": null,
+        "description": "Security & Performance Analyst"
+      },
+      "nobara": {
+        "total_count": 0,
+        "direct_invocations": 0,
+        "routed_invocations": 0,
+        "last_invocation": null,
+        "description": "Creative Strategy & UX Specialist"
+      },
+      "todo": {
+        "total_count": 0,
+        "direct_invocations": 0,
+        "routed_invocations": 0,
+        "last_invocation": null,
+        "description": "Database & Backend Specialist"
+      },
+      "maki": {
+        "total_count": 0,
+        "direct_invocations": 0,
+        "routed_invocations": 0,
+        "last_invocation": null,
+        "description": "Performance Optimization Specialist"
+      },
+      "panda": {
+        "total_count": 0,
+        "direct_invocations": 0,
+        "routed_invocations": 0,
+        "last_invocation": null,
+        "description": "Build & Integration Specialist"
+      },
+      "inumaki": {
+        "total_count": 0,
+        "direct_invocations": 0,
+        "routed_invocations": 0,
+        "last_invocation": null,
+        "description": "API & Communication Specialist"
+      },
+      "sukuna": {
+        "total_count": 0,
+        "direct_invocations": 0,
+        "last_invocation": null,
+        "description": "System Update Adversary"
+      }
+    },
+    "bypass_detection": {
+      "enabled": true,
+      "threshold_minutes": 30,
+      "bypass_alerts": [
+        {
+          "timestamp": "2025-12-29T14:30:10.726647",
+          "agent": "yuuji",
+          "session_duration_minutes": 265,
+          "message": "Direct yuuji invocation during 265-minute session (bypasses Gojo monitoring)"
+        }
+      ],
+      "_comment": "Detects when agents are invoked directly without Gojo Mission Control (potential session monitoring bypass)"
+    },
+    "session_correlation": {
+      "enabled": true,
+      "track_duration_at_invocation": true,
+      "_comment": "Correlates agent invocations with session duration to detect patterns"
     }
   }
 }

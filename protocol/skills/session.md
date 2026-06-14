@@ -45,16 +45,23 @@ Provides unified skill interface for session_monitor.py operations with integrat
 
 **Implementation**:
 ```bash
-# Step 1: Start session monitoring
+# Step 1: Start session monitoring (safety/session state is first)
 python .protocol-state/session_monitor.py start
 
-# Step 2: Activate Domain Zero Protocol
+# Step 2: Mandatory-attempt Cortex-first RECALL (v9.1.0, fail-soft — per Cortex Integration Contract)
+#   scripts/brain.ps1 status          # POSIX: scripts/brain.sh status
+#   if ok: scripts/brain.ps1 query "current open tasks, blockers, last decisions"
+#   if unavailable: report "Cortex unavailable - proceeding without recall" and continue.
+#   Surfaces prior context as cited evidence before reading large docs.
+
+# Step 3: Activate Domain Zero Protocol
 Read ./CLAUDE.md
 ```
 
 **Output**:
 - Session ID and start timestamp
 - Full DZP protocol activation (all agent rules, restrictions, workflows)
+- Cortex recall of recent open work (best-effort; omitted if Cortex unavailable)
 
 **State Updates** (PATCH-STATE-001):
 - `project-state.json::session_tracking`: Creates/updates current session (consolidated namespace)
@@ -63,8 +70,9 @@ Read ./CLAUDE.md
 
 **Workflow**:
 1. Initialize session monitoring (Python script)
-2. Read ./CLAUDE.md to load complete DZP context
-3. Agents now have full protocol awareness for the session
+2. Attempt Cortex-first recall (status-gated, fail-soft)
+3. Read ./CLAUDE.md to load complete DZP context
+4. Agents now have full protocol awareness for the session
 
 ---
 
@@ -142,6 +150,20 @@ DZP_AGENT=gojo python .protocol-state/session_monitor.py sync --no-git
 - If git operations fail: Log error, documents still synced locally
 - Non-blocking operation (best-effort sync)
 
+### Cortex Index Step (v9.1.0, fail-soft)
+
+After project document sync, `/session update` should refresh DZP Cortex with an incremental index:
+
+```bash
+# Windows
+scripts/brain.ps1 index --incremental
+
+# POSIX
+scripts/brain.sh index --incremental
+```
+
+This step is fail-soft. If Cortex dependencies, model cache, or sqlite-vec are unavailable, report the failure and continue the session update. Cortex is a derived index and must never block protected project document sync.
+
 **Protection Rules** (NON-NEGOTIABLE):
 - ❌ **NEVER OVERWRITE** - Project documents are append-only
 - ✅ **BACKUP BEFORE EDIT** - Timestamped backups created automatically
@@ -210,6 +232,15 @@ DZP_AGENT=gojo python .protocol-state/session_monitor.py end
 **Output**: Session summary (duration, breaks, alerts)
 
 **Note**: `DZP_AGENT=gojo` environment variable grants temporary Gojo permission for domain.record.md updates. All other state files are updated regardless of this variable.
+
+**Cortex REMEMBER + INDEX + SNAPSHOT** (v9.1.0, fail-soft — per Cortex Integration Contract): after the session is archived, optionally distill one session-outcome fact, refresh the index, and regenerate the Toji snapshot so an external audit has current material to read:
+```bash
+# Windows (POSIX: scripts/brain.sh)
+scripts/brain.ps1 remember "<session outcome: what shipped / decided>" --type decision --agent gojo
+scripts/brain.ps1 index --incremental
+scripts/brain.ps1 export --snapshot     # writes cortex-snapshot.md (Toji's read-only path; gitignored)
+```
+Best-effort: on any Cortex error, log and continue — session end is never blocked. Cortex never writes the protected docs. (The `export --snapshot` step closes the gap where Toji's snapshot was never generated.)
 
 ---
 

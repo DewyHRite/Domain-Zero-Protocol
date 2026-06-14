@@ -4,9 +4,9 @@ Domain Zero Protocol - AUTO-INVOKED Section Integrity Verification
 Version: 8.12.0 (PATCH-SESSION-004)
 Purpose: CI/CD validation to prevent context compaction from disabling safety systems
 
-This script verifies that the AUTO-INVOKED SESSION ALERT CHECK section in
-gojo.agent.md remains intact and functional. Context compaction can strip
-critical safety enforcement code, creating a 5-10% coverage gap.
+This script verifies that the AUTO-INVOKED startup checks in gojo.agent.md
+remain intact and functional. Context compaction can strip critical enforcement
+code, creating a 5-10% coverage gap.
 
 Exit Codes:
     0: All checks passed (section intact)
@@ -42,11 +42,16 @@ class AutoInvokedVerifier:
         self.opening_marker = "<!-- CRITICAL: DO NOT REMOVE - SAFETY SYSTEM"
         self.closing_marker = "<!-- END CRITICAL SAFETY SYSTEM SECTION -->"
         self.section_header = "### AUTO-INVOKED SESSION ALERT CHECK"
+        self.cortex_section_header = "### AUTO-INVOKED CORTEX-FIRST RECALL"
 
         self.required_keywords = [
             "PATCH-SESSION-003",
             "session-check",
             "check-and-record",
+            "PATCH-BRAIN-002",
+            "CORTEX-FIRST",
+            "brain.ps1 status",
+            "mandatory to attempt",
             "MANDATORY",
             "CRITICAL",
         ]
@@ -97,6 +102,12 @@ class AutoInvokedVerifier:
         else:
             if self.verbose:
                 print(f"[OK] Section header found")
+
+        if self.cortex_section_header not in content:
+            errors.append(f"ERROR: Cortex section header missing: {self.cortex_section_header}")
+        else:
+            if self.verbose:
+                print(f"[OK] Cortex section header found")
 
         # Check 5: Extract protected section and validate length
         # Improved error handling for marker extraction edge cases
@@ -160,8 +171,8 @@ class AutoInvokedVerifier:
             Exit code (0 = pass, 1 = fail)
         """
         print("=" * 60)
-        print("AUTO-INVOKED Section Integrity Verification")
-        print("Domain Zero Protocol v8.12.0 (PATCH-SESSION-004)")
+        print("AUTO-INVOKED Startup Checks Integrity Verification")
+        print("Domain Zero Protocol v9.1.0 (PATCH-SESSION-004 + PATCH-BRAIN-002)")
         print("=" * 60)
         print()
 
@@ -172,6 +183,7 @@ class AutoInvokedVerifier:
             print()
             print("Protected section integrity: OK")
             print("Safety system enforcement: FUNCTIONAL")
+            print("Cortex-first enforcement: FUNCTIONAL")
             return 0
         else:
             print("[FAIL] Verification checks failed")
@@ -180,7 +192,7 @@ class AutoInvokedVerifier:
                 print(f"  {error}")
             print()
             print("CRITICAL: AUTO-INVOKED section compromised!")
-            print("Safety system may be non-functional.")
+            print("Safety or Cortex-first enforcement may be non-functional.")
             print()
             print("Action Required:")
             print("  1. Restore gojo.agent.md from backup:")
@@ -200,8 +212,8 @@ def main():
         sys.exit(exit_code)
     except FileNotFoundError as e:
         print("=" * 60)
-        print("AUTO-INVOKED Section Integrity Verification")
-        print("Domain Zero Protocol v8.12.0 (PATCH-SESSION-004)")
+        print("AUTO-INVOKED Startup Checks Integrity Verification")
+        print("Domain Zero Protocol v9.1.0 (PATCH-SESSION-004 + PATCH-BRAIN-002)")
         print("=" * 60)
         print()
         print("[ERROR] Protocol root validation failed")

@@ -1,0 +1,43 @@
+# DZP Cortex configuration (SPEC-BRAIN-001)
+model: "BAAI/bge-small-en-v1.5"
+top_k: 5
+# data_dir: ""  # optional override; unsafe paths are rejected by default.
+include_folders:
+  - protocol
+  - docs
+include_files:
+  - CLAUDE.md
+  - protocol/CLAUDE.md
+  - AI_INSTRUCTIONS.md
+  - README.md
+  - .protocol-state/session_monitor.py
+  - .protocol-state/project_state_manager.py
+  - .protocol-state/troubleshooting_tracker.py
+include_protected:
+  - .protocol-state/dev-notes.md
+  - .protocol-state/security-review.md
+  - .dzp-domain/domain.record.md
+include_reports: []
+include_code:
+  - scripts
+exclude_tokens:
+  - backups
+  - __pycache__
+  - node_modules
+  - .env
+  - .dzp-killswitch
+  - brain.db
+  - cortex-snapshot.md
+  - project-state.json
+  - troubleshooting-history.json
+  - .protocol-state/internal-docs
+  - .protocol-state/stress_tests
+  - .protocol-state/system-update-framework
+  - internal-docs
+  - docs/superpowers
+chunk:
+  md_max_chars: 1200
+  code_max_chars: 1500
+  overlap: 120
+index:
+  batch_size: 64

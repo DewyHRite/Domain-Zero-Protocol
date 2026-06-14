@@ -1,5 +1,30 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.0.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
 # Domain Zero Protocol - Version Information
+
+**Version:** v9.1.0
+**Release Date:** 2026-06-14
+**Release Type:** MINOR Release (DZP Cortex — Local Semantic Memory)
+
+---
+
+## Release Summary — v9.1.0 (MINOR)
+
+v9.1.0 ships the **DZP Cortex** feature (PLAN-BRAIN-002): a local semantic-memory "separate brain" that was built and tested during the v9.0.0 cycle but deliberately held back from distribution until ready.
+
+### Headline changes
+- **DZP Cortex (PLAN-BRAIN-002)** — sqlite-vec + fastembed local embedding index, `/brain` slash command + skill (`protocol/skills/brain.md`, `.claude/commands/brain.md`), brain-index-hook scripts (`scripts/brain-index-hook.{sh,ps1}`), and `scripts/brain.{sh,ps1}` CLI wrappers. The **engine** (`.protocol-state/brain/`) is tracked + shipped; only the runtime **data** (DB, memories, model cache, snapshots) lives in the external dir `%LOCALAPPDATA%/dzp-cortex/<install-id>/` and is never committed or shipped.
+- **Cortex distro shipping + workflow integration (PATCH-BRAIN-002)** — engine added to the distro allowlist (Megumi-cleared); SEC-BRAIN-012 forbid-token tripwire; `dzp-publish.ps1` audit-gate hardening; Cortex Integration Contract + RECALL/REMEMBER/INDEX hooks across `ts.md`/`session.md`/`dzp-roe.md` + all slash-command launchers (54 files); DZP↔Cortex gap closures (README onboarding incl. auto-index hook setup, Toji snapshot via `/session end` export). The `SessionEnd` auto-index hook is documented in README and installed locally; `.claude/settings.json` is gitignored, so the hook is not committed/shipped — it is per-install setup.
+- **Security remediation** — SEC-BRAIN-007 (.gitignore backstops for model cache + sqlite index) and SEC-BRAIN-008 (AWS `access_key_id`/`secret_access_key` patterns in `cortex/ingest.py`; GCP/Azure coverage logged as future sweep, not yet implemented) both @approved by Megumi. SEC-BRAIN-012 @approved. No P0/P1 findings unresolved.
+- **Performance gate** — no-daemon CLI targets: `query`/`remember` <3s, full index ≤5min, incremental no-op <5s; all pass. (No "sub-500ms" gate — that earlier figure was a documentation error; sub-1s warm latency is deferred to a future daemon.)
+- **Phase 10 agent doc blocks** — all 10 `protocol/*.agent.md` files received Cortex context blocks (Phase 10 of PLAN-BRAIN-002) explaining when/how to hand off to the brain.
+- **Distro publication + public release**: GATED — remaining on user testing; `DZP-v9.1.0` publish branch NOT yet created. Distro dry-run passes all gates.
+
+### Why MINOR
+New feature addition (Cortex) with full backward compatibility; no breaking protocol changes; existing installations unaffected unless they opt in.
+
+---
+
+## Previous Release — v9.0.0 (MAJOR)
 
 **Version:** v9.0.0
 **Release Date:** 2026-06-13

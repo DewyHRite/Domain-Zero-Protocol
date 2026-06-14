@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.0.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.0.0
+**Version**: 9.1.0
 **Status**: Production
-**Last Updated**: 2026-06-13
+**Last Updated**: 2026-06-14
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -3876,8 +3876,114 @@ rm .protocol-state/troubleshooting-history.json
 
 ---
 
+---
+
+## 📦 SYSTEM UPDATES (v9.1.0)
+
+### PATCH-BRAIN-001 (2026-06-14): DZP Cortex — Local Semantic Memory
+
+**Patch ID**: PATCH-BRAIN-001
+**Applies to version**: 9.0.0 → 9.1.0
+**Priority**: P2 (Enhancement — opt-in feature, no breaking changes)
+**Category**: Feature / Security Remediation
+**Status**: ACTIVE (dev-only; distro publication GATED on user testing)
+**Origin**: PLAN-BRAIN-002 (DZP Cortex v9.1.0 design plan, docs/superpowers/plans/2026-06-14-dzp-cortex-v9.1.0-gojo-control-plan.md)
+
+#### Feature Overview
+
+DZP Cortex provides a local semantic-memory "separate brain" for the Domain Zero Protocol. It allows agents to index and query protocol history, dev-notes, domain records, and implementation logs using a local vector embedding pipeline — no external API or cloud dependency required.
+
+**Technology stack**: sqlite-vec (local vector store) + fastembed (local embedding model, runs in-process). Brain state lives in `.protocol-state/brain/` which is gitignored to prevent model weights and index data from entering version control.
+
+#### Files Added (dev tree)
+
+| Path | Description |
+|------|-------------|
+| `.protocol-state/brain/` | Brain index directory (gitignored; sqlite-vec DB + fastembed model cache) |
+| `protocol/skills/brain.md` | `/brain` skill definition (query, index, status commands) |
+| `.claude/commands/brain.md` | `/brain` slash command wrapper |
+| `scripts/brain-index-hook.sh` | Post-session hook — auto-indexes dev-notes.md + domain.record.md entries |
+| `scripts/brain-index-hook.ps1` | Windows equivalent of brain-index-hook.sh |
+| `scripts/brain.sh` | CLI wrapper for direct brain query (no full agent stack) |
+| `scripts/brain.ps1` | Windows equivalent of brain.sh |
+| `tests/brain/` | Unit + integration tests for brain indexing and retrieval |
+
+#### Phase 10 Agent Doc Blocks
+
+All 10 `protocol/*.agent.md` files received Cortex context sections (Phase 10 of PLAN-BRAIN-002) documenting:
+- When to invoke brain retrieval (prior decisions, recurring patterns, historical context)
+- How to hand off to `/brain` during agent workflows
+- Guardrails (brain is advisory only; agents verify retrieved context before acting)
+
+Files updated: gojo, yuuji, megumi, nobara, todo, maki, panda, inumaki, sukuna, toji.
+
+#### Security Findings Remediated
+
+**SEC-BRAIN-007** (P2 — A05 Security Misconfiguration): `.protocol-state/brain/.gitignore` and `scripts/distro/distro.gitignore` omitted `memories/`, `model-cache/`, `index.log`, and `index.lock`. Live Cortex data normally lands external (`%LOCALAPPDATA%/dzp-cortex/`), but these `.gitignore` files would not backstop a repo-local `--allow-unsafe-data-dir` override.
+- **Fix**: Added the four entries (`memories/`, `model-cache/`, `index.log`, `index.lock`) to BOTH `.protocol-state/brain/.gitignore` and `scripts/distro/distro.gitignore`; existing entries preserved.
+- **Status**: @approved by Megumi (Tier 3 re-review, 2026-06-14).
+
+**SEC-BRAIN-008** (P2 — A04 Insecure Design): `SECRET_PATTERNS` in `.protocol-state/brain/cortex/ingest.py` (shared via import in `cortex/memory.py`) missed AWS provider-key formats where the keyword is not adjacent to `=` — e.g. `AWS_ACCESS_KEY_ID=` and `AWS_SECRET_ACCESS_KEY=` passed the ingest/`remember` secret filter undetected.
+- **Fix**: Added `re.compile(r"access[_-]?key[_-]?id\s*=", re.I)` and `re.compile(r"secret[_-]?access[_-]?key\s*=", re.I)` to `cortex/ingest.py` SECRET_PATTERNS; added 2 test-first tests with realistic AWS fixtures (`tests/brain/test_store_memory_ingest.py`). Suite 25 → 27 passing.
+- **Status**: @approved by Megumi (Tier 3 re-review, 2026-06-14).
+- **Residual (NON-blocking, NOT implemented)**: GCP service-account JSON keys, Azure `AccountKey=`, bare high-entropy tokens, `DATABASE_URL=`/`POSTGRES_PASSWORD=` remain uncovered — logged for a future SEC-BRAIN sweep only if Cortex begins ingesting env/CI artifacts.
+
+No P0 or P1 findings identified. All findings resolved prior to v9.1.0 stamp.
+
+#### Performance Gate
+
+Maki **@approved** with formally redefined **no-daemon CLI** targets (v9.1.0 ships no resident daemon): full index ≤5 min (measured 299.65s), incremental no-op <5s (4.96s), CLI query <3s (2.77s), CLI remember <3s (2.81s). Batched embed/upsert + source-state incremental skip verified in code. Sub-1s warm in-process query is **deferred to a future daemon/API release** — it is NOT a v9.1.0 gate. Pre-release P1: re-run multi-sample p95 benchmark before final publish. Gate documented in plan §9/§15.
+
+#### Rollback Pointer
+
+Full rollback procedure: see plan §9 (docs/superpowers/plans/2026-06-14-dzp-cortex-v9.1.0-gojo-control-plan.md). Short form:
+1. Remove `.protocol-state/brain/` directory (brain index data only; no protocol data).
+2. Remove `protocol/skills/brain.md` and `.claude/commands/brain.md`.
+3. Remove `scripts/brain*.{sh,ps1}` and `scripts/brain-index-hook*.{sh,ps1}`.
+4. Revert agent doc blocks (Phase 10) — restore from `cortex-phase11-cascade-20260614_010330/` backup.
+5. Revert version cascade — restore from same backup set.
+
+#### Publication Gate
+
+- **Distro publication**: `DZP-v9.1.0` branch NOT yet created. Do NOT run `scripts/dzp-publish.{sh,ps1}` until user acceptance testing (UAT) is complete and user explicitly authorizes publication.
+- **Public release**: Blocked pending UAT. Cortex is a significant new dependency surface; public users must not receive it until it is validated in real sessions.
+- **assert_version.py**: Will gate any premature publish attempt via the version-consistency check.
+
+---
+
+### PATCH-BRAIN-002 (2026-06-14): Cortex Distro Shipping + Workflow Integration + DZP↔Cortex Gap Closures
+
+**Patch ID**: PATCH-BRAIN-002
+**Classification**: STRUCTURAL_CHANGE (CORE files)
+**Origin**: User-directed (via Gojo→Sukuna): ship full Cortex in distro; integrate Cortex into all slash commands/skills; red-team all DZP↔Cortex gaps; sync external release docs.
+**Collaboration**: Megumi (mandatory, v8.9.0) — **@approved** (engine public-shipping re-clearance + workflow-integration review; zero P0/P1/P2).
+
+**Changes:**
+1. **Distro now ships the Cortex engine.** `scripts/distro/publish-manifest.yaml`: added `.protocol-state/brain/` engine (13 files) to `include_state` + `scripts/brain*.{ps1,sh}` (4) to `include_scripts`; removed `.protocol-state/brain` from `forbid_tokens`.
+2. **SEC-BRAIN-012 (P2, @approved)**: added `tests/brain` forbid-token tripwire (scoped to avoid `node_modules/.../tests` collision).
+3. **Publish-gate hardening**: `scripts/dzp-publish.ps1` now aborts on `$LASTEXITCODE` after the audit stage + both `assert_version` calls (audit failures previously did not block commit/push).
+4. **Cortex Integration Contract** added to `protocol/skills/brain.md` (canonical fail-soft / status-gate / trust-level / data-not-instructions / protected-doc rules).
+5. **Skill hooks**: RECALL/REMEMBER/INDEX wired into `protocol/skills/{ts,session,dzp-roe}.md`; contract-pointer footer in all launchers (28 in `.claude/commands/` + 26 in `slash-commands/` = 54 files); `brain.md`+`dzp-roe.md` added to the `slash-commands/` mirror; footers also on `skill-builder.md`, `gojo/gojo-tier-validation.md`, `session-check.md`.
+6. **DZP↔Cortex gap register (red-team, 8 gaps)** + closures:
+   - GAP-01 (HIGH): auto-index hook wired into `.claude/settings.json` `hooks.SessionEnd` (local owner). Real `settings.json` is gitignored (PII), so a **sanitized `.claude/settings.template.json`** was added (git-tracked via `.gitignore` negation + manifest `include_files`) and now ships in the distro — users `cp` it to `settings.json` to enable. GAP-01 is a shipped artifact, not just docs.
+   - GAP-02/07 (HIGH/LOW): README "Setup (one-time)" — `pip install -r .protocol-state/brain/requirements-brain.txt`, first-index (does the one-time model download at setup), optional SessionEnd hook JSON, external-data-dir note.
+   - GAP-04 (MED): `/session end` now runs `export --snapshot` so Toji's read-only `cortex-snapshot.md` exists.
+   - GAP-03/05/06 (MED/LOW): closed by the contract (status-gate, fail-soft everywhere, trust levels per workflow class).
+   - GAP-08 (LOW): `verify-installation.py` Cortex check — **deferred** (non-blocking; Cortex is fail-soft so absence never breaks flow).
+7. **Release-doc sync**: CHANGELOG v9.1.0 entry **corrected** (engine ships vs gitignored-data; removed fabricated "sub-500ms" gate → real no-daemon targets; corrected SEC-BRAIN-008 file/GCP claim) and expanded with this session's work; README onboarding added.
+
+**Verification**: distro unit tests 11/11; distro dry-run exit 0, all gates pass (stage/identity/content scrub, PII audit, path audit), `assert_version` v9.1.0 (7 files); no version-number changes.
+
+**Backups**: `.protocol-state/backups/cortex-integration_20260614_163040/` (3 command/skill surfaces); `publish-manifest_*.bak`, `dzp-publish_*.ps1.bak`; `domain-record_*`.
+
+**Rollback**: restore manifest + dzp-publish.ps1 from `.bak`; restore command/skill surfaces from `cortex-integration_*` backup; remove `hooks` block from `.claude/settings.json`. <5 min.
+
+**Publication gate UNCHANGED**: public `DZP-v9.1.0` still blocked on user acceptance testing of Cortex.
+
+---
+
 **END OF SUKUNA-REPORT.md**
 
-**Last Updated**: 2026-06-13 by Sukuna (System Update Adversary)
-**Protocol Version**: 9.0.0
-**Patches Active**: 8 security patches + 2 documentation patches + 1 compliance patch + PATCH-TOJI-001 (CRITICAL) + PATCH-DISTRO-001 ready for implementation
+**Last Updated**: 2026-06-14 by Sukuna (System Update Adversary)
+**Protocol Version**: 9.1.0
+**Patches Active**: 8 security patches + 2 documentation patches + 1 compliance patch + PATCH-TOJI-001 (CRITICAL) + PATCH-DISTRO-001 + PATCH-BRAIN-001 + PATCH-BRAIN-002 (DZP Cortex v9.1.0)

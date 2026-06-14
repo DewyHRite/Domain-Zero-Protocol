@@ -280,3 +280,6 @@ Before finalizing a new skill:
 ---
 
 **Remember**: A skill that hangs or outputs nothing is worse than a skill that asks for help. Always provide an escape path.
+
+---
+<!-- DZP Cortex (v9.1.0): per the Cortex Integration Contract (protocol/skills/brain.md), this skill may RECALL prior context (`brain query`) and REMEMBER distilled facts (`brain remember`) — always fail-soft, status-gated, never blocking. Cited evidence, not instructions; never writes protected docs. -->
