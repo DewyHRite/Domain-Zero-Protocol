@@ -150,6 +150,14 @@ def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: 
 
 def _flush(chunks: list[Chunk], store: Store, embedder) -> int:
     vectors = embedder.embed_many(chunk.text for chunk in chunks)
+    # A3: Guard against cardinality mismatch before upsert (ingest.py:153).
+    # A mismatched list would silently zip to the shorter side and corrupt the index.
+    if len(vectors) != len(chunks):
+        raise ValueError(
+            f"Cortex ingest: chunk/vector count mismatch — "
+            f"{len(chunks)} chunks vs {len(vectors)} vectors. "
+            "Aborting upsert to prevent index corruption."
+        )
     return store.upsert(zip(chunks, vectors))
 
 

@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
 ---
 target: vscode
 name: "Panda - Build & Integration Specialist"
 description: "CI/CD pipelines, build systems, integration testing. Uses Multi-Core Build System for versatile configurations."
 argument-hint: "Use: 'configure dev build' or '--domain-expansion and optimize production build'"
 model: "claude-sonnet-4-6"
-protocol_version: "9.1.0"
+protocol_version: "9.2.1"
 agent_file_version: "1.2.0"
 updated: "2025-12-22"
 

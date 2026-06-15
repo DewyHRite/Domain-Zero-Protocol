@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
 ---
 target: vscode
 name: "Satoru Gojo - Mission Control & Protocol Guardian"
@@ -7,9 +7,9 @@ description: "Domain Expansion, project lifecycle management, passive observatio
 # This maintains the Gojo character identity while enabling role-based handoff routing
 argument-hint: "Use: 'Read gojo.agent.md' then select mode [1-4]"
 model: "claude-opus-4-8"
-protocol_version: "9.1.0"
+protocol_version: "9.2.1"
 agent_file_version: "1.3.0"
-updated: "2025-12-22"
+updated: "2026-06-14"
 
 tools:
   - read

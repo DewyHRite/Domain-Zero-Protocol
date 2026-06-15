@@ -9,6 +9,92 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.2.1] - 2026-06-14
+
+### FEATURE — Central DZP Script Orchestration (PATCH-ORCH-001)
+
+Adds a root-level `dzp.py` entry-point, a `.protocol-state/script_coordinator.py` engine, and a `script_dependencies.yaml` event registry that wire 7 DZP lifecycle events to sequenced, dependency-aware script steps. Builds on v9.1.1 base (v9.2.0 intentionally skipped per USER direction). Megumi Tier-3 @approved; 44 tests passed / 1 skipped; dev-only (distro-excluded).
+
+#### A. New Files (dev-only, not shipped)
+- **`dzp.py`** (root) — single CLI entry-point to run any registered DZP lifecycle event by name; dispatches to `script_coordinator.py`
+- **`.protocol-state/script_coordinator.py`** — event-driven step sequencer with dependency resolution, per-step timeouts, fail-soft vs fail-CLOSED classification, structured logging
+- **`script_dependencies.yaml`** — event registry mapping 7 lifecycle events to ordered step lists with gate policy and dependency declarations (event->step only)
+
+#### B. 7 Registered Lifecycle Events
+- `session-update` — orchestrates project-document sync + Cortex re-index (fail-soft)
+- `session-end` — full Cortex rebuild + snapshot export (fail-soft)
+- `ts-start` — troubleshooting session initialization steps (fail-soft)
+- `ts-complete` — troubleshooting session completion + analytics (fail-soft)
+- `pre-protected-edit` — pre-flight checks before protected document edits (fail-CLOSED)
+- `pre-release` — release gate checks including assert_version + PII scrub (fail-CLOSED)
+- `toji-snapshot` — Cortex snapshot export for Toji audit sessions (fail-soft)
+
+#### C. Security (Megumi Tier-3 @approved)
+- **SEC-ORCH-001..011** — 11 security controls applied to orchestration surface (input validation, path confinement, privilege separation, timeout enforcement, log sanitization, etc.)
+- **SEC-COORD-001..005** — script_coordinator.py remediations (injection prevention, event allowlist, step enumeration guard, output capture sandboxing, error message sanitization)
+- **SEC-COORD-005-EXT** — extended coverage for dynamic step resolution edge cases
+- **One P3 accepted-risk** — documented in security-review.md; no P0/P1/P2 open
+
+#### D. Test Coverage (Yuuji Tier-3)
+- 44 tests passed / 1 skipped across unit + integration + E2E suites
+- Coverage: event dispatch, step sequencing, dependency resolution, fail-soft/fail-CLOSED gates, timeout handling, concurrent execution guards
+
+#### E. Distro Gate
+- `dzp.py`, `script_coordinator.py`, `script_dependencies.yaml` are excluded from `dzp-publish` allowlist (dev-only tooling; end-user installations do not receive this layer)
+
+#### Version Cascade
+- All 7 assert_version-gated files bumped to `9.2.1`: `CLAUDE.md` x2, `VERSION.md`, `protocol.config.yaml`, `AI_INSTRUCTIONS.md`, `README.md`, `project-state.json`
+- All 10 agent `protocol_version` stamps updated to `9.2.1`
+- `python scripts/distro/assert_version.py --root .` — PASS
+
+---
+
+## [9.1.1] - 2026-06-14
+
+### PATCH — Cortex Stabilization (PATCH-STABILIZE-001)
+
+Stabilizes the published v9.1.0 DZP Cortex engine, hardens the brain-index hooks, reconciles leftover version drift, and aligns documentation with actual fail-soft behavior. Megumi @approved; zero new SEC-IDs. All findings are defects inherited from the v9.1.0 Cortex merge.
+
+#### A. Cortex Core Bug Fixes (PR#92 CodeRabbit)
+- **brain.py** (PR#92:73) — propagate `--allow-unsafe-data-dir` flag consistently to `status` and `query` commands; it was previously applied only on initialization, leaving the flag silently ignored for those subcommands.
+- **brain.py** (PR#92:95) — derive the embedding vector dimension from the loaded model at runtime instead of hard-coding 384; mismatched dimensions caused silent upsert corruption when a non-default model was configured.
+- **cortex/ingest.py** (PR#92:153) — guard against chunk/vector count mismatch before upsert; previously a cardinality mismatch would cause an unhandled exception mid-batch, leaving the index in a partial state.
+- **cortex/paths.py** (PR#92:75) — anchor relative `data_dir` override paths to `repo_root`; they were previously resolved against the process CWD, which broke invocations from any directory other than the project root.
+
+#### B. Hook Hardening (same class as orchestration SEC-ORCH-002/006)
+- **`.claude/settings.template.json`** (Critical) — add missing `$TimeoutSeconds = 30` definition before the PowerShell hook body; without this the hook threw `TerminatingError: $TimeoutSeconds not recognized` and the session-end index was never run.
+- **`scripts/brain-index-hook.ps1` + `.sh`** — replace repo-path interpolation into the `python -c` heredoc with argv-data passing (`python script.py "$repoPath"`); paths containing apostrophes or special characters were breaking the inline source string.
+- **`scripts/brain-index-hook.ps1` + `.sh`** — make lock acquisition atomic using a create-exclusive pattern instead of the `Test-Path`→`New-Item` two-step (TOCTOU race); tie lock ownership to the invoking PID so cleanup cannot remove a lock held by a concurrent legitimate process.
+
+#### C. Robustness
+- **`scripts/dependency-scanner.py`** (PR#92:742) — confine the `--export` output path to the repository root; previously it accepted any filesystem path, creating a potential write-outside-repo vector.
+
+#### D. Version-Drift Reconciliation
+- **`.protocol-state/project-state.json`** — reconcile two nested straggler `protocol_version` fields (`session_tracking.protocol_version` and `tier_tracking.metadata.protocol_version`) to `9.1.1`; these were left at pre-9.1.0 values by the v9.1.0 cascade.
+
+#### E. Documentation Alignment
+- **`.claude/commands/session-update.md`** — replace `&&`-chained shell snippet in the Cortex re-index step with a fail-soft `if status { index } else { proceed }` pattern to match the actual `session_monitor._sync_cortex_index()` fail-soft implementation.
+- **`protocol/skills/session.md`** — wire the Cortex snapshot export into `/session end` step or remove the promise from docs; the gap between documented behavior and implementation was a source of confusion.
+- **`protocol/skills/ts.md`** — use the default trust tier for Cortex query calls in troubleshooting flows; keep Cortex failures visible (not silenced) so agents can report index staleness.
+- **`protocol/SUKUNA-REPORT.md`** — correct the fast-path invocation note (was referencing the `sync` subcommand; correct subcommand is `update`).
+- **`slash-commands/ts-codered.md`** — make the Cortex footer banner mandatory, not optional; Code Red sessions must always surface Cortex recall state.
+
+#### F. Sukuna Live-Bug Fixes (pre-existing v9.1.0 defects)
+- **`.protocol-state/tier-statistics.py`, `gojo-learn.py`, `sukuna-learn.py`** — insert `scripts/` onto `sys.path` before the `from verify_working_directory import …` statement; the import was failing with `ModuleNotFoundError` when scripts were invoked from the project root (the only normal invocation path).
+- **`.protocol-state/snapshot_integration.py`** (line 54) — correct the runtime constant from `scripts/create-snapshot.py` to `.protocol-state/create-snapshot.py`; auto-snapshots were silently failing because the path did not exist. Also updated `SNAPSHOT_INTEGRATION.md`, `DEPENDENCY_SCANNER_GUIDE.md`, and `gojo-snapshot-integration-guide.md` to remove the stale path references.
+
+#### G. Session-Monitor Safety Defect (discovered during stabilization)
+- **`.protocol-state/session_monitor.py`** — `is_high_risk_operation()` was silently returning `False` for the common short-form production push commands (`git push main`, `git push master`, `git push production`) as well as `deploy to production`, `docker-compose up production`, and `kubectl apply production`. With the 6h+ `high_risk_operations_blocked` flag set, those operations were **NOT being blocked** — a real gap in the Absolute Safety enforcement. Added the missing literals so the safety blocker covers them.
+- **`.protocol-state/session_monitor.py`** — `should_block_operation()` now includes the `🛑` marker and reports the authoritative stored duration (not just live wall-clock) in the block reason.
+- **`tests/test_session_monitor.py`** — corrected one stale test (`test_handles_very_long_operations`) that assumed regex word-boundary matching. Full suite now 104/104 pass; `verify-auto-invoked.py` reports safety enforcement FUNCTIONAL.
+
+#### Version Cascade
+- All 7 assert_version-gated files bumped to `9.1.1`: `CLAUDE.md` ×2, `VERSION.md`, `protocol.config.yaml`, `AI_INSTRUCTIONS.md`, `README.md`, `project-state.json`.
+- All 10 agent `protocol_version` stamps updated to `9.1.1`.
+- `python scripts/distro/assert_version.py --root .` — PASS.
+
+---
+
 ## [9.1.0] - 2026-06-14
 
 ### MINOR — DZP Cortex: Local Semantic Memory (PLAN-BRAIN-002)

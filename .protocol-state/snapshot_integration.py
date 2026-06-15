@@ -51,7 +51,8 @@ PROJECT_ROOT = Path(__file__).parent.parent
 STATE_DIR = PROJECT_ROOT / ".protocol-state"
 SESSION_STATE_PATH = STATE_DIR / "session-state.json"
 PROJECT_STATE_PATH = STATE_DIR / "project-state.json"
-CREATE_SNAPSHOT_SCRIPT = PROJECT_ROOT / "scripts" / "create-snapshot.py"
+# F17: corrected path — the real script lives in .protocol-state/, not scripts/.
+CREATE_SNAPSHOT_SCRIPT = STATE_DIR / "create-snapshot.py"
 
 # Tier-based snapshot triggers
 TIER_SNAPSHOT_INTERVALS = {

@@ -42,15 +42,16 @@ DZP_AGENT=gojo python .protocol-state/session_monitor.py update --time-only
 4. **domain.record.md** - Strategic notes (Gojo permission only via DZP_AGENT env var)
 
 **Cortex Re-Index (mandatory-attempt, fail-soft)**:
-```bash
-# After document sync succeeds — Windows
-scripts/brain.ps1 status && scripts/brain.ps1 index --incremental
-
-# POSIX
-scripts/brain.sh status && scripts/brain.sh index --incremental
+```powershell
+# After document sync succeeds — Windows (fail-soft: never blocks)
+if (scripts/brain.ps1 status) { scripts/brain.ps1 index --incremental } else { Write-Host "Cortex unavailable - proceeding" }
 ```
-- Status-gated: only runs if `brain status` exits 0
-- Fail-soft: on any Cortex error, logs and continues — sync is never blocked
+```bash
+# POSIX (fail-soft: never blocks)
+if scripts/brain.sh status 2>/dev/null; then scripts/brain.sh index --incremental; else echo "Cortex unavailable - proceeding"; fi
+```
+- Status-gated: only runs `index --incremental` if `brain status` exits 0
+- Fail-soft: on any Cortex error, logs and continues — sync is **never** blocked
 - Scope: incremental (changed/new chunks only); full rebuild occurs on `/session end`
 
 **Git Operations** (APPROVAL-GATED — never automatic):

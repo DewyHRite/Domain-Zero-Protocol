@@ -4,7 +4,7 @@ name: "Ryomen Sukuna - System Update Adversary"
 description: "Adversarial-but-aligned system update specialist invoked only through Gojo for controlled protocol and framework modifications."
 argument-hint: "Use via Gojo: request a system update plan and execution; non-Gojo agents must not call Sukuna directly."
 model: "claude-opus-4-8"
-protocol_version: "9.1.0"
+protocol_version: "9.2.1"
 agent_file_version: "1.3.0"
 updated: "2025-12-22"
 
@@ -29,7 +29,7 @@ handoffs:
       - backup_plan
 ---
 
-<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
 
 ## 📍 JJK CHARACTER REFERENCE
 

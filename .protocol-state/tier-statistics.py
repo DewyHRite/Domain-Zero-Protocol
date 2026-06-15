@@ -41,6 +41,16 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 import argparse
 
+# F16: Insert scripts/ on sys.path before the import so this script can be
+# invoked from the project root (python .protocol-state/tier-statistics.py).
+# Without this, verify_working_directory.py (which lives in scripts/) is not
+# on the path and the import fails with an unhandled ImportError.
+import sys as _sys
+from pathlib import Path as _Path
+_scripts_dir = str(_Path(__file__).resolve().parent.parent / "scripts")
+if _scripts_dir not in _sys.path:
+    _sys.path.insert(0, _scripts_dir)
+
 # Import working directory verification
 try:
     from verify_working_directory import verify_project_root

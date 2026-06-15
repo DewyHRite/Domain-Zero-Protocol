@@ -1,5 +1,5 @@
 {
-  "protocol_version": "9.1.0",
+  "protocol_version": "9.2.1",
   "compaction_recovery": {
     "last_recovery_timestamp": null,
     "recovery_count": 0,
@@ -330,11 +330,11 @@
       "session_active": true,
       "start_time": "2026-06-14T21:23:20.442246+00:00",
       "last_interaction_time": "2026-06-15T00:32:08.279622+00:00",
-      "last_alert_time": null,
-      "alert_count": 0,
+      "last_alert_time": "2026-06-15T03:34:44.782245+00:00",
+      "alert_count": 2,
       "escalation_level": 0,
-      "user_last_choice": null,
-      "break_acknowledged": false,
+      "user_last_choice": "save_and_break",
+      "break_acknowledged": true,
       "high_risk_operations_blocked": false
     },
     "session_metrics": {
@@ -342,10 +342,10 @@
       "continuous_work_minutes": 188,
       "break_timestamps": [],
       "total_breaks": 0,
-      "alerts_issued": 0,
+      "alerts_issued": 2,
       "alerts_ignored": 0,
       "continues_chosen": 0,
-      "breaks_chosen": 0
+      "breaks_chosen": 1
     },
     "thresholds": {
       "initial_alert_minutes": 240,
@@ -402,8 +402,8 @@
         "continues_chosen": 1
       }
     ],
-    "last_updated": "2026-06-14T20:32:08.290616",
-    "protocol_version": "8.11.0"
+    "last_updated": "2026-06-14T23:34:44.791234",
+    "protocol_version": "9.2.1"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",
@@ -20750,8 +20750,8 @@
       ],
       "metadata": {
         "created": "2025-12-31T00:00:00Z",
-        "protocol_version": "9.0.0",
-        "last_updated": "2026-01-06T04:32:06.026632+00:00",
+        "protocol_version": "9.2.1",
+        "last_updated": "2026-06-14T00:00:00Z",
         "total_sessions_all_time": 1004
       }
     }
@@ -20843,5 +20843,99 @@
       "track_duration_at_invocation": true,
       "_comment": "Correlates agent invocations with session duration to detect patterns"
     }
+  },
+  "script_orchestration": {
+    "_schema_version": "1.0.0",
+    "_comment": "Script orchestration run history \u2014 compact per-event records only. results{} stores the LATEST run per event (latest-wins). history[] is a chronological log capped at 50 entries (history_max).",
+    "history_max": 50,
+    "results": {
+      "pre-release": {
+        "event": "pre-release",
+        "ts": "2026-06-15T03:27:17.412609+00:00",
+        "status": "success",
+        "steps": [
+          {
+            "script": ".protocol-state\\gate-validate-protocol.py",
+            "exit_code": 0,
+            "status": "success",
+            "stdout": "\nValidating domain record...\n[OK] domain.record.md size OK (310 / 5000 lines)\n\n[OK] Validation SUCCESS\n   10/12 files passed\n   2 drift alert(s)\n\n",
+            "stderr": ""
+          },
+          {
+            "script": ".protocol-state\\gate-validate-agents.py",
+            "exit_code": 0,
+            "status": "success",
+            "stdout": "",
+            "stderr": "\\u2139\\ufe0f  No custom agent directory found: C:\\Users\\Dewy\\OneDrive\\Documents\\Personal_IT_Projects\\Domain_Zero\\.claude\\agents\n"
+          }
+        ]
+      }
+    },
+    "history": [
+      {
+        "event": "pre-release",
+        "ts": "2026-06-15T03:23:13.977232+00:00",
+        "status": "success",
+        "steps": [
+          {
+            "script": ".protocol-state\\gate-validate-protocol.py",
+            "exit_code": 0,
+            "status": "success",
+            "stdout": "\nValidating domain record...\n[OK] domain.record.md size OK (310 / 5000 lines)\n\n[OK] Validation SUCCESS\n   11/12 files passed\n   1 drift alert(s)\n\n",
+            "stderr": ""
+          },
+          {
+            "script": ".protocol-state\\gate-validate-agents.py",
+            "exit_code": 0,
+            "status": "success",
+            "stdout": "",
+            "stderr": "\\u2139\\ufe0f  No custom agent directory found: C:\\Users\\Dewy\\OneDrive\\Documents\\Personal_IT_Projects\\Domain_Zero\\.claude\\agents\n"
+          }
+        ]
+      },
+      {
+        "event": "pre-release",
+        "ts": "2026-06-15T03:23:54.080795+00:00",
+        "status": "success",
+        "steps": [
+          {
+            "script": ".protocol-state\\gate-validate-protocol.py",
+            "exit_code": 0,
+            "status": "success",
+            "stdout": "\nValidating domain record...\n[OK] domain.record.md size OK (310 / 5000 lines)\n\n[OK] Validation SUCCESS\n   10/12 files passed\n   2 drift alert(s)\n\n",
+            "stderr": ""
+          },
+          {
+            "script": ".protocol-state\\gate-validate-agents.py",
+            "exit_code": 0,
+            "status": "success",
+            "stdout": "",
+            "stderr": "\\u2139\\ufe0f  No custom agent directory found: C:\\Users\\Dewy\\OneDrive\\Documents\\Personal_IT_Projects\\Domain_Zero\\.claude\\agents\n"
+          }
+        ]
+      },
+      {
+        "event": "pre-release",
+        "ts": "2026-06-15T03:27:17.412609+00:00",
+        "status": "success",
+        "steps": [
+          {
+            "script": ".protocol-state\\gate-validate-protocol.py",
+            "exit_code": 0,
+            "status": "success",
+            "stdout": "\nValidating domain record...\n[OK] domain.record.md size OK (310 / 5000 lines)\n\n[OK] Validation SUCCESS\n   10/12 files passed\n   2 drift alert(s)\n\n",
+            "stderr": ""
+          },
+          {
+            "script": ".protocol-state\\gate-validate-agents.py",
+            "exit_code": 0,
+            "status": "success",
+            "stdout": "",
+            "stderr": "\\u2139\\ufe0f  No custom agent directory found: C:\\Users\\Dewy\\OneDrive\\Documents\\Personal_IT_Projects\\Domain_Zero\\.claude\\agents\n"
+          }
+        ]
+      }
+    ],
+    "last_updated": "2026-06-15T03:27:17.412609+00:00"
   }
 }

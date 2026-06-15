@@ -62,20 +62,23 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         repo = Path(args.repo).resolve()
-        cfg = cfgmod.load(repo, allow_unsafe=args.allow_unsafe_data_dir)
-        store = _store(repo, cfg, allow_unsafe=args.allow_unsafe_data_dir)
+        allow_unsafe = args.allow_unsafe_data_dir
+        cfg = cfgmod.load(repo, allow_unsafe=allow_unsafe)
+        # Build embedder first so _store can derive dimension from the model.
+        emb = _embedder(repo, cfg, allow_unsafe=allow_unsafe)
+        store = _store(repo, cfg, emb, allow_unsafe=allow_unsafe)
         if args.cmd == "status":
             return _status(repo, cfg, store, as_json=args.json)
         if args.cmd == "index":
-            return _index(repo, cfg, store, dry_run=args.dry_run, quiet=args.quiet, allow_unsafe=args.allow_unsafe_data_dir)
+            return _index(repo, cfg, store, emb, dry_run=args.dry_run, quiet=args.quiet, allow_unsafe=allow_unsafe)
         if args.cmd == "query":
-            return _query(repo, cfg, store, args)
+            return _query(repo, cfg, store, args, emb=emb, allow_unsafe=allow_unsafe)
         if args.cmd == "remember":
-            return _remember(repo, cfg, store, args, allow_unsafe=args.allow_unsafe_data_dir)
+            return _remember(repo, cfg, store, args, emb=emb, allow_unsafe=allow_unsafe)
         if args.cmd == "reset":
-            return _reset(repo, cfg, args, allow_unsafe=args.allow_unsafe_data_dir)
+            return _reset(repo, cfg, args, allow_unsafe=allow_unsafe)
         if args.cmd == "export":
-            return _export(repo, cfg, args, allow_unsafe=args.allow_unsafe_data_dir)
+            return _export(repo, cfg, args, allow_unsafe=allow_unsafe)
         raise AssertionError(args.cmd)
     except CortexError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
@@ -85,13 +88,19 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
 
-def _store(repo: Path, cfg: dict, *, allow_unsafe: bool = False) -> Store:
-    backend = "stub" if cfgmod.is_stub_model(cfg) else "sqlite_vec"
-    return Store(paths.db_path(repo, cfg, allow_unsafe=allow_unsafe), dim=384, vector_backend=backend)
-
-
 def _embedder(repo: Path, cfg: dict, *, allow_unsafe: bool = False) -> Embedder:
     return Embedder(cfg["model"], cache_dir=paths.model_cache(repo, cfg, allow_unsafe=allow_unsafe), stub=cfgmod.is_stub_model(cfg))
+
+
+def _store(repo: Path, cfg: dict, embedder: "Embedder | None" = None, *, allow_unsafe: bool = False) -> Store:
+    """Create the Store, deriving vector dimension from the loaded embedder.
+
+    If no embedder is provided (e.g. status / dry-run paths that never embed),
+    fall back to the embedder's default dim so we do not hard-code 384.
+    """
+    backend = "stub" if cfgmod.is_stub_model(cfg) else "sqlite_vec"
+    dim = embedder.dim if embedder is not None else Embedder(cfg["model"], stub=cfgmod.is_stub_model(cfg)).dim
+    return Store(paths.db_path(repo, cfg, allow_unsafe=allow_unsafe), dim=dim, vector_backend=backend)
 
 
 def _status(repo: Path, cfg: dict, store: Store, *, as_json: bool) -> int:
@@ -121,12 +130,11 @@ def _status(repo: Path, cfg: dict, store: Store, *, as_json: bool) -> int:
     return 0
 
 
-def _index(repo: Path, cfg: dict, store: Store, *, dry_run: bool, quiet: bool = False, allow_unsafe: bool = False) -> int:
+def _index(repo: Path, cfg: dict, store: Store, emb: "Embedder", *, dry_run: bool, quiet: bool = False, allow_unsafe: bool = False) -> int:
     if dry_run:
         summary = ingest.index(repo, cfg, store, None, dry_run=True)
         print(json.dumps(summary, indent=2))
         return 0
-    emb = _embedder(repo, cfg, allow_unsafe=allow_unsafe)
     summary = ingest.index(repo, cfg, store, emb, dry_run=dry_run, progress=None if quiet else _progress)
     print(json.dumps(summary, indent=2))
     return 0
@@ -140,8 +148,9 @@ def _progress(data: dict) -> None:
     )
 
 
-def _query(repo: Path, cfg: dict, store: Store, args) -> int:
-    emb = _embedder(repo, cfg)
+def _query(repo: Path, cfg: dict, store: Store, args, *, emb: "Embedder | None" = None, allow_unsafe: bool = False) -> int:
+    if emb is None:
+        emb = _embedder(repo, cfg, allow_unsafe=allow_unsafe)
     trusts = [item.strip() for item in args.trust.split(",") if item.strip()]
     results = store.search(emb.embed(args.text), k=args.k or int(cfg.get("top_k", 5)), trust=trusts)
     if args.json:
@@ -156,8 +165,9 @@ def _query(repo: Path, cfg: dict, store: Store, args) -> int:
     return 0
 
 
-def _remember(repo: Path, cfg: dict, store: Store, args, *, allow_unsafe: bool = False) -> int:
-    emb = _embedder(repo, cfg, allow_unsafe=allow_unsafe)
+def _remember(repo: Path, cfg: dict, store: Store, args, *, emb: "Embedder | None" = None, allow_unsafe: bool = False) -> int:
+    if emb is None:
+        emb = _embedder(repo, cfg, allow_unsafe=allow_unsafe)
     refs = [item.strip() for item in args.refs.split(",") if item.strip()]
     record = do_remember(
         repo,

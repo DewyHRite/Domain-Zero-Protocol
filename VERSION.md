@@ -1,5 +1,56 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
 # Domain Zero Protocol - Version Information
+
+**Version:** v9.2.1
+**Release Date:** 2026-06-14
+**Release Type:** FEATURE Release (Central DZP Script Orchestration — PATCH-ORCH-001)
+
+---
+
+## Release Summary — v9.2.1 (FEATURE)
+
+v9.2.1 ships the **Central DZP Script Orchestration System** (PATCH-ORCH-001): a root-level `dzp.py` entry-point, a `.protocol-state/script_coordinator.py` engine, and a `script_dependencies.yaml` event registry. The system wires 7 DZP lifecycle events (session-update, session-end, ts-start, ts-complete, pre-protected-edit, pre-release, toji-snapshot) to sequenced, dependency-aware script steps with per-event fail-soft vs fail-CLOSED gates. 11 SEC-ORCH security controls and SEC-COORD-001..005/005-EXT remediations applied; Megumi Tier-3 @approved (one P3 accepted-risk documented). Dev-only; distro-excluded. Builds on v9.1.1 base (v9.2.0 intentionally skipped per USER decision).
+
+### Headline changes (PATCH-ORCH-001)
+- **`dzp.py`** (root entry-point) — single CLI to run any registered DZP lifecycle event by name; dispatches to `script_coordinator.py`
+- **`.protocol-state/script_coordinator.py`** (engine) — event-driven step sequencer with dependency resolution, per-step timeouts, fail-soft/fail-CLOSED classification, structured logging
+- **`script_dependencies.yaml`** (registry) — 7 events mapped to ordered step lists with gate policy and dependency declarations (event->step only; no cross-event wiring)
+- **44 tests passed / 1 skipped** — Yuuji Tier-3 test suite; Megumi Tier-3 @approved
+- **Security** — SEC-ORCH-001..011 + SEC-COORD-001..005/005-EXT resolved; one P3 accepted-risk documented
+- **Distro** — excluded from `dzp-publish` allowlist (dev-only tooling)
+
+### Why FEATURE (not PATCH or MINOR)
+Adds a new user-facing orchestration surface (dzp.py CLI + event engine) that does not exist in v9.1.1 and is intentionally numbered 9.2.1 per USER direction (9.2.0 skipped).
+
+---
+
+## Previous Release — v9.1.1 (PATCH)
+
+**Version:** v9.1.1
+**Release Date:** 2026-06-14
+**Release Type:** PATCH Release (Cortex Stabilization — PATCH-STABILIZE-001)
+
+---
+
+## Release Summary — v9.1.1 (PATCH)
+
+v9.1.1 is a **stabilization patch** (PATCH-STABILIZE-001) that fixes real defects in the published v9.1.0 Cortex engine, hardens the brain-index hooks, reconciles leftover version drift, and aligns documentation with actual fail-soft behavior.
+
+### Headline changes (PATCH-STABILIZE-001)
+- **Cortex core fixes** — `brain.py`: propagate `--allow-unsafe-data-dir` to `status` and `query` (PR#92:73); derive embedding dimension from model, not hard-coded 384 (PR#92:95). `cortex/ingest.py`: guard chunk/vector cardinality mismatch before upsert (PR#92:153). `cortex/paths.py`: anchor relative `data_dir` overrides to `repo_root` (PR#92:75).
+- **Hook hardening** (same class as SEC-ORCH-002/006) — `.claude/settings.template.json`: add missing `$TimeoutSeconds = 30` definition (PowerShell hook was broken). `scripts/brain-index-hook.ps1` + `.sh`: pass repo path as argv data, not interpolated into `-c` source (prevents apostrophe/path-injection breakage); make lock acquisition atomic + ownership-safe (eliminates TOCTOU race from `Test-Path`→`New-Item` + overlapping index runs).
+- **Dependency-scanner robustness** — `scripts/dependency-scanner.py`: confine `--export` path to repository root (PR#92:742).
+- **Version-drift reconciliation** — `project-state.json`: `session_tracking.protocol_version` straggler (`8.11.0`) and a secondary `9.0.0` straggler both reconciled to `9.1.1`.
+- **Documentation alignment** — `.claude/commands/session-update.md`: replace `&&`-chained shell snippet with fail-soft `if status { index } else { proceed }` to match `session_monitor._sync_cortex_index()`. `protocol/skills/session.md`: wire snapshot export into `/session end` or remove the promise. `protocol/skills/ts.md`: use default trust tier, keep Cortex failures visible. `protocol/SUKUNA-REPORT.md`: fix fast-path invocation note. `slash-commands/ts-codered.md`: make Cortex footer mandatory, not optional.
+- **Sukuna live-bug fixes** — `.protocol-state/{tier-statistics,gojo-learn,sukuna-learn}.py`: insert `scripts/` on `sys.path` before `from verify_working_directory import …` (import failed from project root). `snapshot_integration.py`: fix runtime constant from `scripts/create-snapshot.py` to `.protocol-state/create-snapshot.py` (auto-snapshots were silently failing); update stale docs (`SNAPSHOT_INTEGRATION.md`, `DEPENDENCY_SCANNER_GUIDE.md`, `gojo-snapshot-integration-guide.md`).
+- **Security** — Megumi @approved, zero new SEC-IDs. All findings are defects from the v9.1.0 Cortex merge, not new vulnerabilities.
+
+### Why PATCH
+Bug fixes in the published Cortex engine, hook hardening, and documentation corrections with full backward compatibility — no new features, no breaking changes.
+
+---
+
+## Previous Release — v9.1.0 (MINOR)
 
 **Version:** v9.1.0
 **Release Date:** 2026-06-14

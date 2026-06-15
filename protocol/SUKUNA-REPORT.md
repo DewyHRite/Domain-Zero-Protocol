@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.1.0
+**Version**: 9.2.1
 **Status**: Production
 **Last Updated**: 2026-06-14
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
@@ -47,6 +47,132 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
 4. AI agents automatically apply patches on next upgrade/setup
 ```
+
+---
+
+## 📦 SYSTEM UPDATES (v9.2.1)
+
+### PATCH-ORCH-001 (2026-06-14): Central DZP Script Orchestration System — v9.2.1 Version Cascade
+
+**Patch ID**: PATCH-ORCH-001
+**Applies to version**: v9.1.1 (feature addition; dev-only; v9.2.0 intentionally skipped per USER)
+**Priority**: P2 (new feature; no P0/P1 security findings; one P3 accepted-risk)
+**Category**: Feature addition, orchestration engine, version cascade
+**Status**: APPLIED
+**Required For**: All installations that want DZP lifecycle event orchestration (opt-in; distro-excluded)
+**Invoked by**: User (direct + Gojo-coordinated) → Sukuna executed
+**Implemented by**: Yuuji (Tier-3, 44 passed/1 skipped) + Megumi (Tier-3 @approved, SEC-ORCH-001..011 + SEC-COORD-001..005/005-EXT resolved) + Sukuna (version cascade, 2026-06-14)
+
+**Summary**: Ships the Central DZP Script Orchestration System — a root-level `dzp.py` entry-point, a `.protocol-state/script_coordinator.py` engine, and a `script_dependencies.yaml` event registry. Wires 7 DZP lifecycle events (session-update, session-end, ts-start, ts-complete, pre-protected-edit, pre-release, toji-snapshot) to sequenced, dependency-aware script steps with per-event fail-soft vs fail-CLOSED gates. Dev-only tooling; excluded from distro allowlist.
+
+**Deliverables**:
+
+*A. New Files (dev-only)*:
+- `dzp.py` (root) — CLI entry-point dispatching lifecycle events to coordinator
+- `.protocol-state/script_coordinator.py` — step sequencer with dependency resolution, timeouts, gate classification, structured logging
+- `script_dependencies.yaml` — event->step registry for 7 lifecycle events
+
+*B. Security Findings (Megumi Tier-3 @approved)*:
+- SEC-ORCH-001..011 — orchestration surface controls (input validation, path confinement, privilege separation, timeout enforcement, log sanitization, event allowlisting, output capture sandboxing, error message sanitization, concurrent execution guards, step enumeration guards, injection prevention)
+- SEC-COORD-001..005 — script_coordinator.py remediations
+- SEC-COORD-005-EXT — extended coverage for dynamic step resolution edge cases
+- One P3 accepted-risk — documented in security-review.md; rationale: risk is bounded to dev environment (distro-excluded)
+
+*C. Test results*: 44 passed / 1 skipped — Yuuji Tier-3 suite (unit + integration + E2E)
+
+**Version cascade files touched** (mandated set — 9.1.1 → 9.2.1):
+- `CLAUDE.md` (root) — `[CORE FILE]` stamp, title, `**Version**`, canonical version reference, VERSION INFORMATION section (Current Version + Protocol Version + new history line)
+- `protocol/CLAUDE.md` — `[CORE FILE]` stamp, title, `**Version**`, canonical version reference, VERSION INFORMATION section
+- `VERSION.md` — `[CORE FILE]` stamp, `**Version**`, new v9.2.1 release section prepended
+- `protocol.config.yaml` — `canonical_repository.version`, `release_branch`, `versioning.protocol_version`
+- `AI_INSTRUCTIONS.md` — `[CORE FILE]` stamp, `**Version**`
+- `README.md` — `[CORE FILE]` stamp, `**Version**`
+- `.protocol-state/project-state.json` — top-level + all nested `protocol_version` fields (3 occurrences)
+- All 10 `protocol/*.agent.md` files — `[CORE FILE]` stamp + `protocol_version:` YAML field
+- `CHANGELOG.md` — v9.2.1 entry (PATCH-ORCH-001 detail block) prepended before [9.1.1]
+- `protocol/SUKUNA-REPORT.md` — header version + this entry (append-only; all history preserved)
+
+**Security**: Megumi Tier-3 @approved. SEC-ORCH-001..011 + SEC-COORD-001..005/005-EXT resolved. One P3 accepted-risk (bounded to dev environment). Zero P0/P1/P2 open.
+
+**Validation**:
+```bash
+python scripts/distro/assert_version.py --root .   # MUST PASS at 9.2.1
+python scripts/verify-auto-invoked.py
+python scripts/validate-protocol.py --check --ci-mode
+python -c "import json; json.load(open('.protocol-state/project-state.json')); print('OK')"
+```
+
+**Rollback**: `git checkout <9.1.1-commit> -- <file>` for any individual file; or `git revert <cascade-commit>` once committed.
+
+---
+
+## 📦 SYSTEM UPDATES (v9.1.1)
+
+### PATCH-STABILIZE-001 (2026-06-14): Cortex Stabilization — v9.1.1 Version Cascade
+
+**Patch ID**: PATCH-STABILIZE-001
+**Applies to version**: v9.1.0 (stabilization patch; no new features)
+**Priority**: P2 (bugs + hook hardening + drift; zero P0/P1)
+**Category**: Bug fix, hook hardening, version cascade
+**Status**: APPLIED
+**Required For**: All v9.1.0 installations running the DZP Cortex engine
+**Invoked by**: User ("GO v9.1.1") → Gojo-coordinated → Sukuna executed
+**Implemented by**: Yuuji (code fixes) + Megumi (@approved, zero new SEC-IDs) + Sukuna (version cascade, 2026-06-14)
+
+**Summary**: Stabilizes the published v9.1.0 DZP Cortex by fixing real engine defects surfaced by PR#92 CodeRabbit review (17 inline findings, 6 folded into this patch) and Sukuna live-bug discoveries. Hardens brain-index hooks against TOCTOU and argv-injection issues. Reconciles leftover version drift in project-state.json. Aligns documentation with actual fail-soft behavior.
+
+**Findings folded in**:
+
+*A. Cortex Core (PR#92)*:
+- `brain.py:73` — `--allow-unsafe-data-dir` not propagated to `status`/`query`
+- `brain.py:95` — embedding dimension hard-coded 384 instead of derived from model
+- `cortex/ingest.py:153` — no cardinality guard before upsert (chunk/vector mismatch)
+- `cortex/paths.py:75` — relative `data_dir` resolved against CWD, not `repo_root`
+
+*B. Hook Hardening*:
+- `.claude/settings.template.json` — missing `$TimeoutSeconds = 30` (hook threw TerminatingError)
+- `scripts/brain-index-hook.ps1` + `.sh` — repo path interpolated into `python -c` source (breaks on apostrophes); `Test-Path`→`New-Item` TOCTOU race + non-ownership-tied cleanup
+
+*C. Robustness*:
+- `scripts/dependency-scanner.py:742` — `--export` path not confined to repo root
+
+*D. Version-Drift Reconciliation*:
+- `project-state.json` — nested `session_tracking.protocol_version` and `tier_tracking.metadata.protocol_version` stragglers reconciled to `9.1.1`
+
+*E. Documentation Alignment*:
+- `.claude/commands/session-update.md` — `&&`-chain replaced with fail-soft pattern
+- `protocol/skills/session.md` — snapshot export gap closed or removed
+- `protocol/skills/ts.md` — default trust tier; Cortex failures kept visible
+- `protocol/SUKUNA-REPORT.md` — fast-path invocation note corrected
+- `slash-commands/ts-codered.md` — Cortex footer made mandatory
+
+*F. Sukuna Live-Bug Fixes*:
+- `.protocol-state/tier-statistics.py`, `gojo-learn.py`, `sukuna-learn.py` — `scripts/` missing from `sys.path`; `from verify_working_directory import …` failing from project root
+- `.protocol-state/snapshot_integration.py:54` — runtime constant `scripts/create-snapshot.py` → `.protocol-state/create-snapshot.py`; stale path reference updated in `SNAPSHOT_INTEGRATION.md`, `DEPENDENCY_SCANNER_GUIDE.md`, `gojo-snapshot-integration-guide.md`
+
+**Version cascade files touched** (mandated set — 9.1.0 → 9.1.1):
+- `CLAUDE.md` (root) — `[CORE FILE]` stamp, title, `**Version**`, VERSION INFORMATION section
+- `protocol/CLAUDE.md` — `[CORE FILE]` stamp, title, `**Version**`
+- `VERSION.md` — `[CORE FILE]` stamp, `**Version**`, new v9.1.1 release section prepended
+- `protocol.config.yaml` — `versioning.protocol_version`, `canonical_repository.version`, `release_branch`
+- `AI_INSTRUCTIONS.md` — `[CORE FILE]` stamp, `**Version**`
+- `README.md` — `[CORE FILE]` stamp, `**Version**`
+- `.protocol-state/project-state.json` — top-level + 2 nested `protocol_version` fields
+- All 10 `protocol/*.agent.md` files — `[CORE FILE]` stamp + `protocol_version:` YAML field
+- `CHANGELOG.md` — v9.1.1 entry (PATCH-STABILIZE-001 detail block) prepended before [9.1.0]
+- `protocol/SUKUNA-REPORT.md` — header version + this entry (append-only; all history preserved)
+
+**Security**: Megumi @approved. Zero new SEC-IDs. Hook hardening closes same class as SEC-ORCH-002/006 (not assigned new IDs — these are defect fixes, not new vulnerability findings).
+
+**Validation**:
+```bash
+python scripts/distro/assert_version.py --root .   # MUST PASS
+python scripts/verify-auto-invoked.py
+python scripts/validate-protocol.py --check --ci-mode
+python -c "import json; json.load(open('.protocol-state/project-state.json')); print('OK')"
+```
+
+**Rollback**: `git checkout v9.1.0-tip -- <file>` for any individual file; or revert the entire cascade via `git revert <cascade-commit>` once committed.
 
 ---
 
@@ -4140,8 +4266,20 @@ Each file received exactly 13 added lines (7-line top banner block + blank line 
 
 ---
 
+## CORRECTION NOTE — v9.1.1 stabilization (2026-06-14, Yuuji)
+
+**Applies to**: PATCH-CORTEX-POINTERS-001 adversarial self-check, line ~4139
+
+**Original text**: "RISK FLAGGED: `--time-only` and `sync` subcommand are documented as the expected implementation. Yuuji must implement `session_monitor.py sync --time-only` to match."
+
+**Correction**: This risk flag contained the wrong subcommand. SEC-DOC-001 (documented above) had already established that the correct invocation is `session_monitor.py update --time-only` (not `sync --time-only`) — the `sync` subcommand ignores `--time-only`. The risk flag in this note should have read `session_monitor.py update --time-only`. The three corrected doc files (`protocol/skills/session.md`, `.claude/commands/session-update.md`, `slash-commands/session-update.md`) are consistent with `update --time-only`. No code change is required; this is a correction to the risk-flag wording only.
+
+**APPEND-ONLY**: history preserved above. This note does not alter or retract the SEC-DOC-001 patch record.
+
+---
+
 **END OF SUKUNA-REPORT.md**
 
-**Last Updated**: 2026-06-14 by Sukuna (System Update Adversary)
-**Protocol Version**: 9.1.0
+**Last Updated**: 2026-06-14 by Sukuna (System Update Adversary) / v9.1.1 correction note appended by Yuuji
+**Protocol Version**: 9.1.0 (cascade to 9.1.1 pending Sukuna)
 **Patches Active**: 8 security patches + 2 documentation patches + 1 compliance patch + PATCH-TOJI-001 (CRITICAL) + PATCH-DISTRO-001 + PATCH-BRAIN-001 + PATCH-BRAIN-002 (DZP Cortex v9.1.0) + PATCH-CORTEX-POINTERS-001 (Cortex banner consistency + /session update core-sync docs)

@@ -1,18 +1,18 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v9.1.0
+<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v9.2.1
 ## Main Protocol File - Domain Zero
 
-**Version**: 9.1.0
+**Version**: 9.2.1
 **Status**: Production-Ready
 **Last Updated**: 2026-06-14
-**Major Enhancements**: v8.13.0 PATCH-SESSION-005 (Toji External Auditor Addition - 10th agent, protocol/toji.agent.md, ~\.claude\agents\toji.md, copilot-instructions sync v8.13.0, AI_INSTRUCTIONS update); v8.13.0 PATCH-SESSION-004 (Session Monitoring Enhancement - 5 defensive layers, 70-85% → 85-90% coverage); v8.11.0 Session Management & TS Troubleshooting Tier System (/session, /ts_tier1-5, DZP ROE v2.0.0); v8.10.0 DZP Rules of Engagement (Post-Compaction Recovery, /dzp-roe slash command); v8.9.0 Claude Skills Integration (16 Anthropic skills, Implementation Restrictions, File Rotation, OWASP Cheatsheets); v8.8.0 Phase 4 (Tier Validation System + Dual Learning Systems); v8.7.0 Custom Agent Security Framework; v8.7.0 Nine-Agent System (Sukuna formalized as 9th agent); Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions, Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
+**Major Enhancements**: v9.2.1 (FEATURE) Central DZP Script Orchestration System (PATCH-ORCH-001): root-level dzp.py entry-point + .protocol-state/script_coordinator.py engine + script_dependencies.yaml event registry; 7 lifecycle events; fail-soft vs fail-CLOSED per-event gates; 11 SEC-ORCH controls + SEC-COORD-001..005/005-EXT remediations; dev-only; Megumi Tier-3 @approved; builds on v9.1.1; v9.2.0 skipped; v8.13.0 PATCH-SESSION-005 (Toji External Auditor Addition - 10th agent, protocol/toji.agent.md, ~\.claude\agents\toji.md, copilot-instructions sync v8.13.0, AI_INSTRUCTIONS update); v8.13.0 PATCH-SESSION-004 (Session Monitoring Enhancement - 5 defensive layers, 70-85% → 85-90% coverage); v8.11.0 Session Management & TS Troubleshooting Tier System (/session, /ts_tier1-5, DZP ROE v2.0.0); v8.10.0 DZP Rules of Engagement (Post-Compaction Recovery, /dzp-roe slash command); v8.9.0 Claude Skills Integration (16 Anthropic skills, Implementation Restrictions, File Rotation, OWASP Cheatsheets); v8.8.0 Phase 4 (Tier Validation System + Dual Learning Systems); v8.7.0 Custom Agent Security Framework; v8.7.0 Nine-Agent System (Sukuna formalized as 9th agent); Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions, Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 
 ---
 
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v9.1.0
+> **Current Local Protocol Version**: v9.2.1
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -1549,12 +1549,13 @@ All protocol settings are stored in `protocol.config.yaml`:
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 9.1.0
-**Protocol Version**: 9.1.0
+**Current Version**: 9.2.1
+**Protocol Version**: 9.2.1
 **Release Date**: 2026-06-14
 **Last Updated**: 2026-06-14
 
 **Recent Version History**:
+- v9.2.1 - **FEATURE**: PATCH-ORCH-001 — Central DZP Script Orchestration System: root dzp.py entry-point + .protocol-state/script_coordinator.py engine + script_dependencies.yaml event registry; 7 lifecycle events (session-update, session-end, ts-start, ts-complete, pre-protected-edit, pre-release, toji-snapshot); fail-soft vs fail-CLOSED per-event gates; 11 SEC-ORCH controls + SEC-COORD-001..005/005-EXT remediations; dev-only (distro-excluded); Megumi Tier-3 @approved; builds on v9.1.1 (v9.2.0 skipped by USER decision).
 - v9.1.0 - **MINOR**: DZP Cortex (PLAN-BRAIN-002) — local semantic memory brain: sqlite-vec + fastembed embedding index, /brain skill + brain-index-hook scripts, no-daemon CLI perf gates, Phase 10 agent doc blocks (all 10 agents). SEC-BRAIN-007/008 remediated (@approved). /session update promoted to full-sync orchestrator (project-doc sync + mandatory incremental Cortex re-index; --time-only fast path preserved; /session end = full rebuild). Cortex pointer banners in 3 protected docs + templates. P3 security hardening: SEC-BRAIN-009/SEC-SCRIPT-001/SEC-SCRIPT-002 (@approved) + SEC-DOC-001 (doc fix). Snyk 24-finding triage: 0 true-positive. Test gate CLEARED; DZP-v9.1.0 branch committed locally, public push pending owner go-ahead.
 - v9.0.0 - **MAJOR**: Distro Publish Architecture (PATCH-DISTRO-001) + PATCH-TOJI-001 (CRITICAL Toji fabrication fix) + version reconciliation. All version files + 10 agents stamped to v9.0.0.
 - v8.13.0 - **PATCH**: PATCH-SESSION-005 (Toji External Auditor - new 10th agent, toji.agent.md v1.2.0, Claude Code stub, copilot-instructions.md full sync, AI_INSTRUCTIONS.md update)

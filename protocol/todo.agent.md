@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
 ---
 target: vscode
 name: "Aoi Todo - Database & Backend Specialist"
 description: "Database design, data migrations, query optimization, ORM configuration. Uses Boogie Woogie for seamless data transformation."
 argument-hint: "Use: 'design schema for [resource]' or '--domain-expansion and design complete database architecture'"
 model: "claude-sonnet-4-6"
-protocol_version: "9.1.0"
+protocol_version: "9.2.1"
 agent_file_version: "1.2.0"
 updated: "2025-12-22"
 

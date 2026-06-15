@@ -26,7 +26,7 @@ Debugging complex issues requiring multiple approaches, structured workflows, es
 
 Troubleshooting recalls prior bug patterns on entry and stores the resolution on completion, per the **Cortex Integration Contract** (`protocol/skills/brain.md`). All steps are **fail-soft** and never block bug resolution.
 
-- **RECALL (entry, every tier):** at each `# Review past patterns` hook, `brain status` then `brain query "<bug + files>" --trust trusted,semi` to surface how similar bugs were resolved before. Skip silently if Cortex is unavailable.
+- **RECALL (entry, every tier):** at each `# Review past patterns` hook, `brain status` then `brain query "<bug + files>"` (default trust tier) to surface how similar bugs were resolved before. If Cortex is unavailable, log the status output and continue — failures are visible, not suppressed.
 - **REMEMBER + INDEX (`/ts complete`):** after a session resolves, store one distilled lesson and refresh the index (see `/ts complete`). Never writes the protected docs — those remain the canonical record.
 
 ---

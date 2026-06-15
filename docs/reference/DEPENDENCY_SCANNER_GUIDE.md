@@ -86,7 +86,7 @@ AFFECTED AGENTS (2):
 
 RECOMMENDATIONS:
   ⚠️  HIGH IMPACT - Create Tier 3 snapshot before modifying
-  📸 Suggested: python scripts/create-snapshot.py --manual --tier 3
+  📸 Suggested: python .protocol-state/create-snapshot.py --manual --tier 3
   🔒 Suggested: Test changes in isolated branch first
 
 ═══════════════════════════════════════════════════════════════
@@ -403,7 +403,7 @@ done
 impact=$(python scripts/dependency-scanner.py --scan --analyze <file> | grep "RISK LEVEL:")
 
 if [[ "$impact" == *"CRITICAL"* ]] || [[ "$impact" == *"HIGH"* ]]; then
-    python scripts/create-snapshot.py --manual --tier 3 --description "Before modifying <file>"
+    python .protocol-state/create-snapshot.py --manual --tier 3 --description "Before modifying <file>"
 fi
 ```
 

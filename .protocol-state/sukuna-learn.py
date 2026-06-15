@@ -51,6 +51,12 @@ from typing import Dict, Any, List, Optional
 import argparse
 import hashlib
 
+# F16: Insert scripts/ on sys.path before the import so this script can be
+# invoked from the project root (python .protocol-state/sukuna-learn.py).
+_scripts_dir = str(Path(__file__).resolve().parent.parent / "scripts")
+if _scripts_dir not in sys.path:
+    sys.path.insert(0, _scripts_dir)
+
 # Import working directory verification
 try:
     from verify_working_directory import verify_project_root

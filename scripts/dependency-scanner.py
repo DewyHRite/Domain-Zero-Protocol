@@ -734,9 +734,10 @@ Performance:
 
         if args.export:
             output_path = Path(args.export).resolve()
-            # SEC-SCRIPT-001: confine export path to inside the project/repo dir.
-            # Resolve the candidate path and verify it stays inside cwd.
-            project_root = Path.cwd().resolve()
+            # SEC-SCRIPT-001 / C8: confine export path to the repository root.
+            # Use the script's own directory to derive the repo root so the check
+            # is stable regardless of the caller's CWD (v9.1.1 fix: was Path.cwd()).
+            project_root = Path(__file__).resolve().parent.parent
             try:
                 output_path.relative_to(project_root)
             except ValueError:

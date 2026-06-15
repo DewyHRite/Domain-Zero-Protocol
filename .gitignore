@@ -20,3 +20,8 @@ __pycache__/
 .protocol-state/brain/model-cache/
 .protocol-state/brain/index.log
 .protocol-state/brain/index.lock
+
+# v9.2.0 Script Orchestration — DEV-ONLY (USER decision: must NOT ship to distro)
+dzp.py
+.protocol-state/script_coordinator.py
+.protocol-state/script_dependencies.yaml

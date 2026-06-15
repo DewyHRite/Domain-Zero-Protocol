@@ -23,7 +23,7 @@ The snapshot integration system enables automatic context snapshots based on:
 **Module**: `.protocol-state/snapshot_integration.py`
 **Session State**: `.protocol-state/session-state.json` (operation tracking)
 **Project State**: `.protocol-state/project-state.json` (tier configuration)
-**Snapshot Creation**: `scripts/create-snapshot.py` (called automatically)
+**Snapshot Creation**: `.protocol-state/create-snapshot.py` (called automatically)
 
 ## When to Record Operations
 
@@ -316,10 +316,10 @@ python .protocol-state/snapshot_integration.py --record --description "Tier 3 te
 
 ```bash
 # List all snapshots
-python scripts/create-snapshot.py --list
+python .protocol-state/create-snapshot.py --list
 
 # Preview specific snapshot
-python scripts/restore-snapshot.py --preview <snapshot-id>
+python .protocol-state/restore-snapshot.py --preview <snapshot-id>
 ```
 
 ## Best Practices
@@ -452,7 +452,7 @@ For issues or questions about snapshot integration:
 
 1. Check this guide first
 2. Review `.protocol-state/snapshot_integration.py` source code
-3. Review `scripts/create-snapshot.py` for snapshot creation logic
+3. Review `.protocol-state/create-snapshot.py` for snapshot creation logic
 4. Check session-state.json for operation tracking status
 5. Review stderr logs for error messages
 

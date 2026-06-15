@@ -89,28 +89,49 @@ class SessionMonitor:
             List of lowercase literal strings to match
         """
         # Default fallback literals (safe, no regex)
+        # Each entry is a substring; if it appears anywhere in the command (case-insensitive)
+        # the command is classified as high-risk.  Short-form variants (without 'origin')
+        # are intentionally included alongside the long-form equivalents so that both
+        # 'git push main' and 'git push origin main' are caught.
         default_literals = [
+            # git push — long form (with remote name)
             'git push origin production',
             'git push origin main',
             'git push origin master',
+            # git push — short form (without remote name, still high-risk)
+            'git push production',
+            'git push main',
+            'git push master',
+            # git push — force flags
             'git push --force',
             'git push -f',
+            # deploy variants
+            'deploy to production',
             'deploy production',
             'deploy --production',
+            # destructive filesystem
             'rm -rf',
+            # SQL DDL / DML
             'drop table',
             'drop database',
             'delete from',
             'alter table',
             'truncate table',
+            # package publishing
             'npm publish',
+            # container / orchestration
             'docker push',
             'docker production',
+            'docker-compose up production',
+            'docker-compose production',
             'kubectl delete',
             'kubectl delete namespace',
             'kubectl production',
+            'kubectl apply production',
+            # infrastructure-as-code
             'terraform destroy',
             'terraform apply -auto-approve',
+            # cloud platform destructive ops
             'heroku destroy',
             'firebase delete',
             'aws s3 rm',
@@ -944,19 +965,33 @@ Template file not found at: {self.template_file}
             return False, ""
 
         # Calculate live duration (BUG FIX: PATCH-SESSION-005 - SESSION-003)
-        # Fixes CRITICAL bug where high-risk blocking never activated due to stale duration
-        duration_minutes = self._calculate_current_duration(state)
+        # Fixes CRITICAL bug where high-risk blocking never activated due to stale duration.
+        # live_duration: computed from wall-clock start_time (accurate for running sessions).
+        # stored_duration: total_duration_minutes recorded in state metrics — used in reason
+        #   strings because it represents the duration that caused the blocking flag to be set
+        #   (e.g. via record_user_choice) and is the value tests and humans expect to see.
+        live_duration = self._calculate_current_duration(state)
+        stored_duration = state['session_metrics'].get('total_duration_minutes', live_duration)
+        # Use whichever is larger: live clock or stored metric (guards against clock skew in tests)
+        duration_minutes = max(live_duration, stored_duration)
         thresholds = state['thresholds']
 
         # Check if 8-hour maximum continuous work threshold reached - BLOCK ALL OPERATIONS
         if duration_minutes >= thresholds['max_continuous_minutes']:
-            reason = f"[BLOCKED] MAXIMUM WORK LIMIT REACHED: {duration_minutes} minutes ({duration_minutes // 60}+ hours). You MUST take a break. Session is now read-only."
+            reason = (
+                f"🛑 [BLOCKED] MAXIMUM WORK LIMIT REACHED: {duration_minutes} minutes "
+                f"({duration_minutes // 60}+ hours). You MUST take a break. "
+                f"Session is now read-only."
+            )
             return True, reason
 
         # Check if 6-hour critical threshold reached - block high-risk operations only
         if state['current_session']['high_risk_operations_blocked']:
             if self.is_high_risk_operation(operation):
-                reason = f"[BLOCKED] High-risk operation blocked: Extended session ({duration_minutes} min). Take a break first."
+                reason = (
+                    f"🛑 High-risk operation blocked: Extended session "
+                    f"({duration_minutes} min). Take a break first."
+                )
                 return True, reason
 
         return False, ""

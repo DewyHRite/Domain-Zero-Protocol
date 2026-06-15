@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
 ---
 target: vscode
 name: "Toge Inumaki - API & Communication Specialist"
 description: "REST API design, GraphQL schemas, WebSocket implementations. Uses Cursed Speech for declarative API contracts."
 argument-hint: "Use: 'design REST API for [resource]' or '--domain-expansion and create complete API specification'"
 model: "claude-sonnet-4-6"
-protocol_version: "9.1.0"
+protocol_version: "9.2.1"
 agent_file_version: "1.2.0"
 updated: "2025-12-22"
 

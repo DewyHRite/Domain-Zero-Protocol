@@ -68,6 +68,12 @@ def data_dir(repo_root: str | Path, config: dict | None = None, *, allow_unsafe:
     override = str(config.get("data_dir") or "").strip()
     if override:
         d = Path(override).expanduser()
+        # A4: anchor relative overrides to repo_root (paths.py:75).
+        # Without this, a relative path resolves against CWD which changes
+        # depending on how/where the CLI is invoked, producing different
+        # data directories for the same repo.
+        if not d.is_absolute():
+            d = Path(repo_root).resolve() / d
     else:
         d = _os_data_root() / "dzp-cortex" / install_id(repo_root)
 
