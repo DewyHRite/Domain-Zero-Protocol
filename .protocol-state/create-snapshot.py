@@ -17,9 +17,9 @@ Features:
 - Snapshot manifest management
 
 Usage:
-    python scripts/create-snapshot.py --manual [--description "desc"]
-    python scripts/create-snapshot.py --auto --tier 2 --trigger operation_count
-    python scripts/create-snapshot.py --list
+    python .protocol-state/create-snapshot.py --manual [--description "desc"]
+    python .protocol-state/create-snapshot.py --auto --tier 2 --trigger operation_count
+    python .protocol-state/create-snapshot.py --list
 """
 
 import argparse

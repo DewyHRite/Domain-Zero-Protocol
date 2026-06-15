@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Domain Zero Protocol - Work Session Monitoring System
-Version: 8.13.0
+Version: 9.3.0
 Purpose: Actual implementation of work session tracking and safety alerts
 
 This module provides REAL enforcement of work session monitoring, replacing
@@ -33,6 +33,40 @@ except ImportError:
 MAX_BREAK_DURATION = 480  # 8 hours
 MIN_BREAK_DURATION = 1    # 1 minute
 MAX_SESSION_DURATION = 1440  # 24 hours
+
+
+def _parse_utc(timestamp: Optional[str]) -> Optional[datetime]:
+    """
+    Parse an ISO-8601 timestamp string and return a timezone-AWARE datetime in UTC.
+
+    BUG-SESSION-001 (v9.3.0): Centralized timestamp parsing for the safety path.
+    Legacy / pre-9.x state files (and externally edited state) can carry naive
+    timestamps with no UTC offset (e.g. "2026-02-14T21:51:18.445590"). Subtracting
+    a naive datetime from an aware `datetime.now(timezone.utc)` raises
+    `TypeError: can't subtract offset-naive and offset-aware datetimes`, which used
+    to crash `check_alert_needed()` and silently DISABLE the wellbeing safety check.
+
+    This helper normalizes every parse: naive -> assume UTC; aware -> convert to UTC.
+    Returns None if the string is missing or unparseable (callers treat None as
+    "no usable timestamp" rather than crashing).
+
+    Note: `datetime.fromisoformat()` on Python 3.11+ accepts a trailing 'Z'; on
+    older versions it does not, so we normalize 'Z' to '+00:00' defensively.
+    """
+    if not timestamp:
+        return None
+    try:
+        normalized = timestamp.strip()
+        if normalized.endswith('Z'):
+            normalized = normalized[:-1] + '+00:00'
+        dt = datetime.fromisoformat(normalized)
+    except (ValueError, TypeError):
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    else:
+        dt = dt.astimezone(timezone.utc)
+    return dt
 
 
 class SessionMonitor:
@@ -656,9 +690,10 @@ class SessionMonitor:
             print("[!] Session start_time is missing. Cannot check alert.")
             return False, None, {}
 
-        try:
-            start = datetime.fromisoformat(start_time)
-        except (ValueError, TypeError):
+        # BUG-SESSION-001 (v9.3.0): normalize naive->aware via _parse_utc so the
+        # aware/naive subtraction below can never raise (safety-critical path).
+        start = _parse_utc(start_time)
+        if start is None:
             print("[!] Invalid session start_time format. Cannot check alert.")
             return False, None, {}
 
@@ -669,17 +704,12 @@ class SessionMonitor:
         debounce_threshold = self._load_debounce_config(cli_override=debounce_override)
         last_alert_time = state['current_session'].get('last_alert_time')
 
-        if last_alert_time:
-            try:
-                last_alert = datetime.fromisoformat(last_alert_time)
-                minutes_since_last_alert = (now - last_alert).total_seconds() / 60
-
-                if minutes_since_last_alert < debounce_threshold:
-                    # Alert debounced - too soon since last alert
-                    return False, None, {}
-            except (ValueError, TypeError):
-                # Invalid timestamp format - proceed with alert check
-                pass
+        last_alert_dt = _parse_utc(last_alert_time)
+        if last_alert_dt is not None:
+            minutes_since_last_alert = (now - last_alert_dt).total_seconds() / 60
+            if minutes_since_last_alert < debounce_threshold:
+                # Alert debounced - too soon since last alert
+                return False, None, {}
 
         thresholds = state['thresholds']
         escalation_level = state['current_session']['escalation_level']
@@ -695,10 +725,13 @@ class SessionMonitor:
 
         # Check if escalated alert needed (user chose continue + time passed)
         elif escalation_level > 0:
-            last_alert = state['current_session']['last_alert_time']
-            if last_alert:
-                last_alert_time = datetime.fromisoformat(last_alert)
-                minutes_since_alert = (now - last_alert_time).total_seconds() / 60
+            # BUG-SESSION-001 (v9.3.0): this branch previously parsed last_alert_time
+            # with a bare datetime.fromisoformat() and NO naive->aware guard (and no
+            # try/except), so a naive legacy timestamp here crashed the entire
+            # check-and-record path, silently disabling the wellbeing safety alerts.
+            escalation_last_alert = _parse_utc(state['current_session'].get('last_alert_time'))
+            if escalation_last_alert is not None:
+                minutes_since_alert = (now - escalation_last_alert).total_seconds() / 60
 
                 if minutes_since_alert >= thresholds['escalated_alert_minutes']:
                     alert_needed = True
@@ -1801,8 +1834,8 @@ Template file not found at: {self.template_file}
 
         # Calculate session duration
         start_time = state['current_session'].get('start_time')
-        if start_time:
-            start = datetime.fromisoformat(start_time)
+        start = _parse_utc(start_time)  # BUG-SESSION-001 (v9.3.0): naive->aware guard
+        if start is not None:
             duration_minutes = (now - start).total_seconds() / 60
             duration_formatted = f"{int(duration_minutes // 60)}h {int(duration_minutes % 60)}m"
         else:
@@ -1854,8 +1887,8 @@ Template file not found at: {self.template_file}
 
         # Calculate session duration
         start_time = state['current_session'].get('start_time')
-        if start_time:
-            start = datetime.fromisoformat(start_time)
+        start = _parse_utc(start_time)  # BUG-SESSION-001 (v9.3.0): naive->aware guard
+        if start is not None:
             duration_minutes = (now - start).total_seconds() / 60
             duration_formatted = f"{int(duration_minutes // 60)}h {int(duration_minutes % 60)}m"
         else:

@@ -587,11 +587,11 @@ class ReportGenerator:
         print("\nRECOMMENDATIONS:")
         if impact['risk_level'] in ['HIGH', 'CRITICAL']:
             print("  ⚠️  HIGH IMPACT - Create Tier 3 snapshot before modifying")
-            print(f"  📸 Suggested: python scripts/create-snapshot.py --manual --tier 3 --description \"Before modifying {file_path}\"")
+            print(f"  📸 Suggested: python .protocol-state/create-snapshot.py --manual --tier 3 --description \"Before modifying {file_path}\"")
             print("  🔒 Suggested: Test changes in isolated branch first")
         elif impact['risk_level'] == 'MEDIUM':
             print("  ⚠️  MEDIUM IMPACT - Create Tier 2 snapshot recommended")
-            print(f"  📸 Suggested: python scripts/create-snapshot.py --manual --tier 2")
+            print("  📸 Suggested: python .protocol-state/create-snapshot.py --manual --tier 2")
         else:
             print("  ✅ LOW IMPACT - Safe to modify with normal backup procedures")
 

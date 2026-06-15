@@ -1,9 +1,33 @@
 # Domain Zero Protocol
-<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.3.0 -->
 
-**Version**: 9.2.1 | **Last Updated**: 2026-06-14
+**Version**: 9.3.0 | **Last Updated**: 2026-06-15
 
 A nine-agent AI development system plus one external auditor inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
+
+---
+
+## ✨ What's New in v9.3.0
+
+A consumer-driven remediation release (Megumi Tier-3 @approved):
+
+- **Wellbeing safety fix (HIGH):** the work-session safety check could crash on legacy
+  timestamps, silently disabling the 4h/6h/8h fatigue alerts. Fixed with centralized,
+  timezone-aware timestamp parsing.
+- **DZP Cortex — shared brain across nested installs:** set the same `install_group`
+  (config or `DZP_CORTEX_INSTALL_GROUP`) to share one semantic memory across a parent repo
+  and its submodules — **no machine paths leaked**. Multi-install indexing is now safe:
+  install-scoped source keys mean two installs no longer clobber each other's memory.
+  (Default single-install behavior is unchanged.)
+- **8.x → 9.x upgrade migration:** `migrate_state_9x.py` additively brings older
+  `project-state.json` up to the 9.x shape (`--check` / `--execute` / `--rollback`).
+- **Opt-in agent-file protection git hook:** a config-driven pre-commit guard that blocks
+  accidental commits to protected protocol/agent files (`scripts/install-git-hooks.{sh,ps1}`).
+- **Tooling & docs:** validator dependency declared (`requirements-dev.txt`), install
+  verification + schema validation hardened, OneDrive/Windows Cortex setup notes, and a
+  refreshed 9.x **Implementation Guide**.
+
+See [`CHANGELOG.md`](CHANGELOG.md) and [`VERSION.md`](VERSION.md) for full details.
 
 ---
 

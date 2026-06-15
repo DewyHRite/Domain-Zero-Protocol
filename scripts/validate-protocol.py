@@ -48,7 +48,9 @@ try:
     import jsonschema
     from jsonschema import Draft7Validator, validators
 except ImportError:
-    print("ERROR: jsonschema is required. Install with: pip install jsonschema", file=sys.stderr)
+    # BUG-VALIDATE-002 (v9.3.0): jsonschema (+PyYAML) are declared in requirements-dev.txt
+    print("ERROR: jsonschema is required. Install with: pip install -r requirements-dev.txt "
+          "(or: pip install jsonschema)", file=sys.stderr)
     sys.exit(3)
 
 
@@ -658,11 +660,16 @@ def generate_report(results: List[ValidationResult], drift_alerts: List[DriftAle
     files_missing = sum(1 for r in results if r.status == ValidationStatus.MISSING)
 
     # Determine exit code
+    # BUG-VALIDATE-001 (v9.3.0): never report SUCCESS when nothing was actually
+    # validated - an empty result set means "couldn't check", not "passed".
     if any(e.severity == "critical" for r in results for e in r.errors):
         exit_code = ExitCode.CRITICAL
     elif files_failed > 0 or total_errors > 0:
         exit_code = ExitCode.ERRORS
     elif total_warnings > 0:
+        exit_code = ExitCode.WARNINGS
+    elif (len(results) - files_missing) == 0:
+        # No files were validated (none discovered, or all skipped/missing)
         exit_code = ExitCode.WARNINGS
     else:
         exit_code = ExitCode.SUCCESS
@@ -900,10 +907,12 @@ Exit Codes:
 
         # Run validation
         results = []
+        unmatched_schemas = []
         for state_file in state_files:
             schema = schemas.get(state_file.schema_name)
             if not schema:
                 print(f"WARNING: No schema found for {state_file.schema_name}, skipping", file=sys.stderr)
+                unmatched_schemas.append(state_file.schema_name)
                 continue
 
             if args.verbose:
@@ -911,6 +920,18 @@ Exit Codes:
 
             result = validate_file(state_file, schema)
             results.append(result)
+
+        # BUG-VALIDATE-001 (v9.3.0): an explicitly-requested --file that can't be
+        # matched to a schema must NOT report SUCCESS/exit 0 - that is a false
+        # negative (an unvalidatable file silently "passing"). Treat it as an error.
+        if args.file and not results:
+            print(
+                f"ERROR: No schema matched for requested file "
+                f"(schema_name='{unmatched_schemas[0] if unmatched_schemas else '?'}'). "
+                f"Cannot validate; refusing to report success.",
+                file=sys.stderr,
+            )
+            sys.exit(ExitCode.ERRORS.value)
 
         # Drift detection
         last_validation_state = load_validation_state()

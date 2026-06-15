@@ -1,9 +1,44 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.3.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v9.2.1
-**Release Date:** 2026-06-14
-**Release Type:** FEATURE Release (Central DZP Script Orchestration — PATCH-ORCH-001)
+**Version:** v9.3.0
+**Release Date:** 2026-06-15
+**Release Type:** MINOR Release (BugReport Remediation Bundle — PATCH-BUGREPORT-001)
+
+---
+
+## Release Summary — v9.3.0 (MINOR)
+
+v9.3.0 is a **BugReport remediation bundle** (Sukuna-led, Megumi review pending) resolving the
+downstream-consumer findings logged during the v8.13.0 → v9.2.1 upgrade sessions, plus one
+feature request. Highlights:
+
+- **BUG-SESSION-001 (HIGH, safety):** the wellbeing safety check crashed on tz-naive legacy
+  `last_alert_time` (aware−naive subtraction), silently disabling the 4h/6h/8h alerts. Fixed
+  with a centralized `_parse_utc()` normalizer across `session_monitor.py`.
+- **BUG-MIGRATE-001:** new `migrate_state_9x.py` — additive 8.x→9.x state migration (injects
+  `tier_settings`/`validation_state`/`agent_registry`) + naive-timestamp sanitizer, with
+  `--check`/`--execute`/`--rollback`.
+- **BUG-SCHEMA-001:** `validation-rules.yaml` no longer requires the deprecated
+  `tier_usage_statistics` block.
+- **BUG-VALIDATE-001/002:** validator false-negative hardened (unvalidatable/empty no longer
+  reports SUCCESS); `requirements-dev.txt` declares `jsonschema`/`PyYAML`.
+- **BUG-VERIFY-001:** `verify-installation.py` manifest reconciled with `publish-manifest.yaml`
+  (dev-only SUF/review files made optional → green install from the published branch).
+- **BUG-CORTEX-001/002/003/004/005:** first-class shared-brain (`install_group` /
+  `DZP_CORTEX_INSTALL_GROUP`, no absolute-path leak) + **install-scoped source keys** so
+  multi-install shared indexing no longer clobbers per-install protected docs (backward
+  compatible; default unscoped behavior unchanged); OneDrive data-dir remediation hint;
+  Windows symlink-warning suppression; `hf_xet` note.
+- **BUG-DISTRO-001:** removed stray `.claude/commands/sukuna copy.md` + added a `* copy.*`
+  publish-audit guard.
+- **BUG-DOC-001:** `IMPLEMENTATION_GUIDE.md` refreshed to 9.x (Cortex setup + 8.x→9.x migration
+  steps; version-agnostic copy examples).
+- **FEAT-REQ-001:** opt-in, config-driven agent-file protection git hook
+  (`scripts/git-hooks/` + `scripts/install-git-hooks.{sh,ps1}`) — ships for consumers, **not
+  auto-installed and not active in the DZP dev repo**.
+
+Out of scope: BUG-SYNC-001/002 (project-local `dzp-sync`, not part of canonical).
 
 ---
 

@@ -18,11 +18,15 @@ schemas:
     title: "Project State Schema"
     description: "Validates project-state.json - primary project configuration and metadata"
     type: object
+    # BUG-SCHEMA-001 (v9.3.0): `tier_usage_statistics` removed from required.
+    # PATCH-STATE-001 deprecated that block (migrated to `tier_tracking`,
+    # `_removal_version: 8.14.0`); mandating counters in a deprecated namespace
+    # made every consolidated 9.x state fail validation. Live tier stats now live
+    # in `tier_tracking`; the legacy block is tolerated but no longer required.
     required:
       - project_metadata
       - protocol_version
       - tier_settings
-      - tier_usage_statistics
       - validation_state
       - agent_registry
     properties:
@@ -96,12 +100,14 @@ schemas:
                 format: date-time
                 description: "Timestamp of last bypass (ISO 8601)"
 
+      # DEPRECATED (PATCH-STATE-001) - migrated to `tier_tracking`,
+      # `_removal_version: 8.14.0`. BUG-SCHEMA-001 (v9.3.0): inner counters are no
+      # longer required so a deprecated block carrying only its `_deprecated` /
+      # `_migrated_to` / `_removal_version` markers still validates. Counters are
+      # still type-checked when present.
       tier_usage_statistics:
         type: object
-        required:
-          - tier_1_tasks
-          - tier_2_tasks
-          - tier_3_tasks
+        description: "DEPRECATED legacy tier counters (see tier_tracking). Optional."
         properties:
           tier_1_tasks:
             type: integer
@@ -154,10 +160,15 @@ schemas:
                   - inactive
                   - disabled
                 description: "Agent status"
-              last_used:
-                type: string
-                format: date-time
-                description: "Last time agent was invoked (ISO 8601)"
+              # BUG-FIX (v9.3.0): property is `last_invoked` to match the de-facto
+              # convention used everywhere (project-state.json + custom_agent_monitor.py
+              # + migrate_state_9x seed); the prior `last_used` name was schema-only drift.
+              last_invoked:
+                oneOf:
+                  - type: string
+                    format: date-time
+                  - type: "null"
+                description: "Last time agent was invoked (ISO 8601) or null"
 
   # =============================================================================
   # Schema 2: session-state.json (UPDATED v8.10.0 - PATCH-COMP-001)

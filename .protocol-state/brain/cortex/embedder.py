@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import os
 from pathlib import Path
 from typing import Iterable
 
@@ -19,6 +20,14 @@ class Embedder:
         self._model = None
 
         if not self.stub:
+            # BUG-CORTEX-003 (v9.3.0): Windows without Developer Mode/admin cannot
+            # create symlinks, so huggingface_hub prints a noisy UserWarning about
+            # degraded caching on the first real index. Suppress the warning by
+            # default (setdefault keeps any explicit user override). BUG-CORTEX-004:
+            # silence the telemetry/Xet HTTP-fallback notice the same way. These are
+            # set just before fastembed (which imports huggingface_hub) is loaded.
+            os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+            os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
             try:
                 from fastembed import TextEmbedding
             except Exception as exc:  # pragma: no cover - depends on optional package

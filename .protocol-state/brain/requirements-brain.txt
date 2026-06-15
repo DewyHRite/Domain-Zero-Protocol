@@ -1,3 +1,10 @@
 fastembed==0.3.6
 sqlite-vec==0.1.6
 PyYAML==6.0.2
+
+# Optional (BUG-CORTEX-004, v9.3.0): faster first-run model download via Xet.
+# Without it, huggingface_hub falls back to regular HTTP ("Xet Storage is enabled
+# ... but the 'hf_xet' package is not installed. Falling back to regular HTTP
+# download."). Purely a performance nicety; Cortex works without it. Uncomment to
+# enable, or: pip install hf_xet
+# hf_xet>=1.0

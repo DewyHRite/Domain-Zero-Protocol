@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
@@ -275,11 +276,29 @@ def _cosine(a: list[float], b: list[float]) -> float:
     return dot / (an * bn)
 
 
+# A scope is always a 12-hex install_id, so a scoped key is exactly `@<12-hex>/<rel>`.
+# Matching this precise shape avoids stripping a legitimate repo path like "@team/x.md".
+_SCOPED_PREFIX_RE = re.compile(r"^@[0-9a-f]{12}/")
+
+
+def _display_source(source_path: str) -> str:
+    """Strip an install-scope prefix ('@<12-hex>/<rel>' -> '<rel>') for citations.
+
+    BUG-CORTEX-005 (v9.3.0): shared-brain storage keys carry a '@<install-id>/' prefix;
+    users want clean repo-relative provenance in query output, not the namespace.
+    Unscoped keys (the default) and real paths that merely start with '@' are
+    returned unchanged.
+    """
+    if _SCOPED_PREFIX_RE.match(source_path):
+        return source_path.split("/", 1)[1]
+    return source_path
+
+
 def _row_to_result(row: sqlite3.Row) -> dict:
     return {
         "id": row["id"],
         "text": row["text"],
-        "source_path": row["source_path"],
+        "source_path": _display_source(row["source_path"]),
         "line_start": int(row["line_start"]),
         "line_end": int(row["line_end"]),
         "source_type": row["source_type"],

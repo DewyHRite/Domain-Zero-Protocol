@@ -9,6 +9,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.3.0] - 2026-06-15
+
+### MINOR — BugReport Remediation Bundle (PATCH-BUGREPORT-001)
+
+A consumer-driven remediation release resolving 14 findings logged during downstream
+v8.13.0 → v9.2.1 upgrades, plus one feature request. Sukuna-led; **Megumi Tier-3 @approved
+(zero SEC-IDs)**; 63 brain + 36 session-monitor tests green; version-consistency and
+PII/path publish gates passing.
+
+### Fixed
+- **BUG-SESSION-001 (HIGH, safety):** `session_monitor.py` crashed on timezone-naive legacy
+  `last_alert_time` (aware−naive subtraction), silently disabling the 4h/6h/8h wellbeing
+  alerts. Fixed with a centralized `_parse_utc()` normalizer across all timestamp parses.
+- **BUG-SCHEMA-001:** `validation-rules.yaml` no longer requires the deprecated
+  `tier_usage_statistics` block (migrated to `tier_tracking`).
+- **BUG-VALIDATE-001:** `validate-protocol.py` no longer reports SUCCESS for an
+  unvalidatable/empty run (false-negative hardened; exit codes are CI-sound).
+- **BUG-VERIFY-001:** `verify-installation.py` manifest reconciled with
+  `publish-manifest.yaml` — a fresh canonical install verifies green.
+- **BUG-CORTEX-002/003/004:** actionable data-dir remediation hint for OneDrive/synced
+  projects; Windows `huggingface_hub` symlink-warning suppressed by default; `hf_xet`
+  noted as an optional faster-download dependency.
+- **BUG-DISTRO-001:** removed a stray `.claude/commands/sukuna copy.md` editor duplicate and
+  added a `* copy.*` publish-audit guard.
+
+### Added
+- **BUG-CORTEX-001/005 — first-class shared brain:** `install_group` (config) /
+  `DZP_CORTEX_INSTALL_GROUP` (env) share one Cortex across nested installs without leaking an
+  absolute machine path; **install-scoped source keys** make multi-install shared indexing
+  non-destructive (no cross-install clobber of protected docs). Default single-install
+  behavior is byte-identical — no DB migration required.
+- **BUG-MIGRATE-001:** `migrate_state_9x.py` — additive 8.x → 9.x state migration
+  (injects `tier_settings` / `validation_state` / `agent_registry`, repairs naive
+  timestamps) with `--check` / `--execute` / `--rollback`.
+- **BUG-VALIDATE-002:** `requirements-dev.txt` declares `jsonschema` / `PyYAML` for the
+  protocol validation tooling.
+- **FEAT-REQ-001:** opt-in, config-driven agent-file protection pre-commit hook
+  (`scripts/git-hooks/` + `scripts/install-git-hooks.{sh,ps1}`), driven by
+  `custom_agent_security.file_protection.immutable_paths`. Ships for consumers; not
+  auto-installed.
+
+### Changed
+- **BUG-DOC-001:** `docs/installation/IMPLEMENTATION_GUIDE.md` refreshed to 9.x (DZP Cortex
+  setup, 8.x → 9.x migration steps, version-agnostic copy examples).
+
+### Notes
+- Out of scope: BUG-SYNC-001/002 (project-local `dzp-sync` tooling, not part of canonical).
+
 ## [9.2.1] - 2026-06-14
 
 ### FEATURE — Central DZP Script Orchestration (PATCH-ORCH-001)
