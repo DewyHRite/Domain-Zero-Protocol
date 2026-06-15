@@ -18,6 +18,18 @@ from .store import Chunk, Store
 # exactly the repo-relative path - byte-identical to legacy behavior. For a shared
 # store the scope is the per-install id and keys are namespaced as "@<scope>/<rel>"
 # so two installs' identically-pathed files never clobber each other.
+# A source-key scope is ALWAYS a per-install id = install_id() = 12 lowercase hex
+# (see paths.index_scope). So a scoped storage key is precisely `@<12-hex>/<rel>`.
+# Matching on this exact shape (not a bare leading "@") avoids misclassifying a
+# legitimate repo-relative path that happens to start with "@" (e.g. "@team/x.md")
+# as a scoped key — which would corrupt orphan cleanup / freshness accounting.
+_SCOPED_PREFIX_RE = re.compile(r"^@[0-9a-f]{12}/")
+
+
+def _is_scoped_storage_key(storage_key: str) -> bool:
+    return bool(_SCOPED_PREFIX_RE.match(storage_key))
+
+
 def _scope_prefix(scope: str) -> str:
     return "" if not scope else f"@{scope}/"
 
@@ -32,7 +44,7 @@ def _belongs_to_scope(storage_key: str, scope: str) -> bool:
         return storage_key.startswith(_scope_prefix(scope))
     # Default scope only owns UNSCOPED keys, so it never deletes another install's
     # scoped sources from a shared data dir (and vice versa).
-    return not storage_key.startswith("@")
+    return not _is_scoped_storage_key(storage_key)
 
 
 BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".pdf", ".docx", ".zip", ".gz", ".db", ".sqlite", ".html"}

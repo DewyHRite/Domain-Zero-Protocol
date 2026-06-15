@@ -3,7 +3,7 @@
 
 **Version:** v9.3.0
 **Release Date:** 2026-06-15
-**Release Type:** FEATURE Release (Central DZP Script Orchestration — PATCH-ORCH-001)
+**Release Type:** MINOR Release (BugReport Remediation Bundle — PATCH-BUGREPORT-001)
 
 ---
 

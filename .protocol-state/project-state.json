@@ -328,7 +328,7 @@
     "current_session": {
       "session_id": "session_20260614_212320",
       "session_active": true,
-      "start_time": "2026-02-14T14:47:38.470144+00:00",
+      "start_time": "2026-06-14T14:47:38.470144+00:00",
       "last_interaction_time": "2026-06-15T00:32:08.279622+00:00",
       "last_alert_time": "2026-06-15T07:44:14.249983+00:00",
       "alert_count": 6,
@@ -402,8 +402,8 @@
         "continues_chosen": 1
       }
     ],
-    "last_updated": "2026-06-15T03:44:14.259856",
-    "protocol_version": "9.2.1"
+    "last_updated": "2026-06-15T07:44:14.259856+00:00",
+    "protocol_version": "9.3.0"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",

@@ -1056,7 +1056,7 @@ Read protocol.config.yaml and tell me:
 
 **Solutions**:
 1. Verify you're using DZP-v9.3.0 files
-2. Check `protocol.config.yaml` → `protocol_version` is "9.3.0" (not earlier versions)
+2. Check `protocol.config.yaml` → `versioning.protocol_version` is "9.3.0" (not earlier versions)
 3. Re-upload all protocol files
 4. Clear conversation and start fresh
 

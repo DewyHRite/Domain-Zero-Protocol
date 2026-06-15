@@ -1549,9 +1549,9 @@ All protocol settings are stored in `protocol.config.yaml`:
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 9.2.1
-**Protocol Version**: 9.2.1
-**Release Date**: 2026-06-14
+**Current Version**: 9.3.0
+**Protocol Version**: 9.3.0
+**Release Date**: 2026-06-15
 **Last Updated**: 2026-06-15
 
 **Recent Version History**:

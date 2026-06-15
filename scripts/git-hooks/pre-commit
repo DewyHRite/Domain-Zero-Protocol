@@ -16,8 +16,10 @@ set -eu
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 CONFIG="$ROOT/protocol.config.yaml"
 
-# Staged files (Added/Copied/Modified/Renamed); deletions are allowed through.
-staged=$(git diff --cached --name-only --diff-filter=ACMR || true)
+# Staged paths: Added/Copied/Modified/Renamed AND Deleted. Deleting a protected
+# agent/protocol file is itself a protected change, so D must be included or the
+# guard could be bypassed by `git rm protocol/<agent>.agent.md`.
+staged=$(git diff --cached --name-only --diff-filter=ACMRD || true)
 [ -z "$staged" ] && exit 0
 
 # Fail-safe default protected list (used if python/yaml or config unavailable).

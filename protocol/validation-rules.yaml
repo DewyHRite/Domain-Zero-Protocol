@@ -160,10 +160,15 @@ schemas:
                   - inactive
                   - disabled
                 description: "Agent status"
-              last_used:
-                type: string
-                format: date-time
-                description: "Last time agent was invoked (ISO 8601)"
+              # BUG-FIX (v9.3.0): property is `last_invoked` to match the de-facto
+              # convention used everywhere (project-state.json + custom_agent_monitor.py
+              # + migrate_state_9x seed); the prior `last_used` name was schema-only drift.
+              last_invoked:
+                oneOf:
+                  - type: string
+                    format: date-time
+                  - type: "null"
+                description: "Last time agent was invoked (ISO 8601) or null"
 
   # =============================================================================
   # Schema 2: session-state.json (UPDATED v8.10.0 - PATCH-COMP-001)

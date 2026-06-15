@@ -8,7 +8,8 @@ $root = (& git rev-parse --show-toplevel 2>$null)
 if (-not $root) { $root = (Get-Location).Path }
 $config = Join-Path $root 'protocol.config.yaml'
 
-$staged = & git diff --cached --name-only --diff-filter=ACMR
+# Include Deletions (D): removing a protected file is also a protected change.
+$staged = & git diff --cached --name-only --diff-filter=ACMRD
 if (-not $staged) { exit 0 }
 
 $defaultPaths = @(

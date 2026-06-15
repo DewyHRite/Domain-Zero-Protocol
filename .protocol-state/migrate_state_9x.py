@@ -103,6 +103,29 @@ class StateMigration9x:
         self.state_file = self.state_dir / "project-state.json"
         self.backups_dir = self.state_dir / "backups"
 
+    # -- locking ------------------------------------------------------------
+    def _state_lock(self):
+        """
+        Cross-process exclusive lock for the read-modify-write cycle.
+
+        Reuses ProjectStateManager's `.state.lock` (the same lock every other
+        state writer uses) so this migration cannot race session_monitor /
+        ProjectStateManager (TOCTOU / lost-update). We intentionally keep our OWN
+        raw JSON read/write (not load_project_state) because the whole point of
+        this migration is to repair pre-9.x state that the manager may reject —
+        but we still hold its lock for the duration. Fail-soft: if the manager is
+        unavailable (minimal/broken install), fall back to a no-op lock with a note.
+        """
+        try:
+            sys.path.insert(0, str(self.state_dir))
+            from project_state_manager import ProjectStateManager  # type: ignore
+            return ProjectStateManager(self.protocol_root)._exclusive_lock()
+        except Exception as exc:  # noqa: BLE001 - lock is best-effort
+            print(f"[!] State lock unavailable ({exc}); proceeding without cross-process lock.",
+                  file=sys.stderr)
+            from contextlib import nullcontext
+            return nullcontext()
+
     # -- loading ------------------------------------------------------------
     def load(self) -> Dict[str, Any]:
         if not self.state_file.exists():
@@ -130,11 +153,14 @@ class StateMigration9x:
     def apply_key_injections(self, state: Dict[str, Any]) -> int:
         applied = 0
         if "tier_settings" not in state:
-            state["tier_settings"] = _default_tier_settings(); applied += 1
+            state["tier_settings"] = _default_tier_settings()
+            applied += 1
         if "validation_state" not in state:
-            state["validation_state"] = _default_validation_state(); applied += 1
+            state["validation_state"] = _default_validation_state()
+            applied += 1
         if "agent_registry" not in state:
-            state["agent_registry"] = _default_agent_registry(); applied += 1
+            state["agent_registry"] = _default_agent_registry()
+            applied += 1
         return applied
 
     # -- timestamp sanitization --------------------------------------------
@@ -220,18 +246,21 @@ class StateMigration9x:
         return 0 if total >= 0 else 1
 
     def execute(self) -> int:
-        state = self.load()
-        key_changes = self.plan_key_injections(state)
-        ts_changes = self.plan_timestamp_fixes(state)
-        total = len(key_changes) + len(ts_changes)
-        if total == 0:
-            print("[OK] State already conforms to 9.x shape. Nothing to do.")
-            return 0
-        backup = self._backup()
-        print(f"[BACKUP] {backup}")
-        applied_keys = self.apply_key_injections(state)
-        applied_ts = self.apply_timestamp_fixes(state)
-        self._atomic_write(state)
+        # Hold the cross-process state lock across the whole read-modify-write so a
+        # concurrent state writer can't cause a lost update (CodeRabbit/coding-guideline).
+        with self._state_lock():
+            state = self.load()
+            key_changes = self.plan_key_injections(state)
+            ts_changes = self.plan_timestamp_fixes(state)
+            total = len(key_changes) + len(ts_changes)
+            if total == 0:
+                print("[OK] State already conforms to 9.x shape. Nothing to do.")
+                return 0
+            backup = self._backup()
+            print(f"[BACKUP] {backup}")
+            applied_keys = self.apply_key_injections(state)
+            applied_ts = self.apply_timestamp_fixes(state)
+            self._atomic_write(state)
         print(f"[OK] Injected {applied_keys} key(s); repaired {applied_ts} timestamp(s).")
         print(f"[OK] Wrote {self.state_file}")
         print("     Verify with: python scripts/validate-protocol.py --check")
@@ -243,7 +272,8 @@ class StateMigration9x:
         if not src.exists():
             print(f"[ERROR] Backup missing project-state.json: {src}", file=sys.stderr)
             return 2
-        shutil.copy2(src, self.state_file)
+        with self._state_lock():
+            shutil.copy2(src, self.state_file)
         print(f"[OK] Rolled back project-state.json from {backup}")
         return 0
 

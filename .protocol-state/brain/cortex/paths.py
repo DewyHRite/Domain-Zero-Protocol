@@ -27,9 +27,17 @@ def install_id(repo_root: str | Path) -> str:
 
 
 def _sanitize_group(raw: str) -> str:
-    """Normalize an install-group label to a safe, portable directory name."""
-    cleaned = _INSTALL_GROUP_RE.sub("-", raw.strip().lower()).strip("-")
-    return cleaned[:64]
+    """Normalize an install-group label to a safe, portable directory name.
+
+    The allowed-char class keeps '.', so a label of "." or ".." (or any all-dot
+    label) would otherwise survive and let data_dir() resolve OUTSIDE the intended
+    `.../dzp-cortex/<segment>` boundary (path traversal). Reject those explicitly.
+    """
+    cleaned = _INSTALL_GROUP_RE.sub("-", raw.strip().lower()).strip("-").strip(".")
+    cleaned = cleaned[:64]
+    if not cleaned or set(cleaned) <= {"."}:
+        return ""
+    return cleaned
 
 
 def resolve_install_segment(repo_root: str | Path, config: dict | None = None) -> str:
