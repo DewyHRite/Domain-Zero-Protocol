@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.3.0 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 9.2.1 | **Last Updated**: 2026-06-14
+**Version**: 9.3.0 | **Last Updated**: 2026-06-15
 **Purpose**: Complete installation and verification guide for AI assistants
 
 ---

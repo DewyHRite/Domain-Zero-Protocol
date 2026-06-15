@@ -67,7 +67,6 @@ REQUIRED_FILES = {
 
     # Documentation
     'docs/FAQ.md': 'Docs',
-    'docs/DZP_DZA_INSTALLATION_REVIEW.md': 'Docs',
     'docs/SYSTEM_UPDATE_IMPLEMENTATION_GUIDE.md': 'Docs',
     'docs/TOKEN_EFFICIENCY_RECOMMENDATIONS.md': 'Docs',
 
@@ -100,29 +99,19 @@ REQUIRED_FILES = {
     '.protocol-state/custom_agent_monitor.py': 'State',
     '.protocol-state/dev-notes.md': 'State',
     '.protocol-state/dev-notes.template.md': 'State',
-    '.protocol-state/gojo-session-monitoring-guide.md': 'State',
     '.protocol-state/security-review.md': 'State',
     '.protocol-state/session_monitor.py': 'State',
     '.protocol-state/session-state.example.json': 'State',
     '.protocol-state/work-session-alert.template.md': 'State',
-    '.protocol-state/WORK_SESSION_STATUS.md': 'State',
 
     # State files (PATCH-STATE-001 modules - v8.12.0)
     '.protocol-state/project_state_manager.py': 'State',
     '.protocol-state/migrate_state_consolidation.py': 'State',
+    '.protocol-state/migrate_state_9x.py': 'State',
     '.protocol-state/troubleshooting_tracker.py': 'State',
     '.protocol-state/session-state.template.json': 'State',
     '.protocol-state/troubleshooting-history.template.json': 'State',
     '.protocol-state/validation-state.template.json': 'State',
-
-    # System Update Framework
-    '.protocol-state/system-update-framework/backup-manifest.template.json': 'SUF',
-    '.protocol-state/system-update-framework/file-classifications.template.json': 'SUF',
-    '.protocol-state/system-update-framework/plan-documentation.md': 'SUF',
-    '.protocol-state/system-update-framework/plan-documentation.template.md': 'SUF',
-    '.protocol-state/system-update-framework/SYSTEM_UPDATE_FRAMEWORK.md': 'SUF',
-    '.protocol-state/system-update-framework/SYSTEM_UPDATE_FRAMEWORK.template.md': 'SUF',
-    '.protocol-state/system-update-framework/version-registry.template.json': 'SUF',
 
     # JJK Character Reference
     '.protocol-state/jjk-character-reference/ryomen-sukuna.md': 'JJK',
@@ -131,6 +120,9 @@ REQUIRED_FILES = {
     # Scripts
     'scripts/verify-protocol.ps1': 'Scripts',
     'scripts/verify-protocol.sh': 'Scripts',
+
+    # Dev/tooling requirements (BUG-VALIDATE-002, v9.3.0)
+    'requirements-dev.txt': 'Root',
 
     # Domain Record System (v8.8.0+)
     '.dzp-domain/domain.record.md': 'Domain Record',
@@ -144,6 +136,23 @@ OPTIONAL_FILES = {
     '.protocol-state/project-state.json': 'State (created on first use)',
     '.protocol-state/session-state.json': 'State (created by session_monitor.py)',
     '.protocol-state/authorization/session-state.json': 'Auth (created on first use)',
+
+    # BUG-VERIFY-001 (v9.3.0): DEV-ONLY files intentionally EXCLUDED from the
+    # published distributable (see scripts/distro/publish-manifest.yaml: the whole
+    # `.protocol-state/system-update-framework` tree is excluded, and
+    # DZP_DZA_INSTALLATION_REVIEW.md is excluded as a private case study). They
+    # exist in the development tree but a fresh canonical install must NOT fail for
+    # their absence - so they are optional, not required.
+    'docs/DZP_DZA_INSTALLATION_REVIEW.md': 'Dev-only (excluded from distro)',
+    '.protocol-state/WORK_SESSION_STATUS.md': 'Dev-only (excluded from distro)',
+    '.protocol-state/gojo-session-monitoring-guide.md': 'Dev-only (excluded from distro)',
+    '.protocol-state/system-update-framework/backup-manifest.template.json': 'Dev-only SUF (excluded from distro)',
+    '.protocol-state/system-update-framework/file-classifications.template.json': 'Dev-only SUF (excluded from distro)',
+    '.protocol-state/system-update-framework/plan-documentation.md': 'Dev-only SUF (excluded from distro)',
+    '.protocol-state/system-update-framework/plan-documentation.template.md': 'Dev-only SUF (excluded from distro)',
+    '.protocol-state/system-update-framework/SYSTEM_UPDATE_FRAMEWORK.md': 'Dev-only SUF (excluded from distro)',
+    '.protocol-state/system-update-framework/SYSTEM_UPDATE_FRAMEWORK.template.md': 'Dev-only SUF (excluded from distro)',
+    '.protocol-state/system-update-framework/version-registry.template.json': 'Dev-only SUF (excluded from distro)',
 }
 
 def verify_installation():

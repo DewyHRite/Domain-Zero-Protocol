@@ -1,0 +1,88 @@
+#!/bin/sh
+# Domain Zero Protocol - Agent / Protected-File Commit Guard (FEAT-REQ-001, v9.3.0)
+#
+# Blocks `git commit` when staged changes touch DZP-protected paths (Cross-Agent
+# Edit Restrictions) outside a sanctioned agent session. This is a mechanical,
+# git-layer backstop for the prose rule in protocol/CLAUDE.md and the
+# custom_agent_security.file_protection.immutable_paths config surface.
+#
+# Protected paths are read from protocol.config.yaml so the guard stays in sync
+# with the existing config (no hard-coded list, except a fail-safe fallback).
+#
+# Install via: scripts/install-git-hooks.sh  (or .ps1 on Windows/PowerShell)
+# Sanctioned overrides are printed on block.
+set -eu
+
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+CONFIG="$ROOT/protocol.config.yaml"
+
+# Staged files (Added/Copied/Modified/Renamed); deletions are allowed through.
+staged=$(git diff --cached --name-only --diff-filter=ACMR || true)
+[ -z "$staged" ] && exit 0
+
+# Fail-safe default protected list (used if python/yaml or config unavailable).
+DEFAULT_PATHS="protocol/
+.claude/agents/
+.protocol-state/custom-agent-registry.json
+.protocol-state/authorization/
+protocol.config.yaml"
+
+get_protected_paths() {
+    PY=""
+    if command -v python3 >/dev/null 2>&1; then PY=python3
+    elif command -v python >/dev/null 2>&1; then PY=python
+    fi
+    if [ -n "$PY" ] && [ -f "$CONFIG" ]; then
+        out=$("$PY" - "$CONFIG" <<'PYEOF'
+import sys
+try:
+    import yaml
+    cfg = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
+    fp = ((cfg.get("custom_agent_security") or {}).get("file_protection") or {})
+    paths = fp.get("immutable_paths") or []
+    for p in paths:
+        print(str(p).strip())
+except Exception:
+    sys.exit(7)
+PYEOF
+        ) && [ -n "$out" ] && { printf '%s\n' "$out"; return; }
+    fi
+    printf '%s\n' "$DEFAULT_PATHS"
+}
+
+# Strip CR (Windows python/print emits CRLF; a trailing \r breaks prefix matching).
+protected=$(get_protected_paths | tr -d '\r')
+staged=$(printf '%s' "$staged" | tr -d '\r')
+
+violations=""
+# Iterate staged files line-by-line (handles spaces in names).
+old_ifs=$IFS
+IFS='
+'
+for f in $staged; do
+    for p in $protected; do
+        [ -z "$p" ] && continue
+        case "$f" in
+            "$p"*) violations="${violations}  ${f}    (protected: ${p})
+" ;;
+        esac
+    done
+done
+IFS=$old_ifs
+
+if [ -n "$violations" ]; then
+    printf '\n'
+    printf '==================================================================\n'
+    printf '  DZP PROTECTED-FILE COMMIT BLOCKED (Cross-Agent Edit Restrictions)\n'
+    printf '==================================================================\n'
+    printf 'Staged changes modify DZP-protected paths:\n\n'
+    printf '%s\n' "$violations"
+    printf 'These files are protected. Sanctioned ways to proceed:\n'
+    printf '  1. Invoke Gojo (Mission Control) for an authorized protocol change.\n'
+    printf '  2. Invoke Sukuna via Gojo for system / protocol updates.\n'
+    printf '  3. Override intentionally:  git commit --no-verify\n\n'
+    printf 'Reference: protocol/CLAUDE.md  (Cross-Agent Edit Restrictions)\n\n'
+    exit 1
+fi
+
+exit 0

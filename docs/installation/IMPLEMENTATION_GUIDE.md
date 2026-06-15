@@ -1,10 +1,14 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.3.0 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
-**Version**: 8.12.0
-**Last Updated**: December 29, 2025
+**Version**: 9.3.0
+**Last Updated**: June 15, 2026
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
+
+> **9.x note**: v9.x adds **DZP Cortex** (local semantic memory) and a consolidated
+> state model. After copying files, complete the **[DZP Cortex Setup](#dzp-cortex-setup-9x)**
+> step, and if you are upgrading an 8.x install, run the **[8.x → 9.x state migration](#8x--9x-state-migration)**.
 
 ---
 
@@ -27,8 +31,9 @@
 ## Quick Start (5 Minutes)
 
 **Prerequisites**:
-- Downloaded the v8.12.0 release package
+- Downloaded the latest `DZP-v9.x` release package
 - Access to Claude.ai, Claude Code, GitHub Copilot, or another AI assistant
+- Python 3.8+ (for state tooling and DZP Cortex)
 
 ---
 
@@ -52,21 +57,26 @@
 - Your project has NO existing `.protocol-state/` directory
 
 ```bash
-# macOS/Linux
+# macOS/Linux  (DZP_SRC = the unpacked release dir, e.g. DZP-v9.3.0)
+DZP_SRC=DZP-v9.3.0
 mkdir -p your-project/protocol your-project/.protocol-state
-cp -r v8.11.0/protocol your-project/
-cp -r v8.11.0/.protocol-state your-project/
-cp v8.11.0/protocol.config.yaml your-project/
-cp v8.11.0/README.md your-project/DOMAIN_ZERO_README.md
+cp -r "$DZP_SRC/protocol" your-project/
+cp -r "$DZP_SRC/.protocol-state" your-project/
+cp "$DZP_SRC/protocol.config.yaml" your-project/
+cp "$DZP_SRC/requirements-dev.txt" your-project/
+cp "$DZP_SRC/README.md" your-project/DOMAIN_ZERO_README.md
 
 # Windows PowerShell
+$DzpSrc = "DZP-v9.3.0"
 New-Item -ItemType Directory -Force -Path "your-project\protocol", "your-project\.protocol-state"
-Copy-Item -Recurse v8.11.0\protocol -Destination your-project\
-Copy-Item -Recurse v8.11.0\.protocol-state -Destination your-project\
-Copy-Item v8.11.0\protocol.config.yaml -Destination your-project\
+Copy-Item -Recurse "$DzpSrc\protocol" -Destination your-project\
+Copy-Item -Recurse "$DzpSrc\.protocol-state" -Destination your-project\
+Copy-Item "$DzpSrc\protocol.config.yaml" -Destination your-project\
+Copy-Item "$DzpSrc\requirements-dev.txt" -Destination your-project\
 ```
 
-After copying, customize `.protocol-state/project-state.json` with your project metadata.
+After copying, customize `.protocol-state/project-state.json` with your project metadata,
+then complete the **[DZP Cortex Setup](#dzp-cortex-setup-9x)** step below.
 
 ---
 
@@ -87,22 +97,26 @@ echo "✅ Backup created in: $BACKUP_DIR"
 
 #### Step 2: Sync Protocol Files ONLY (Safe to Overwrite)
 ```bash
+# DZP_SRC = the unpacked release dir, e.g. DZP-v9.3.0
+DZP_SRC=DZP-v9.3.0
 # These files are protocol artifacts - safe to overwrite
-mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch your-project/.claude/commands "your-project/Domain Zero Agents"
-cp -r v8.11.0/protocol/* your-project/protocol/
-cp -r v8.11.0/docs/* your-project/docs/
-cp -r "v8.11.0/Domain Zero Agents/"* "your-project/Domain Zero Agents/"
-cp -r v8.11.0/.claude/commands/* your-project/.claude/commands/
-cp -r v8.11.0/.dzp-killswitch/* your-project/.dzp-killswitch/
+mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch your-project/.claude/commands
+cp -r "$DZP_SRC/protocol/"* your-project/protocol/
+cp -r "$DZP_SRC/docs/"* your-project/docs/
+cp -r "$DZP_SRC/.claude/commands/"* your-project/.claude/commands/
+cp -r "$DZP_SRC/.dzp-killswitch/"* your-project/.dzp-killswitch/ 2>/dev/null || true
+# 9.x: also sync the Cortex engine + dev requirements
+cp -r "$DZP_SRC/.protocol-state/brain" your-project/.protocol-state/
+cp "$DZP_SRC/requirements-dev.txt" your-project/
 ```
 
 #### Step 3: DO NOT Copy .protocol-state/ Wholesale
 ```bash
 # ✗ NEVER DO THIS on existing projects:
-# cp -r v8.11.0/.protocol-state/* your-project/.protocol-state/  # WRONG!
+# cp -r "$DZP_SRC/.protocol-state/"* your-project/.protocol-state/  # WRONG! clobbers your state
 
-# ✓ Instead, manually update protocol_version in project-state.json:
-# Open .protocol-state/project-state.json and update "protocol_version": "8.11.0"
+# ✓ Instead, update protocol_version in project-state.json to 9.3.0
+#   (the 8.x → 9.x migration below adds any newly-required keys for you).
 ```
 
 #### Step 4: Verify Your Project State
@@ -118,6 +132,77 @@ cat .protocol-state/project-state.json  # Should have YOUR project metadata
 - `.protocol-state/security-review.md` - Your security findings
 - `.protocol-state/trigger-19.md` - Your private intelligence
 - `.protocol-state/project-state.json` - Your project metadata (update version only)
+
+#### Step 5 (8.x → 9.x only): Run the state migration
+
+See **[8.x → 9.x state migration](#8x--9x-state-migration)** below — it additively adds the
+new required 9.x keys (`tier_settings`, `validation_state`, `agent_registry`) and repairs any
+naive timestamps, preserving all of your existing state.
+
+#### Step 6: Set up DZP Cortex
+
+See **[DZP Cortex Setup (9.x)](#dzp-cortex-setup-9x)** below to install dependencies and build
+the first semantic index.
+
+---
+
+### 8.x → 9.x State Migration
+
+v9.x requires three top-level keys a pre-9.x `project-state.json` lacks (`tier_settings`,
+`validation_state`, `agent_registry`). The migration is **additive** (never overwrites your
+data) and also repairs legacy naive timestamps that can otherwise disable the wellbeing
+safety check.
+
+```bash
+# Dry run (shows exactly what would change; makes no edits):
+python .protocol-state/migrate_state_9x.py --check
+
+# Apply (a timestamped backup is written first):
+python .protocol-state/migrate_state_9x.py --execute
+
+# Verify:
+pip install -r requirements-dev.txt   # jsonschema + PyYAML, if not already installed
+python scripts/validate-protocol.py --check
+```
+
+If anything looks wrong: `python .protocol-state/migrate_state_9x.py --rollback`.
+
+---
+
+### DZP Cortex Setup (9.x)
+
+DZP Cortex is the local, on-device semantic memory layer. It has no cloud calls after the
+first model download.
+
+```bash
+# 1) Install the Cortex runtime
+python -m pip install -r .protocol-state/brain/requirements-brain.txt
+
+# 2) Build the first index (downloads the embedding model on first run)
+scripts/brain.sh index           # POSIX
+# scripts/brain.ps1 index        # Windows PowerShell
+
+# 3) Confirm it works
+scripts/brain.sh status
+scripts/brain.sh query "prior security decision"
+```
+
+Cortex data lives **outside** the repo (`%LOCALAPPDATA%\dzp-cortex\<id>` on Windows;
+`~/.local/share/dzp-cortex/<id>` elsewhere) and never ships in the repo or distro.
+
+**Projects under OneDrive/Dropbox/iCloud**: the default location is already outside the synced
+folder, so no action is needed. **Sharing one brain across a parent repo + nested submodules**:
+set the same `install_group:` in each install's `brain.config.yaml` (or `DZP_CORTEX_INSTALL_GROUP`).
+See `.protocol-state/brain/README.md` for both recipes.
+
+#### Optional: install the agent-file protection git hook
+
+```bash
+sh scripts/install-git-hooks.sh        # POSIX
+# pwsh scripts/install-git-hooks.ps1   # Windows PowerShell
+```
+This opt-in pre-commit hook blocks accidental commits to protected protocol/agent files
+(overridable with `git commit --no-verify`).
 
 ---
 
@@ -271,8 +356,8 @@ workflow:
    ```bash
    cd /your-project
    mkdir -p protocol
-   cp -r /path/to/v8.11.0/protocol/* ./protocol/
-   cp /path/to/v8.11.0/protocol.config.yaml ./
+   cp -r /path/to/DZP-v9.3.0/protocol/* ./protocol/
+   cp /path/to/DZP-v9.3.0/protocol.config.yaml ./
    ```
 
 2. **Create `.protocol-state` directory** (for state management):
@@ -325,7 +410,7 @@ Create `.protocol-state/project-state.json`:
 
 ```json
 {
-  "protocol_version": "8.11.0",
+  "protocol_version": "9.3.0",
   "project_metadata": {
     "name": "YOUR_PROJECT_NAME",
     "description": "Your project description",
@@ -335,7 +420,7 @@ Create `.protocol-state/project-state.json`:
   "current_feature_tier": "none",
   "current_state": "STANDBY",
   "active_role": "None",
-  "version": "8.11.0"
+  "version": "9.3.0"
 }
 ```
 
@@ -368,8 +453,8 @@ Create `.protocol-state/project-state.json`:
 1. **Copy protocol files** to your repo:
    ```bash
    mkdir -p .github/domain-zero
-   cp -r /path/to/v8.11.0/protocol .github/domain-zero/
-   cp /path/to/v8.11.0/protocol.config.yaml .github/domain-zero/
+   cp -r /path/to/DZP-v9.3.0/protocol .github/domain-zero/
+   cp /path/to/DZP-v9.3.0/protocol.config.yaml .github/domain-zero/
    ```
 
 2. **Create agent instruction summaries** in `.github/copilot-instructions.md`:
@@ -476,7 +561,7 @@ Save this as `domain-zero-system-prompt.md`:
 ```markdown
 # Domain Zero Protocol System Prompt
 
-You are an AI assistant operating under the Domain Zero Protocol v8.11.0.
+You are an AI assistant operating under the Domain Zero Protocol DZP-v9.3.0.
 
 ## Agent System
 
@@ -585,7 +670,7 @@ Domain Zero includes `gojo.prompt.md`, a meta prompt that generates orchestrated
 Copy `gojo.prompt.md` to your project root:
 
 ```bash
-cp /path/to/v8.11.0/gojo.prompt.md your-project/
+cp /path/to/DZP-v9.3.0/gojo.prompt.md your-project/
 ```
 
 #### Step 2: Configure IDE AI
@@ -784,7 +869,7 @@ safety:
     high_risk_session_threshold_minutes: 360  # 6 hours
 ```
 
-#### Domain Record System (v8.11.0+)
+#### Domain Record System (DZP-v9.3.0+)
 
 ```yaml
 # Shared notes repository for Gojo and Sukuna
@@ -970,8 +1055,8 @@ Read protocol.config.yaml and tell me:
 **Problem**: Agent references old version or features
 
 **Solutions**:
-1. Verify you're using v8.11.0 files
-2. Check `protocol.config.yaml` → `protocol_version` is "8.11.0" (not earlier versions)
+1. Verify you're using DZP-v9.3.0 files
+2. Check `protocol.config.yaml` → `protocol_version` is "9.3.0" (not earlier versions)
 3. Re-upload all protocol files
 4. Clear conversation and start fresh
 
@@ -1569,7 +1654,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent
 - INUMAKI (API & Communication): REST, GraphQL, WebSocket design
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.11.0)
+- protocol/CLAUDE.md (main protocol, DZP-v9.3.0)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -1594,7 +1679,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
 Add to "What would you like ChatGPT to know about you?":
 
 ```
-I use the Domain Zero Protocol (v8.11.0) for development projects. This is a nine-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (DZP-v9.3.0) for development projects. This is a nine-agent AI development framework with specialized roles:
 
 **Core Four:**
 - YUUJI: Implementation with test-first development
@@ -1640,7 +1725,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent
 - INUMAKI (API & Communication): REST, GraphQL, WebSocket design
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, v8.11.0)
+- protocol/CLAUDE.md (main protocol, DZP-v9.3.0)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -1657,7 +1742,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
 
 ---
 
-## Context Compaction Recovery (v8.11.0+)
+## Context Compaction Recovery (DZP-v9.3.0+)
 
 ### The Problem
 
@@ -1706,7 +1791,7 @@ Context: Just recovered from compaction, need DZP rules refresher
 
 ## Changelog
 
-### v8.11.0 (2025-12-28)
+### DZP-v9.3.0 (2025-12-28)
 
 #### New Features
 1. **Session Management Skill** (`/session`) - Unified session lifecycle interface
@@ -1748,13 +1833,13 @@ ls protocol/skills/
 
 2. **Update protocol files** (pull latest from repo or copy from release):
    ```bash
-   cp -r v8.11.0/protocol/skills/* protocol/skills/
+   cp -r DZP-v9.3.0/protocol/skills/* protocol/skills/
    ```
 
 3. **Update project-state.json** (manual or via script):
    ```json
    {
-     "protocol_version": "8.11.0",
+     "protocol_version": "9.3.0",
      "troubleshooting_session": {
        "session_id": null,
        "active": false,
@@ -1805,7 +1890,7 @@ None.
 
 ---
 
-### v8.11.0 (2025-12-25)
+### DZP-v9.3.0 (2025-12-25)
 
 #### New Features
 - DZP Rules of Engagement (dzp-roe) skill for post-compaction recovery
@@ -1825,7 +1910,7 @@ None.
 | Nobara | `Read protocol/nobara.agent.md and [task]` | UX/Creative |
 | Gojo | `Read protocol/gojo.agent.md` | Mission Control |
 
-### Slash Commands (v8.11.0+)
+### Slash Commands (DZP-v9.3.0+)
 
 | Command | Purpose | Availability |
 |---------|---------|--------------|

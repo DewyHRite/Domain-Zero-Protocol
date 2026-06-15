@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.3.0 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.2.1
+**Version**: 9.3.0
 **Status**: Production
-**Last Updated**: 2026-06-14
+**Last Updated**: 2026-06-15
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -4278,8 +4278,36 @@ Each file received exactly 13 added lines (7-line top banner block + blank line 
 
 ---
 
+## PATCH-BUGREPORT-001 — v9.3.0 BugReport Remediation Bundle (2026-06-15)
+
+**Author**: Sukuna | **Branch**: `Main-v9.3.0` | **Status**: implemented + self-verified; Megumi review PENDING; USER approval PENDING (no commit yet).
+**Source**: `internal-docs/Patch Report/BugReport.md`. **Scope**: USER chose "everything in one v9.3.0 bundle" (incl. FEAT-REQ-001 + Cortex re-architecture).
+
+| ID | Sev | Fix |
+|----|-----|-----|
+| BUG-SESSION-001 | HIGH | `session_monitor.py` `_parse_utc()` normalizer — fixes aware−naive crash that silently disabled wellbeing alerts. Proven in-situ. |
+| BUG-MIGRATE-001 | MED | New `migrate_state_9x.py` (additive 8.x→9.x key injection + naive-ts sanitizer; check/execute/rollback). |
+| BUG-SCHEMA-001 | MED | `validation-rules.yaml`: deprecated `tier_usage_statistics` no longer required. |
+| BUG-VALIDATE-001 | MED | `validate-protocol.py`: exit-mapping confirmed correct (reporter exit-0 = shell artifact); false-negative hardened. |
+| BUG-VALIDATE-002 | LOW | New `requirements-dev.txt` (jsonschema, PyYAML). |
+| BUG-VERIFY-001 | MED | `verify-installation.py`: 13 dev-only files REQUIRED→OPTIONAL, reconciled with publish-manifest. |
+| BUG-CORTEX-001/005 | MED | `paths.py`/`ingest.py`/`store.py`: first-class shared brain (`install_group`) + install-scoped source keys (no cross-install clobber; default unscoped = legacy). New `tests/brain/test_shared_scope.py`. |
+| BUG-CORTEX-002/003/004 | LOW | data_dir remediation hint; HF symlink-warning suppression; `hf_xet` note + docs. |
+| BUG-DISTRO-001 | LOW | Removed `.claude/commands/sukuna copy.md`; `" copy."` publish forbid-token guard. |
+| BUG-DOC-001 | MED | `IMPLEMENTATION_GUIDE.md` refreshed to 9.x (Cortex + migration steps). |
+| FEAT-REQ-001 | MED | Opt-in agent-file protection git hook + installers (config-driven; release-sanitized; NOT active in DZP dev repo). |
+| BUG-SYNC-001/002 | — | OUT OF SCOPE (project-local `dzp-sync`, not canonical). |
+
+**Verification (all green)**: 63 brain + 36 session_monitor tests · `validate-protocol --check` 0 · `assert_version` 7/7 @ v9.3.0 · `verify-installation` complete · `migrate_state_9x --check` ok · in-situ SESSION-001 proof.
+**Rollback**: `git checkout Main-v9.2.1` OR restore `.protocol-state/backups/v9.3.0-bugreport_20260615_022150/`.
+**Megumi targets**: store PK contract (CORTEX-005) · hook command surface (FEAT-REQ-001) · migration write path · validator exit semantics.
+
+**APPEND-ONLY**: history preserved above.
+
+---
+
 **END OF SUKUNA-REPORT.md**
 
-**Last Updated**: 2026-06-14 by Sukuna (System Update Adversary) / v9.1.1 correction note appended by Yuuji
-**Protocol Version**: 9.1.0 (cascade to 9.1.1 pending Sukuna)
-**Patches Active**: 8 security patches + 2 documentation patches + 1 compliance patch + PATCH-TOJI-001 (CRITICAL) + PATCH-DISTRO-001 + PATCH-BRAIN-001 + PATCH-BRAIN-002 (DZP Cortex v9.1.0) + PATCH-CORTEX-POINTERS-001 (Cortex banner consistency + /session update core-sync docs)
+**Last Updated**: 2026-06-15 by Sukuna (System Update Adversary) / PATCH-BUGREPORT-001 (v9.3.0 bundle) appended
+**Protocol Version**: 9.3.0 (Main-v9.3.0 branch; Megumi review + USER approval pending)
+**Patches Active**: 8 security patches + 2 documentation patches + 1 compliance patch + PATCH-TOJI-001 (CRITICAL) + PATCH-DISTRO-001 + PATCH-BRAIN-001 + PATCH-BRAIN-002 (DZP Cortex v9.1.0) + PATCH-CORTEX-POINTERS-001 + PATCH-BUGREPORT-001 (v9.3.0 BugReport remediation bundle, 14 findings + FEAT-REQ-001)

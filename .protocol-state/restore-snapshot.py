@@ -17,10 +17,10 @@ Features:
 - Progress indicators
 
 Usage:
-    python scripts/restore-snapshot.py --list
-    python scripts/restore-snapshot.py --preview <snapshot-id>
-    python scripts/restore-snapshot.py --restore <snapshot-id>
-    python scripts/restore-snapshot.py --rollback
+    python .protocol-state/restore-snapshot.py --list
+    python .protocol-state/restore-snapshot.py --preview <snapshot-id>
+    python .protocol-state/restore-snapshot.py --restore <snapshot-id>
+    python .protocol-state/restore-snapshot.py --rollback
 """
 
 import argparse

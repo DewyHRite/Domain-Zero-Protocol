@@ -275,11 +275,23 @@ def _cosine(a: list[float], b: list[float]) -> float:
     return dot / (an * bn)
 
 
+def _display_source(source_path: str) -> str:
+    """Strip an install-scope prefix ('@<scope>/<rel>' -> '<rel>') for citations.
+
+    BUG-CORTEX-005 (v9.3.0): shared-brain storage keys carry a '@<scope>/' prefix;
+    users want clean repo-relative provenance in query output, not the namespace.
+    Unscoped keys (the default) are returned unchanged.
+    """
+    if source_path.startswith("@") and "/" in source_path:
+        return source_path.split("/", 1)[1]
+    return source_path
+
+
 def _row_to_result(row: sqlite3.Row) -> dict:
     return {
         "id": row["id"],
         "text": row["text"],
-        "source_path": row["source_path"],
+        "source_path": _display_source(row["source_path"]),
         "line_start": int(row["line_start"]),
         "line_end": int(row["line_end"]),
         "source_type": row["source_type"],

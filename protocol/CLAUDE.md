@@ -1,18 +1,18 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.2.1 -->
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v9.2.1
+<!-- [CORE FILE] - Domain Zero Protocol v9.3.0 -->
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v9.3.0
 ## Main Protocol File - Domain Zero
 
-**Version**: 9.2.1
+**Version**: 9.3.0
 **Status**: Production-Ready
-**Last Updated**: 2026-06-14
-**Major Enhancements**: v9.2.1 (FEATURE) Central DZP Script Orchestration System (PATCH-ORCH-001): root-level dzp.py entry-point + .protocol-state/script_coordinator.py engine + script_dependencies.yaml event registry; 7 lifecycle events; fail-soft vs fail-CLOSED per-event gates; 11 SEC-ORCH controls + SEC-COORD-001..005/005-EXT remediations; dev-only; Megumi Tier-3 @approved; builds on v9.1.1; v9.2.0 skipped; v8.13.0 PATCH-SESSION-005 (Toji External Auditor Addition - 10th agent, protocol/toji.agent.md, ~\.claude\agents\toji.md, copilot-instructions sync v8.13.0, AI_INSTRUCTIONS update); v8.13.0 PATCH-SESSION-004 (Session Monitoring Enhancement - 5 defensive layers, 70-85% → 85-90% coverage); v8.11.0 Session Management & TS Troubleshooting Tier System (/session, /ts_tier1-5, DZP ROE v2.0.0); v8.10.0 DZP Rules of Engagement (Post-Compaction Recovery, /dzp-roe slash command); v8.9.0 Claude Skills Integration (16 Anthropic skills, Implementation Restrictions, File Rotation, OWASP Cheatsheets); v8.8.0 Phase 4 (Tier Validation System + Dual Learning Systems); v8.7.0 Custom Agent Security Framework; v8.7.0 Nine-Agent System (Sukuna formalized as 9th agent); Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions, Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
+**Last Updated**: 2026-06-15
+**Major Enhancements**: v9.3.0 (MINOR) BugReport remediation bundle: BUG-SESSION-001 (HIGH tz-naive wellbeing-alert crash fixed via _parse_utc + state sanitizer), BUG-MIGRATE-001 (migrate_state_9x.py additive 8.x->9.x key injection), BUG-SCHEMA-001 (deprecated tier_usage_statistics no longer required), BUG-VALIDATE-001/002 (validator false-negative hardened + requirements-dev.txt), BUG-VERIFY-001 (install manifest reconciled), BUG-CORTEX-001/002/003/004/005 (first-class shared-brain install_group + install-scoped source keys; OneDrive/symlink/hf_xet docs), BUG-DISTRO-001 (stray 'sukuna copy.md' removed + '* copy.*' publish guard), BUG-DOC-001 (IMPLEMENTATION_GUIDE refreshed to 9.x), FEAT-REQ-001 (opt-in agent-file protection git hook); Sukuna-led, Megumi review pending; v9.2.1 (FEATURE) Central DZP Script Orchestration System (PATCH-ORCH-001): root-level dzp.py entry-point + .protocol-state/script_coordinator.py engine + script_dependencies.yaml event registry; 7 lifecycle events; fail-soft vs fail-CLOSED per-event gates; 11 SEC-ORCH controls + SEC-COORD-001..005/005-EXT remediations; dev-only; Megumi Tier-3 @approved; builds on v9.1.1; v9.2.0 skipped; v8.13.0 PATCH-SESSION-005 (Toji External Auditor Addition - 10th agent, protocol/toji.agent.md, ~\.claude\agents\toji.md, copilot-instructions sync v8.13.0, AI_INSTRUCTIONS update); v8.13.0 PATCH-SESSION-004 (Session Monitoring Enhancement - 5 defensive layers, 70-85% → 85-90% coverage); v8.11.0 Session Management & TS Troubleshooting Tier System (/session, /ts_tier1-5, DZP ROE v2.0.0); v8.10.0 DZP Rules of Engagement (Post-Compaction Recovery, /dzp-roe slash command); v8.9.0 Claude Skills Integration (16 Anthropic skills, Implementation Restrictions, File Rotation, OWASP Cheatsheets); v8.8.0 Phase 4 (Tier Validation System + Dual Learning Systems); v8.7.0 Custom Agent Security Framework; v8.7.0 Nine-Agent System (Sukuna formalized as 9th agent); Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions, Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 
 ---
 
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v9.2.1
+> **Current Local Protocol Version**: v9.3.0
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -1552,7 +1552,7 @@ All protocol settings are stored in `protocol.config.yaml`:
 **Current Version**: 9.2.1
 **Protocol Version**: 9.2.1
 **Release Date**: 2026-06-14
-**Last Updated**: 2026-06-14
+**Last Updated**: 2026-06-15
 
 **Recent Version History**:
 - v9.2.1 - **FEATURE**: PATCH-ORCH-001 — Central DZP Script Orchestration System: root dzp.py entry-point + .protocol-state/script_coordinator.py engine + script_dependencies.yaml event registry; 7 lifecycle events (session-update, session-end, ts-start, ts-complete, pre-protected-edit, pre-release, toji-snapshot); fail-soft vs fail-CLOSED per-event gates; 11 SEC-ORCH controls + SEC-COORD-001..005/005-EXT remediations; dev-only (distro-excluded); Megumi Tier-3 @approved; builds on v9.1.1 (v9.2.0 skipped by USER decision).

@@ -1,0 +1,15 @@
+# Domain Zero Protocol - Development / Tooling Requirements
+# BUG-VALIDATE-002 (v9.3.0): the protocol validation tooling
+# (scripts/validate-protocol.py) hard-depends on jsonschema (and PyYAML), but
+# neither was declared in any shipped requirements file, so the validator aborted
+# on a clean environment with "ERROR: jsonschema is required."
+#
+# Install with:
+#     pip install -r requirements-dev.txt
+#
+# Note: the DZP Cortex runtime has its OWN requirements at
+# .protocol-state/brain/requirements-brain.txt (fastembed / sqlite-vec / PyYAML).
+# This file covers the protocol VALIDATION + maintenance tooling only.
+
+jsonschema>=4.0
+PyYAML>=6.0

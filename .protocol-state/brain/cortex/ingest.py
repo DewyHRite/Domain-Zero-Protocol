@@ -8,7 +8,31 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
+from . import paths
 from .store import Chunk, Store
+
+
+# BUG-CORTEX-005 (v9.3.0): install-scoped storage keys for shared brains.
+# A "storage key" is the value stored in chunks.source_path / source_state /
+# chunk.id. For the default (unshared) case the scope is "" and the storage key is
+# exactly the repo-relative path - byte-identical to legacy behavior. For a shared
+# store the scope is the per-install id and keys are namespaced as "@<scope>/<rel>"
+# so two installs' identically-pathed files never clobber each other.
+def _scope_prefix(scope: str) -> str:
+    return "" if not scope else f"@{scope}/"
+
+
+def _storage_key(scope: str, rel: str) -> str:
+    return _scope_prefix(scope) + rel
+
+
+def _belongs_to_scope(storage_key: str, scope: str) -> bool:
+    """True if a storage key belongs to the given scope (for orphan cleanup)."""
+    if scope:
+        return storage_key.startswith(_scope_prefix(scope))
+    # Default scope only owns UNSCOPED keys, so it never deletes another install's
+    # scoped sources from a shared data dir (and vice versa).
+    return not storage_key.startswith("@")
 
 
 BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".pdf", ".docx", ".zip", ".gz", ".db", ".sqlite", ".html"}
@@ -64,10 +88,12 @@ def _safe_candidate(repo: Path, path: Path, cfg: dict) -> bool:
     return not any(token and token in lowered for token in [*tokens, *generated])
 
 
-def chunk_file(repo_root: str | Path, path: str | Path, cfg: dict) -> list[Chunk]:
+def chunk_file(repo_root: str | Path, path: str | Path, cfg: dict, install_scope: str = "") -> list[Chunk]:
     repo = Path(repo_root).resolve()
     p = Path(path).resolve()
     rel = p.relative_to(repo).as_posix()
+    # Storage key carries the install scope; classification/trust use the CLEAN rel.
+    skey = _storage_key(install_scope, rel)
     text = p.read_text(encoding="utf-8", errors="replace")
     if any(pattern.search(text) for pattern in SECRET_PATTERNS):
         return []
@@ -88,8 +114,8 @@ def chunk_file(repo_root: str | Path, path: str | Path, cfg: dict) -> list[Chunk
             content_hash = hashlib.sha256(body.encode("utf-8")).hexdigest()
             chunks.append(
                 Chunk(
-                    id=f"{rel}:{start + 1}:{content_hash[:16]}",
-                    source_path=rel,
+                    id=f"{skey}:{start + 1}:{content_hash[:16]}",
+                    source_path=skey,
                     source_type=_source_type(rel),
                     line_start=start + 1,
                     line_end=end,
@@ -104,8 +130,11 @@ def chunk_file(repo_root: str | Path, path: str | Path, cfg: dict) -> list[Chunk
     return chunks
 
 
-def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: bool = False, progress=None) -> dict:
+def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: bool = False, progress=None, install_scope: str | None = None) -> dict:
     batch_size = int((cfg.get("index") or {}).get("batch_size", 64))
+    # BUG-CORTEX-005: derive the install scope (empty unless a shared store is opted
+    # into). All source keys, state lookups, and orphan cleanup use the storage key.
+    scope = paths.index_scope(repo_root, cfg) if install_scope is None else install_scope
     files = discover(repo_root, cfg)
     all_chunks = 0
     upserted = 0
@@ -116,18 +145,19 @@ def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: 
     discovered_sources: set[str] = set()
     for file_index, path in enumerate(files, 1):
         rel = path.relative_to(Path(repo_root).resolve()).as_posix()
-        discovered_sources.add(rel)
+        skey = _storage_key(scope, rel)
+        discovered_sources.add(skey)
         stat = path.stat()
-        if not dry_run and store.source_state(rel) == (stat.st_mtime_ns, stat.st_size):
+        if not dry_run and store.source_state(skey) == (stat.st_mtime_ns, stat.st_size):
             skipped += 1
             continue
-        file_chunks = chunk_file(repo_root, path, cfg)
+        file_chunks = chunk_file(repo_root, path, cfg, install_scope=scope)
         all_chunks += len(file_chunks)
         if dry_run:
             continue
-        removed += store.delete_by_source(rel)
+        removed += store.delete_by_source(skey)
         if not file_chunks:
-            store.delete_source_state(rel)
+            store.delete_source_state(skey)
             continue
         pending.extend(file_chunks)
         if len(pending) >= batch_size:
@@ -135,14 +165,17 @@ def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: 
             if progress:
                 progress({"files_scanned": len(files), "files_done": file_index, "chunks_upserted": upserted})
             pending = []
-        store.set_source_state(rel, mtime_ns=stat.st_mtime_ns, size=stat.st_size, indexed_at=now)
+        store.set_source_state(skey, mtime_ns=stat.st_mtime_ns, size=stat.st_size, indexed_at=now)
     if dry_run:
         return {"files_scanned": len(files), "files_skipped": 0, "chunks": all_chunks, "upserted": 0, "removed": 0}
     if pending:
         upserted += _flush(pending, store, embedder)
         if progress:
             progress({"files_scanned": len(files), "files_done": len(files), "chunks_upserted": upserted})
-    for source in set(store.list_indexed_sources()) - discovered_sources:
+    # Orphan cleanup is SCOPE-AWARE: an install only removes its OWN sources, never
+    # another install's entries from a shared data dir.
+    owned = {s for s in store.list_indexed_sources() if _belongs_to_scope(s, scope)}
+    for source in owned - discovered_sources:
         removed += store.delete_by_source(source)
     store.set_meta("last_index", now)
     return {"files_scanned": len(files), "files_skipped": skipped, "chunks": all_chunks, "upserted": upserted, "removed": removed}
@@ -161,17 +194,19 @@ def _flush(chunks: list[Chunk], store: Store, embedder) -> int:
     return store.upsert(zip(chunks, vectors))
 
 
-def freshness_summary(repo_root: str | Path, cfg: dict, store: Store) -> dict:
+def freshness_summary(repo_root: str | Path, cfg: dict, store: Store, install_scope: str | None = None) -> dict:
     repo = Path(repo_root).resolve()
+    scope = paths.index_scope(repo, cfg) if install_scope is None else install_scope
     files = discover(repo, cfg)
-    discovered = {path.relative_to(repo).as_posix(): path for path in files}
-    indexed = set(store.list_indexed_sources())
+    # Key on storage keys so freshness is computed against THIS install's namespace.
+    discovered = {_storage_key(scope, path.relative_to(repo).as_posix()): path for path in files}
+    indexed = {s for s in store.list_indexed_sources() if _belongs_to_scope(s, scope)}
     changed = []
     missing = sorted(indexed - set(discovered))
-    for rel, path in discovered.items():
+    for skey, path in discovered.items():
         stat = path.stat()
-        if store.source_state(rel) != (stat.st_mtime_ns, stat.st_size):
-            changed.append(rel)
+        if store.source_state(skey) != (stat.st_mtime_ns, stat.st_size):
+            changed.append(skey)
     return {
         "files_discovered": len(discovered),
         "changed_sources": len(changed),
