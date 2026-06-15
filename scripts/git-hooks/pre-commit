@@ -16,10 +16,16 @@ set -eu
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 CONFIG="$ROOT/protocol.config.yaml"
 
-# Staged paths: Added/Copied/Modified/Renamed AND Deleted. Deleting a protected
-# agent/protocol file is itself a protected change, so D must be included or the
-# guard could be bypassed by `git rm protocol/<agent>.agent.md`.
-staged=$(git diff --cached --name-only --diff-filter=ACMRD || true)
+# Staged paths: Added/Copied/Modified/Renamed/Deleted. We must check BOTH sides of
+# renames and copies: with rename detection on, `--name-only` emits only the
+# destination, so renaming a protected source OUT (e.g. protocol/x.md -> docs/x.md)
+# could bypass the guard. `--name-status --find-renames` emits, tab-separated:
+#   M<TAB>path   A<TAB>path   D<TAB>path   R<score><TAB>old<TAB>new   C<score><TAB>old<TAB>new
+# The awk prints every path column (fields 2..NF), so both old and new are checked.
+# Deletions (D) are included so `git rm protocol/<agent>.agent.md` is also blocked.
+status=$(git diff --cached --name-status --find-renames --diff-filter=ACMRD || true)
+[ -z "$status" ] && exit 0
+staged=$(printf '%s\n' "$status" | awk -F'\t' '{ for (i = 2; i <= NF; i++) if ($i != "") print $i }')
 [ -z "$staged" ] && exit 0
 
 # Fail-safe default protected list (used if python/yaml or config unavailable).

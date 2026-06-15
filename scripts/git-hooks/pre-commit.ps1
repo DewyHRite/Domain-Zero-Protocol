@@ -8,8 +8,16 @@ $root = (& git rev-parse --show-toplevel 2>$null)
 if (-not $root) { $root = (Get-Location).Path }
 $config = Join-Path $root 'protocol.config.yaml'
 
-# Include Deletions (D): removing a protected file is also a protected change.
-$staged = & git diff --cached --name-only --diff-filter=ACMRD
+# Check BOTH sides of renames/copies (a rename FROM a protected path must be
+# blocked) and include Deletions. --name-status emits "M<TAB>path", "D<TAB>path",
+# "R<score><TAB>old<TAB>new", etc.; collect every path column (skip the status code).
+$status = & git diff --cached --name-status --find-renames --diff-filter=ACMRD
+if (-not $status) { exit 0 }
+$staged = @()
+foreach ($line in $status) {
+    $parts = $line -split "`t"
+    if ($parts.Count -ge 2) { $staged += $parts[1..($parts.Count - 1)] | Where-Object { $_ } }
+}
 if (-not $staged) { exit 0 }
 
 $defaultPaths = @(
