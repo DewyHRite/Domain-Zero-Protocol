@@ -878,6 +878,18 @@ Template file not found at: {self.template_file}
                 self._log_session_to_security_review('session_end', archived_session)
 
         self.save_state(state)
+
+        # Workstream B: full Cortex rebuild on session end (periodic re-index).
+        # Fail-soft: any exception or non-zero exit is logged, never re-raised.
+        try:
+            cortex_result = self._sync_cortex_index(full=True)
+            if cortex_result.get('skipped'):
+                print(f"[CORTEX] end-of-session rebuild skipped ({cortex_result.get('status', 'unknown')})")
+            else:
+                print(f"[CORTEX] end-of-session rebuild complete ({cortex_result.get('status', 'unknown')})")
+        except Exception as exc:
+            print(f"[CORTEX] end-of-session rebuild failed (non-fatal): {exc}")
+
         return state
 
     def is_high_risk_operation(self, command: Optional[str]) -> bool:
@@ -1565,8 +1577,146 @@ Template file not found at: {self.template_file}
 
         results['success'] = len(results['documents_updated']) > 0 and len(results['errors']) == 0
 
+        # Workstream B: Cortex-in-sync — call AFTER doc writes + git, fail-soft.
+        cortex_result = self._sync_cortex_index(full=False)
+        results['cortex_index'] = cortex_result
+        status_label = cortex_result.get('status', 'unknown')
+        if cortex_result.get('skipped'):
+            print(f"[CORTEX] index skipped ({status_label})")
+        else:
+            print(f"[CORTEX] index complete ({status_label})")
+
         print(f"[SYNC] Sync completed. {len(results['documents_updated'])} documents updated.")
         return results
+
+    # -----------------------------------------------------------------------
+    # Workstream B helpers
+    # -----------------------------------------------------------------------
+
+    def _cortex_index_lock_exists(self) -> bool:
+        """Return True if the brain index.lock file exists (another indexer is running).
+
+        Lock path mirrors brain-index-hook.ps1: <data_dir>/index.lock.
+        Computed dynamically so we don't hard-code the install-id hash.
+        Fail-soft: any error resolving the path → return False (let indexer try).
+        """
+        try:
+            import subprocess as _sp
+            brain_py = self.protocol_root / ".protocol-state" / "brain" / "brain.py"
+            if not brain_py.exists():
+                return False
+            # Ask brain.py for its data_dir via a status --json call
+            result = _sp.run(
+                [sys.executable, str(brain_py), "--repo", str(self.protocol_root), "status", "--json"],
+                capture_output=True, text=True, timeout=10,
+            )
+            if result.returncode != 0:
+                return False
+            import json as _json
+            data = _json.loads(result.stdout)
+            db_path = Path(data.get("db", ""))
+            lock_path = db_path.parent / "index.lock"
+            return lock_path.exists()
+        except Exception:
+            return False
+
+    def _sync_cortex_index(self, full: bool = False) -> Dict:
+        """Incrementally (or fully) re-index DZP Cortex after a document sync.
+
+        Workstream B implementation — always fail-soft (never raises).
+
+        Args:
+            full: If True, perform a full rebuild (no --incremental flag).
+                  If False (default), add --incremental for faster updates.
+
+        Returns:
+            dict with keys: attempted, skipped, status, [error], [exit_code]
+        """
+        import subprocess as _sp
+
+        result: Dict = {"attempted": True, "skipped": False, "status": "unknown"}
+
+        brain_py = self.protocol_root / ".protocol-state" / "brain" / "brain.py"
+        if not brain_py.exists():
+            result.update({"skipped": True, "status": "unavailable",
+                           "reason": "brain.py not found"})
+            return result
+
+        try:
+            # Status gate: verify Cortex is operational before indexing.
+            status_proc = _sp.run(
+                [sys.executable, str(brain_py), "--repo", str(self.protocol_root), "status"],
+                capture_output=True, text=True, timeout=30,
+            )
+            if status_proc.returncode != 0:
+                result.update({"skipped": True, "status": "status_failed",
+                               "reason": (status_proc.stderr or "status non-zero")[:200]})
+                return result
+
+            # Lock check: another indexer may be running.
+            if self._cortex_index_lock_exists():
+                result.update({"skipped": True, "status": "locked",
+                               "reason": "index.lock exists; another indexer is running"})
+                return result
+
+            # Build index command.
+            index_cmd = [sys.executable, str(brain_py), "--repo", str(self.protocol_root), "index"]
+            if not full:
+                index_cmd.append("--incremental")
+
+            index_proc = _sp.run(
+                index_cmd,
+                capture_output=True, text=True, timeout=120,
+            )
+            result.update({
+                "skipped": False,
+                "status": "ok" if index_proc.returncode == 0 else "error",
+                "exit_code": index_proc.returncode,
+                "summary": (index_proc.stdout or "")[:400],
+            })
+            return result
+
+        except _sp.TimeoutExpired as exc:
+            result.update({"skipped": True, "status": "timeout",
+                           "error": f"indexer timed out after {exc.timeout}s"})
+            return result
+        except Exception as exc:
+            result.update({"skipped": True, "status": "error",
+                           "error": str(exc)[:200]})
+            return result
+
+    def _cli_update(self, time_only: bool = False) -> None:
+        """Shared logic for the 'update' CLI command.
+
+        Workstream B: rewires 'update' to be the full-sync orchestrator.
+
+        Args:
+            time_only: If True, only record the interaction timestamp (fast,
+                       for internal/automated callers). If False (default),
+                       run full sync (timestamp + doc sync + cortex index).
+        """
+        state = self.update_interaction()
+        print(f"[OK] Session updated: {state['session_metrics']['total_duration_minutes']} minutes")
+
+        if not time_only:
+            include_git = True  # git remains approval-gated inside sync
+            results = self.sync_all_project_documents(include_git_operations=include_git)
+
+            print("\n[SYNC RESULTS]")
+            print(f"Documents updated: {len(results['documents_updated'])}")
+            for doc in results['documents_updated']:
+                print(f"  + {doc}")
+
+            cortex_info = results.get('cortex_index', {})
+            if cortex_info.get('skipped'):
+                print(f"[CORTEX] skipped ({cortex_info.get('status', 'unknown')})")
+            else:
+                print(f"[CORTEX] indexed ({cortex_info.get('status', 'unknown')})")
+
+            if results['errors']:
+                print(f"[WARN] {len(results['errors'])} sync error(s):")
+                for err in results['errors']:
+                    print(f"  - {err}")
 
     def _backup_before_append(self, filepath: Path) -> Optional[Path]:
         """
@@ -1965,7 +2115,8 @@ def main():
         print("")
         print("Session Management:")
         print("  start, new-session         Start a new work session")
-        print("  update                     Record an interaction (updates duration)")
+        print("  update                     Full sync: timestamp + doc sync + Cortex index")
+        print("  update --time-only         Timestamp only (fast, for internal callers)")
         print("  sync                       Comprehensive project documents sync (domain.record, dev-notes, security-review, project-state)")
         print("  sync --no-git              Sync documents without git operations")
         print("  end                        End the current session")
@@ -1996,8 +2147,11 @@ def main():
     if command == "start" or command == "new-session":
         monitor.start_session()
     elif command == "update":
-        state = monitor.update_interaction()
-        print(f"Session updated: {state['session_metrics']['total_duration_minutes']} minutes")
+        # Workstream B: 'update' is now the full-sync orchestrator.
+        # --time-only flag preserves the OLD timestamp-only behaviour for fast/internal callers.
+        # check-and-record / continue / resume are unaffected (they call update_interaction directly).
+        time_only = "--time-only" in sys.argv
+        monitor._cli_update(time_only=time_only)
     elif command == "sync":
         # PATCH-SESSION-UPDATE: Comprehensive project documents sync
         include_git = "--no-git" not in sys.argv

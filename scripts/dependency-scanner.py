@@ -733,7 +733,21 @@ Performance:
             reporter.generate_agent_matrix()
 
         if args.export:
-            output_path = Path(args.export)
+            output_path = Path(args.export).resolve()
+            # SEC-SCRIPT-001: confine export path to inside the project/repo dir.
+            # Resolve the candidate path and verify it stays inside cwd.
+            project_root = Path.cwd().resolve()
+            try:
+                output_path.relative_to(project_root)
+            except ValueError:
+                print(
+                    f"ERROR: Export path is outside the project directory and has been rejected.\n"
+                    f"  Requested: {output_path}\n"
+                    f"  Project root: {project_root}\n"
+                    f"  Use a path inside the project to confine output.",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
             reporter.export_json(output_path)
 
         # If only --scan was requested, show summary

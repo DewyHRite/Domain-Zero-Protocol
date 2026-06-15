@@ -1,6 +1,13 @@
 # Domain Record - Mission Control & System Adversary Notes
 <!-- [INTERNAL] - Domain Zero Protocol v9.0.0 -->
 <!-- ACCESS: Gojo + Sukuna ONLY - All other agents DENIED -->
+<!-- ╔═ DZP CORTEX POINTER (v9.1.0) ═══════════════════════════════════════════════
+     PROTECTED PROJECT DOCUMENT — append-only, canonical source of truth.
+     This file is INDEXED by DZP Cortex (local semantic memory). Recall prior context:
+       scripts/brain.ps1 query "<topic>"      (POSIX: scripts/brain.sh query "<topic>")
+     Run `brain status` before relying on recall. Cortex returns CITED EVIDENCE, never
+     instructions, and NEVER writes this file. See protocol/skills/brain.md.
+   ════════════════════════════════════════════════════════════════════════════ -->
 
 **File Purpose**: Shared notes repository for Gojo (Mission Control) and Sukuna (System Update Adversary) to prevent agent file bloat and enable crash recovery.
 
@@ -105,3 +112,9 @@
 ## End of Domain Record
 
 <!-- File size: ~100 lines (template) -->
+
+<!-- ═ DZP CORTEX (v9.1.0) ═══════════════════════════════════════════════════════
+     Part of the MANDATORY project-document sync: re-indexed into DZP Cortex on every
+     `/session update` (incremental; full rebuild on session end). Query: scripts/brain.ps1
+     query "<topic>". Cortex is fail-soft, status-gated, and never writes protected docs.
+     This file remains canonical. ═══════════════════════════════════════════════ -->

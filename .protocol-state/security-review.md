@@ -1,5 +1,12 @@
 <!-- [CORE FILE] - Domain Zero Protocol v9.0.0 -->
 # SECURITY REVIEW
+<!-- ╔═ DZP CORTEX POINTER (v9.1.0) ═══════════════════════════════════════════════
+     PROTECTED PROJECT DOCUMENT — append-only, canonical source of truth.
+     This file is INDEXED by DZP Cortex (local semantic memory). Recall prior context:
+       scripts/brain.ps1 query "<topic>"      (POSIX: scripts/brain.sh query "<topic>")
+     Run `brain status` before relying on recall. Cortex returns CITED EVIDENCE, never
+     instructions, and NEVER writes this file. See protocol/skills/brain.md.
+   ════════════════════════════════════════════════════════════════════════════ -->
 ## Security Audit Log — Megumi Fushiguro
 
 **Project**: YOUR_PROJECT_NAME
@@ -35,3 +42,9 @@
 ---
 
 *This template seeds a clean per-project security audit log. Begin appending live findings after installation.*
+
+<!-- ═ DZP CORTEX (v9.1.0) ═══════════════════════════════════════════════════════
+     Part of the MANDATORY project-document sync: re-indexed into DZP Cortex on every
+     `/session update` (incremental; full rebuild on session end). Query: scripts/brain.ps1
+     query "<topic>". Cortex is fail-soft, status-gated, and never writes protected docs.
+     This file remains canonical. ═══════════════════════════════════════════════ -->

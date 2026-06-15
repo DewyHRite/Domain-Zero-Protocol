@@ -203,18 +203,51 @@ def _export(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
 
 
 def _validate_snapshot_out(repo: Path, out: Path) -> None:
+    # SEC-BRAIN-009: defense-in-depth path confinement for snapshot --out.
+    # Reject if: (a) outside repo, (b) targets protected docs, or (c) targets
+    # source dirs (protocol/, .claude/, scripts/) or root core *.md files.
     repo = repo.resolve()
-    protected = {
-        (repo / ".protocol-state" / "dev-notes.md").resolve(),
-        (repo / ".protocol-state" / "security-review.md").resolve(),
-        (repo / ".dzp-domain" / "domain.record.md").resolve(),
-    }
-    if out in protected:
-        raise UnsafePathError(f"Refusing to export snapshot over protected document: {out}")
+    out = out.resolve()
+
+    # (a) Must stay inside repo
     try:
         out.relative_to(repo)
     except ValueError as exc:
         raise UnsafePathError(f"Snapshot export path must stay inside repo: {out}") from exc
+
+    # (b) Protected project documents (existing guard, extended)
+    protected_docs = {
+        (repo / ".protocol-state" / "dev-notes.md").resolve(),
+        (repo / ".protocol-state" / "security-review.md").resolve(),
+        (repo / ".dzp-domain" / "domain.record.md").resolve(),
+    }
+    if out in protected_docs:
+        raise UnsafePathError(f"Refusing to export snapshot over protected document: {out}")
+
+    # (c) SEC-BRAIN-009: refuse to overwrite any existing file under source dirs
+    # or the root core *.md files. New files in these dirs are also blocked because
+    # even an accidental new name like protocol/cortex.md would pollute source tree.
+    _SOURCE_PREFIXES = (
+        repo / "protocol",
+        repo / ".claude",
+        repo / "scripts",
+    )
+    _ROOT_CORE_FILES = {
+        (repo / name).resolve()
+        for name in ("CLAUDE.md", "README.md", "VERSION.md", "CHANGELOG.md", "AI_INSTRUCTIONS.md")
+    }
+
+    for prefix in _SOURCE_PREFIXES:
+        try:
+            out.relative_to(prefix.resolve())
+            raise UnsafePathError(
+                f"Refusing to export snapshot into source directory '{prefix.name}/': {out}"
+            )
+        except ValueError:
+            pass  # not under this prefix — fine
+
+    if out in _ROOT_CORE_FILES:
+        raise UnsafePathError(f"Refusing to export snapshot over core repo file: {out}")
 
 
 if __name__ == "__main__":

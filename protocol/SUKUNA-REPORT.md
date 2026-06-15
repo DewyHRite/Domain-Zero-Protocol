@@ -50,6 +50,48 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 
 ---
 
+## 📦 SYSTEM UPDATES (v9.1.0)
+
+### SEC-DOC-001 (2026-06-14): session_monitor.py --time-only invocation correction
+
+**Patch ID**: SEC-DOC-001
+**Applies to version**: v9.1.0 (docs written during brain/Cortex integration)
+**Priority**: P3 (Low — documentation correctness; no runtime code changed)
+**Category**: Bugfix (doc)
+**Status**: APPLIED
+**Required For**: All installations running v9.1.0 docs
+**Routed by**: Megumi (SEC-DOC-001)
+**Implemented by**: Sukuna (2026-06-14)
+
+**Problem**: Three `/session update` documentation files described the timestamp-only fast path as `session_monitor.py sync --time-only`. The `sync` subcommand ignores `--time-only` entirely; the flag is only parsed in the `update` branch (`"--time-only" in sys.argv` check lives in `update`, not `sync`). Any internal caller following the documented invocation would silently run a full sync instead of the intended fast path.
+
+**Files corrected**:
+- `protocol/skills/session.md` line ~114
+- `.claude/commands/session-update.md` line ~27
+- `slash-commands/session-update.md` line ~27
+
+**Fix**: Changed `session_monitor.py sync --time-only` to `session_monitor.py update --time-only` in all three files. No other content altered. Surrounding prose (full sync on plain `update`, incremental reindex, full rebuild on session end, git approval-gated, fail-soft Cortex) left unchanged.
+
+**Validation**:
+```bash
+# Must return zero hits
+grep -rn "sync --time-only" protocol/skills/session.md .claude/commands/session-update.md slash-commands/session-update.md
+
+# Must return three hits (one per file)
+grep -rn "update --time-only" protocol/skills/session.md .claude/commands/session-update.md slash-commands/session-update.md
+```
+
+**Backups**: `.protocol-state/backups/SEC-DOC-001_20260614_204507/`
+
+**Rollback**:
+```bash
+cp .protocol-state/backups/SEC-DOC-001_20260614_204507/session.md.bak protocol/skills/session.md
+cp .protocol-state/backups/SEC-DOC-001_20260614_204507/claude-session-update.md.bak .claude/commands/session-update.md
+cp .protocol-state/backups/SEC-DOC-001_20260614_204507/slash-session-update.md.bak slash-commands/session-update.md
+```
+
+---
+
 ## 📦 SYSTEM UPDATES (v9.0.0)
 
 ### PATCH-TOJI-001 (2026-06-13): Toji External Auditor Fabrication Fix — CRITICAL
@@ -3982,8 +4024,71 @@ Full rollback procedure: see plan §9 (docs/superpowers/plans/2026-06-14-dzp-cor
 
 ---
 
+## PATCH-CORTEX-POINTERS-001 — Cortex pointer banners in all project documents (v9.1.0)
+
+**Date**: 2026-06-14
+**Author**: Sukuna (System Update Adversary), Gojo-invoked + User-authorized
+**Applies To**: v9.1.0 (within-version enhancement; no version bump)
+**Type**: Documentation / Banner Consistency
+**Risk**: MINIMAL — non-destructive insertions only; all protected docs append-only
+
+### Summary
+
+Added DZP Cortex top-pointer and footer-banner to all 6 project documents (3 live + 3 templates) so agents have a consistent, visible Cortex usage hint in every protected document. Updated `/session update` docs across 3 surfaces to reflect its promotion to CORE FULL-SYNC orchestrator.
+
+### Workstream C — Cortex Banners
+
+**Files modified** (top + footer banners inserted, content 100% preserved):
+
+| File | Lines Before | Lines After | Delta | Banner Lines |
+|------|-------------|------------|-------|--------------|
+| `.protocol-state/dev-notes.md` | 267 | 280 | +13 | TOP=3, FOOTER=277 |
+| `.protocol-state/security-review.md` | 406 | 419 | +13 | TOP=5, FOOTER=416 |
+| `.dzp-domain/domain.record.md` | 247 | 260 | +13 | TOP=4, FOOTER=256 |
+| `.protocol-state/dev-notes.template.md` | 34 | 47 | +13 | TOP=3, FOOTER=44 |
+| `.protocol-state/security-review.template.md` | 37 | 50 | +13 | TOP=3, FOOTER=47 |
+| `.dzp-domain/domain.record.template.md` | 107 | 120 | +13 | TOP=4, FOOTER=117 |
+
+Each file received exactly 13 added lines (7-line top banner block + blank line + 6-line footer block — counting newlines), matching the banner spec. Zero original content removed or reordered. Idempotency verified (grep confirmed no pre-existing banners before edit).
+
+**Placement strategy**:
+- Files with `<!-- [CORE FILE] / [INTERNAL] -->` at line 1: banner placed AFTER the H1 title, before the first H2/body content
+- `domain.record.*`: banner placed after both access-control comment lines (preserving security headers cluster)
+- All top banners appear at lines 3–5 (within first 5 lines after header cluster)
+
+### Workstream B-docs — /session update Docs
+
+**Files modified**:
+
+1. `protocol/skills/session.md` — `/session update` section rewritten to reflect core-full-sync role; `--time-only` flag documented; Cortex re-index step elevated to mandatory-attempt/fail-soft with status-gate and scope (incremental per update, full rebuild on session end); git operations clarified as APPROVAL-GATED. Version stamp bumped `v9.0.0→v9.1.0`, skill version `2.0.0→2.1.0`. Changelog entry added.
+
+2. `.claude/commands/session-update.md` — Rewritten: description updated from "Update session interaction timestamp" to "Core full-sync: project documents + Cortex re-index + session timestamp". All 6 execution-order steps documented. Cortex section with status-gate, fail-soft, incremental/full-rebuild scope distinction added. `--time-only` flag documented. Git as approval-gated clarified.
+
+3. `slash-commands/session-update.md` — Identical update to `.claude/commands/session-update.md` (these files are twins).
+
+**Behavior accurately documented** (matches Yuuji's parallel implementation target):
+- Full sync order: timestamp → document sync → secret scan → backups → Cortex incremental → git (prompted)
+- `--time-only`: skips steps 2-6 (fast path for internal callers like session-check)
+- Cortex: mandatory-to-attempt, status-gated, fail-soft, never blocks sync, never writes protected docs
+- Git: prompted/approval-gated, never automatic
+
+### Backup Location
+
+`.protocol-state/backups/sukuna-workstreams-20260614_202028/` — all 9 target files pre-edit
+
+### Adversarial Self-Check
+
+- Protected doc content: PRESERVED. Diff is pure insertion (banners only). Line counts consistent: each file +13 lines = 7-line top banner + blank separator + 5-line footer block.
+- Idempotency: confirmed no pre-existing "DZP CORTEX POINTER" in any target before edit.
+- Session.md auto-invoked check semantics NOT touched — only the `/session update` section was rewritten.
+- domain.record.md banner placed AFTER access-control comments, not before — security headers intact.
+- No version bump triggered — user instruction: this is a within-v9.1.0 enhancement.
+- RISK FLAGGED: `--time-only` and `sync` subcommand are documented as the expected implementation. Yuuji must implement `session_monitor.py sync --time-only` to match. If implementation diverges, docs will be ahead of code. Cross-reference with Yuuji's parallel task before release.
+
+---
+
 **END OF SUKUNA-REPORT.md**
 
 **Last Updated**: 2026-06-14 by Sukuna (System Update Adversary)
 **Protocol Version**: 9.1.0
-**Patches Active**: 8 security patches + 2 documentation patches + 1 compliance patch + PATCH-TOJI-001 (CRITICAL) + PATCH-DISTRO-001 + PATCH-BRAIN-001 + PATCH-BRAIN-002 (DZP Cortex v9.1.0)
+**Patches Active**: 8 security patches + 2 documentation patches + 1 compliance patch + PATCH-TOJI-001 (CRITICAL) + PATCH-DISTRO-001 + PATCH-BRAIN-001 + PATCH-BRAIN-002 (DZP Cortex v9.1.0) + PATCH-CORTEX-POINTERS-001 (Cortex banner consistency + /session update core-sync docs)

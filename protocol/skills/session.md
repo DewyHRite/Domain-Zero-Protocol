@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.0.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
 # Session Management Skill
 ## Unified Interface for Work Session Tracking
 
-**Version**: 2.0.0
+**Version**: 2.1.0
 **Agent(s)**: Gojo (Mission Control)
 **Category**: Session Management
 **Risk Level**: Medium (code execution via Python)
@@ -98,18 +98,29 @@ python .protocol-state/session_monitor.py status
 
 ### /session update
 
-**Action**: Comprehensive project documents sync + session interaction timestamp update
+**Action**: Core full-sync orchestrator — project documents + Cortex re-index + timestamp
 
-**PATCH-SESSION-UPDATE (v8.13.0)**: Enhanced to sync ALL project documents comprehensively using `ProjectStateManager`.
+**Role (v9.1.0)**: `/session update` is the CORE SYNC command. It does substantially more than a timestamp update: it runs the full project-document sync pipeline, then triggers a mandatory-attempt Cortex incremental re-index. Use `--time-only` to preserve the old fast-path for internal callers (e.g., session-check) that only need the timestamp refreshed.
 
 **Implementation**:
 ```bash
-# Comprehensive sync with secret scanning and git operations (requires Gojo permission for domain.record.md)
+# Standard full sync (recommended — runs all steps below)
 DZP_AGENT=gojo python .protocol-state/session_monitor.py sync
 
 # Sync without git operations
 DZP_AGENT=gojo python .protocol-state/session_monitor.py sync --no-git
+
+# Fast path: timestamp-only (for internal callers; skips document sync + Cortex)
+DZP_AGENT=gojo python .protocol-state/session_monitor.py update --time-only
 ```
+
+**Execution Order (full sync)**:
+1. **Timestamp update** — refresh `session_tracking.last_interaction_time` in `project-state.json`
+2. **Full project-document sync** — sync all protected docs (see below)
+3. **Secret scan** — scan in-memory content before any write (prepare-scan-write pipeline)
+4. **Backups** — timestamped backups created before writes (Protection Rule 4)
+5. **Cortex incremental re-index** — mandatory-attempt, fail-soft (see below)
+6. **Git commit/push** — APPROVAL-GATED: prompted, never automatic
 
 **Project Documents Synced** (ALL CONTENT, NOT JUST METADATA):
 1. **`.dzp-domain/domain.record.md`** - Strategic notes, session checkpoints, decisions log (Gojo permission required)
@@ -117,11 +128,28 @@ DZP_AGENT=gojo python .protocol-state/session_monitor.py sync --no-git
 3. **`.protocol-state/dev-notes.md`** - Implementation log, completed features, pending tasks
 4. **`.protocol-state/security-review.md`** - Security audit trail, findings, SEC-ID tracking
 
-**NEW FEATURES**:
-- ✅ **Secret Scanning**: Automatically scans for API keys, tokens, passwords, connection strings
-- ✅ **Git Operations**: Commit and push with user approval (optional)
-- ✅ **Atomic Updates**: Uses `ProjectStateManager` for race-condition-free state updates
-- ✅ **Comprehensive Sync**: ALL document content synced, not just appends
+**Cortex Re-Index (v9.1.0) — MANDATORY-TO-ATTEMPT, FAIL-SOFT**:
+
+Per the Cortex Integration Contract (`protocol/skills/brain.md`), `/session update` MUST attempt an incremental Cortex re-index after every successful project-document sync. This step is:
+- **Mandatory-to-attempt**: always run `brain status` + `brain index --incremental`
+- **Fail-soft**: if `brain status` reports not-ok, or if the index errors, log the failure and proceed — the sync is never blocked or wedged
+- **Status-gated**: only attempt the full index if `brain status` exits 0
+- **Never writes protected docs**: Cortex is a derived index, never canonical
+
+```bash
+# Step 5 — Cortex incremental re-index (after document sync succeeds)
+# Windows
+scripts/brain.ps1 status && scripts/brain.ps1 index --incremental
+
+# POSIX
+scripts/brain.sh status && scripts/brain.sh index --incremental
+
+# On any Cortex error: log "Cortex re-index skipped: <reason>" and continue.
+```
+
+Reindex scope per invocation:
+- `/session update` → **incremental** (only changed/new chunks)
+- `/session end` → **full rebuild** (see /session end)
 
 **Secret Patterns Detected**:
 - API Keys (32+ characters)
@@ -130,12 +158,12 @@ DZP_AGENT=gojo python .protocol-state/session_monitor.py sync --no-git
 - Connection Strings (mongodb://, postgres://, mysql://)
 - Password Assignments
 
-**Git Operations Workflow**:
+**Git Operations Workflow** (APPROVAL-GATED, not automatic):
 1. Scan all documents for secrets
-2. If secrets found: Abort commit with warning
-3. If clean: Prompt user for approval
-4. Commit with message: `chore(session): Project documents checkpoint sync`
-5. Push to remote (user choice: yes/local-only/skip)
+2. If high-confidence secrets found: abort commit with warning
+3. If clean: prompt user for approval
+4. On approval: commit with message `chore(session): Project documents checkpoint sync`
+5. Push to remote: user choice (yes / local-only / skip)
 
 **Use Cases**:
 - Manual checkpoint during long work sessions
@@ -147,28 +175,15 @@ DZP_AGENT=gojo python .protocol-state/session_monitor.py sync --no-git
 **ESCAPE PATH**:
 - If ProjectStateManager unavailable: Fall back to legacy file I/O
 - If secret scanning fails: Log warning, continue without scan
+- If Cortex unavailable/errors: Log "Cortex re-index skipped", continue — NEVER blocks sync
 - If git operations fail: Log error, documents still synced locally
 - Non-blocking operation (best-effort sync)
-
-### Cortex Index Step (v9.1.0, fail-soft)
-
-After project document sync, `/session update` should refresh DZP Cortex with an incremental index:
-
-```bash
-# Windows
-scripts/brain.ps1 index --incremental
-
-# POSIX
-scripts/brain.sh index --incremental
-```
-
-This step is fail-soft. If Cortex dependencies, model cache, or sqlite-vec are unavailable, report the failure and continue the session update. Cortex is a derived index and must never block protected project document sync.
 
 **Protection Rules** (NON-NEGOTIABLE):
 - ❌ **NEVER OVERWRITE** - Project documents are append-only
 - ✅ **BACKUP BEFORE EDIT** - Timestamped backups created automatically
 - ✅ **NO TEMPLATE RESETS** - Never reset to template state
-- ✅ **VERSION CONTROL** - Git operations recommended but optional
+- ✅ **VERSION CONTROL** - Git commit/push recommended but approval-gated (never automatic)
 
 ---
 
@@ -419,6 +434,15 @@ args: "start"
 ---
 
 ## Changelog
+
+### 2.1.0 (2026-06-14)
+- `/session update` promoted to CORE FULL-SYNC orchestrator (v9.1.0)
+- Added mandatory-attempt fail-soft Cortex incremental re-index step (per Cortex Integration Contract)
+- Added `--time-only` flag for internal callers (timestamp-only fast path, skips sync + Cortex)
+- Clarified git commit/push is APPROVAL-GATED, never automatic
+- Documented execution order: timestamp → document sync → secret scan → backups → Cortex index → git (prompted)
+- Full rebuild (`brain index`) deferred to `/session end`; incremental on `/session update`
+- Added status-gate: only attempt full index if `brain status` exits 0
 
 ### 1.0.0 (2025-12-28)
 - Initial release for v8.11.0
