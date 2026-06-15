@@ -38,8 +38,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Performance Gate (no-daemon CLI)
 - Targets formally defined for the no-daemon CLI: `query`/`remember` <3s, full index ≤5min, incremental no-op <5s. Canonical benchmarks pass; STUB p95 (k=5) = 0.270s. Sub-1s warm latency deferred to a future daemon. (Supersedes an earlier "sub-500ms" figure, which was a documentation error.)
 
-### Deferred / Gated
-- **Distro publication**: `DZP-v9.1.0` publish branch NOT yet created. Public release remains GATED on user acceptance testing of Cortex. Distro **dry-run passes all gates** (stage/identity/content scrub, PII audit, path audit, version assert at v9.1.0); no commit/push performed.
+#### /session update — Full-Sync Orchestrator + Cortex-in-Sync Integration
+- **`/session update` promoted to CORE full-sync orchestrator.** Plain `update` now runs: timestamp → full project-document sync (project-state.json, domain.record.md [Gojo-gated], dev-notes.md, security-review.md, secret-scan-before-write, timestamped backups) → **mandatory Cortex incremental re-index** (fail-soft, status-gated). Git commit/push remains approval-gated. `update --time-only` preserves the original fast timestamp-only path unchanged. `check-and-record` / `continue` / `resume` subcommands unchanged.
+- **Cortex re-index is now a mandatory step of the project-document sync.** Incremental (`--incremental`) on every `/session update`; full rebuild on `/session end`. Status-gated before the re-index call; fail-soft if Cortex is unavailable (never blocks the sync). Implemented in `.protocol-state/session_monitor.py` via `_sync_cortex_index`, `_cortex_index_lock_exists`, and `_cli_update` methods.
+- **Cortex pointer banners** (top + footer) added to the three protected project documents (`dev-notes.md`, `security-review.md`, `domain.record.md`) and their three distro templates, ensuring fresh installations inherit the Cortex workflow guidance.
+
+#### Security Hardening (P3 path-traversal defense-in-depth + doc fix)
+- **Snyk python/PT triage (24 findings, Megumi @approved):** 21 findings classified as false-positive (local single-user CLIs; argv/env inputs are owner-supplied). 3 classified P3 defense-in-depth and remediated; 0 true-positive.
+- **SEC-BRAIN-009** (@approved, P3): `brain.py` snapshot `--out` argument now rejects writes targeting `protocol/`, `.claude/`, `scripts/`, or the 5 root core `.md` files. Confinement prevents accidental overwrite of CORE files via the export path.
+- **SEC-SCRIPT-001** (@approved, P3): `dependency-scanner.py` `--export` path confined to cwd; rejects paths containing `..` traversal or absolute paths outside the project root.
+- **SEC-SCRIPT-002** (@approved, P3): `assert_version.py` `--root` argument now checks for the DZP marker file (`protocol.config.yaml`) before proceeding, preventing silent misfire against unrelated directories.
+- **SEC-DOC-001** (@applied): corrected three `/session update` doc files that described the fast path as `session_monitor.py sync --time-only`; the correct invocation is `session_monitor.py update --time-only` (`--time-only` is parsed in the `update` branch, not `sync`).
+
+### Distro Publication Status (updated)
+- **Test gate: CLEARED** — Cortex has been functionally tested by the owner; the "GATED on user acceptance testing" gate is cleared.
+- **`DZP-v9.1.0` publish branch**: created and committed **locally** via `dzp-publish.ps1 -ForceClean -NoPush`. Branch exists locally; **not yet pushed** to the public canonical. Public push pending explicit owner go-ahead.
+- Distro **dry-run passes all gates** (stage/identity/content scrub, PII audit, path audit, version assert at v9.1.0).
 
 ---
 

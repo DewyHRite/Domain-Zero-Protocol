@@ -92,6 +92,59 @@ cp .protocol-state/backups/SEC-DOC-001_20260614_204507/slash-session-update.md.b
 
 ---
 
+### DOC-SYNC-001 (2026-06-14): Documentation consistency sweep — session-sync orchestrator + P3 hardening + distro gate status
+
+**Patch ID**: DOC-SYNC-001
+**Applies to version**: v9.1.0 (in-flight; no version bump)
+**Priority**: P2 (documentation accuracy; no runtime code changed)
+**Category**: Documentation update (consistency sweep)
+**Status**: APPLIED
+**Required For**: All v9.1.0 installations reading stale docs post-session
+**Invoked by**: User ("Update documentations") → Gojo-authorized → Sukuna executed
+**Implemented by**: Sukuna (2026-06-14)
+
+**Problem**: After this session's runtime changes (session_monitor.py full-sync orchestrator, Cortex-in-sync mandatory re-index, SEC-BRAIN-009/SEC-SCRIPT-001/SEC-SCRIPT-002 P3 hardening, Snyk triage, Cortex testing + local DZP-v9.1.0 publish), the following doc statements had become stale:
+1. CHANGELOG.md, VERSION.md: still described "Deferred / Gated — DZP-v9.1.0 branch NOT yet created; GATED on user testing."
+2. CHANGELOG.md, VERSION.md: missing /session update full-sync orchestrator, Cortex-in-sync, Cortex banners, SEC-BRAIN-009/001/002, SEC-DOC-001, Snyk triage facts.
+3. CLAUDE.md (root + protocol/): DZP CORTEX section had no mention of /session update automatic sync integration. Version-history line for v9.1.0 was missing session-sync, P3 hardening, gate-cleared items.
+4. README.md: DZP Cortex auto-index paragraph said "refreshes the index on demand" without stating the full-sync + fail-soft contract.
+5. AI_INSTRUCTIONS.md: Cortex section had no AI-operator note about the session-sync integration or the do-not-double-index guidance.
+
+**Facts recorded**:
+- /session update is now a CORE full-sync orchestrator: timestamp → project-doc sync → incremental Cortex re-index (fail-soft). `update --time-only` retains the original fast path.
+- Cortex re-index is MANDATORY (fail-soft) on /session update (incremental) and /session end (full rebuild).
+- Cortex pointer banners added to 3 protected docs + 3 templates.
+- SEC-BRAIN-009 (brain.py snapshot --out confinement), SEC-SCRIPT-001 (dependency-scanner --export confinement), SEC-SCRIPT-002 (assert_version --root DZP-marker check): all P3, @approved.
+- Snyk python/PT triage: 24 findings, 21 FP, 3 P3, 0 true-positive.
+- Cortex test gate: CLEARED (functionally tested by owner).
+- DZP-v9.1.0 publish branch: committed locally via dzp-publish.ps1 -ForceClean -NoPush; NOT pushed to public canonical.
+
+**Files updated** (6):
+1. `CHANGELOG.md` — replaced stale "Deferred / Gated" block; added session-sync + P3 hardening subsections; updated distro gate status.
+2. `VERSION.md` — appended session-sync, Cortex banners, P3 hardening, Snyk triage, and gate-cleared bullets to v9.1.0 headline list.
+3. `CLAUDE.md` (root) — (a) Major Enhancements line updated; (b) DZP CORTEX section: session-sync integration paragraph added; (c) version-history v9.1.0 line updated.
+4. `protocol/CLAUDE.md` — (a) DZP CORTEX section: session-sync paragraph added; (b) version-history v9.1.0 line updated.
+5. `README.md` — DZP Cortex auto-index paragraph expanded with full-sync + fail-soft contract.
+6. `AI_INSTRUCTIONS.md` — Cortex section: AI-operator session-sync note + do-not-double-index guidance added.
+
+**Hard constraint observed**: NO version number changed. All files remain at v9.1.0. `python scripts/distro/assert_version.py --root .` passes.
+
+**Backups**: `.protocol-state/backups/doc-sync-20260614_210052/`
+- `CHANGELOG.md.bak`, `VERSION.md.bak`, `CLAUDE.md.bak`, `protocol-CLAUDE.md.bak`, `README.md.bak`, `AI_INSTRUCTIONS.md.bak`, `SUKUNA-REPORT.md.bak`
+
+**Rollback**:
+```bash
+cp .protocol-state/backups/doc-sync-20260614_210052/CHANGELOG.md.bak CHANGELOG.md
+cp .protocol-state/backups/doc-sync-20260614_210052/VERSION.md.bak VERSION.md
+cp .protocol-state/backups/doc-sync-20260614_210052/CLAUDE.md.bak CLAUDE.md
+cp .protocol-state/backups/doc-sync-20260614_210052/protocol-CLAUDE.md.bak protocol/CLAUDE.md
+cp .protocol-state/backups/doc-sync-20260614_210052/README.md.bak README.md
+cp .protocol-state/backups/doc-sync-20260614_210052/AI_INSTRUCTIONS.md.bak AI_INSTRUCTIONS.md
+cp .protocol-state/backups/doc-sync-20260614_210052/SUKUNA-REPORT.md.bak protocol/SUKUNA-REPORT.md
+```
+
+---
+
 ## 📦 SYSTEM UPDATES (v9.0.0)
 
 ### PATCH-TOJI-001 (2026-06-13): Toji External Auditor Fabrication Fix — CRITICAL

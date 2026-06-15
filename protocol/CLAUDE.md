@@ -1059,6 +1059,8 @@ scripts/brain.sh status|query|remember|index  # POSIX equivalent
 - Cortex is local after first model download. No cloud inference is used.
 - **Toji has no Cortex CLI or execution access.** Toji may read only an exported `cortex-snapshot.md` if the owner provides one.
 
+**Session sync integration**: `/session update` keeps Cortex in sync automatically — it runs an incremental re-index (`brain index --incremental`) as the final step of every full project-document sync (fail-soft; skipped if Cortex is unavailable). `/session end` triggers a full rebuild (`brain index`) plus an export snapshot. Use `update --time-only` to skip the full sync and re-index when only a timestamp update is needed.
+
 Cortex-first is mandatory to attempt at workflow entry for token/context management: run required safety checks first, then `brain status`, then a targeted recall if status is `ok`. If Cortex is unavailable, report briefly and proceed. See `protocol/skills/brain.md` for the full command contract.
 
 ---
@@ -1553,7 +1555,7 @@ All protocol settings are stored in `protocol.config.yaml`:
 **Last Updated**: 2026-06-14
 
 **Recent Version History**:
-- v9.1.0 - **MINOR**: DZP Cortex (PLAN-BRAIN-002) — local semantic memory brain: sqlite-vec + fastembed embedding index, /brain skill + brain-index-hook scripts, no-daemon CLI perf gates, Phase 10 agent doc blocks (all 10 agents). SEC-BRAIN-007 + SEC-BRAIN-008 remediated. Distro publication GATED on user testing.
+- v9.1.0 - **MINOR**: DZP Cortex (PLAN-BRAIN-002) — local semantic memory brain: sqlite-vec + fastembed embedding index, /brain skill + brain-index-hook scripts, no-daemon CLI perf gates, Phase 10 agent doc blocks (all 10 agents). SEC-BRAIN-007/008 remediated (@approved). /session update promoted to full-sync orchestrator (project-doc sync + mandatory incremental Cortex re-index; --time-only fast path preserved; /session end = full rebuild). Cortex pointer banners in 3 protected docs + templates. P3 security hardening: SEC-BRAIN-009/SEC-SCRIPT-001/SEC-SCRIPT-002 (@approved) + SEC-DOC-001 (doc fix). Snyk 24-finding triage: 0 true-positive. Test gate CLEARED; DZP-v9.1.0 branch committed locally, public push pending owner go-ahead.
 - v9.0.0 - **MAJOR**: Distro Publish Architecture (PATCH-DISTRO-001) + PATCH-TOJI-001 (CRITICAL Toji fabrication fix) + version reconciliation. All version files + 10 agents stamped to v9.0.0.
 - v8.13.0 - **PATCH**: PATCH-SESSION-005 (Toji External Auditor - new 10th agent, toji.agent.md v1.2.0, Claude Code stub, copilot-instructions.md full sync, AI_INSTRUCTIONS.md update)
 - v8.13.0 - **PATCH**: PATCH-SESSION-004 (Session Monitoring Enhancement - 5 defensive layers, coverage 70-85% → 85-90%)

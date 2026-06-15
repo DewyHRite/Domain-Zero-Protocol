@@ -242,7 +242,7 @@ scripts/brain.ps1 status         # expect: Cortex status: ok
 ```bash
 cp .claude/settings.template.json .claude/settings.json   # .claude/settings.json is gitignored
 ```
-The template pre-wires a `hooks.SessionEnd` index refresh and allow-lists the `brain` commands. **POSIX hosts:** change the hook command to `bash scripts/brain-index-hook.sh`. The hook is fail-soft, lock-guarded, and times out at 30s, so it never blocks session end. Mid-session, `/session update` refreshes the index on demand.
+The template pre-wires a `hooks.SessionEnd` index refresh and allow-lists the `brain` commands. **POSIX hosts:** change the hook command to `bash scripts/brain-index-hook.sh`. The hook is fail-soft, lock-guarded, and times out at 30s, so it never blocks session end. Mid-session, `/session update` automatically keeps Cortex in sync — it runs `brain index --incremental` as the final step of the full project-document sync (fail-soft; skipped if Cortex is unavailable). `/session end` triggers a full rebuild plus an export snapshot. Use `update --time-only` to skip the sync and re-index when only a quick timestamp update is needed.
 
 > **Note:** Cortex stores all runtime data (DB, memories, model cache) in an external dir (`%LOCALAPPDATA%/dzp-cortex/` on Windows; XDG equivalent on macOS/Linux), never inside the repo. The data dir refuses cloud-synced locations (OneDrive/Dropbox) and network shares.
 
