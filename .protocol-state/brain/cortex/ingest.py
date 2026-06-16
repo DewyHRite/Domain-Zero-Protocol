@@ -126,12 +126,17 @@ def discover(repo_root: str | Path, cfg: dict) -> list[Path]:
             path = (repo / rel).resolve()
             if path.exists() and _safe_candidate(repo, path, cfg):
                 candidates.add(path)
+    # SEC-CORTEX-011 (v9.3.4): pass recurse_symlinks=False to rglob on Python 3.13+
+    # to prevent cyclic-symlink DoS on POSIX systems. The `recurse_symlinks` kwarg was
+    # added to Path.rglob() in Python 3.13 (passing the wrong name raises TypeError on
+    # 3.13+), so we guard on (3, 13) and fall back to an empty dict on older Pythons.
+    _rglob_kw: dict = {"recurse_symlinks": False} if sys.version_info >= (3, 13) else {}
     for key in ("include_folders", "include_reports", "include_code"):
         for rel in cfg.get(key, []):
             folder = (repo / rel).resolve()
             if not folder.exists() or not folder.is_dir():
                 continue
-            for path in folder.rglob("*"):
+            for path in folder.rglob("*", **_rglob_kw):
                 if path.is_file() and _safe_candidate(repo, path.resolve(), cfg):
                     candidates.add(path.resolve())
     return sorted(candidates)
@@ -313,19 +318,35 @@ def top_sources_by_chunks(store: "Store", *, n: int = 10) -> list[dict]:
       source_path (str): repo-relative path (install-scope prefix stripped)
       chunk_count (int): number of chunks from this source in the index
     Returns [] if the index is empty.
+
+    PLAN-DESIGN-001 Phase 1 (v9.4.0): dispatches on store._active_schema.
+      v2: queries content_refs.storage_key (replaces chunks.source_path)
+      v1: queries chunks.source_path (legacy behavior unchanged)
     """
     store.init_schema()
     with store.connect() as conn:
-        rows = conn.execute(
-            """
-            SELECT source_path, COUNT(*) AS chunk_count
-            FROM chunks
-            GROUP BY source_path
-            ORDER BY chunk_count DESC
-            LIMIT ?
-            """,
-            (n,),
-        ).fetchall()
+        if store._active_schema == 2:
+            rows = conn.execute(
+                """
+                SELECT storage_key AS source_path, COUNT(*) AS chunk_count
+                FROM content_refs
+                GROUP BY storage_key
+                ORDER BY chunk_count DESC
+                LIMIT ?
+                """,
+                (n,),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT source_path, COUNT(*) AS chunk_count
+                FROM chunks
+                GROUP BY source_path
+                ORDER BY chunk_count DESC
+                LIMIT ?
+                """,
+                (n,),
+            ).fetchall()
     from .store import _display_source  # local import avoids circular at module level
     return [
         {"source_path": _display_source(str(row[0])), "chunk_count": int(row[1])}

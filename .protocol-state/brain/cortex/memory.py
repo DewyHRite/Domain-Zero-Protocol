@@ -9,7 +9,7 @@ from pathlib import Path
 
 from .errors import UnsafePathError
 from .store import Chunk, Store
-from .ingest import contains_secret
+from .ingest import contains_secret, INJECTION_PATTERNS
 
 
 ALLOWED_TYPES = {"decision", "lesson", "sec", "note"}
@@ -58,6 +58,12 @@ def remember(
     month_file = mdir / f"{ts[:7]}.jsonl"
     with month_file.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(record, ensure_ascii=True) + "\n")
+    # SEC-CORTEX-013 (v9.3.4): apply the same injection-pattern detection that
+    # chunk_file uses so prompt-injection text is stored with suspect=True even
+    # when it arrives via the remember() path (not only via the file-ingest path).
+    # INJECTION_PATTERNS is the single shared list imported from ingest — no
+    # regex duplication.
+    _is_suspect = any(pattern.search(text) for pattern in INJECTION_PATTERNS)
     chunk = Chunk(
         id=f"memory:{mem_id}",
         source_path=f"memory:{ts[:7]}",
@@ -68,6 +74,7 @@ def remember(
         recorded_date=ts,
         text=text,
         trust="untrusted",
+        suspect=_is_suspect,
         mem_type=mem_type,
         agent=agent,
         refs=cleaned_refs,

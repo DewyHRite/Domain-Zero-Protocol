@@ -40,12 +40,25 @@ try {
     Write-CortexHookLog "index hook skipped; lock exists (concurrent run)"
     exit 0
   }
-  $Process = Start-Process -FilePath "python" -ArgumentList @($Brain, "--repo", $Repo, "index", "--incremental") -WindowStyle Hidden -PassThru
+  # SEC-CORTEX-012 (v9.3.4): capture stderr to a temp file so non-zero exits
+  # produce a meaningful log entry (mirrors what the .sh hook already does via
+  # 2>>index.log).  The temp file is appended to the hook log then removed.
+  $StderrTemp = [System.IO.Path]::GetTempFileName()
+  $Process = Start-Process -FilePath "python" -ArgumentList @($Brain, "--repo", $Repo, "index", "--incremental") -WindowStyle Hidden -PassThru -RedirectStandardError $StderrTemp
   if (-not $Process.WaitForExit($TimeoutSeconds * 1000)) {
     try { Stop-Process -Id $Process.Id -Force } catch { }
     Write-CortexHookLog "index hook timed out after ${TimeoutSeconds}s"
   } elseif ($Process.ExitCode -ne 0) {
     Write-CortexHookLog "index hook exited with code $($Process.ExitCode)"
+    if (Test-Path $StderrTemp) {
+      $StderrContent = Get-Content -LiteralPath $StderrTemp -Raw -ErrorAction SilentlyContinue
+      if ($StderrContent) {
+        Write-CortexHookLog "index hook stderr: $($StderrContent.Trim())"
+      }
+    }
+  }
+  if (Test-Path $StderrTemp) {
+    try { Remove-Item -LiteralPath $StderrTemp -Force } catch { }
   }
 } catch {
   Write-CortexHookLog "index hook failed: $_"

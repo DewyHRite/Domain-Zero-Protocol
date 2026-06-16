@@ -23,3 +23,19 @@ class QueryUnavailable(CortexError):
     """Query cannot run because the store is missing or empty."""
 
     exit_code = 2
+
+
+class SchemaTooNewError(CortexError):
+    """The Cortex DB schema (PRAGMA user_version) is newer than this engine
+    supports. v9.3.4 preflight (PLAN-DESIGN-001 §0): an old engine must fail
+    closed rather than write v1 rows into a migrated (v2) shared DB."""
+
+    exit_code = 5
+
+
+class SchemaMismatchError(CortexError):
+    """The canonical schema marker (PRAGMA user_version) and its metadata mirror
+    (metadata.schema_version) disagree. Indicates a partially migrated or
+    repaired DB; the engine fails closed instead of guessing (IMPL-001)."""
+
+    exit_code = 6

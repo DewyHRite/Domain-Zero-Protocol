@@ -9,6 +9,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.4.0] - 2026-06-16
+
+### MINOR — Content-Addressed Cortex Storage (PLAN-DESIGN-001)
+
+Replaces per-scope chunk-addressed storage (v1) with a content-addressed model (v2): one vector
+per distinct `content_hash`, reference-counted occurrences. Eliminates the ~55% shared-install
+vector duplication (BUG-CORTEX-007) and closes the DESIGN-001 cross-scope orphan-cleanup
+corruption path. Built across 7 phases (each Yuuji TDD + Megumi Tier-3); Gojo-coordinated
+all-hands review. **Megumi final Tier-3 @approved** — all 13 §8 acceptance criteria PASS.
+**350 passed / 1 skipped** brain + **21** distro tests; `assert_version` green (20 sources).
+
+### Added
+- v2 schema in `cortex/store.py`: `content` / `content_vectors` / `content_refs` with indexes
+  on `content_hash`, `storage_key`, `(content_hash,trust)`; deterministic
+  `ref_id = sha256(storage_key:line_start:content_hash)[:16]`.
+- `init_schema` dispatch: fresh→v2; legacy v1 kept on v1 (never auto-stamped); v2→idempotent;
+  >2→`SchemaTooNewError`; mismatch→`SchemaMismatchError`.
+- Content-addressed upsert (one vector per hash), ref-count delete (`NOT EXISTS`, cross-scope
+  shared vector preserved), v2 search (trust filter in SQL before dedup).
+- `.protocol-state/migrate_cortex_storage_9_4.py` — reversible, parity-gated migration
+  (`--check/--execute/--rollback`): backup-first, single `BEGIN IMMEDIATE`, pre-flight
+  duplicate-key scan, parity gate before drop, idempotent; `cortex_installs` shared-DB version gate.
+- v2 `doctor`/`dedup` diagnostics (ref-counts + true dedup ratio); distro ships + smoke-tests the
+  migration utility (IMPL-002).
+
+### Security
+- SEC-CORTEX-009..024 closed across the feature. Accepted residual: SEC-CORTEX-016 (P3, vec0
+  `lastrowid` integration-test gap — production fix in place, real-backend CI test deferred).
+- Lock discipline: `busy_timeout` + `BEGIN IMMEDIATE` on all v2 write paths. Trust at reference
+  level (no cross-scope trust elevation). Recall + trust-filter parity vs v1 proven by tests.
+
+## [9.3.4] - 2026-06-16
+
+### PATCH — Cortex Preflight + Hardening (PLAN-DESIGN-001 §0)
+
+Gates the v9.4.0 content-addressed storage migration by shipping the schema-version guard to the
+v9.3.x engine first. Gojo-coordinated **all-hands Tier-3** review (Megumi/Todo/Maki/Yuuji/Nobara).
+**Megumi Tier-3 @approved.** **168 passed / 1 skipped** brain tests; version gate green (20 sources).
+
+### Added
+- Schema-version guard in `cortex/store.py`: `PRAGMA user_version` canonical authority +
+  `metadata.schema_version` mirror; `SchemaTooNewError`/`SchemaMismatchError` **fail closed on ALL
+  operations**; marker never downgraded (fixes the pre-v9.3.4 unconditional `user_version=1`
+  corruption vector). New `errors.py` exception classes (exit codes 5/6).
+- `cortex_installs` membership ledger (per PLAN-DESIGN-001 §0) to enable the v9.4.0 shared-DB
+  version gate.
+- Tests: `tests/brain/test_schema_guard.py`, `tests/brain/test_v934_preflight.py`.
+
+### Security
+- SEC-CORTEX-009 (dim DDL validation), SEC-CORTEX-010 (export secret re-filter),
+  SEC-CORTEX-011 (rglob `recurse_symlinks=False`, Py3.13+), SEC-CORTEX-012 (PS1 hook stderr
+  capture), SEC-CORTEX-013 (memory `remember()` injection suspect-flag).
+
+### Performance
+- Schema guard memoized per `Store` (eliminates per-call `init_schema` overhead);
+  `search()` empty-check collapsed from a `COUNT(*)` to `SELECT 1 LIMIT 1`.
+
+### UX
+- Nobara P1: actionable `SchemaTooNewError`/`SchemaMismatchError` messages (which install to
+  upgrade, DB path, recovery commands, fail-soft note).
+
+### Changed
+- PLAN-DESIGN-001 (v9.4.0) amended: deterministic `ref_id`, `content_refs` indexes,
+  `cortex_installs` shared-DB gate, trust-filter parity, `NOT EXISTS` delete.
+
 ## [9.3.3] - 2026-06-15
 
 ### PATCH — Toji Audit Remediation (BugReport3 / PATCH-CORTEX-DIAG-001)

@@ -4374,3 +4374,66 @@ Each file received exactly 13 added lines (7-line top banner block + blank line 
 **Last Updated**: 2026-06-16 by Sukuna (System Update Adversary) / PATCH-CORTEX-DIAG-001 (v9.3.3 Toji-audit remediation) appended
 **Protocol Version**: 9.3.3 (Main-v9.3.3 dev branch; published as DZP-v9.3.3; Megumi Tier-2 @approved)
 **Patches Active**: 8 security patches + 2 documentation patches + 1 compliance patch + PATCH-TOJI-001 (CRITICAL) + PATCH-DISTRO-001 + PATCH-BRAIN-001 + PATCH-BRAIN-002 (DZP Cortex v9.1.0) + PATCH-CORTEX-POINTERS-001 + PATCH-BUGREPORT-001 (v9.3.0 BugReport remediation bundle, 14 findings + FEAT-REQ-001) + PATCH-ORCH-001 (v9.2.1 orchestration) + PATCH-CORTEX-SCOPE-001 (v9.3.2 engine hardening) + PATCH-CORTEX-DIAG-001 (v9.3.3 Toji-audit remediation: SEC-002 allowlist + IMPL-003 diagnostics + version-gate extension)
+
+---
+
+### PATCH-CORTEX-PREFLIGHT-001: v9.3.4 Schema-Version Guard + Cortex Hardening
+**Applies To**: v9.3.3 → v9.3.4
+**Priority**: P1-High
+**Category**: Security / Bugfix / Enhancement
+**Status**: APPLIED (2026-06-16T11:27:46Z)
+**Required For**: Upgrades (hard dependency for v9.4.0 content-addressed storage migration)
+
+**Description**: Ships the schema-version guard to the v9.3.x engine BEFORE the v9.4.0 migration,
+so an un-upgraded engine cannot corrupt a migrated (v2) shared DB. `PRAGMA user_version` is the
+canonical authority; `metadata.schema_version` is a mirror; too-new/mismatch fail closed on ALL
+ops; the marker is never downgraded. Adds the `cortex_installs` membership ledger for the shared-DB
+version gate. Includes SEC-CORTEX-009..013, schema-guard memoization (perf), and Nobara UX P1
+error messages.
+
+**Validation**:
+```bash
+python -m pytest tests/brain/ -q          # 168 passed, 1 skipped
+python scripts/distro/assert_version.py --root .   # ASSERT OK: v9.3.4 (20 files)
+```
+
+**Rollback**: `git checkout Main-v9.3.3 -- .protocol-state/brain/ scripts/brain-index-hook.ps1`;
+restore version stamps from `.protocol-state/backups/v9.3.4-cascade-*`; delete branch `Main-v9.3.4`.
+
+**Review**: Gojo all-hands Tier-3 (Megumi/Todo/Maki/Yuuji/Nobara). Megumi Tier-3 @approved
+(SEC-CORTEX-011 wrong-kwarg catch remediated). Sukuna-led.
+
+---
+
+### PATCH-CORTEX-CONTENT-ADDR-001: v9.4.0 Content-Addressed Cortex Storage (PLAN-DESIGN-001)
+**Applies To**: v9.3.4 → v9.4.0 (MINOR)
+**Priority**: P1-High
+**Category**: Enhancement / Bugfix (storage-model change)
+**Status**: APPLIED (2026-06-16T22:37:03Z)
+**Required For**: Upgrades (existing v1 Cortex DBs migrate via the bundled script)
+
+**Description**: Replaces per-scope chunk-addressed storage (v1) with content-addressed storage
+(v2): one vector per distinct content_hash, ref-counted occurrences. Eliminates ~55% shared-install
+duplication and closes the DESIGN-001 cross-scope orphan-cleanup corruption path. Bundles a
+reversible, parity-gated migration (.protocol-state/migrate_cortex_storage_9_4.py).
+
+**Upgrade procedure (existing installs)**:
+```bash
+python .protocol-state/migrate_cortex_storage_9_4.py --check     # verify migratable + ledger gate
+python .protocol-state/migrate_cortex_storage_9_4.py --execute   # backup-first, parity-gated
+# rollback if needed:
+python .protocol-state/migrate_cortex_storage_9_4.py --rollback
+```
+Fresh installs initialize directly to v2. Mixed-version shared installs require the v9.3.4 preflight
+guard on all peers first.
+
+**Validation**:
+```bash
+python -m pytest tests/brain/ -q          # 350 passed, 1 skipped
+python -m pytest tests/distro/ -q         # 21 passed
+python scripts/distro/assert_version.py --root .   # ASSERT OK: v9.4.0 (20 files)
+```
+
+**Rollback (code-level)**: `git checkout Main-v9.3.4 -- .protocol-state/brain/ .protocol-state/migrate_cortex_storage_9_4.py`; restore version stamps from `.protocol-state/backups/v9.4.0-cascade-*`.
+
+**Review**: 7 phases, each Yuuji TDD + Megumi Tier-3. Gojo all-hands review (Megumi/Todo/Maki/Yuuji/Nobara). Megumi final @approved — SEC-CORTEX-009..024 closed; accepted P3 SEC-CORTEX-016.

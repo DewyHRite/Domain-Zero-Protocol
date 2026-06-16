@@ -380,6 +380,13 @@ def detect_drift(current_results: List[ValidationResult], last_validation_state:
             continue
 
         file_key = Path(result.file).name
+        # The validation-state file IS the integrity baseline store. Its own checksum
+        # is recorded by update_validation_state() *before* the new state is written,
+        # so after the write the file no longer matches its stored hash — producing a
+        # perpetual, unfixable self-drift alert. Exclude it from drift detection
+        # (it cannot meaningfully checksum itself).
+        if file_key == "validation-state.json":
+            continue
         previous = integrity_data.get(file_key, {})
         previous_checksum = previous.get('checksum')
 

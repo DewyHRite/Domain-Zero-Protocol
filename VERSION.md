@@ -1,9 +1,60 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.3.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.4.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v9.3.3
-**Release Date:** 2026-06-15
-**Release Type:** PATCH Release (Toji Audit / BugReport3 Remediation — PATCH-CORTEX-DIAG-001)
+**Version:** v9.4.0
+**Release Date:** 2026-06-16
+**Release Type:** MINOR Release (Content-Addressed Cortex Storage — PLAN-DESIGN-001)
+
+---
+
+## Release Summary — v9.4.0 (MINOR)
+
+v9.4.0 replaces DZP Cortex's per-scope **chunk-addressed** storage (v1) with a
+**content-addressed** model (v2): one vector per distinct `content_hash`, with N
+reference-counted occurrence rows. This eliminates the ~55% vector duplication
+measured in shared-brain installs (BUG-CORTEX-007) and closes the DESIGN-001
+cross-scope orphan-cleanup corruption path.
+
+- **Schema v2:** `content` / `content_vectors` / `content_refs` (+ indexes on
+  `content_hash`, `storage_key`, `(content_hash,trust)`); deterministic `ref_id`;
+  trust at the reference level (no cross-scope trust elevation).
+- **Reversible migration:** `.protocol-state/migrate_cortex_storage_9_4.py`
+  (`--check/--execute/--rollback`) — backup-first, single `BEGIN IMMEDIATE`,
+  parity-gated (count invariants + public result contract + trust-filter set)
+  before any table drop; idempotent; `cortex_installs` shared-DB version gate.
+- **Engine:** `init_schema` dispatch (fresh→v2; legacy v1 kept on v1 until
+  migrated — never auto-stamped; too-new/mismatch fail-closed on ALL ops) gated
+  by the v9.3.4 preflight guard. End-to-end v2 ingest/query/memory with recall +
+  trust-filter parity vs v1. `doctor`/`dedup` report v2 ref-counts + true dedup ratio.
+- **Distro:** ships the migration utility + smoke-tested (IMPL-002).
+- Built across 7 phases (each Yuuji TDD + Megumi Tier-3); Gojo-coordinated
+  all-hands review (Megumi/Todo/Maki/Yuuji/Nobara). **Megumi final Tier-3
+  @approved** — all 13 §8 acceptance criteria PASS; SEC-CORTEX-009..024 closed;
+  accepted P3 SEC-CORTEX-016 (vec0 lastrowid integration-test gap). **350 passed
+  / 1 skipped** brain + **21** distro tests; `assert_version` green at 20 sources.
+
+---
+
+## Release Summary — v9.3.4 (PATCH)
+
+v9.3.4 is the **preflight + Cortex hardening** release that gates the v9.4.0 content-addressed
+storage migration (PLAN-DESIGN-001 §0). It ships the schema-version guard to the v9.3.x engine
+**before** any migration can run, so an old engine can never corrupt a migrated (v2) shared DB.
+
+- **Schema-version guard:** `PRAGMA user_version` is the single canonical authority;
+  `metadata.schema_version` is a diagnostic mirror. A too-new DB or a marker mismatch
+  **fails closed on ALL operations** (`SchemaTooNewError`/`SchemaMismatchError`). The marker is
+  never downgraded — fixing the pre-v9.3.4 unconditional `user_version=1` corruption vector.
+- **`cortex_installs` membership ledger:** every engine run stamps its install id + version +
+  last-seen, enabling the v9.4.0 shared-DB version gate.
+- **Performance:** the schema guard is memoized per `Store` (no per-call overhead).
+- **Security (all-hands Megumi):** SEC-CORTEX-009 (dim DDL validation), 010 (export secret
+  re-filter), 011 (rglob `recurse_symlinks=False`, Py3.13+), 012 (PS1 hook stderr capture),
+  013 (memory `remember()` injection suspect-flag).
+- **UX (Nobara P1):** actionable schema-error messages (which install to upgrade, DB path,
+  recovery commands, fail-soft note).
+- Gojo-coordinated **all-hands Tier-3** review (Megumi/Todo/Maki/Yuuji/Nobara). **Megumi
+  Tier-3 @approved.** **168 passed / 1 skipped** brain tests. Extended version gate passes.
 
 ---
 

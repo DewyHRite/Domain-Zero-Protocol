@@ -214,7 +214,14 @@ def _export(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
             if not raw.strip():
                 continue
             record = json.loads(raw)
-            lines.append(f"- **{record.get('type')}** `{record.get('id')}` {record.get('text')}")
+            # SEC-CORTEX-010 (v9.3.4): re-filter memory text through the secret
+            # detector before writing to the snapshot.  A memory that slipped past
+            # the remember() guard (e.g. written directly to the JSONL file or stored
+            # by an older engine) must not leak credentials into the Toji snapshot.
+            mem_text = record.get("text", "")
+            if _contains_secret(mem_text):
+                mem_text = "[REDACTED — possible secret]"
+            lines.append(f"- **{record.get('type')}** `{record.get('id')}` {mem_text}")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(str(out))
@@ -222,44 +229,83 @@ def _export(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
 
 
 def _dedup(repo: Path, cfg: dict, store: Store) -> int:
-    """IMPL-003 (v9.3.3): brain dedup --report — READ-ONLY duplicate ratio report."""
+    """IMPL-003 (v9.3.3) / Phase 5 (v9.4.0): brain dedup --report — READ-ONLY duplicate ratio report.
+
+    Schema-aware: v2 DBs use content-addressed framing (dedup_savings); v1 DBs use the
+    legacy duplicate_chunks framing.
+    """
     # SEC-CORTEX-DIAG-003: redact any preview that trips the secret filter so the report
     # never re-discloses a credential that slipped past indexing-time scrubbing.
     report = _dedup_report(store, redactor=_contains_secret)
-    total = report["total_chunks"]
-    if total == 0:
-        print("Cortex dedup report: nothing indexed yet (empty DB).")
-        return 0
-    print("Cortex dedup report (READ-ONLY — no rows deleted)")
-    print(f"  Total chunks    : {total}")
-    print(f"  Unique hashes   : {report['unique_hashes']}")
-    print(f"  Duplicate chunks: {report['duplicate_chunks']}")
-    print(f"  Duplicate ratio : {report['duplicate_ratio']:.2%}")
-    if report["top_duplicates"]:
-        print(f"\n  Top {len(report['top_duplicates'])} content_hash(es) with duplicates:")
-        for entry in report["top_duplicates"]:
-            print(f"    [{entry['occurrences']}x] {entry['content_hash'][:16]}... \"{entry['text_preview']}\"")
+
+    # Dispatch on schema version via the keys present in the report.
+    if "total_refs" in report:
+        # --- v2 content-addressed path ---
+        total_refs = report["total_refs"]
+        if total_refs == 0:
+            print("Cortex dedup report: nothing indexed yet (empty DB).")
+            return 0
+        print("[OK] content-addressed storage — Cortex dedup report (READ-ONLY)")
+        print(f"  Total refs      : {total_refs}  (content_refs rows — one per source occurrence)")
+        print(f"  Unique content  : {report['unique_content']}  (content rows — one per distinct content_hash)")
+        print(f"  Shared content  : {report['shared_content']}  (content hashes referenced by > 1 source)")
+        print(f"  Dedup savings   : {report['dedup_savings']}  vectors saved vs naive per-ref storage")
+        print(f"  Dedup ratio     : {report['dedup_ratio']:.2%}")
+        if report["top_duplicates"]:
+            print(f"\n  Top {len(report['top_duplicates'])} shared content_hash(es) by ref count:")
+            for entry in report["top_duplicates"]:
+                print(f"    [{entry['occurrences']}x] {entry['content_hash'][:16]}... \"{entry['text_preview']}\"")
+        else:
+            print("\n  No shared content_hashes found (all content unique).")
     else:
-        print("\n  No content_hash duplicates found.")
+        # --- v1 legacy path (unchanged presentation) ---
+        total = report["total_chunks"]
+        if total == 0:
+            print("Cortex dedup report: nothing indexed yet (empty DB).")
+            return 0
+        print("Cortex dedup report (READ-ONLY — no rows deleted)")
+        print(f"  Total chunks    : {total}")
+        print(f"  Unique hashes   : {report['unique_hashes']}")
+        print(f"  Duplicate chunks: {report['duplicate_chunks']}")
+        print(f"  Duplicate ratio : {report['duplicate_ratio']:.2%}")
+        if report["top_duplicates"]:
+            print(f"\n  Top {len(report['top_duplicates'])} content_hash(es) with duplicates:")
+            for entry in report["top_duplicates"]:
+                print(f"    [{entry['occurrences']}x] {entry['content_hash'][:16]}... \"{entry['text_preview']}\"")
+        else:
+            print("\n  No content_hash duplicates found.")
     return 0
 
 
 def _doctor(repo: Path, cfg: dict, store: Store) -> int:
-    """IMPL-003 (v9.3.3): brain doctor — READ-ONLY health check."""
+    """IMPL-003 (v9.3.3) / Phase 5 (v9.4.0): brain doctor — READ-ONLY health check.
+
+    Schema-aware: v2 DBs print content/vectors/refs labels; v1 DBs print chunks/rowmap/vectors.
+    """
     print("Cortex doctor (READ-ONLY health check)")
     print("-" * 40)
 
-    # Row integrity
     irep = _integrity_report(store)
     ok_marker = "OK" if irep["integrity_ok"] else "MISMATCH"
-    print(f"  Row integrity   : {ok_marker}")
-    print(f"    chunks        : {irep['chunks_count']}")
-    print(f"    rowmap        : {irep['rowmap_count']}")
-    print(f"    vectors       : {irep['vectors_count']}")
-    if irep["mismatch_details"]:
-        print(f"    MISMATCH      : {irep['mismatch_details']}")
 
-    # Trust distribution
+    if irep.get("schema_version") == 2:
+        # --- v2 content-addressed path ---
+        print(f"  Row integrity   : {ok_marker}  (schema v2 — content-addressed)")
+        print(f"    content       : {irep['content_count']}")
+        print(f"    vectors       : {irep['vector_count']}")
+        print(f"    refs          : {irep['refs_count']}")
+        if irep["mismatch_detail"]:
+            print(f"    MISMATCH      : {irep['mismatch_detail']}")
+    else:
+        # --- v1 legacy path (unchanged presentation) ---
+        print(f"  Row integrity   : {ok_marker}")
+        print(f"    chunks        : {irep['chunks_count']}")
+        print(f"    rowmap        : {irep['rowmap_count']}")
+        print(f"    vectors       : {irep['vectors_count']}")
+        if irep.get("mismatch_details"):
+            print(f"    MISMATCH      : {irep['mismatch_details']}")
+
+    # Trust distribution (same for v1 and v2)
     print(f"  Trust distribution:")
     if irep["trust_distribution"]:
         for trust, count in sorted(irep["trust_distribution"].items()):
