@@ -9,7 +9,7 @@ from pathlib import Path
 
 from .errors import UnsafePathError
 from .store import Chunk, Store
-from .ingest import SECRET_PATTERNS
+from .ingest import contains_secret
 
 
 ALLOWED_TYPES = {"decision", "lesson", "sec", "note"}
@@ -47,7 +47,7 @@ def remember(
         raise ValueError(f"unsupported memory type: {mem_type}")
     if not text.strip():
         raise ValueError("memory text is required")
-    if any(pattern.search(text) for pattern in SECRET_PATTERNS):
+    if contains_secret(text):
         raise ValueError("memory text appears to contain a secret; refusing to remember")
     cleaned_refs = validate_refs(repo_root, refs)
     ts = datetime.now(timezone.utc).isoformat(timespec="seconds")

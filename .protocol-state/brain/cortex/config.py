@@ -14,6 +14,7 @@ from . import paths
 DEFAULT_CONFIG: dict[str, Any] = {
     "model": "BAAI/bge-small-en-v1.5",
     "top_k": 5,
+    "max_file_bytes": 6_000_000,  # SEC-CORTEX-003 (v9.3.2): config-driven per-file cap
     "include_folders": ["protocol", "docs"],
     "include_files": [
         "CLAUDE.md",
@@ -88,6 +89,11 @@ def validate(cfg: dict[str, Any], repo_root: str | Path, *, allow_unsafe: bool =
         raise ValueError("model must be a non-empty string")
     if int(cfg.get("top_k", 0)) <= 0:
         raise ValueError("top_k must be positive")
+    # SEC-CORTEX-004 (v9.3.2): reject non-positive / non-int / bool max_file_bytes.
+    # bool is a subclass of int, so it must be rejected explicitly.
+    mfb = cfg.get("max_file_bytes", DEFAULT_CONFIG["max_file_bytes"])
+    if isinstance(mfb, bool) or not isinstance(mfb, int) or mfb <= 0:
+        raise ValueError("max_file_bytes must be a positive integer")
     for key in ("include_folders", "include_files", "include_protected", "include_reports", "include_code", "exclude_tokens"):
         if not isinstance(cfg.get(key), list):
             raise ValueError(f"{key} must be a list")

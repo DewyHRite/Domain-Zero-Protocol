@@ -1,9 +1,37 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.3.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.3.2 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v9.3.0
+**Version:** v9.3.2
 **Release Date:** 2026-06-15
-**Release Type:** MINOR Release (BugReport Remediation Bundle — PATCH-BUGREPORT-001)
+**Release Type:** PATCH Release (Cortex Engine Hardening Upstream — PATCH-CORTEX-SCOPE-001)
+
+---
+
+## Release Summary — v9.3.2 (PATCH)
+
+v9.3.2 **upstreams the Cortex engine hardening** that had only existed in downstream installs'
+gitignored `.protocol-state/` files into the **canonical** `cortex/` engine — closing **SEC-CORTEX-003**
+(the "next protocol sync silently reverts every patch" integrity gap, OWASP A08). Because the canonical
+`cortex/` files are git-tracked, applying them here propagates the fixes to every install on its next sync.
+
+**Engine changes (canonical + distro, byte-identical):**
+- **SEC-CORTEX-003 / cap** — per-file index cap is now config-driven (`max_file_bytes`, default **6 MB**;
+  previously a hardcoded `1_000_000`). `ingest._safe_candidate` reads `cfg["max_file_bytes"]`.
+- **SEC-CORTEX-001 / trust** — `_trust_for` is now default-deny: only `protocol/`, `scripts/`, and the core
+  root docs (`CLAUDE.md`, `AI_INSTRUCTIONS.md`, `README.md`) are `trusted`; **all other content → `semi`**.
+- **SEC-CORTEX-002 / secrets** — placeholder-aware detection via a shared `contains_secret()` used by both
+  `ingest.chunk_file` and `memory.remember`. High-confidence FORMATS (PEM, AKIA, GitHub, Slack, JWT, Bearer)
+  always drop; `keyword[:=]value` drops **only** when the value is not an obvious placeholder
+  (`[...]`/`<...>`/`${ENV}`, `xxxx`/`***` masks, placeholder words, `<6` chars).
+- **SEC-CORTEX-004 / validation** — `config.validate()` rejects non-positive / non-int / bool `max_file_bytes`.
+- **BUG-CORTEX-006 / dedup** — query-time content-hash de-duplication in `store.py` (`_overfetch_k` +
+  `_dedupe_by_content`) applied to both the `sqlite_vec` and stub search paths. Trust filter runs in SQL
+  **before** dedup, so dedup can never elevate or relabel trust.
+
+**Verification:** `ast.parse` clean ×4; **93/93** Cortex unit tests pass (`tests/brain/` + `tests/test_cortex_sync.py`).
+**Status:** Sukuna-led; **Megumi review pending**. **v9.3.1 skipped** (combined single carving per USER decision).
+**Note:** This is the canonical-repo upstream; it does NOT pull in any install-specific scope folders
+(e.g. JamWebStudio's `business-assets/`) — installs opt into expanded scope via their own `brain.config.yaml`.
 
 ---
 
