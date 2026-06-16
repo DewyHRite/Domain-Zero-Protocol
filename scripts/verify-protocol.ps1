@@ -322,7 +322,9 @@ function Test-YamlSyntax {
 
     if ($pythonCmd) {
         Write-InfoMsg "Validating YAML syntax with Python..."
-        $yamlTest = & $pythonCmd -c "import yaml; yaml.safe_load(open('protocol.config.yaml'))" 2>&1
+        # SEC-001 (v9.3.3): force UTF-8 so valid non-ASCII YAML does not false-fail
+        # on Windows, where open() otherwise uses the active ANSI code page.
+        $yamlTest = & $pythonCmd -c "import yaml; yaml.safe_load(open('protocol.config.yaml', encoding='utf-8'))" 2>&1
         if ($LASTEXITCODE -eq 0) {
             Write-Pass "YAML syntax valid (verified with Python)"
             return

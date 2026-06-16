@@ -9,6 +9,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.3.3] - 2026-06-15
+
+### PATCH — Toji Audit Remediation (BugReport3 / PATCH-CORTEX-DIAG-001)
+
+Sukuna-led remediation of the Toji Sentinel audit (`internal-docs/Patch Report/BugReport3.md`,
+7 findings). **Megumi Tier-2 @approved** (3 accepted P3, zero blocking); **120/120 brain tests**
+(80 baseline + 40 new); extended version gate green at 20 sources.
+
+### Fixed
+- **IMPL-002 — version reconciliation:** all 10 agent frontmatter stamps and the nested
+  `project-state.json` straggler were stuck at `9.2.1` while the gate passed at `9.3.2`.
+  All agent `[CORE FILE]`/`protocol_version` stamps, the gojo schema example, and every
+  `project-state.json` `protocol_version` field reconciled to `9.3.3`. `scripts/distro/assert_version.py`
+  **extended** to scan `protocol/*.agent.md` frontmatter and ALL project-state version fields
+  (was 7 core files; now catches agent + nested drift — verified by a negative test).
+- **SEC-001 — `verify-protocol.ps1`:** YAML validation now reads `protocol.config.yaml` as
+  explicit UTF-8, fixing a Windows ANSI-codepage false-fail on the config's 128 non-ASCII bytes.
+- **CODE-001 — `_SCOPED_PREFIX_RE`:** the scoped-key pattern was declared twice (ingest + store);
+  consolidated to a single canonical definition in `store.py`, imported by `ingest.py`, so the two
+  modules can never drift on the scoped-key format.
+- **IMPL-001 — RHS report:** withdrew the "low-risk one-shot physical de-dup" framing; interim
+  relief is now `brain dedup --report` (read-only) only. Destructive de-dup is gated behind the
+  future content-addressed migration (DESIGN-001 / v9.4.0).
+
+### Added
+- **SEC-002 — indexable-extension allowlist:** ingest now requires a positive `index_extensions`
+  allowlist (config-driven) in addition to the binary denylist (defense in depth), plus an opt-in
+  per-file `max_file_chunks` cap (default `0` = unlimited) and largest-file/outlier reporting. The
+  default allowlist is **project-agnostic (74 extensions** across docs/scripting/config/web/systems
+  languages) so Cortex indexes any user project out-of-the-box, not just protocol files; scope stays
+  user-configurable via `include_folders`/`include_code` in `brain.config.yaml`.
+- **IMPL-003 — read-only Cortex diagnostics:** `brain dedup --report` (duplicate ratio by
+  scope/content-hash) and `brain doctor` (chunks/rowmap/vectors integrity, trust distribution,
+  engine-hash drift detector, largest indexed files). Both strictly read-only — no row/vector
+  deletion (destructive de-dup formally rejected for this patch).
+
+### Security (post-review hardening — all three P3s resolved)
+- **SEC-CORTEX-DIAG-001:** `brain doctor` labels the engine hash as drift-detection-only (not tamper-proof).
+- **SEC-CORTEX-DIAG-002:** `config.validate()` rejects non-string `index_extensions` entries.
+- **SEC-CORTEX-DIAG-003:** `dedup_report()` redacts any `text_preview` flagged by `contains_secret`
+  (dependency-injected redactor) so the report never re-discloses a credential to stdout.
+- Regression tests added for each; **122** brain tests pass. v9.3.3 ships with zero open SEC findings.
+
+### Deferred
+- **DESIGN-001 — content-addressed / reference-counted Cortex storage:** the real fix for
+  shared-brain physical duplication changes the storage model and requires migration handling;
+  scheduled for **v9.4.0 MINOR** with migration tests, rollback notes, and Megumi review. Query-time
+  dedup (BUG-CORTEX-006) keeps recall correct in the interim.
+
+---
+
+## [9.3.2] - 2026-06-15
+
+### PATCH — Cortex Engine Hardening Upstream (PATCH-CORTEX-SCOPE-001)
+
+Upstreams the Cortex engine hardening from downstream gitignored `.protocol-state/` files into the
+**canonical** `cortex/` engine, closing **SEC-CORTEX-003** (next-sync-reverts-every-patch integrity
+gap, OWASP A08). **93/93** Cortex tests; **Megumi Tier-2 @approved** (0 findings). v9.3.1 skipped
+(combined single carving per USER).
+
+### Fixed
+- **SEC-CORTEX-003:** per-file index cap is config-driven (`max_file_bytes`, default 6 MB; was a
+  hardcoded 1 MB).
+- **SEC-CORTEX-001:** `_trust_for` is default-deny — only `protocol/`, `scripts/`, and core root docs
+  are `trusted`; all other content → `semi`.
+- **SEC-CORTEX-002:** placeholder-aware secret detection via shared `contains_secret()` (ingest +
+  memory); high-confidence token formats always drop, `keyword[:=]value` drops only non-placeholder values.
+- **SEC-CORTEX-004:** `config.validate()` rejects non-positive / non-int / bool `max_file_bytes`.
+- **BUG-CORTEX-006:** query-time content-hash de-duplication in `store.py` across both search paths
+  (trust filter precedes dedup).
+
+---
+
 ## [9.3.0] - 2026-06-15
 
 ### MINOR — BugReport Remediation Bundle (PATCH-BUGREPORT-001)

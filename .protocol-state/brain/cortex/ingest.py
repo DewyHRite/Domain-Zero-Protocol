@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import hashlib
 import re
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
 from . import paths
-from .store import Chunk, Store
+from .config import DEFAULT_CONFIG
+from .store import Chunk, Store, _SCOPED_PREFIX_RE
 
 
 # BUG-CORTEX-005 (v9.3.0): install-scoped storage keys for shared brains.
@@ -23,7 +25,8 @@ from .store import Chunk, Store
 # Matching on this exact shape (not a bare leading "@") avoids misclassifying a
 # legitimate repo-relative path that happens to start with "@" (e.g. "@team/x.md")
 # as a scoped key — which would corrupt orphan cleanup / freshness accounting.
-_SCOPED_PREFIX_RE = re.compile(r"^@[0-9a-f]{12}/")
+# CODE-001 (v9.3.3): the pattern is now defined once in store.py and imported above,
+# so ingest and store can never drift on the scoped-key format.
 
 
 def _is_scoped_storage_key(storage_key: str) -> bool:
@@ -140,7 +143,20 @@ def _safe_candidate(repo: Path, path: Path, cfg: dict) -> bool:
     except ValueError:
         return False
     lowered = rel.lower()
-    if path.suffix.lower() in BINARY_SUFFIXES:
+    suffix = path.suffix.lower()
+    # Denylist: known binary formats always blocked (defense-in-depth layer 1).
+    if suffix in BINARY_SUFFIXES:
+        return False
+    # SEC-002 (v9.3.3): positive ALLOWLIST (defense-in-depth layer 2).
+    # Only extensions present in index_extensions are admitted; unknown/absent
+    # extensions are excluded by default, preventing accidental indexing of
+    # binary-looking files that weren't in BINARY_SUFFIXES.
+    allowed_exts: list[str] = cfg.get("index_extensions", DEFAULT_CONFIG["index_extensions"])
+    # Normalise to lowercase. An explicit "" entry is preserved so callers can opt in
+    # extension-less files (Makefile, Dockerfile, LICENSE) per the index_extensions
+    # contract documented in config.py — filtering it out here silently broke that.
+    allowed_lower = {ext.lower() for ext in allowed_exts}
+    if suffix not in allowed_lower:
         return False
     max_bytes = int(cfg.get("max_file_bytes", DEFAULT_MAX_FILE_BYTES))  # config-driven cap (v9.3.2)
     if path.stat().st_size > max_bytes:
@@ -189,6 +205,19 @@ def chunk_file(repo_root: str | Path, path: str | Path, cfg: dict, install_scope
                 )
             )
         start = end
+    # SEC-002 (v9.3.3): per-file chunk cap. If max_file_chunks > 0 and we exceeded
+    # it, drop the entire file and warn. We check AFTER chunking so we get an accurate
+    # count; dropping partial chunks would create index drift, so the all-or-nothing
+    # policy is the safe choice.
+    max_chunks = cfg.get("max_file_chunks", DEFAULT_CONFIG["max_file_chunks"])
+    if max_chunks and len(chunks) > max_chunks:
+        print(
+            f"[cortex:ingest] SKIP {rel}: chunk cap exceeded "
+            f"({len(chunks)} chunks > max_file_chunks={max_chunks}). "
+            "Increase max_file_chunks or exclude this file.",
+            file=sys.stderr,
+        )
+        return []
     return chunks
 
 
@@ -275,6 +304,33 @@ def freshness_summary(repo_root: str | Path, cfg: dict, store: Store, install_sc
         "missing_sources": len(missing),
         "stale": bool(changed or missing),
     }
+
+
+def top_sources_by_chunks(store: "Store", *, n: int = 10) -> list[dict]:
+    """SEC-002 (v9.3.3): Return the top-n indexed sources ranked by chunk count (descending).
+
+    READ-ONLY diagnostic. Returns a list of dicts with keys:
+      source_path (str): repo-relative path (install-scope prefix stripped)
+      chunk_count (int): number of chunks from this source in the index
+    Returns [] if the index is empty.
+    """
+    store.init_schema()
+    with store.connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT source_path, COUNT(*) AS chunk_count
+            FROM chunks
+            GROUP BY source_path
+            ORDER BY chunk_count DESC
+            LIMIT ?
+            """,
+            (n,),
+        ).fetchall()
+    from .store import _display_source  # local import avoids circular at module level
+    return [
+        {"source_path": _display_source(str(row[0])), "chunk_count": int(row[1])}
+        for row in rows
+    ]
 
 
 def _source_type(rel: str) -> str:

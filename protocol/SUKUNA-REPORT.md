@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.3.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.3.3 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.3.0
+**Version**: 9.3.3
 **Status**: Production
 **Last Updated**: 2026-06-15
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
@@ -47,6 +47,69 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
 4. AI agents automatically apply patches on next upgrade/setup
 ```
+
+---
+
+## 📦 SYSTEM UPDATES (v9.3.3)
+
+### PATCH-CORTEX-DIAG-001 (2026-06-15): Toji Audit (BugReport3) Remediation — v9.3.3 Version Cascade
+
+**Patch ID**: PATCH-CORTEX-DIAG-001
+**Applies to version**: v9.3.2 (audit remediation; closes 6 of 7 Toji findings, 1 deferred)
+**Priority**: P2 (release-readiness; no P0/P1; three P3 accepted-risk)
+**Category**: Version reconciliation, verifier fix, Cortex allowlist + read-only diagnostics, report correction
+**Status**: APPLIED (pending git)
+**Required For**: All installations (version-gate hardening + Cortex ingest allowlist are install-relevant)
+**Invoked by**: User (/sukuna) → Sukuna executed; Tier B by Yuuji + Megumi
+**Implemented by**: Sukuna (Tier A + cascade) + Yuuji (Tier B TDD, 120 passed) + Megumi (Tier-2 @approved, 3 accepted P3)
+
+**Summary**: Remediates the Toji Sentinel audit (`internal-docs/Patch Report/BugReport3.md`). Tier A corrections (Sukuna): IMPL-002 version reconciliation + extended `assert_version.py` gate, SEC-001 `verify-protocol.ps1` UTF-8 YAML fix, IMPL-001 RHS report correction, CODE-001 `_SCOPED_PREFIX_RE` consolidation. Tier B new functionality (Yuuji TDD + Megumi review): SEC-002 indexable-extension allowlist + `max_file_chunks` cap + outlier reporting, IMPL-003 read-only `brain dedup --report` + `brain doctor` diagnostics. DESIGN-001 (content-addressed storage) deferred to v9.4.0.
+
+**Deliverables**:
+
+*A. Tier A — corrections (no behavior change)*:
+- `scripts/distro/assert_version.py` — extended to scan `protocol/*.agent.md` frontmatter + ALL `project-state.json` `protocol_version` fields (was 7 core files; now 20 sources). Negative-tested.
+- `scripts/verify-protocol.ps1` — Python YAML validation reads config as explicit UTF-8 (SEC-001).
+- `.protocol-state/brain/cortex/store.py` + `ingest.py` — `_SCOPED_PREFIX_RE` single-sourced in `store.py`, imported by `ingest.py` (CODE-001). No new files → publish-manifest unchanged.
+- `internal-docs/Patch Report/Bug Report/DZP-RHS-Sukuna-Issues-Report-2026-06-15.md` — R3 corrected; destructive de-dup rejected (IMPL-001).
+
+*B. Tier B — new functionality (Megumi Tier-2 @approved)*:
+- `.protocol-state/brain/cortex/config.py` — new `index_extensions` + `max_file_chunks` keys + `validate()` coverage.
+- `.protocol-state/brain/cortex/ingest.py` — positive allowlist in `_safe_candidate`, chunk cap in `chunk_file`, `top_sources_by_chunks()` (SEC-002).
+- `.protocol-state/brain/cortex/store.py` — read-only `dedup_report()`, `integrity_report()`, `engine_hash()`.
+- `.protocol-state/brain/brain.py` — `dedup --report` + `doctor` subcommands (IMPL-003).
+- `tests/brain/test_sec002_impl003.py` — 40 new tests.
+
+*C. Security findings (Megumi Tier-2 @approved)*:
+- SEC-CORTEX-DIAG-001 (P3) — `engine_hash` is a drift detector (SHA-256, no HMAC), not tamper-proof; accepted for local single-owner use.
+- SEC-CORTEX-DIAG-002 (P3) — `index_extensions` element-type not validated; accepted/optional hardening.
+- SEC-CORTEX-DIAG-003 (P3) — `dedup --report` `text_preview` info-disclosure bounded by `contains_secret`; accepted.
+- No regression of SEC-CORTEX-001/002/003/004 or BUG-CORTEX-006.
+
+*D. Test results*: 120 passed (80 baseline + 40 new), zero regressions.
+
+**Version cascade files touched** (mandated set — 9.3.2 → 9.3.3):
+- `CLAUDE.md` (root) — `[CORE FILE]` stamp, title, `**Version**`, canonical version reference, Current/Protocol Version + new history line.
+- `protocol/CLAUDE.md` — `[CORE FILE]` stamp, title, `**Version**`, canonical version reference, Current/Protocol Version + history line.
+- `VERSION.md` — `[CORE FILE]` stamp, `**Version**`, Release Type line, new v9.3.3 release summary prepended.
+- `protocol.config.yaml` — `# Version`, `canonical_repository.version`, `versioning.protocol_version`.
+- `AI_INSTRUCTIONS.md` — `[CORE FILE]` stamp, `**Version**`.
+- `README.md` — `[CORE FILE]` stamp, `**Version**`; **restructured**: dated "What's New" timeline blocks replaced with evergreen Core Capabilities + Version History pointer (timeline lives in CHANGELOG/VERSION).
+- `.protocol-state/project-state.json` — top-level + all nested `protocol_version` fields (3 occurrences) → 9.3.3.
+- All 10 `protocol/*.agent.md` files — `[CORE FILE]` stamp + `protocol_version:` field (was `9.2.1`).
+- `CHANGELOG.md` — v9.3.3 entry prepended; the previously-missing v9.3.2 entry also added.
+- `protocol/SUKUNA-REPORT.md` — header version + this entry (append-only).
+
+**Security**: Megumi Tier-2 @approved. Zero P0/P1/P2 open; three P3 accepted-risk (SEC-CORTEX-DIAG-001/002/003).
+
+**Validation**:
+```bash
+python scripts/distro/assert_version.py --root .   # MUST PASS at 9.3.3 (20 sources)
+python -m pytest tests/brain/ -q                    # 120 passed
+python -c "import json; json.load(open('.protocol-state/project-state.json')); print('OK')"
+```
+
+**Rollback**: restore from `.protocol-state/backups/v9.3.3-bugreport_20260615_223606/` (Tier A) + `.protocol-state/brain/cortex-backup-2026-06-15T1540/` (Tier B); or `git checkout <9.3.2-commit> -- <file>`; or delete branch `Main-v9.3.3`. Est. < 5 min.
 
 ---
 

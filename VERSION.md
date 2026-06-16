@@ -1,9 +1,45 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.3.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.3.3 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v9.3.2
+**Version:** v9.3.3
 **Release Date:** 2026-06-15
-**Release Type:** PATCH Release (Cortex Engine Hardening Upstream — PATCH-CORTEX-SCOPE-001)
+**Release Type:** PATCH Release (Toji Audit / BugReport3 Remediation — PATCH-CORTEX-DIAG-001)
+
+---
+
+## Release Summary — v9.3.3 (PATCH)
+
+v9.3.3 remediates the **Toji Sentinel audit** (`internal-docs/Patch Report/BugReport3.md`, 7 findings).
+Sukuna-led; **Megumi Tier-2 @approved** (3 accepted P3, zero blocking); **120/120** brain tests
+(80 baseline + 40 new); the extended version gate passes at 20 sources.
+
+**Tier A — corrections (no behavior change):**
+- **IMPL-002** — reconciled all 10 agent `protocol_version`/`[CORE FILE]` stamps + the nested
+  `project-state.json` straggler (`9.2.1`) and core files to `9.3.3`; **extended `assert_version.py`**
+  to scan agent frontmatter and ALL project-state version fields (the gate that previously passed
+  blind on the drift). Negative test confirms it now catches it.
+- **SEC-001** — `verify-protocol.ps1` reads `protocol.config.yaml` as explicit UTF-8 (fixes a Windows
+  ANSI-codepage false-fail on the config's 128 non-ASCII bytes).
+- **CODE-001** — `_SCOPED_PREFIX_RE` consolidated to one canonical definition in `store.py`, imported
+  by `ingest.py` (no more two-declaration drift risk).
+- **IMPL-001** — corrected the RHS report: interim relief is `brain dedup --report` (read-only) only;
+  destructive de-dup rejected pending the content-addressed migration.
+
+**Tier B — new functionality (Yuuji TDD, Megumi-reviewed):**
+- **SEC-002** — positive `index_extensions` allowlist (augments the binary denylist), opt-in
+  `max_file_chunks` per-file cap (default `0` = unlimited), and largest-file/outlier reporting.
+- **IMPL-003** — read-only `brain dedup --report` and `brain doctor` diagnostics (duplicate ratio,
+  chunks/rowmap/vectors integrity, trust distribution, engine-hash drift detector, largest files).
+  No destructive operations.
+
+**Deferred:** **DESIGN-001** (content-addressed / reference-counted shared-brain storage) → **v9.4.0
+MINOR** with migration tests, rollback notes, and Megumi security review. Query-time dedup keeps
+recall correct in the interim.
+
+**Security:** Megumi @approved with three accepted P3 notes (SEC-CORTEX-DIAG-001 engine-hash is a
+drift detector not tamper-proof; -002 `index_extensions` element-type validation gap; -003 dedup
+`text_preview` info-disclosure bounded by `contains_secret`). No regression of SEC-CORTEX-001/002/003/004
+or BUG-CORTEX-006.
 
 ---
 

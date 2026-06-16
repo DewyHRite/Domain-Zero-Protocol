@@ -1,33 +1,24 @@
 # Domain Zero Protocol
-<!-- [CORE FILE] - Domain Zero Protocol v9.3.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.3.3 -->
 
-**Version**: 9.3.2 | **Last Updated**: 2026-06-15
+**Version**: 9.3.3 | **Last Updated**: 2026-06-15
 
 A nine-agent AI development system plus one external auditor inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
 
 ---
 
-## ✨ What's New in v9.3.0
+## ✨ Core Capabilities
 
-A consumer-driven remediation release (Megumi Tier-3 @approved):
+Domain Zero Protocol bundles a complete, opinionated AI-development workflow. Every capability below ships in the current release; for the dated release history see [`CHANGELOG.md`](CHANGELOG.md) and [`VERSION.md`](VERSION.md).
 
-- **Wellbeing safety fix (HIGH):** the work-session safety check could crash on legacy
-  timestamps, silently disabling the 4h/6h/8h fatigue alerts. Fixed with centralized,
-  timezone-aware timestamp parsing.
-- **DZP Cortex — shared brain across nested installs:** set the same `install_group`
-  (config or `DZP_CORTEX_INSTALL_GROUP`) to share one semantic memory across a parent repo
-  and its submodules — **no machine paths leaked**. Multi-install indexing is now safe:
-  install-scoped source keys mean two installs no longer clobber each other's memory.
-  (Default single-install behavior is unchanged.)
-- **8.x → 9.x upgrade migration:** `migrate_state_9x.py` additively brings older
-  `project-state.json` up to the 9.x shape (`--check` / `--execute` / `--rollback`).
-- **Opt-in agent-file protection git hook:** a config-driven pre-commit guard that blocks
-  accidental commits to protected protocol/agent files (`scripts/install-git-hooks.{sh,ps1}`).
-- **Tooling & docs:** validator dependency declared (`requirements-dev.txt`), install
-  verification + schema validation hardened, OneDrive/Windows Cortex setup notes, and a
-  refreshed 9.x **Implementation Guide**.
-
-See [`CHANGELOG.md`](CHANGELOG.md) and [`VERSION.md`](VERSION.md) for full details.
+- **Ten agents** — nine resident agents (Gojo, Yuuji, Megumi, Nobara, Todo, Maki, Panda, Inumaki, Sukuna) plus Toji, an external report-only auditor.
+- **Dual implementation + security workflow** — test-first development (Yuuji) gated by OWASP Top 10 security review (Megumi), with a remediation loop driven to zero findings.
+- **Three-tier workflow system** — Rapid / Standard / Critical, matching process rigor to feature criticality.
+- **DZP Cortex — local semantic memory** — an on-device, cited vector index of your protocol and project docs, with read-only `dedup`/`doctor` health diagnostics and shared-brain support across nested installs. Local after the first model download; no cloud inference.
+- **Safety-first design** — Absolute Zero Protocol, kill-switch emergency stop, work-session fatigue monitoring (4h/6h/8h alerts), and user-authority-first decisioning.
+- **Skills system** — `/session`, `/ts-tier*`, `/brain`, and per-agent slash commands for common operations.
+- **Protected project memory** — append-only dev-notes, security-review, and domain-record documents form a permanent, auditable project history.
+- **Distribution architecture** — a dev/distro split with an allowlist publisher that scrubs identity/PII and enforces a version-consistency gate before anything ships publicly.
 
 ---
 
@@ -356,62 +347,12 @@ The template pre-wires a `hooks.SessionEnd` index refresh and allow-lists the `b
 
 ---
 
-## 📦 What's New in v8.13.0
+## 📜 Version History
 
-### PATCH-SESSION-005: Toji External Auditor
-Added Toji Fushiguro (Sentinel) as the 10th Domain Zero agent — an independent external auditor with zero execution privileges.
+Release history, per-version changes, and migration notes live in the dedicated changelog files — not in this README:
 
-**Key Additions**:
-- `protocol/toji.agent.md` (v1.2.0) — 6 review domains, 8 review modes, structured report output
-- Position: EXTERNAL — not governed by Gojo, Sukuna, or any resident agent
-- REPORT-ONLY: Never generates code, implements fixes, or modifies artifacts
-- Tool Access Matrix expanded to 10 columns
-- `.github/copilot-instructions.md` fully synced to v8.13.0
-- `AI_INSTRUCTIONS.md` updated with Toji references
-- `~/.claude/agents/toji.md` Claude Code agent stub created
-
----
-
-## 📦 What's New in v8.12.0
-
-### PATCH-SESSION-004: Session Monitoring Enhancement
-Closes critical coverage gap (70-85% → 85-90%) identified through adversarial analysis. PATCH-SESSION-003 was vulnerable to context compaction, agent bypass, and prompt non-compliance.
-
-**5 Defensive Layers**:
-1. **Configurable Debounce** - Adjustable alert frequency (15-60 min range) via `protocol.config.yaml` + CLI `--debounce` flag
-2. **Compaction-Resistant Markers** - HTML comments protect AUTO-INVOKED section in `gojo.agent.md` from context compaction removal
-3. **Alert Tracking Dashboard** - `session-monitoring-report.py` detects alert undercount and verifies section integrity
-4. **Verification Script** - `scripts/verify-auto-invoked.py` for CI/CD validation (exit codes 0/1)
-5. **Invocation Tracking** - Tracks agent bypass patterns (direct vs routed invocations), detects 10-15% coverage gap
-
-**Bug Fix**: Windows compatibility - replaced 20+ Unicode emojis with ASCII equivalents in `session_monitor.py` (resolves `UnicodeEncodeError` on Windows cmd.exe).
-
-See [CHANGELOG.md](CHANGELOG.md#8120---2025-12-29) for full details.
-
----
-
-## 📦 What's New in v8.11.0 (Previous Release)
-
-### Session Management Skill
-Unified interface for work session tracking via `/session` slash command:
-- 6 commands: start, status, update, break, continue, end
-- Checkpoint file syncing (dev-notes, project-state, domain.record, security-review, session-state)
-- Gojo-owned skill with domain.record.md write access
-
-### TS Troubleshooting Tier System
-5-tier hybrid bug resolution workflow via `/ts` slash command:
-- Tier 1-4: Progressive escalation (Yuuji + Megumi, then + support agents)
-- Tier 5 (Codered): All 9 agents, mandatory plan mode
-- Hybrid escalation: severity-based initial tier + auto-escalation after failed attempts
-- 9 commands: tier1, tier2, tier3, tier4, codered, status, history, escalate, complete
-
-### DZP ROE v2.0.0 (Refactored)
-- 46.9% size reduction (15KB → 8.5KB) for faster post-compaction reference
-- Parallel workflow enforcement (validation checklist, imperative MUST/MUST NOT language)
-- Anti-pattern examples (show what NOT to do)
-- Gojo-owned (was ALL agents)
-
-See [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md#whats-new-in-v8110) for full changelog.
+- **[CHANGELOG.md](CHANGELOG.md)** — full, dated changelog for every release.
+- **[VERSION.md](VERSION.md)** — per-release summaries and the current protocol version.
 
 ---
 
@@ -450,6 +391,6 @@ Contributions welcome! Please read the contribution guidelines and submit pull r
 
 ---
 
-**Domain Zero Protocol v9.3.2**
+**Domain Zero Protocol v9.3.3**
 **AI-Assisted Development Done Right**
 

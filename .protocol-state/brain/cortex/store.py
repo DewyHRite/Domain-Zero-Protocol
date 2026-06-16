@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import re
@@ -304,7 +305,118 @@ def _dedupe_by_content(rows: list[dict], k: int) -> list[dict]:
 
 # A scope is always a 12-hex install_id, so a scoped key is exactly `@<12-hex>/<rel>`.
 # Matching this precise shape avoids stripping a legitimate repo path like "@team/x.md".
+# CODE-001 (v9.3.3): canonical single definition of the scoped-key pattern. ingest.py
+# imports this rather than redeclaring it, so a future scope-format change updates one
+# place and both modules stay consistent (was duplicated in store.py + ingest.py).
 _SCOPED_PREFIX_RE = re.compile(r"^@[0-9a-f]{12}/")
+
+
+def dedup_report(store: "Store", *, redactor=None) -> dict:
+    """IMPL-003 (v9.3.3): READ-ONLY duplicate analysis.
+
+    Returns a dict with:
+      total_chunks      (int): total rows in chunks table
+      unique_hashes     (int): distinct content_hash values
+      duplicate_chunks  (int): chunks that share a content_hash with at least one other
+      duplicate_ratio   (float): duplicate_chunks / total_chunks  (0.0 if empty)
+      top_duplicates    (list): top-10 content_hashes by share count (desc), each entry:
+            { content_hash, occurrences, text_preview }
+
+    SEC-CORTEX-DIAG-003 (v9.3.3): `redactor` is an optional callable `(text) -> bool`.
+    When supplied and it returns True for a chunk's text, the `text_preview` is replaced
+    with a redaction marker instead of the raw snippet. Callers pass `contains_secret`
+    (injected from ingest to avoid a store<-ingest import cycle) so any chunk that slipped
+    past the indexing-time secret filter is not re-disclosed to stdout by this report.
+    """
+    store.init_schema()
+    with store.connect() as conn:
+        total = int(conn.execute("SELECT COUNT(*) FROM chunks").fetchone()[0])
+        unique = int(conn.execute("SELECT COUNT(DISTINCT content_hash) FROM chunks").fetchone()[0])
+        duplicate_chunks = total - unique if total > unique else 0
+        ratio = duplicate_chunks / total if total > 0 else 0.0
+        top_rows = conn.execute(
+            """
+            SELECT content_hash, COUNT(*) AS occurrences,
+                   MIN(text) AS text_preview
+            FROM chunks
+            GROUP BY content_hash
+            HAVING COUNT(*) > 1
+            ORDER BY occurrences DESC
+            LIMIT 10
+            """
+        ).fetchall()
+
+    def _preview(text: str) -> str:
+        if redactor is not None and redactor(text):
+            return "[REDACTED — possible secret]"
+        return text[:80]
+
+    top_dupes = [
+        {
+            "content_hash": str(r[0]),
+            "occurrences": int(r[1]),
+            "text_preview": _preview(str(r[2])),
+        }
+        for r in top_rows
+    ]
+    return {
+        "total_chunks": total,
+        "unique_hashes": unique,
+        "duplicate_chunks": duplicate_chunks,
+        "duplicate_ratio": round(ratio, 4),
+        "top_duplicates": top_dupes,
+    }
+
+
+def integrity_report(store: "Store") -> dict:
+    """IMPL-003 (v9.3.3): READ-ONLY integrity check for brain doctor.
+
+    Returns a dict with:
+      chunks_count  (int): rows in chunks
+      rowmap_count  (int): rows in rowmap
+      vectors_count (int): rows in chunk_vectors
+      integrity_ok  (bool): True when all three counts are equal
+      mismatch_details (str | None): description if mismatch detected
+      trust_distribution (dict): {trust_level: count, ...}
+    """
+    store.init_schema()
+    with store.connect() as conn:
+        chunks_count = int(conn.execute("SELECT COUNT(*) FROM chunks").fetchone()[0])
+        rowmap_count = int(conn.execute("SELECT COUNT(*) FROM rowmap").fetchone()[0])
+        vectors_count = int(conn.execute("SELECT COUNT(*) FROM chunk_vectors").fetchone()[0])
+        trust_rows = conn.execute(
+            "SELECT trust, COUNT(*) FROM chunks GROUP BY trust ORDER BY trust"
+        ).fetchall()
+    trust_dist = {str(r[0]): int(r[1]) for r in trust_rows}
+    ok = (chunks_count == rowmap_count == vectors_count)
+    mismatch = None
+    if not ok:
+        mismatch = (
+            f"chunks={chunks_count}, rowmap={rowmap_count}, vectors={vectors_count}"
+        )
+    return {
+        "chunks_count": chunks_count,
+        "rowmap_count": rowmap_count,
+        "vectors_count": vectors_count,
+        "integrity_ok": ok,
+        "mismatch_details": mismatch,
+        "trust_distribution": trust_dist,
+    }
+
+
+def engine_hash() -> str:
+    """IMPL-003 (v9.3.3): Compute a stable SHA-256 digest of all cortex .py files.
+
+    Returns a hex string. Callers can compare this between installs to detect
+    engine drift without distributing separate checksums. READ-ONLY.
+    """
+    cortex_dir = Path(__file__).resolve().parent
+    py_files = sorted(cortex_dir.glob("*.py"))
+    h = hashlib.sha256()
+    for f in py_files:
+        h.update(f.name.encode("utf-8"))
+        h.update(f.read_bytes())
+    return h.hexdigest()
 
 
 def _display_source(source_path: str) -> str:
