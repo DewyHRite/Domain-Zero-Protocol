@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### PATCH — Toji Audit Remediation (BugReport3 / PATCH-CORTEX-DIAG-001)
 
 Sukuna-led remediation of the Toji Sentinel audit (`internal-docs/Patch Report/BugReport3.md`,
-7 findings). **Megumi Tier-2 @approved** (3 accepted P3, zero blocking); **120/120 brain tests**
+7 findings). **Megumi Tier-2 @approved** (3 accepted P3, zero blocking); **123/123 brain tests**
 (80 baseline + 40 new); extended version gate green at 20 sources.
 
 ### Fixed
@@ -50,7 +50,7 @@ Sukuna-led remediation of the Toji Sentinel audit (`internal-docs/Patch Report/B
 - **SEC-CORTEX-DIAG-002:** `config.validate()` rejects non-string `index_extensions` entries.
 - **SEC-CORTEX-DIAG-003:** `dedup_report()` redacts any `text_preview` flagged by `contains_secret`
   (dependency-injected redactor) so the report never re-discloses a credential to stdout.
-- Regression tests added for each; **122** brain tests pass. v9.3.3 ships with zero open SEC findings.
+- Regression tests added for each; **123** brain tests pass. v9.3.3 ships with zero open SEC findings.
 
 ### Deferred
 - **DESIGN-001 — content-addressed / reference-counted Cortex storage:** the real fix for

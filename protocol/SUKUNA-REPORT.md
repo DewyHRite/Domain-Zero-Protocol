@@ -4371,6 +4371,6 @@ Each file received exactly 13 added lines (7-line top banner block + blank line 
 
 **END OF SUKUNA-REPORT.md**
 
-**Last Updated**: 2026-06-15 by Sukuna (System Update Adversary) / PATCH-BUGREPORT-001 (v9.3.0 bundle) appended
-**Protocol Version**: 9.3.0 (Main-v9.3.0 branch; Megumi review + USER approval pending)
-**Patches Active**: 8 security patches + 2 documentation patches + 1 compliance patch + PATCH-TOJI-001 (CRITICAL) + PATCH-DISTRO-001 + PATCH-BRAIN-001 + PATCH-BRAIN-002 (DZP Cortex v9.1.0) + PATCH-CORTEX-POINTERS-001 + PATCH-BUGREPORT-001 (v9.3.0 BugReport remediation bundle, 14 findings + FEAT-REQ-001)
+**Last Updated**: 2026-06-16 by Sukuna (System Update Adversary) / PATCH-CORTEX-DIAG-001 (v9.3.3 Toji-audit remediation) appended
+**Protocol Version**: 9.3.3 (Main-v9.3.3 dev branch; published as DZP-v9.3.3; Megumi Tier-2 @approved)
+**Patches Active**: 8 security patches + 2 documentation patches + 1 compliance patch + PATCH-TOJI-001 (CRITICAL) + PATCH-DISTRO-001 + PATCH-BRAIN-001 + PATCH-BRAIN-002 (DZP Cortex v9.1.0) + PATCH-CORTEX-POINTERS-001 + PATCH-BUGREPORT-001 (v9.3.0 BugReport remediation bundle, 14 findings + FEAT-REQ-001) + PATCH-ORCH-001 (v9.2.1 orchestration) + PATCH-CORTEX-SCOPE-001 (v9.3.2 engine hardening) + PATCH-CORTEX-DIAG-001 (v9.3.3 Toji-audit remediation: SEC-002 allowlist + IMPL-003 diagnostics + version-gate extension)

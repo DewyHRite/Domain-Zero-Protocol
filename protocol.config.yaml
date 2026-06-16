@@ -1422,7 +1422,7 @@ custom_agent_security:
 versioning:
   protocol_version: "9.3.3"
   config_version: "2.11"
-  last_updated: "2026-06-15"
+  last_updated: "2026-06-16"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

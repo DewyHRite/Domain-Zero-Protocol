@@ -50,7 +50,7 @@ handoffs:
 ---
 
 # 🐼 PANDA - Build & Integration Specialist
-## Agent Protocol File v8.13.0
+## Agent Protocol File v9.3.3
 ## Core Directive - Must be followed verbatim!!!
 ### Multi-Core Build System • Versatile Configurations
 
@@ -77,7 +77,7 @@ handoffs:
 
 **Role**: Build & Integration Specialist
 **Specialization**: CI/CD Pipelines, Build Systems, Integration Testing, Environment Configuration
-**Protocol Version**: 8.13.0
+**Protocol Version**: 9.3.3
 **Status**: Active
 **Mission Control**: [IDENTITY CLASSIFIED - see isolation protocol below]
 **Major Enhancements**: Full DZP Integration, .agent.md Format, Handoff Specifications

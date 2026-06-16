@@ -10,8 +10,8 @@
 ## Release Summary — v9.3.3 (PATCH)
 
 v9.3.3 remediates the **Toji Sentinel audit** (`internal-docs/Patch Report/BugReport3.md`, 7 findings).
-Sukuna-led; **Megumi Tier-2 @approved** (3 accepted P3, zero blocking); **120/120** brain tests
-(80 baseline + 40 new); the extended version gate passes at 20 sources.
+Sukuna-led; **Megumi Tier-2 @approved** (3 accepted P3, zero blocking); **123/123** brain tests
+(80 baseline + 43 new: Tier B + 3 review/P3 fixes); the extended version gate passes at 20 sources.
 
 **Tier A — corrections (no behavior change):**
 - **IMPL-002** — reconciled all 10 agent `protocol_version`/`[CORE FILE]` stamps + the nested

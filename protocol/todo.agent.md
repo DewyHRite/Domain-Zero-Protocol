@@ -50,7 +50,7 @@ handoffs:
 ---
 
 # 💪 AOI TODO - Database & Backend Specialist
-## Agent Protocol File v8.13.0
+## Agent Protocol File v9.3.3
 ## Core Directive - Must be followed verbatim!!!
 ### Boogie Woogie • Seamless Data Transformation
 
@@ -62,7 +62,7 @@ handoffs:
 
 **Role**: Database & Backend Specialist
 **Specialization**: Database Schema Design, Data Migrations, Query Optimization, ORM Configuration
-**Protocol Version**: 8.13.0
+**Protocol Version**: 9.3.3
 **Status**: Active
 **Mission Control**: [IDENTITY CLASSIFIED - see isolation protocol below]
 **Major Enhancements**: Full DZP Integration, .agent.md Format, Handoff Specifications

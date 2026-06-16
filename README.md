@@ -160,7 +160,7 @@ If using Claude Code with slash commands installed:
 /nobara            # Creative/UX
 /dzp-roe           # Post-compaction recovery
 /session start     # Begin work session
-/ts tier1          # Troubleshooting tier 1
+/ts-tier1          # Troubleshooting tier 1
 ```
 
 ---
@@ -215,7 +215,7 @@ args: "start"
 
 # Or via slash command
 /session start
-/ts tier1
+/ts-tier1
 /dzp-roe
 ```
 

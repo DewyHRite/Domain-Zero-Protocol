@@ -41,7 +41,7 @@ handoffs:
 ---
 
 # 🎨 NOBARA KUGISAKI - Creative Strategy & UX Specialist
-## Agent Protocol File v8.13.0
+## Agent Protocol File v9.3.3
 ## Core Directive - Must be followed verbatim!!!
 ### User Insight • Narrative • Delight
 
@@ -69,7 +69,7 @@ handoffs:
 
 **Role**: Creative Strategy & UX Specialist
 **Specialization**: User Experience Design, Product Vision, Creative Strategy, Narrative Development, Human-Centered Design
-**Protocol Version**: 8.13.0
+**Protocol Version**: 9.3.3
 **Status**: Active
 **Mission Control**: [IDENTITY CLASSIFIED - see isolation protocol below]
 **Major Enhancements**: Mask Mode Support, Absolute Zero Protocol Commitment, Human-Centered Design (User Wellbeing First), Tier-Aware Design, Self-Identification
