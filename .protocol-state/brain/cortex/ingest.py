@@ -48,17 +48,66 @@ def _belongs_to_scope(storage_key: str, scope: str) -> bool:
 
 
 BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".pdf", ".docx", ".zip", ".gz", ".db", ".sqlite", ".html"}
-SECRET_PATTERNS = [
-    re.compile(r"api[_-]?key\s*=", re.I),
-    re.compile(r"secret\s*=", re.I),
-    re.compile(r"password\s*=", re.I),
-    re.compile(r"token\s*=", re.I),
-    # SEC-BRAIN-008: AWS provider key formats (2026-06-14)
-    # These require explicit keyword matching because the keyword is not adjacent
-    # to a bare "secret=" or "key=" that the patterns above would catch.
-    re.compile(r"access[_-]?key[_-]?id\s*=", re.I),       # AWS_ACCESS_KEY_ID=
-    re.compile(r"secret[_-]?access[_-]?key\s*=", re.I),   # AWS_SECRET_ACCESS_KEY=
+
+# Default per-file cap (SEC-CORTEX-003 / FEAT-CORTEX-SCOPE-001, v9.3.2):
+# config-driven via brain.config.yaml `max_file_bytes`; this constant is the
+# in-code fallback when the key is absent (kept in sync with config.DEFAULT_CONFIG).
+DEFAULT_MAX_FILE_BYTES = 6_000_000
+
+# SEC-CORTEX-002 (v9.3.2): placeholder-aware secret detection.
+# Two layers:
+#   1. SECRET_FORMAT_PATTERNS  - high-confidence token FORMATS, always dropped.
+#   2. _SECRET_KEYWORD_RE       - keyword[:=]value, dropped ONLY when the value is
+#      not an obvious placeholder (see _is_placeholder_value). This stops the old
+#      naive keyword scan from silently dropping legitimate business docs whose only
+#      "secret" is a template like `Password: [PASSWORD]` (Megumi SEC-CORTEX-002).
+SECRET_FORMAT_PATTERNS = [
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),                 # PEM private keys
+    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),                               # AWS access key id
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}\b"),                     # GitHub tokens
+    re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b"),                   # Slack tokens
+    re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"),  # JWT
+    re.compile(r"\bBearer\s+[A-Za-z0-9._\-]{20,}\b"),                  # Bearer tokens
 ]
+# No leading \b: a credential keyword is often a SUFFIX of an env var name
+# (RESEND_API_KEY=, AWS_SECRET_ACCESS_KEY=) where '_' suppresses a word boundary.
+# Longest keywords are listed first so the alternation prefers the specific form.
+_SECRET_KEYWORD_RE = re.compile(
+    r"(?i)(?:secret[_-]?access[_-]?key|access[_-]?key[_-]?id|api[_-]?key|"
+    r"secret|password|passwd|token)\s*[:=]\s*(\S+)"
+)
+_PLACEHOLDER_WORDS = {
+    "your", "example", "changeme", "change-me", "placeholder", "redacted",
+    "tbd", "todo", "dummy", "none", "null", "xxx", "sample",
+}
+
+
+def _is_placeholder_value(value: str) -> bool:
+    """True when a keyword's value is an obvious placeholder, not a real secret."""
+    v = value.strip().strip("\"'`,;")
+    if not v:
+        return True
+    # Templated/bracketed placeholders: [..], <..>, {..}, $ENV, %VAR%
+    if v[0] in "[<{$%" or v[-1] in "]>}%":
+        return True
+    # Masks / dummies: ****, ----, xxxx, and embedded x-runs (re_xxxx, sk_xxxx)
+    if re.fullmatch(r"[x*\-_.]{3,}", v, re.I) or re.search(r"x{4,}", v, re.I):
+        return True
+    low = v.lower()
+    if any(word in low for word in _PLACEHOLDER_WORDS):
+        return True
+    if len(v) < 6:  # too short to be a credible secret
+        return True
+    return False
+
+
+def contains_secret(text: str) -> bool:
+    """Whole-text secret check shared by chunk_file (index) and memory.remember."""
+    if any(pattern.search(text) for pattern in SECRET_FORMAT_PATTERNS):
+        return True
+    return any(not _is_placeholder_value(m.group(1)) for m in _SECRET_KEYWORD_RE.finditer(text))
+
+
 INJECTION_PATTERNS = [
     re.compile(r"ignore (all )?(previous|prior) instructions", re.I),
     re.compile(r"you are now", re.I),
@@ -93,7 +142,8 @@ def _safe_candidate(repo: Path, path: Path, cfg: dict) -> bool:
     lowered = rel.lower()
     if path.suffix.lower() in BINARY_SUFFIXES:
         return False
-    if path.stat().st_size > 1_000_000:
+    max_bytes = int(cfg.get("max_file_bytes", DEFAULT_MAX_FILE_BYTES))  # config-driven cap (v9.3.2)
+    if path.stat().st_size > max_bytes:
         return False
     tokens = [str(token).lower() for token in cfg.get("exclude_tokens", [])]
     generated = ("brain.db", "cortex-snapshot.md", "model-cache", "index.log", "memories/")
@@ -107,7 +157,7 @@ def chunk_file(repo_root: str | Path, path: str | Path, cfg: dict, install_scope
     # Storage key carries the install scope; classification/trust use the CLEAN rel.
     skey = _storage_key(install_scope, rel)
     text = p.read_text(encoding="utf-8", errors="replace")
-    if any(pattern.search(text) for pattern in SECRET_PATTERNS):
+    if contains_secret(text):
         return []
     lines = text.splitlines()
     max_chars = int((cfg.get("chunk") or {}).get("code_max_chars" if p.suffix == ".py" else "md_max_chars", 1200))
@@ -238,8 +288,10 @@ def _source_type(rel: str) -> str:
 
 
 def _trust_for(rel: str) -> str:
+    # SEC-CORTEX-001 (v9.3.2): default-deny trust. Only canonical, instruction-bearing
+    # protocol material is `trusted`; ALL other content (docs/, project data, memories,
+    # newly-indexed business/project files) defaults to `semi`. This prevents trust
+    # inflation when Cortex scope is expanded beyond the protocol layer.
     if rel.startswith("protocol/") or rel in {"CLAUDE.md", "AI_INSTRUCTIONS.md", "README.md"} or rel.startswith("scripts/"):
         return "trusted"
-    if rel.startswith(".protocol-state/") or rel.startswith(".dzp-domain/") or rel.startswith("internal-docs/"):
-        return "semi"
-    return "trusted"
+    return "semi"

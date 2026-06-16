@@ -1,5 +1,5 @@
 {
-  "protocol_version": "9.3.0",
+  "protocol_version": "9.3.2",
   "compaction_recovery": {
     "last_recovery_timestamp": null,
     "recovery_count": 0,
@@ -403,7 +403,7 @@
       }
     ],
     "last_updated": "2026-06-15T07:44:14.259856+00:00",
-    "protocol_version": "9.3.0"
+    "protocol_version": "9.3.2"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",

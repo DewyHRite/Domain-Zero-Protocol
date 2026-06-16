@@ -1,6 +1,7 @@
 # DZP Cortex configuration (SPEC-BRAIN-001)
 model: "BAAI/bge-small-en-v1.5"
 top_k: 5
+max_file_bytes: 6000000  # SEC-CORTEX-003 (v9.3.2): per-file index cap; was hardcoded 1 MB
 # data_dir: ""  # optional override; unsafe paths are rejected by default.
 include_folders:
   - protocol

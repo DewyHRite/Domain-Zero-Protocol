@@ -232,6 +232,10 @@ class Store:
     def _search_sqlite_vec(self, vector: list[float], *, k: int, trust: list[str], placeholders: str) -> list[dict]:
         import sqlite_vec
 
+        # BUG-CORTEX-006 (v9.3.2): over-fetch, then collapse by content_hash so a
+        # shared brain (same canonical text indexed once per install scope) cannot
+        # fill all k slots with byte-identical duplicates. Trust filter runs in SQL
+        # BEFORE dedup, so dedup can never elevate or relabel a chunk's trust.
         with self.connect() as conn:
             rows = conn.execute(
                 f"""
@@ -244,9 +248,9 @@ class Store:
                 AND k = ?
                 ORDER BY distance
                 """,
-                (*trust, sqlite_vec.serialize_float32(vector), k),
+                (*trust, sqlite_vec.serialize_float32(vector), _overfetch_k(k)),
             ).fetchall()
-            return [_row_to_result(row) for row in rows]
+            return _dedupe_by_content([_row_to_result(row) for row in rows], k)
 
     def _search_stub(self, vector: list[float], *, k: int, trust: list[str], placeholders: str) -> list[dict]:
         with self.connect() as conn:
@@ -266,7 +270,8 @@ class Store:
             result = _row_to_result(row)
             result["distance"] = 1.0 - _cosine(vector, embedding)
             results.append(result)
-        return sorted(results, key=lambda item: item["distance"])[:k]
+        ordered = sorted(results, key=lambda item: item["distance"])
+        return _dedupe_by_content(ordered, k)
 
 
 def _cosine(a: list[float], b: list[float]) -> float:
@@ -274,6 +279,27 @@ def _cosine(a: list[float], b: list[float]) -> float:
     an = math.sqrt(sum(x * x for x in a)) or 1.0
     bn = math.sqrt(sum(y * y for y in b)) or 1.0
     return dot / (an * bn)
+
+
+def _overfetch_k(k: int) -> int:
+    """BUG-CORTEX-006: fetch extra candidates so dedup can still return k distinct."""
+    return max(k * 8, k + 50)
+
+
+def _dedupe_by_content(rows: list[dict], k: int) -> list[dict]:
+    """Collapse rows sharing a content_hash, keeping the first (lowest-distance)
+    occurrence, and return at most k distinct results. Order is preserved."""
+    seen: set[str] = set()
+    out: list[dict] = []
+    for row in rows:
+        digest = row.get("content_hash")
+        if digest in seen:
+            continue
+        seen.add(digest)
+        out.append(row)
+        if len(out) >= k:
+            break
+    return out
 
 
 # A scope is always a 12-hex install_id, so a scoped key is exactly `@<12-hex>/<rel>`.
@@ -302,6 +328,7 @@ def _row_to_result(row: sqlite3.Row) -> dict:
         "line_start": int(row["line_start"]),
         "line_end": int(row["line_end"]),
         "source_type": row["source_type"],
+        "content_hash": row["content_hash"],
         "trust": row["trust"],
         "suspect": bool(row["suspect"]),
         "recorded_date": row["recorded_date"],
