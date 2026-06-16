@@ -1794,5 +1794,5 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**Domain Zero Protocol v8.12.0 - Complete Installation Guide**
+**Domain Zero Protocol v9.3.2 - Complete Installation Guide**
 **Updated**: 2025-12-25 (DZP Rules of Engagement - Post-Compaction Recovery)

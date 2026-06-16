@@ -12,7 +12,7 @@
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v9.3.0
+> **Current Local Protocol Version**: v9.3.2
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -1549,8 +1549,8 @@ All protocol settings are stored in `protocol.config.yaml`:
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 9.3.0
-**Protocol Version**: 9.3.0
+**Current Version**: 9.3.2
+**Protocol Version**: 9.3.2
 **Release Date**: 2026-06-15
 **Last Updated**: 2026-06-15
 

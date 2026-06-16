@@ -29,7 +29,7 @@ gitignored `.protocol-state/` files into the **canonical** `cortex/` engine — 
   **before** dedup, so dedup can never elevate or relabel trust.
 
 **Verification:** `ast.parse` clean ×4; **93/93** Cortex unit tests pass (`tests/brain/` + `tests/test_cortex_sync.py`).
-**Status:** Sukuna-led; **Megumi review pending**. **v9.3.1 skipped** (combined single carving per USER decision).
+**Status:** Sukuna-led; **Megumi Tier-2 @approved** (0 findings, 0 publish blockers). **v9.3.1 skipped** (combined single carving per USER decision).
 **Note:** This is the canonical-repo upstream; it does NOT pull in any install-specific scope folders
 (e.g. JamWebStudio's `business-assets/`) — installs opt into expanded scope via their own `brain.config.yaml`.
 

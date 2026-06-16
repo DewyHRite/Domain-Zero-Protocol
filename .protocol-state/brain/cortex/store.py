@@ -1,4 +1,4 @@
-\"""SQLite storage and vector search for Cortex."""
+"""SQLite storage and vector search for Cortex."""
 
 from __future__ import annotations
 
