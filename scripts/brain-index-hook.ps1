@@ -43,22 +43,19 @@ try {
   # SEC-CORTEX-012 (v9.3.4): capture stderr to a temp file so non-zero exits
   # produce a meaningful log entry (mirrors what the .sh hook already does via
   # 2>>index.log).  The temp file is appended to the hook log then removed.
-  $StderrTemp = [System.IO.Path]::GetTempFileName()
-  $Process = Start-Process -FilePath "python" -ArgumentList @($Brain, "--repo", $Repo, "index", "--incremental") -WindowStyle Hidden -PassThru -RedirectStandardError $StderrTemp
+  $script:StderrTemp = [System.IO.Path]::GetTempFileName()
+  $Process = Start-Process -FilePath "python" -ArgumentList @($Brain, "--repo", $Repo, "index", "--incremental") -WindowStyle Hidden -PassThru -RedirectStandardError $script:StderrTemp
   if (-not $Process.WaitForExit($TimeoutSeconds * 1000)) {
     try { Stop-Process -Id $Process.Id -Force } catch { }
     Write-CortexHookLog "index hook timed out after ${TimeoutSeconds}s"
   } elseif ($Process.ExitCode -ne 0) {
     Write-CortexHookLog "index hook exited with code $($Process.ExitCode)"
-    if (Test-Path $StderrTemp) {
-      $StderrContent = Get-Content -LiteralPath $StderrTemp -Raw -ErrorAction SilentlyContinue
+    if (Test-Path $script:StderrTemp) {
+      $StderrContent = Get-Content -LiteralPath $script:StderrTemp -Raw -ErrorAction SilentlyContinue
       if ($StderrContent) {
         Write-CortexHookLog "index hook stderr: $($StderrContent.Trim())"
       }
     }
-  }
-  if (Test-Path $StderrTemp) {
-    try { Remove-Item -LiteralPath $StderrTemp -Force } catch { }
   }
 } catch {
   Write-CortexHookLog "index hook failed: $_"
@@ -66,6 +63,10 @@ try {
   # B7: ownership-safe cleanup — only remove the lock if this invocation acquired it.
   if ($script:LockAcquired -and $Lock -and (Test-Path $Lock)) {
     try { Remove-Item -LiteralPath $Lock -Force } catch { }
+  }
+  # SEC-CORTEX-012: ensure temp file is removed on all paths, including Start-Process throw.
+  if ($script:StderrTemp -and (Test-Path $script:StderrTemp)) {
+    try { Remove-Item -LiteralPath $script:StderrTemp -Force } catch { }
   }
 }
 

@@ -391,6 +391,6 @@ Contributions welcome! Please read the contribution guidelines and submit pull r
 
 ---
 
-**Domain Zero Protocol v9.3.3**
+**Domain Zero Protocol v9.4.0**
 **AI-Assisted Development Done Right**
 

@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.3.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.4.0 -->
 # AI Instructions - Domain Zero Protocol
 
 **Version**: 9.4.0 | **Last Updated**: 2026-06-16
@@ -1794,5 +1794,5 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**Domain Zero Protocol v9.3.3 - Complete Installation Guide**
-**Updated**: 2025-12-25 (DZP Rules of Engagement - Post-Compaction Recovery)
+**Domain Zero Protocol v9.4.0 - Complete Installation Guide**
+**Updated**: 2026-06-16

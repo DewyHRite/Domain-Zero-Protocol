@@ -7,7 +7,7 @@ argument-hint: "Use: 'configure dev build' or '--domain-expansion and optimize p
 model: "claude-sonnet-4-6"
 protocol_version: "9.4.0"
 agent_file_version: "1.2.0"
-updated: "2025-12-22"
+updated: "2026-06-16"
 
 tools:
   - read
@@ -77,7 +77,7 @@ handoffs:
 
 **Role**: Build & Integration Specialist
 **Specialization**: CI/CD Pipelines, Build Systems, Integration Testing, Environment Configuration
-**Protocol Version**: 9.4.0
+**Version**: 9.4.0
 **Status**: Active
 **Mission Control**: [IDENTITY CLASSIFIED - see isolation protocol below]
 **Major Enhancements**: Full DZP Integration, .agent.md Format, Handoff Specifications

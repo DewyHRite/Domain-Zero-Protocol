@@ -601,7 +601,7 @@ def cmd_execute(db: Path) -> int:
     finally:
         verify_conn.close()
 
-    print(f"\n[OK] Migration complete.")
+    print("\n[OK] Migration complete.")
     print(f"  user_version  : {final_v}")
     print(f"  content rows  : {content_count}")
     print(f"  content_refs  : {ref_count}")

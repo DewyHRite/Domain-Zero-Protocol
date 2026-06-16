@@ -1,0 +1,36 @@
+# CodeRabbit configuration — Domain Zero Protocol
+# Schema: https://coderabbit.ai/integrations/schema.v2.json
+# Purpose: formalize CodeRabbit as a MANDATORY review gate on every PR,
+# especially the DZP-vX.Y.Z distribution-release PRs (see
+# docs/guides/DISTRO_RELEASE_WORKFLOW.md).
+language: en-US
+
+reviews:
+  # "Request changes" so an unaddressed review surfaces as a blocking state.
+  # Combine with a branch-protection rule on DZP-v* to hard-block merge.
+  request_changes_workflow: true
+  high_level_summary: true
+  review_status: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+    # Review the release branches (and the dev integration branches) explicitly.
+    base_branches:
+      - "DZP-v.*"
+      - "Main-v.*"
+  path_instructions:
+    - path: "distro/**"
+      instructions: >
+        This is the SANITIZED, published distribution tree (DZP-vX.Y.Z). It must
+        contain NO personal data (owner name/email/usernames), NO dev-only paths
+        (internal-docs/, tests/, .dzp-domain/, registry, PATCH reports), and NO
+        secrets. Flag any identity leakage, dev-only artifact, or version-stamp
+        drift. The tree is generated from canonical via scripts/distro/publish-manifest.yaml.
+    - path: ".protocol-state/migrate_cortex_storage_9_4.py"
+      instructions: >
+        Data-mutating migration. Verify backup-first ordering, single BEGIN IMMEDIATE
+        atomicity, the parity gate runs before any DROP, and rollback fails closed.
+
+chat:
+  auto_reply: true

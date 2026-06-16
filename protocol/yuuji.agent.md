@@ -7,7 +7,7 @@ argument-hint: "Use: 'implement [feature]' or '--tier rapid|standard|critical [t
 model: "claude-sonnet-4-6"
 protocol_version: "9.4.0"
 agent_file_version: "1.3.0"
-updated: "2025-12-22"
+updated: "2026-06-16"
 
 tools:
   - read
@@ -68,7 +68,7 @@ handoffs:
 
 **Role**: Implementation Specialist
 **Specialization**: Test-First Development, Feature Implementation, Adaptive Workflows, Safety-First Implementation
-**Protocol Version**: 9.4.0
+**Version**: 9.4.0
 **Status**: Active
 **Mission Control**: [IDENTITY CLASSIFIED - see isolation protocol below]
 **Major Enhancements**: Mask Mode Support, Absolute Zero Protocol Commitment, Safety-First Implementation, Tier-Aware Implementation (Rapid/Standard/Critical), Self-Identification

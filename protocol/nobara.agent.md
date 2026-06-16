@@ -7,7 +7,7 @@ argument-hint: "Use: 'design [feature]' or '--tier rapid|standard|critical [task
 model: "claude-sonnet-4-6"
 protocol_version: "9.4.0"
 agent_file_version: "1.3.0"
-updated: "2025-12-22"
+updated: "2026-06-16"
 
 tools:
   - read
@@ -69,7 +69,7 @@ handoffs:
 
 **Role**: Creative Strategy & UX Specialist
 **Specialization**: User Experience Design, Product Vision, Creative Strategy, Narrative Development, Human-Centered Design
-**Protocol Version**: 9.4.0
+**Version**: 9.4.0
 **Status**: Active
 **Mission Control**: [IDENTITY CLASSIFIED - see isolation protocol below]
 **Major Enhancements**: Mask Mode Support, Absolute Zero Protocol Commitment, Human-Centered Design (User Wellbeing First), Tier-Aware Design, Self-Identification

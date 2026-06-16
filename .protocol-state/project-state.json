@@ -326,15 +326,15 @@
   "session_tracking": {
     "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.11.0)",
     "current_session": {
-      "session_id": "session_20260614_212320",
-      "session_active": true,
-      "start_time": "2026-06-14T14:47:38.470144+00:00",
-      "last_interaction_time": "2026-06-15T00:32:08.279622+00:00",
-      "last_alert_time": "2026-06-16T21:54:54.246265+00:00",
-      "alert_count": 7,
-      "escalation_level": 2,
-      "user_last_choice": "save_and_break",
-      "break_acknowledged": true,
+      "session_id": null,
+      "session_active": false,
+      "start_time": null,
+      "last_interaction_time": null,
+      "last_alert_time": null,
+      "alert_count": 0,
+      "escalation_level": 0,
+      "user_last_choice": null,
+      "break_acknowledged": false,
       "high_risk_operations_blocked": false
     },
     "session_metrics": {
@@ -400,9 +400,18 @@
         "total_breaks": 0,
         "alerts_issued": 1,
         "continues_chosen": 1
+      },
+      {
+        "session_id": "session_20260614_212320",
+        "start_time": "2026-06-14T14:47:38.470144+00:00",
+        "end_time": "2026-06-16T22:59:13.564128+00:00",
+        "total_duration_minutes": 3371,
+        "total_breaks": 0,
+        "alerts_issued": 4,
+        "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-06-16T17:54:54.253650",
+    "last_updated": "2026-06-16T18:59:13.655396",
     "protocol_version": "9.4.0"
   },
   "troubleshooting": {
