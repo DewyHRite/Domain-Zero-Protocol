@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 9.4.0
+# Version: 9.4.1
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,8 +8,8 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v9.4.0"
-  release_branch: "DZP-v9.4.0"
+  version: "v9.4.1"
+  release_branch: "DZP-v9.4.1"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -1416,10 +1416,34 @@ custom_agent_security:
     require_manual_review: true
 
 # ============================================================================
+# PROTECTED DOCUMENTS (FEAT-GUARD-001, v9.4.1)
+# ============================================================================
+# Configures the append-only enforcement guard for permanent project memory files.
+# check_protected_append_only.py reads this block at pre-commit time.
+#
+# enabled:      false = guard is a no-op (exit 0). A skip message is printed to
+#               stderr so the bypass is always visible. Default: true.
+# paths:        List of repo-root-relative paths that must only grow (append-only).
+#               Relative forward-slash paths, no trailing slash for files.
+# override_env: Environment variable name that allows a legit rewrite when set to "1"
+#               (e.g. file rotation / authorized restore).  Default: DZP_ALLOW_PROTECTED_REWRITE.
+#
+# If this block is absent, malformed, or yaml is unavailable the guard falls back
+# to the hardcoded constant list in check_protected_append_only.py — never fail-open.
+
+protected_documents:
+  enabled: true
+  paths:
+    - .protocol-state/dev-notes.md
+    - .protocol-state/security-review.md
+    - .dzp-domain/domain.record.md
+  override_env: DZP_ALLOW_PROTECTED_REWRITE
+
+# ============================================================================
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "9.4.0"
+  protocol_version: "9.4.1"
   config_version: "2.11"
   last_updated: "2026-06-16"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"

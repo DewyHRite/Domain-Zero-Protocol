@@ -19,12 +19,42 @@ lock="$log_root/index.lock"
 # by noclobber, making test+create a single atomic operation.
 # lock_acquired tracks ownership so the EXIT trap only removes a lock that THIS
 # invocation created (ownership-safe cleanup).
+# Staleness threshold: a lock older than this is treated as orphaned.
+# 600 s is well above any real index run (timeout cap: 30 s).
+STALE_SECONDS=600
 lock_acquired=0
 if (set -C; : >"$lock") 2>/dev/null; then
   lock_acquired=1
 else
-  printf '%s %s\n' "$(date -Iseconds 2>/dev/null)" "index hook skipped; lock exists (concurrent run)" >>"$log_root/index.log" 2>/dev/null
-  exit 0
+  # Lock already exists — check if it is stale (orphaned from a killed hook).
+  # Portable mtime: try GNU stat (-c %Y), then BSD/macOS stat (-f %m).
+  lock_mtime=""
+  if lock_mtime=$(stat -c %Y "$lock" 2>/dev/null); then
+    :
+  elif lock_mtime=$(stat -f %m "$lock" 2>/dev/null); then
+    :
+  fi
+  if [ -n "$lock_mtime" ]; then
+    now_ts=$(date +%s 2>/dev/null)
+    if [ -n "$now_ts" ] && [ "$((now_ts - lock_mtime))" -gt "$STALE_SECONDS" ] 2>/dev/null; then
+      printf '%s %s\n' "$(date -Iseconds 2>/dev/null)" "index hook: reaping stale lock (age > ${STALE_SECONDS}s); retrying acquire" >>"$log_root/index.log" 2>/dev/null
+      rm -f "$lock" 2>/dev/null
+      # Retry acquire once after reaping the stale lock.
+      if (set -C; : >"$lock") 2>/dev/null; then
+        lock_acquired=1
+      else
+        printf '%s %s\n' "$(date -Iseconds 2>/dev/null)" "index hook skipped; lock re-acquired by concurrent run after reap" >>"$log_root/index.log" 2>/dev/null
+        exit 0
+      fi
+    else
+      printf '%s %s\n' "$(date -Iseconds 2>/dev/null)" "index hook skipped; lock exists (concurrent run)" >>"$log_root/index.log" 2>/dev/null
+      exit 0
+    fi
+  else
+    # Cannot determine lock age; fall back to current skip behavior.
+    printf '%s %s\n' "$(date -Iseconds 2>/dev/null)" "index hook skipped; lock exists (concurrent run)" >>"$log_root/index.log" 2>/dev/null
+    exit 0
+  fi
 fi
 trap '[ "$lock_acquired" = "1" ] && rm -f "$lock" 2>/dev/null' EXIT
 if [ -n "$repo" ]; then

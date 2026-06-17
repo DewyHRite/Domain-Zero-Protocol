@@ -1,9 +1,39 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.4.1 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v9.4.0
+**Version:** v9.4.1
 **Release Date:** 2026-06-16
-**Release Type:** MINOR Release (Content-Addressed Cortex Storage — PLAN-DESIGN-001)
+**Release Type:** PATCH Release (Protected-Document Append-Only Enforcement — FEAT-GUARD-001)
+
+---
+
+## Release Summary — v9.4.1 (PATCH)
+
+v9.4.1 productionizes the protected-document append-only guard (FEAT-GUARD-001), mechanizing the
+"APPEND ONLY" rules already stated in the protocol. A pre-commit hook verifies via HEAD-blob
+byte-prefix comparison that `.protocol-state/dev-notes.md`, `.protocol-state/security-review.md`,
+and `.dzp-domain/domain.record.md` are never overwritten or truncated.
+
+- **Guard (`scripts/check_protected_append_only.py`)**: reads `protected_documents` config block;
+  skips cleanly if guard is disabled or file is unstaged; fails with a human-readable message on
+  shrinkage. CRLF-hardened (Windows-safe byte comparison). `DZP_ALLOW_PROTECTED_REWRITE=1`
+  environment variable allows authorized rewrites (file rotation, emergency restore).
+- **Unified pre-commit hook** (`scripts/git-hooks/pre-commit` + `.ps1`): runs publish-skip →
+  append-only guard → agent guard → validate-protocol in sequence (SEC-GUARD-003 — previously
+  three separate hook files could conflict). Installer: `scripts/install-git-hooks.{sh,ps1}`.
+- **Cortex stale `index.lock` self-heal**: mtime TTL guard prevents a stale lock from blocking
+  all Cortex operations after an interrupted index run.
+- **Distro**: `publish-manifest.yaml` ships `scripts/check_protected_append_only.py`,
+  the unified hook scripts, and `scripts/install-git-hooks.*`.
+- **Tests**: `tests/test_protected_append_only.py` (36 tests) + `tests/test_cortex_lock_staleness.py` (11 tests).
+- **Security**: SEC-GUARD-001..006 all CLOSED — guard logic, CRLF hardening, hook unification,
+  config size guard (SEC-GUARD-004), hooks python-absent warning (SEC-GUARD-005), override
+  CI-scoping note (SEC-GUARD-006). All folded into v9.4.1.
+- **Review**: Yuuji TDD (Phase 1) + Megumi Tier-2 @approved. SEC-GUARD-001..006 all CLOSED.
+
+---
+
+## Previous Release — v9.4.0 (MINOR)
 
 ---
 

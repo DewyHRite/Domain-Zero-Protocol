@@ -1,47 +1,90 @@
 #!/bin/sh
-# Domain Zero Protocol - Agent / Protected-File Commit Guard (FEAT-REQ-001, v9.3.0)
+# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.4.1)
+# Combines: publish-branch skip + append-only guard + agent/protected-file guard
+#           + validate-protocol.py state validation.
 #
-# Blocks `git commit` when staged changes touch DZP-protected paths (Cross-Agent
-# Edit Restrictions) outside a sanctioned agent session. This is a mechanical,
-# git-layer backstop for the prose rule in protocol/CLAUDE.md and the
-# custom_agent_security.file_protection.immutable_paths config surface.
-#
-# Protected paths are read from protocol.config.yaml so the guard stays in sync
-# with the existing config (no hard-coded list, except a fail-safe fallback).
+# Run order:
+#   1. Publish-branch skip  (DZP-v* / release branches bypass all dev-state checks)
+#   2. Append-only guard    (FEAT-GUARD-001: protected docs must only grow)
+#   3. Agent/file guard     (FEAT-REQ-001: Cross-Agent Edit Restrictions)
+#   4. Protocol validation  (validate-protocol.py --check)
 #
 # Install via: scripts/install-git-hooks.sh  (or .ps1 on Windows/PowerShell)
 # Sanctioned overrides are printed on block.
 set -eu
 
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+
+# ============================================================================
+# 1. PUBLISH-BRANCH SKIP
+# ============================================================================
+# The 'release' / 'DZP-v*' branches are published distribution artifacts built
+# by dzp-publish, NOT dev working trees. They intentionally exclude
+# .protocol-state/ dev state, so the dev-state validator does not apply.
+# dzp-publish already gates them (version + PII + path audits).
+CURRENT_BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || true)"
+case "$CURRENT_BRANCH" in
+  DZP-v[0-9]*|release)
+    echo "Publish branch ($CURRENT_BRANCH, distro artifact) — skipping dev-state validation (gated by dzp-publish)."
+    exit 0
+    ;;
+esac
+
+# ============================================================================
+# 2. FEAT-GUARD-001: PROJECT DOCUMENTS append-only enforcement
+# ============================================================================
+# dev-notes.md, security-review.md and domain.record.md are permanent project
+# memory — the HEAD blob must remain a byte-prefix of the staged blob (pure
+# append). Override a legit rewrite (rotation / authorized restore) with
+# DZP_ALLOW_PROTECTED_REWRITE=1.
+GUARD="$ROOT/scripts/check_protected_append_only.py"
+if [ -f "$GUARD" ]; then
+    PYG=""
+    if command -v python3 >/dev/null 2>&1; then PYG=python3
+    elif command -v python >/dev/null 2>&1; then PYG=python
+    fi
+    if [ -n "$PYG" ]; then
+        "$PYG" "$GUARD" || exit 1
+    else
+        echo "[protected-guard] WARNING: python not found — append-only guard SKIPPED" >&2
+    fi
+fi
+
+# ============================================================================
+# 3. FEAT-REQ-001: AGENT / PROTECTED-FILE GUARD (Cross-Agent Edit Restrictions)
+# ============================================================================
+# Blocks `git commit` when staged changes touch DZP-protected paths outside a
+# sanctioned agent session. Protected paths are read from protocol.config.yaml
+# (fail-safe fallback list below if python/yaml unavailable).
 CONFIG="$ROOT/protocol.config.yaml"
 
-# Staged paths: Added/Copied/Modified/Renamed/Deleted. We must check BOTH sides of
-# renames and copies: with rename detection on, `--name-only` emits only the
-# destination, so renaming a protected source OUT (e.g. protocol/x.md -> docs/x.md)
-# could bypass the guard. `--name-status --find-renames` emits, tab-separated:
-#   M<TAB>path   A<TAB>path   D<TAB>path   R<score><TAB>old<TAB>new   C<score><TAB>old<TAB>new
-# The awk prints every path column (fields 2..NF), so both old and new are checked.
-# Deletions (D) are included so `git rm protocol/<agent>.agent.md` is also blocked.
+# Staged paths: Added/Copied/Modified/Renamed/Deleted. Check BOTH sides of
+# renames/copies so renaming a protected source out (e.g. protocol/x.md ->
+# docs/x.md) doesn't bypass the guard. Deletions (D) also blocked.
 status=$(git diff --cached --name-status --find-renames --diff-filter=ACMRD || true)
-[ -z "$status" ] && exit 0
-staged=$(printf '%s\n' "$status" | awk -F'\t' '{ for (i = 2; i <= NF; i++) if ($i != "") print $i }')
-[ -z "$staged" ] && exit 0
+[ -z "$status" ] && {
+    # Nothing staged for the file-path guard — skip to protocol validation.
+    :
+}
 
-# Fail-safe default protected list (used if python/yaml or config unavailable).
-DEFAULT_PATHS="protocol/
+if [ -n "$status" ]; then
+    staged=$(printf '%s\n' "$status" | awk -F'\t' '{ for (i = 2; i <= NF; i++) if ($i != "") print $i }')
+
+    if [ -n "$staged" ]; then
+        # Fail-safe default protected list (used if python/yaml or config unavailable).
+        DEFAULT_PATHS="protocol/
 .claude/agents/
 .protocol-state/custom-agent-registry.json
 .protocol-state/authorization/
 protocol.config.yaml"
 
-get_protected_paths() {
-    PY=""
-    if command -v python3 >/dev/null 2>&1; then PY=python3
-    elif command -v python >/dev/null 2>&1; then PY=python
-    fi
-    if [ -n "$PY" ] && [ -f "$CONFIG" ]; then
-        out=$("$PY" - "$CONFIG" <<'PYEOF'
+        get_protected_paths() {
+            PY=""
+            if command -v python3 >/dev/null 2>&1; then PY=python3
+            elif command -v python >/dev/null 2>&1; then PY=python
+            fi
+            if [ -n "$PY" ] && [ -f "$CONFIG" ]; then
+                out=$("$PY" - "$CONFIG" <<'PYEOF'
 import sys
 try:
     import yaml
@@ -53,44 +96,88 @@ try:
 except Exception:
     sys.exit(7)
 PYEOF
-        ) && [ -n "$out" ] && { printf '%s\n' "$out"; return; }
-    fi
-    printf '%s\n' "$DEFAULT_PATHS"
-}
+                ) && [ -n "$out" ] && { printf '%s\n' "$out"; return; }
+            fi
+            printf '%s\n' "$DEFAULT_PATHS"
+        }
 
-# Strip CR (Windows python/print emits CRLF; a trailing \r breaks prefix matching).
-protected=$(get_protected_paths | tr -d '\r')
-staged=$(printf '%s' "$staged" | tr -d '\r')
+        # Strip CR (Windows python/print emits CRLF; a trailing \r breaks prefix matching).
+        protected=$(get_protected_paths | tr -d '\r')
+        staged=$(printf '%s' "$staged" | tr -d '\r')
 
-violations=""
-# Iterate staged files line-by-line (handles spaces in names).
-old_ifs=$IFS
-IFS='
+        violations=""
+        old_ifs=$IFS
+        IFS='
 '
-for f in $staged; do
-    for p in $protected; do
-        [ -z "$p" ] && continue
-        case "$f" in
-            "$p"*) violations="${violations}  ${f}    (protected: ${p})
+        for f in $staged; do
+            for p in $protected; do
+                [ -z "$p" ] && continue
+                case "$f" in
+                    "$p"*) violations="${violations}  ${f}    (protected: ${p})
 " ;;
-        esac
-    done
-done
-IFS=$old_ifs
+                esac
+            done
+        done
+        IFS=$old_ifs
 
-if [ -n "$violations" ]; then
-    printf '\n'
-    printf '==================================================================\n'
-    printf '  DZP PROTECTED-FILE COMMIT BLOCKED (Cross-Agent Edit Restrictions)\n'
-    printf '==================================================================\n'
-    printf 'Staged changes modify DZP-protected paths:\n\n'
-    printf '%s\n' "$violations"
-    printf 'These files are protected. Sanctioned ways to proceed:\n'
-    printf '  1. Invoke Gojo (Mission Control) for an authorized protocol change.\n'
-    printf '  2. Invoke Sukuna via Gojo for system / protocol updates.\n'
-    printf '  3. Override intentionally:  git commit --no-verify\n\n'
-    printf 'Reference: protocol/CLAUDE.md  (Cross-Agent Edit Restrictions)\n\n'
+        if [ -n "$violations" ]; then
+            printf '\n'
+            printf '==================================================================\n'
+            printf '  DZP PROTECTED-FILE COMMIT BLOCKED (Cross-Agent Edit Restrictions)\n'
+            printf '==================================================================\n'
+            printf 'Staged changes modify DZP-protected paths:\n\n'
+            printf '%s\n' "$violations"
+            printf 'These files are protected. Sanctioned ways to proceed:\n'
+            printf '  1. Invoke Gojo (Mission Control) for an authorized protocol change.\n'
+            printf '  2. Invoke Sukuna via Gojo for system / protocol updates.\n'
+            printf '  3. Override intentionally:  git commit --no-verify\n\n'
+            printf 'Reference: protocol/CLAUDE.md  (Cross-Agent Edit Restrictions)\n\n'
+            exit 1
+        fi
+    fi
+fi
+
+# ============================================================================
+# 4. PROTOCOL STATE VALIDATION
+# ============================================================================
+# M3 (CodeRabbit PR#99): resolve the python interpreter ONCE before calling
+# validate-protocol.py.  The prior pattern suppressed first-pass stderr with
+# 2>/dev/null then fell back via || to `python`, which could replace a genuine
+# validation FAILURE with a "python: not found" error and hide the real cause.
+# NOTE: the append-only guard (stage 2) is intentionally best-effort / non-fatal
+# when python is absent (it warns and skips). Protocol validation (this stage)
+# is a GATE — missing python must block the commit (fail-CLOSED).
+echo "Running Domain Zero Protocol validation..."
+
+PYV=""
+if command -v python3 >/dev/null 2>&1; then
+    PYV=python3
+elif command -v python >/dev/null 2>&1; then
+    PYV=python
+else
+    echo "COMMIT BLOCKED: python runtime not found — protocol validation requires Python." >&2
+    echo "Install Python 3 (https://python.org) or bypass intentionally with: git commit --no-verify" >&2
     exit 1
 fi
+
+"$PYV" "$ROOT/scripts/validate-protocol.py" --check
+
+VALIDATION_EXIT=$?
+
+if [ $VALIDATION_EXIT -ne 0 ]; then
+    echo ""
+    echo "COMMIT BLOCKED: Protocol validation failed"
+    echo ""
+    echo "State files have validation errors. Fix the issues above before committing."
+    echo ""
+    echo "To bypass this check (NOT RECOMMENDED):"
+    echo "  git commit --no-verify"
+    echo ""
+    exit 1
+fi
+
+echo ""
+echo "Protocol validation passed - proceeding with commit"
+echo ""
 
 exit 0

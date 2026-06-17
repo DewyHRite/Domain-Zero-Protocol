@@ -168,7 +168,55 @@ def _safe_candidate(repo: Path, path: Path, cfg: dict) -> bool:
         return False
     tokens = [str(token).lower() for token in cfg.get("exclude_tokens", [])]
     generated = ("brain.db", "cortex-snapshot.md", "model-cache", "index.log", "memories/")
-    return not any(token and token in lowered for token in [*tokens, *generated])
+    # Generated-files guard: hardcoded Cortex artefacts that must never be indexed.
+    # Listed separately from exclude_tokens so they fire unconditionally and cannot
+    # be bypassed by exclude_exceptions (these artefacts never live under a
+    # plans-style subtree in practice, but we enforce it defensively).
+    if any(token and token in lowered for token in generated):
+        return False
+    # FEAT-CORTEX-EXCL-001 (v9.4.1): exclude_exceptions — a more-specific per-token
+    # override.  For each exclude_token that WOULD block this path we ask: does an
+    # exception exist that (a) re-admits this exact path AND (b) is a narrower
+    # specialisation of the blocking token (i.e. exc starts with that token)?
+    #
+    # Condition (b) is the critical safety gate: it means exception "docs/superpowers/plans"
+    # can only cancel the token "docs/superpowers" (because plans starts with superpowers),
+    # never an unrelated token like "__pycache__" or "internal-docs".  Without (b) the
+    # exception would silence ALL tokens for a path it matches on condition (a) alone,
+    # allowing __pycache__ or internal-docs paths inside plans/ to slip through.
+    #
+    # Design choices documented here for Megumi / Toji review:
+    #   - Matching basis: normalised lowercase POSIX relative path (same as tokens).
+    #   - An exception "exc" re-admits a path when: lowered == exc OR lowered.startswith(exc+"/")
+    #     The trailing "/" enforces a true path-segment boundary: "plans-archive" does NOT
+    #     match exception "plans" because it doesn't start with "plans/".
+    #   - An exception "exc" cancels token "token" only when exc.startswith(token):
+    #     the exception is a sub-path of what the token blocks, so it's genuinely narrower.
+    #   - If multiple tokens match, ALL must be individually cancelled; any un-cancelled
+    #     token still blocks the path.
+    #   - Generated-files guard (above) is unconditional and cannot be bypassed.
+    #   - Binary/ext/size guards already fired before this block.
+    #   - contains_secret() at chunk_file time is unaffected (runs after admission).
+    exceptions_raw: list = cfg.get("exclude_exceptions", DEFAULT_CONFIG["exclude_exceptions"])
+    exceptions = [str(e).lower() for e in exceptions_raw if e]
+
+    def _token_cancelled_by_exception(token: str) -> bool:
+        """True if an exception both re-admits the current path AND is a narrower
+        sub-path of the blocking token (so it genuinely overrides that token only)."""
+        for exc in exceptions:
+            path_re_admitted = (lowered == exc or lowered.startswith(exc + "/"))
+            exception_is_narrower = exc.startswith(token)
+            if path_re_admitted and exception_is_narrower:
+                return True
+        return False
+
+    for token in tokens:
+        if not token:
+            continue
+        if token in lowered:
+            if not _token_cancelled_by_exception(token):
+                return False
+    return True
 
 
 def chunk_file(repo_root: str | Path, path: str | Path, cfg: dict, install_scope: str = "") -> list[Chunk]:

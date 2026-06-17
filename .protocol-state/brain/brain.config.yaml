@@ -36,6 +36,12 @@ exclude_tokens:
   - .protocol-state/system-update-framework
   - internal-docs
   - docs/superpowers
+# FEAT-CORTEX-EXCL-001 (v9.4.1): more-specific re-include overrides for exclude_tokens.
+# A path matching an entry here (exact or as a parent subtree via startswith "<entry>/")
+# is re-admitted even if a broader exclude_tokens entry would block it.
+# All other guards still apply: binary/ext allowlist/size/secret/generated.
+exclude_exceptions:
+  - docs/superpowers/plans
 chunk:
   md_max_chars: 1200
   code_max_chars: 1500
