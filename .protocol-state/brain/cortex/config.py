@@ -92,6 +92,19 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "internal-docs",
         "docs/superpowers",
     ],
+    # FEAT-CORTEX-EXCL-001 (v9.4.1): more-specific re-include list that overrides
+    # broader exclude_tokens entries.  Matching is on the normalised lowercase
+    # relative POSIX path, same basis as exclude_tokens — a path is re-admitted
+    # only when it equals an exception entry OR starts with "<entry>/", so partial
+    # path-component matches (e.g. "plans-archive" vs "plans") are not widened.
+    # All other guards (BINARY_SUFFIXES, index_extensions, max_file_bytes,
+    # generated-files, contains_secret at chunk time) still apply to re-admitted
+    # files — the exception bypasses only the exclude_tokens sweep.
+    "exclude_exceptions": [
+        # Re-admit DZP planning documents while keeping the rest of docs/superpowers/
+        # (Anthropic skill boilerplate) excluded.
+        "docs/superpowers/plans",
+    ],
     "chunk": {"md_max_chars": 1200, "code_max_chars": 1500, "overlap": 120},
     "index": {"batch_size": 64},
 }
@@ -141,6 +154,29 @@ def validate(cfg: dict[str, Any], repo_root: str | Path, *, allow_unsafe: bool =
     for key in ("include_folders", "include_files", "include_protected", "include_reports", "include_code", "exclude_tokens"):
         if not isinstance(cfg.get(key), list):
             raise ValueError(f"{key} must be a list")
+    # FEAT-CORTEX-EXCL-001 (v9.4.1): validate exclude_exceptions list.
+    ee = cfg.get("exclude_exceptions", DEFAULT_CONFIG["exclude_exceptions"])
+    if not isinstance(ee, list):
+        raise ValueError("exclude_exceptions must be a list")
+    if not all(isinstance(e, str) for e in ee):
+        raise ValueError("exclude_exceptions entries must all be strings")
+    # SEC-EXCL-001 (P3): exclude_exceptions match the normalised relative POSIX path,
+    # so absolute / drive-rooted / UNC / leading-separator / ".."-traversal entries can
+    # never legitimately match. They were accepted silently (functionally inert) — instead
+    # fail closed at load time (OWASP A05 / CWE-1284) naming the offending entry.
+    for e in ee:
+        if e.startswith("/") or e.startswith("\\"):
+            raise ValueError(
+                f"exclude_exceptions entry must be a relative path, not absolute/rooted: {e!r}"
+            )
+        if len(e) >= 2 and e[1] == ":" and e[0].isalpha():
+            raise ValueError(
+                f"exclude_exceptions entry must be a relative path, not a drive-rooted path: {e!r}"
+            )
+        if ".." in e.replace("\\", "/").split("/"):
+            raise ValueError(
+                f"exclude_exceptions entry must not contain a '..' path-traversal segment: {e!r}"
+            )
     # SEC-002 (v9.3.3): validate extension allowlist and chunk cap.
     ie = cfg.get("index_extensions", DEFAULT_CONFIG["index_extensions"])
     if not isinstance(ie, list):

@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.3.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.4.1 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.3.3
+**Version**: 9.4.1
 **Status**: Production
-**Last Updated**: 2026-06-15
+**Last Updated**: 2026-06-16
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -4437,3 +4437,78 @@ python scripts/distro/assert_version.py --root .   # ASSERT OK: v9.4.0 (20 files
 **Rollback (code-level)**: `git checkout Main-v9.3.4 -- .protocol-state/brain/ .protocol-state/migrate_cortex_storage_9_4.py`; restore version stamps from `.protocol-state/backups/v9.4.0-cascade-*`.
 
 **Review**: 7 phases, each Yuuji TDD + Megumi Tier-3. Gojo all-hands review (Megumi/Todo/Maki/Yuuji/Nobara). Megumi final @approved — SEC-CORTEX-009..024 closed; accepted P3 SEC-CORTEX-016.
+
+---
+
+### PATCH-GUARD-APPEND-ONLY-001: v9.4.1 Protected-Document Append-Only Enforcement (FEAT-GUARD-001)
+**Applies To**: v9.4.0 → v9.4.1 (PATCH)
+**Priority**: P1-High
+**Category**: Security / Enhancement (integrity enforcement)
+**Status**: APPLIED (2026-06-16)
+**Required For**: New Installations (install hook via `scripts/install-git-hooks.*`)
+
+**Description**: Productionizes the append-only rule for the three permanent project-memory files
+(`dev-notes.md`, `security-review.md`, `domain.record.md`) that was previously policy-only.
+A pre-commit hook runs `scripts/check_protected_append_only.py` which fetches the HEAD-blob and
+verifies the staged version starts with those exact bytes (byte-prefix invariant). Any shrinkage or
+overwrite is rejected with a clear diagnostic. CRLF-hardened for Windows compatibility.
+SEC-GUARD-003 unifies the three previously separate hook scripts into one pre-commit entry-point.
+Also includes Cortex stale `index.lock` self-heal (mtime TTL guard).
+
+**SEC-IDs**:
+- SEC-GUARD-001 (P1) — closed: guard logic implements the append-only invariant
+- SEC-GUARD-002 (P2) — closed: CRLF hardening prevents false-pass on Windows line endings
+- SEC-GUARD-003 (P2) — closed: unified pre-commit hook eliminates hook-split/conflict vector
+- SEC-GUARD-004 (P3) — accepted: config `paths` list has no size limit (low-risk)
+
+**Files introduced/modified**:
+- `scripts/check_protected_append_only.py` — guard implementation (new)
+- `scripts/git-hooks/pre-commit` — unified POSIX hook (updated)
+- `scripts/git-hooks/pre-commit.ps1` — unified PowerShell hook (updated)
+- `scripts/install-git-hooks.sh` — installer (updated)
+- `scripts/install-git-hooks.ps1` — installer (updated)
+- `publish-manifest.yaml` — distro entry for guard + hook scripts (updated)
+- `tests/test_protected_append_only.py` — 32 tests (new)
+- `tests/test_cortex_lock_staleness.py` — 11 tests (new)
+- `protocol.config.yaml` — `protected_documents` block (added in Phase 1)
+
+**Installation (new clones)**:
+```bash
+# macOS/Linux
+scripts/install-git-hooks.sh
+
+# Windows PowerShell
+scripts\install-git-hooks.ps1
+```
+
+**Override (rotation / emergency restore)**:
+```bash
+DZP_ALLOW_PROTECTED_REWRITE=1 git commit -m "chore: rotate dev-notes.md"
+```
+
+**Validation**:
+```bash
+python -m pytest tests/test_protected_append_only.py -q     # 32 passed
+python -m pytest tests/test_cortex_lock_staleness.py -q     # 11 passed
+python scripts/distro/assert_version.py --root .             # ASSERT OK: v9.4.1 (20 files)
+```
+
+**Rollback (code-level)**:
+```bash
+git checkout Main-v9.4.0 -- scripts/check_protected_append_only.py \
+    scripts/git-hooks/pre-commit scripts/git-hooks/pre-commit.ps1 \
+    scripts/install-git-hooks.sh scripts/install-git-hooks.ps1
+# Then remove the protected_documents block from protocol.config.yaml
+# and restore version stamps from .protocol-state/backups/ v9.4.1-cascade-*
+```
+
+**Risk Assessment (Sukuna adversarial)**:
+- LOW residual risk: guard is fail-closed on shrinkage but fail-open on new files (correct behavior)
+- SEC-GUARD-004 (P3 accepted): no `max_paths` cap on `protected_documents.paths` — a maliciously
+  large config could slow pre-commit; bounded by operator control of the config file
+- No rollback gap: guard is a pre-commit hook only; reverting is `git checkout` of the hook scripts
+- Cortex lock TTL is conservative (30s default); too-short could cause false self-heals on slow
+  machines — tunable via config
+
+**Review**: Yuuji TDD (Phase 1, commit be3388c). Sukuna-led version cascade (Phase 2). Megumi
+Tier-2 review pending (Phase 3). SEC-GUARD-001/002/003 closed; SEC-GUARD-004 P3 accepted.

@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.4.1 -->
 # DZP Distribution & Release Workflow
 
 How the **dev repo** (canonical) becomes a **sanitized public distribution**, how the

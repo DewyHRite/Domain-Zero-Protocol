@@ -32,13 +32,38 @@ try {
   # so the catch block handles the "lock held" case without a separate check.
   # $script:LockAcquired tracks ownership so the finally block only removes a
   # lock that THIS invocation created (ownership-safe cleanup).
+  # Staleness threshold: a lock older than this is treated as orphaned.
+  # 600 s is well above any real index run (timeout cap: 30 s).
+  $StaleSeconds = 600
   $script:LockAcquired = $false
   try {
     New-Item -ItemType File -Path $Lock -ErrorAction Stop | Out-Null
     $script:LockAcquired = $true
   } catch {
-    Write-CortexHookLog "index hook skipped; lock exists (concurrent run)"
-    exit 0
+    # Lock already exists — check if it is stale (orphaned from a killed hook).
+    $IsStale = $false
+    try {
+      if (Test-Path -LiteralPath $Lock) {
+        $LockAge = ((Get-Date) - (Get-Item -LiteralPath $Lock).LastWriteTime).TotalSeconds
+        $IsStale = $LockAge -gt $StaleSeconds
+      }
+    } catch { }
+
+    if ($IsStale) {
+      Write-CortexHookLog "index hook: reaping stale lock (age > ${StaleSeconds}s); retrying acquire"
+      try { Remove-Item -LiteralPath $Lock -Force -ErrorAction SilentlyContinue } catch { }
+      # Retry acquire once after reaping the stale lock.
+      try {
+        New-Item -ItemType File -Path $Lock -ErrorAction Stop | Out-Null
+        $script:LockAcquired = $true
+      } catch {
+        Write-CortexHookLog "index hook skipped; lock re-acquired by concurrent run after reap"
+        exit 0
+      }
+    } else {
+      Write-CortexHookLog "index hook skipped; lock exists (concurrent run)"
+      exit 0
+    }
   }
   # SEC-CORTEX-012 (v9.3.4): capture stderr to a temp file so non-zero exits
   # produce a meaningful log entry (mirrors what the .sh hook already does via

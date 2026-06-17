@@ -34,6 +34,34 @@ MAX_BREAK_DURATION = 480  # 8 hours
 MIN_BREAK_DURATION = 1    # 1 minute
 MAX_SESSION_DURATION = 1440  # 24 hours
 
+# Cortex index.lock staleness threshold (seconds).
+# An orphaned lock older than this is reaped so automatic re-indexing is never
+# permanently blocked.  600 s is far above any real index run (hooks cap at 30 s).
+_CORTEX_LOCK_STALE_SECONDS = 600
+
+
+def _lock_is_stale(lock_path: Path, now: Optional[float] = None) -> bool:
+    """Return True if *lock_path* exists and its mtime is older than
+    _CORTEX_LOCK_STALE_SECONDS.
+
+    Args:
+        lock_path: Path to the lock file being tested.
+        now:       Current epoch time; defaults to time.time().  Inject for tests.
+
+    Returns:
+        True  — lock exists AND age > threshold (stale, safe to reap).
+        False — lock does not exist, OR lock is fresh (another indexer running).
+    """
+    import time as _time
+    try:
+        if not lock_path.exists():
+            return False
+        mtime = lock_path.stat().st_mtime
+        age = (now if now is not None else _time.time()) - mtime
+        return age > _CORTEX_LOCK_STALE_SECONDS
+    except Exception:
+        return False
+
 
 def _parse_utc(timestamp: Optional[str]) -> Optional[datetime]:
     """
@@ -1662,10 +1690,15 @@ Template file not found at: {self.template_file}
     # -----------------------------------------------------------------------
 
     def _cortex_index_lock_exists(self) -> bool:
-        """Return True if the brain index.lock file exists (another indexer is running).
+        """Return True if a *fresh* brain index.lock file exists (another indexer running).
 
         Lock path mirrors brain-index-hook.ps1: <data_dir>/index.lock.
         Computed dynamically so we don't hard-code the install-id hash.
+
+        Staleness guard (v9.4.0): if the lock is older than _CORTEX_LOCK_STALE_SECONDS
+        it is treated as orphaned (e.g. from a killed hook), reaped best-effort, and
+        this method returns False so the caller proceeds to re-index.
+
         Fail-soft: any error resolving the path → return False (let indexer try).
         """
         try:
@@ -1684,7 +1717,19 @@ Template file not found at: {self.template_file}
             data = _json.loads(result.stdout)
             db_path = Path(data.get("db", ""))
             lock_path = db_path.parent / "index.lock"
-            return lock_path.exists()
+
+            if not lock_path.exists():
+                return False
+
+            # Staleness guard: reap orphaned lock and allow indexing to proceed.
+            if _lock_is_stale(lock_path):
+                try:
+                    lock_path.unlink()
+                except Exception:
+                    pass  # best-effort; still return False so indexing can attempt
+                return False
+
+            return True
         except Exception:
             return False
 

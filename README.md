@@ -1,7 +1,7 @@
 # Domain Zero Protocol
-<!-- [CORE FILE] - Domain Zero Protocol v9.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.4.1 -->
 
-**Version**: 9.4.0 | **Last Updated**: 2026-06-16
+**Version**: 9.4.1 | **Last Updated**: 2026-06-16
 
 A nine-agent AI development system plus one external auditor inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
 
@@ -198,6 +198,30 @@ Read protocol/yuuji.agent.md and implement payment processing --tier critical
 
 ---
 
+## 🔒 Protected-Document Append-Only Enforcement (FEAT-GUARD-001, v9.4.1)
+
+The protocol's three permanent project-memory files — `dev-notes.md`, `security-review.md`, and
+`domain.record.md` — are guarded by a pre-commit hook that enforces byte-prefix append-only
+invariant: if a staged version is shorter than (or starts differently from) the HEAD version,
+the commit is rejected.
+
+**Install the hook** once per fresh clone:
+```bash
+scripts/install-git-hooks.sh     # macOS/Linux
+scripts\install-git-hooks.ps1    # Windows PowerShell
+```
+
+**Override for authorized rewrites** (file rotation, emergency restore):
+```bash
+DZP_ALLOW_PROTECTED_REWRITE=1 git commit -m "chore: rotate dev-notes.md"
+```
+
+Configuration lives in `protocol.config.yaml` under `protected_documents`. See
+`scripts/check_protected_append_only.py` for the implementation and
+`CLAUDE.md` § Protected-Document Append-Only Enforcement for full details.
+
+---
+
 ## 🛠️ Skills System
 
 **Active Skills** (v8.13.0):
@@ -391,6 +415,6 @@ Contributions welcome! Please read the contribution guidelines and submit pull r
 
 ---
 
-**Domain Zero Protocol v9.4.0**
+**Domain Zero Protocol v9.4.1**
 **AI-Assisted Development Done Right**
 

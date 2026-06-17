@@ -1,18 +1,18 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.4.0 -->
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v9.4.0
+<!-- [CORE FILE] - Domain Zero Protocol v9.4.1 -->
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v9.4.1
 ## Main Protocol File - Domain Zero
 
-**Version**: 9.4.0
+**Version**: 9.4.1
 **Status**: Production-Ready
 **Last Updated**: 2026-06-16
-**Major Enhancements**: v9.3.0 (MINOR) BugReport remediation bundle: BUG-SESSION-001 (HIGH tz-naive wellbeing-alert crash fixed via _parse_utc + state sanitizer), BUG-MIGRATE-001 (migrate_state_9x.py additive 8.x->9.x key injection), BUG-SCHEMA-001 (deprecated tier_usage_statistics no longer required), BUG-VALIDATE-001/002 (validator false-negative hardened + requirements-dev.txt), BUG-VERIFY-001 (install manifest reconciled), BUG-CORTEX-001/002/003/004/005 (first-class shared-brain install_group + install-scoped source keys; OneDrive/symlink/hf_xet docs), BUG-DISTRO-001 (stray 'sukuna copy.md' removed + '* copy.*' publish guard), BUG-DOC-001 (IMPLEMENTATION_GUIDE refreshed to 9.x), FEAT-REQ-001 (opt-in agent-file protection git hook); Sukuna-led, Megumi review pending; v9.2.1 (FEATURE) Central DZP Script Orchestration System (PATCH-ORCH-001): root-level dzp.py entry-point + .protocol-state/script_coordinator.py engine + script_dependencies.yaml event registry; 7 lifecycle events; fail-soft vs fail-CLOSED per-event gates; 11 SEC-ORCH controls + SEC-COORD-001..005/005-EXT remediations; dev-only; Megumi Tier-3 @approved; builds on v9.1.1; v9.2.0 skipped; v8.13.0 PATCH-SESSION-005 (Toji External Auditor Addition - 10th agent, protocol/toji.agent.md, ~\.claude\agents\toji.md, copilot-instructions sync v8.13.0, AI_INSTRUCTIONS update); v8.13.0 PATCH-SESSION-004 (Session Monitoring Enhancement - 5 defensive layers, 70-85% → 85-90% coverage); v8.11.0 Session Management & TS Troubleshooting Tier System (/session, /ts_tier1-5, DZP ROE v2.0.0); v8.10.0 DZP Rules of Engagement (Post-Compaction Recovery, /dzp-roe slash command); v8.9.0 Claude Skills Integration (16 Anthropic skills, Implementation Restrictions, File Rotation, OWASP Cheatsheets); v8.8.0 Phase 4 (Tier Validation System + Dual Learning Systems); v8.7.0 Custom Agent Security Framework; v8.7.0 Nine-Agent System (Sukuna formalized as 9th agent); Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions, Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
+**Major Enhancements**: v9.4.1 (PATCH) Protected-Document Append-Only Enforcement (FEAT-GUARD-001): pre-commit guard (HEAD-blob byte-prefix invariant; `DZP_ALLOW_PROTECTED_REWRITE=1` override), config-driven `protected_documents`, CRLF-hardened, unified pre-commit hook (SEC-GUARD-003), distro packaging, Cortex stale lock self-heal. SEC-GUARD-001..006 all CLOSED. Yuuji TDD + Megumi Tier-2 @approved. v9.3.0 (MINOR) BugReport remediation bundle: BUG-SESSION-001 (HIGH tz-naive wellbeing-alert crash fixed via _parse_utc + state sanitizer), BUG-MIGRATE-001 (migrate_state_9x.py additive 8.x->9.x key injection), BUG-SCHEMA-001 (deprecated tier_usage_statistics no longer required), BUG-VALIDATE-001/002 (validator false-negative hardened + requirements-dev.txt), BUG-VERIFY-001 (install manifest reconciled), BUG-CORTEX-001/002/003/004/005 (first-class shared-brain install_group + install-scoped source keys; OneDrive/symlink/hf_xet docs), BUG-DISTRO-001 (stray 'sukuna copy.md' removed + '* copy.*' publish guard), BUG-DOC-001 (IMPLEMENTATION_GUIDE refreshed to 9.x), FEAT-REQ-001 (opt-in agent-file protection git hook); Sukuna-led, Megumi review pending; v9.2.1 (FEATURE) Central DZP Script Orchestration System (PATCH-ORCH-001): root-level dzp.py entry-point + .protocol-state/script_coordinator.py engine + script_dependencies.yaml event registry; 7 lifecycle events; fail-soft vs fail-CLOSED per-event gates; 11 SEC-ORCH controls + SEC-COORD-001..005/005-EXT remediations; dev-only; Megumi Tier-3 @approved; builds on v9.1.1; v9.2.0 skipped; v8.13.0 PATCH-SESSION-005 (Toji External Auditor Addition - 10th agent, protocol/toji.agent.md, ~\.claude\agents\toji.md, copilot-instructions sync v8.13.0, AI_INSTRUCTIONS update); v8.13.0 PATCH-SESSION-004 (Session Monitoring Enhancement - 5 defensive layers, 70-85% → 85-90% coverage); v8.11.0 Session Management & TS Troubleshooting Tier System (/session, /ts_tier1-5, DZP ROE v2.0.0); v8.10.0 DZP Rules of Engagement (Post-Compaction Recovery, /dzp-roe slash command); v8.9.0 Claude Skills Integration (16 Anthropic skills, Implementation Restrictions, File Rotation, OWASP Cheatsheets); v8.8.0 Phase 4 (Tier Validation System + Dual Learning Systems); v8.7.0 Custom Agent Security Framework; v8.7.0 Nine-Agent System (Sukuna formalized as 9th agent); Sukuna System Update Adversary (Gojo-Invoked Protocol Updates), Cross-Agent Edit Restrictions, Kill Switch Protocol (Emergency Stop with Project Protection), User Technical Level System (Beginner/Intermediate/Expert Adaptation), Full 8-Agent Integration (Todo, Maki, Panda, Inumaki), Escape Path Protocol (Agent-Specific Guidance), Instruction Confirmation Protocol, Research Mode Enhancement (Active Agent Research), Playwright E2E Testing Infrastructure, .agent.md Format (Structured Metadata, MCP Integration, Environment Targeting), Mask Mode Toggle (JJK Theme vs Professional Mode), Absolute Zero Protocol Integration, Agent Binding Oath, Decision Reasoning Framework
 
 ---
 
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v9.4.0
+> **Current Local Protocol Version**: v9.4.1
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -81,6 +81,30 @@ When syncing project documents:
 - Secret scanning runs automatically before git operations
 - User approval required for commit/push operations
 - All operations use `ProjectStateManager` for atomic state updates
+
+---
+
+## 🔒 PROTECTED-DOCUMENT APPEND-ONLY ENFORCEMENT (FEAT-GUARD-001, v9.4.1)
+
+Mechanizes the append-only rules above. A pre-commit hook blocks any commit that would shrink or
+overwrite the three protected files.
+
+**What it protects**: `.protocol-state/dev-notes.md`, `.protocol-state/security-review.md`,
+`.dzp-domain/domain.record.md`.
+
+**Byte-prefix invariant**: `scripts/check_protected_append_only.py` compares the HEAD-blob bytes
+against the working-tree version. Shrinkage fails the commit with a clear message.
+
+**Override for rotation/restore**: `DZP_ALLOW_PROTECTED_REWRITE=1 git commit ...` — always printed
+to stderr so the bypass is never silent.
+
+**Config** (`protocol.config.yaml` `protected_documents` block):
+- `enabled`: set `false` to disable (warning still printed)
+- `paths`: list of repo-root-relative protected file paths
+- `override_env`: env-var name for the bypass (default `DZP_ALLOW_PROTECTED_REWRITE`)
+
+**Installation** (run once per clone): `scripts/install-git-hooks.sh` or
+`scripts\install-git-hooks.ps1` — wires the unified pre-commit hook.
 
 ---
 
@@ -1549,12 +1573,13 @@ All protocol settings are stored in `protocol.config.yaml`:
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 9.4.0
-**Protocol Version**: 9.4.0
+**Current Version**: 9.4.1
+**Protocol Version**: 9.4.1
 **Release Date**: 2026-06-16
 **Last Updated**: 2026-06-16
 
 **Recent Version History**:
+- v9.4.1 - **PATCH**: FEAT-GUARD-001 protected-document append-only enforcement: pre-commit guard (HEAD-blob byte-prefix invariant; `DZP_ALLOW_PROTECTED_REWRITE` override), config-driven `protected_documents`, CRLF-hardened, unified pre-commit hook (SEC-GUARD-003), distro packaging; Cortex stale `index.lock` self-heal. SEC-GUARD-001..006 all CLOSED (incl. config size guard, hooks python-absent warning, override CI-scoping note). Yuuji TDD + Megumi Tier-2 @approved.
 - v9.4.0 - **MINOR**: Content-Addressed Cortex Storage (PLAN-DESIGN-001). Content-addressed v2 (one vector per `content_hash`, ref-counted occurrences) eliminates ~55% shared-install duplication + closes DESIGN-001 cross-scope corruption. v2 schema + deterministic `ref_id`; reversible parity-gated migration + `cortex_installs` version gate; v2 ingest/query/memory with recall+trust parity; doctor/dedup v2 metrics; distro ships the migration (IMPL-002). 7 phases (Yuuji TDD + Megumi Tier-3); Megumi final @approved; 350/1 brain + 21 distro tests.
 - v9.3.4 - **PATCH**: Cortex Preflight + Hardening (PLAN-DESIGN-001 §0, gates v9.4.0 content-addressed storage). Schema-version guard (`PRAGMA user_version` canonical + `metadata.schema_version` mirror; too-new/mismatch fail-closed on ALL ops; never downgrades); `cortex_installs` ledger; schema-guard memoization; SEC-CORTEX-009/010/011/012/013; Nobara UX P1 schema-error messages. Gojo all-hands Tier-3 (Megumi/Todo/Maki/Yuuji/Nobara); Megumi @approved; 168/1 brain tests.
 - v9.3.3 - **PATCH**: PATCH-CORTEX-DIAG-001 — Toji audit (BugReport3) remediation. Tier A: version reconciliation (10 agents + nested project-state straggler → 9.3.3; `assert_version.py` extended to scan agent frontmatter + all state version fields, IMPL-002), `verify-protocol.ps1` UTF-8 fix (SEC-001), `_SCOPED_PREFIX_RE` consolidation (CODE-001), RHS report correction (IMPL-001). Tier B (Yuuji TDD + Megumi @approved): extension allowlist + `max_file_chunks` cap (SEC-002), read-only `brain dedup --report` + `brain doctor` (IMPL-003). DESIGN-001 deferred to v9.4.0. 120/120 brain tests; Megumi Tier-2 @approved (3 accepted P3).

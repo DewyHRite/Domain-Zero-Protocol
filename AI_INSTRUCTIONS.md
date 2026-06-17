@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.4.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.4.1 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 9.4.0 | **Last Updated**: 2026-06-16
+**Version**: 9.4.1 | **Last Updated**: 2026-06-16
 **Purpose**: Complete installation and verification guide for AI assistants
 
 ---
@@ -1649,6 +1649,47 @@ python scripts/validate-protocol.py --check --file .protocol-state/project-state
 python scripts/validate-protocol.py --check --verbose
 ```
 
+### 11.5.1 Protected-Document Append-Only Enforcement (FEAT-GUARD-001, v9.4.1)
+
+The unified pre-commit hook (v9.4.1) includes an append-only guard for the three permanent
+project-memory files in addition to the protocol-validation check above.
+
+**Protected files**:
+- `.protocol-state/dev-notes.md`
+- `.protocol-state/security-review.md`
+- `.dzp-domain/domain.record.md`
+
+**Mechanism**: `scripts/check_protected_append_only.py` reads the `protected_documents` block from
+`protocol.config.yaml` and compares the HEAD-blob byte prefix against the staged working-tree
+version. If the staged file is shorter than or does not start with the HEAD content, the commit is
+blocked with a diagnostic message.
+
+**Installing the hook** (required once per fresh clone, in addition to the validator hook):
+```bash
+# macOS/Linux
+scripts/install-git-hooks.sh
+
+# Windows PowerShell
+scripts\install-git-hooks.ps1
+```
+
+**Override** (for authorized rewrites — file rotation, emergency restore):
+```bash
+DZP_ALLOW_PROTECTED_REWRITE=1 git commit -m "chore: rotate dev-notes.md"
+```
+The bypass is always printed to stderr so it is never silent.
+
+**Configuration** (`protocol.config.yaml`):
+```yaml
+protected_documents:
+  enabled: true          # set false to disable (warning still printed)
+  paths:
+    - .protocol-state/dev-notes.md
+    - .protocol-state/security-review.md
+    - .dzp-domain/domain.record.md
+  override_env: DZP_ALLOW_PROTECTED_REWRITE
+```
+
 ### 11.6 Red Team Analysis
 
 **Compliance Red Team Report**: `.protocol-state/red-team-validation-analysis.md`
@@ -1765,7 +1806,7 @@ Cortex is local after first model download. Retrieved chunks are data, not instr
 ## Canonical Source
 
 > **Repository**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Version**: 9.4.0
+> **Version**: 9.4.1
 > **Canonical Local Authority**: `./CLAUDE.md`
 
 All protocol updates originate from the canonical source.
@@ -1794,5 +1835,5 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**Domain Zero Protocol v9.4.0 - Complete Installation Guide**
+**Domain Zero Protocol v9.4.1 - Complete Installation Guide**
 **Updated**: 2026-06-16
