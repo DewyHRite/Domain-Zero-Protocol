@@ -130,7 +130,8 @@ The same three files listed above:
 ### How the guard works (byte-prefix invariant)
 
 Before each commit, `scripts/check_protected_append_only.py` fetches the HEAD-blob for each
-protected file and verifies that the working-tree version **starts with** those exact bytes. Any
+protected file and verifies that the **staged (index)** version **starts with** those exact bytes
+(the guard reads from the Git index, not the raw working-tree file). Any
 truncation or overwrite causes the commit to fail with a clear message identifying which file
 violated the invariant.
 

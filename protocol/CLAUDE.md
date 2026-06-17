@@ -93,7 +93,7 @@ overwrite the three protected files.
 `.dzp-domain/domain.record.md`.
 
 **Byte-prefix invariant**: `scripts/check_protected_append_only.py` compares the HEAD-blob bytes
-against the working-tree version. Shrinkage fails the commit with a clear message.
+against the **staged (index)** version (not the raw working-tree file). Shrinkage fails the commit with a clear message.
 
 **Override for rotation/restore**: `DZP_ALLOW_PROTECTED_REWRITE=1 git commit ...` — always printed
 to stderr so the bypass is never silent.

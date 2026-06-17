@@ -4488,7 +4488,7 @@ DZP_ALLOW_PROTECTED_REWRITE=1 git commit -m "chore: rotate dev-notes.md"
 
 **Validation**:
 ```bash
-python -m pytest tests/test_protected_append_only.py -q     # 32 passed
+python -m pytest tests/test_protected_append_only.py -q     # 36 passed
 python -m pytest tests/test_cortex_lock_staleness.py -q     # 11 passed
 python scripts/distro/assert_version.py --root .             # ASSERT OK: v9.4.1 (20 files)
 ```
@@ -4507,8 +4507,8 @@ git checkout Main-v9.4.0 -- scripts/check_protected_append_only.py \
 - SEC-GUARD-004 (P3 accepted): no `max_paths` cap on `protected_documents.paths` — a maliciously
   large config could slow pre-commit; bounded by operator control of the config file
 - No rollback gap: guard is a pre-commit hook only; reverting is `git checkout` of the hook scripts
-- Cortex lock TTL is conservative (30s default); too-short could cause false self-heals on slow
+- Cortex lock TTL is conservative (600s default); too-short could cause false self-heals on slow
   machines — tunable via config
 
 **Review**: Yuuji TDD (Phase 1, commit be3388c). Sukuna-led version cascade (Phase 2). Megumi
-Tier-2 review pending (Phase 3). SEC-GUARD-001/002/003 closed; SEC-GUARD-004 P3 accepted.
+Tier-2 @approved (Phase 3). SEC-GUARD-001..006 all CLOSED; SEC-GUARD-004 P3 accepted.

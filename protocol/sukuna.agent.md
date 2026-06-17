@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v9.4.1 -->
 ---
 target: vscode
 name: "Ryomen Sukuna - System Update Adversary"
@@ -28,8 +29,6 @@ handoffs:
       - risk_level
       - backup_plan
 ---
-
-<!-- [CORE FILE] - Domain Zero Protocol v9.4.1 -->
 
 ## 📍 JJK CHARACTER REFERENCE
 

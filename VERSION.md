@@ -29,7 +29,7 @@ and `.dzp-domain/domain.record.md` are never overwritten or truncated.
 - **Security**: SEC-GUARD-001..006 all CLOSED — guard logic, CRLF hardening, hook unification,
   config size guard (SEC-GUARD-004), hooks python-absent warning (SEC-GUARD-005), override
   CI-scoping note (SEC-GUARD-006). All folded into v9.4.1.
-- **Review**: Yuuji TDD (Phase 1) + Megumi Tier-2 @approved.
+- **Review**: Yuuji TDD (Phase 1) + Megumi Tier-2 @approved. SEC-GUARD-001..006 all CLOSED.
 
 ---
 

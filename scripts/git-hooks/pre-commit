@@ -140,10 +140,27 @@ fi
 # ============================================================================
 # 4. PROTOCOL STATE VALIDATION
 # ============================================================================
+# M3 (CodeRabbit PR#99): resolve the python interpreter ONCE before calling
+# validate-protocol.py.  The prior pattern suppressed first-pass stderr with
+# 2>/dev/null then fell back via || to `python`, which could replace a genuine
+# validation FAILURE with a "python: not found" error and hide the real cause.
+# NOTE: the append-only guard (stage 2) is intentionally best-effort / non-fatal
+# when python is absent (it warns and skips). Protocol validation (this stage)
+# is a GATE — missing python must block the commit (fail-CLOSED).
 echo "Running Domain Zero Protocol validation..."
 
-python3 "$ROOT/scripts/validate-protocol.py" --check 2>/dev/null \
-    || python "$ROOT/scripts/validate-protocol.py" --check
+PYV=""
+if command -v python3 >/dev/null 2>&1; then
+    PYV=python3
+elif command -v python >/dev/null 2>&1; then
+    PYV=python
+else
+    echo "COMMIT BLOCKED: python runtime not found — protocol validation requires Python." >&2
+    echo "Install Python 3 (https://python.org) or bypass intentionally with: git commit --no-verify" >&2
+    exit 1
+fi
+
+"$PYV" "$ROOT/scripts/validate-protocol.py" --check
 
 VALIDATION_EXIT=$?
 

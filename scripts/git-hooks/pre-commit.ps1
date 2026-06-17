@@ -123,8 +123,16 @@ if ($py) {
     & $py.Source (Join-Path $root 'scripts/validate-protocol.py') --check
     $validationExit = $LASTEXITCODE
 } else {
-    Write-Host "[protected-guard] python not found — skipping protocol validation"
-    $validationExit = 0
+    # M4 (CodeRabbit PR#99): fail-CLOSED when python is absent.
+    # The prior code set $validationExit = 0 (fail-OPEN), allowing commits to
+    # bypass protocol validation entirely when no python runtime was installed.
+    # Protocol validation is a GATE — missing python must block the commit.
+    # NOTE: the append-only guard (stage 2, above) is intentionally best-effort
+    # / non-fatal when python is absent (it warns and skips). This stage is a
+    # hard gate; the distinction is documented in both hooks for clarity.
+    [Console]::Error.WriteLine("COMMIT BLOCKED: Python runtime is required for protocol validation (scripts/validate-protocol.py --check).")
+    [Console]::Error.WriteLine("Install Python 3 (https://python.org) or bypass intentionally with: git commit --no-verify")
+    $validationExit = 1
 }
 
 if ($validationExit -ne 0) {

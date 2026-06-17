@@ -124,8 +124,29 @@ def _effective_settings(
         return True, PROTECTED_DOCS, OVERRIDE_ENV
 
     enabled: bool = bool(block.get("enabled", True))
-    raw_paths = block.get("paths") or []
-    paths: tuple[str, ...] = tuple(str(p).strip() for p in raw_paths if p)
+
+    # M2 (CodeRabbit PR#99): validate that `paths` is a list of non-empty strings.
+    # A scalar (str/int/None/bool) must NOT be iterated — a string would be walked
+    # character-by-character, silently replacing real paths with single-char entries
+    # and effectively disabling enforcement. A non-list scalar crashes on iteration.
+    # Any element that is not a str also triggers the fallback (fail-SAFE).
+    # When validation fails, fall back to PROTECTED_DOCS (never fail-open).
+    raw_paths = block.get("paths")
+    if isinstance(raw_paths, (list, tuple)):
+        valid = True
+        parsed = []
+        for p in raw_paths:
+            if not isinstance(p, str):
+                valid = False
+                break
+            s = p.strip()
+            if s:
+                parsed.append(s)
+        paths: tuple[str, ...] = tuple(parsed) if valid else PROTECTED_DOCS
+    else:
+        # scalar (str, int, None, bool, …) — fall back to hardcoded constants
+        paths = PROTECTED_DOCS
+
     override_env: str = str(block.get("override_env") or OVERRIDE_ENV)
 
     # If config provided no paths, fall back to hardcoded paths (but respect enabled flag)
