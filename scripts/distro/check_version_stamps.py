@@ -45,6 +45,15 @@ _PROTOCOL_VER_RX = re.compile(
     r'^protocol_version:\s*"?(\d+\.\d+\.\d+)"?',
     re.MULTILINE,
 )
+# Type 4: Git-hook inline version comment (WI-CR-6, v9.7.2)
+# Matches the header line in pre-commit / pre-commit.ps1:
+#   # Domain Zero Protocol - ... Hook (FEAT-GUARD-001, vX.Y.Z)
+# Scoped to lines that contain "Domain Zero Protocol" AND the (FEAT-GUARD-001, vX.Y.Z)
+# parenthetical so changelog/prose references are not false-positived.
+_GIT_HOOK_VER_RX = re.compile(
+    r"Domain Zero Protocol\b.*?\(FEAT-GUARD-\d+,\s*v(\d+\.\d+\.\d+)\)",
+    re.IGNORECASE,
+)
 
 # ---------------------------------------------------------------------------
 # Exclusion rules  (mirrors the cascade rules from the v9.7.2 directive)
@@ -181,6 +190,7 @@ def _scan_file(
             (_CORE_HEADER_RX, "CORE-HEADER"),
             (_BOLD_FOOTER_RX, "BOLD-FOOTER"),
             (_PROTOCOL_VER_RX, "PROTOCOL-VER"),
+            (_GIT_HOOK_VER_RX, "GIT-HOOK"),
         ):
             for m in rx.finditer(line):
                 found_ver = m.group(1)

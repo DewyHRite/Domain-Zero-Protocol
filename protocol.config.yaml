@@ -1291,16 +1291,15 @@ custom_agent_security:
       - "\\$\\{"         # Template injection
       - "require\\("     # Module loading
       - "import\\s+"     # Module loading
-      # YAML deserialization tags (SEC-P4-001, v9.5.0).
-      # "!!\S" (any !! immediately followed by a non-whitespace char) catches
+      # YAML deserialization tags (SEC-P4-001, v9.5.0; refined WI-CR-5, v9.7.2).
+      # "!![a-zA-Z]" matches !! immediately followed by a letter — this catches
       # ALL YAML type-tag variants: !!python/, !!ruby/, !!perl/, !!binary,
-      # !!map, etc.  It does NOT match "done!! great" (!! + space) or a line
-      # ending with "!!" (!! + newline).  NOTE (SEC-P4-004): "!!" immediately
-      # followed by punctuation or letters IS rejected (e.g. "Amazing!!!",
-      # "fast!!quick") -- this is intentional secure-by-default; reword such
-      # frontmatter values.  Kept as a single broad pattern rather than an
-      # explicit enumeration so future tag classes are covered automatically.
-      - "!!\\S"          # Any !! YAML deserialization tag (catches all variants)
+      # !!map, !!str, etc.  YAML tags always begin with a letter after !!.
+      # It does NOT match "!!!" (emphasis punctuation present in agent files
+      # like gojo:170, nobara:136, panda:212/239/257, sukuna:32, todo:259,
+      # yuuji:298/304/312/323 — "Must be followed verbatim!!!").
+      # This replaces "!!\\S" which false-positived on !!! (WI-CR-5 CodeRabbit #5).
+      - "!![a-zA-Z]"    # YAML deserialization tags (!! followed by a letter)
 
     # Required fields in agent YAML
     required_fields:

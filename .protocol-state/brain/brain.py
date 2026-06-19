@@ -603,17 +603,26 @@ def _seed(
     Running seed twice will not double-seed.
 
     Seeds use trust=semi (not trusted — they are advisory, not canonical).
-    Seeds are NOT embedded (no vector stored; no Embedder required).
+
+    WI-CR-2 (v9.7.2): Seeds now embed their text so content rows have a real
+    vector_rowid (satisfying the NOT NULL constraint) and are retrievable via
+    search.  A STUB Embedder is used so no model download is required; seeds
+    are advisory content and stub vectors are sufficient for cold-start recall.
 
     Returns:
         int — number of new rows seeded (0 if at/above threshold or already seeded).
     """
     from datetime import datetime, timezone
     import hashlib as _hashlib
+    from cortex.embedder import Embedder as _Embedder
+    from cortex.store import Chunk as _Chunk
 
     SEED_MARKER_KEY = f"__dzp_seed_marker__{install_id}"
 
     try:
+        # WI-CR-2: ensure schema is initialized before any DB operation.
+        store.init_schema()
+
         with store.connect() as conn:
             # Check current count
             count = conn.execute("SELECT COUNT(*) FROM content_refs").fetchone()[0]
@@ -628,7 +637,12 @@ def _seed(
             if existing is not None:
                 return 0
 
-        # Below threshold and not yet seeded — insert seed memories
+        # Below threshold and not yet seeded — insert seed memories.
+        # WI-CR-2: use a STUB Embedder so seeds get real vectors without requiring
+        # a model download.  Seeds are advisory content; stub vectors are sufficient.
+        # Use the store's actual dimension so vectors match the DB schema (dim may
+        # differ in tests, e.g. dim=4 vs production dim=384).
+        _emb = _Embedder("STUB", dim=store.dim)
         now_iso = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
         SEED_MEMORIES = [
@@ -644,42 +658,41 @@ def _seed(
         # N seeds.  Keeping storage_key=SEED_MARKER_KEY (shared) preserves the
         # idempotency probe above (WHERE storage_key = SEED_MARKER_KEY LIMIT 1).
         # ref_id is recomputed to include line_start so it remains unique per row.
-        # seeded is incremented only on an actual insert (total_changes delta), not
-        # unconditionally — so the returned count equals rows that truly persisted.
+        # seeded is incremented only on an actual content_refs insert (total_changes
+        # delta), not unconditionally — so the returned count reflects true inserts.
         seeded = 0
-        with store.connect() as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            try:
-                for line_num, (mem_type, text) in enumerate(SEED_MEMORIES, start=1):
-                    ch = _hashlib.sha256(text.encode("utf-8")).hexdigest()
-                    # Upsert content row (no vector for seeds — vector_rowid NULL)
-                    conn.execute(
-                        "INSERT OR IGNORE INTO content(content_hash, vector_rowid, text, dim, model, created_at) "
-                        "VALUES (?, NULL, ?, 384, 'STUB', ?)",
-                        (ch, text, now_iso),
-                    )
-                    # Unique line_start per seed preserves UNIQUE(storage_key, line_start).
-                    ref_id = _hashlib.sha256(
-                        f"{SEED_MARKER_KEY}:{line_num}:{ch}".encode()
-                    ).hexdigest()[:16]
-                    before = conn.execute("SELECT total_changes()").fetchone()[0]
-                    conn.execute(
-                        "INSERT OR IGNORE INTO content_refs("
-                        "ref_id, content_hash, storage_key, source_type, line_start, line_end, "
-                        "trust, suspect, mem_type, agent, recorded_date, refs) "
-                        "VALUES (?, ?, ?, 'memory', ?, ?, 'semi', 0, ?, 'seed', ?, '[]')",
-                        (ref_id, ch, SEED_MARKER_KEY, line_num, line_num, mem_type, now_iso),
-                    )
-                    after = conn.execute("SELECT total_changes()").fetchone()[0]
-                    if after > before:
-                        seeded += 1
-                conn.execute("COMMIT")
-            except Exception:
-                try:
-                    conn.execute("ROLLBACK")
-                except Exception:
-                    pass
-                raise
+
+        # Build Chunk objects and embed them via store.upsert() to satisfy
+        # the content.vector_rowid NOT NULL constraint (WI-CR-2).
+        # store.upsert() handles content + content_vectors + content_refs insertion
+        # atomically (BEGIN IMMEDIATE per chunk); it is idempotent on (storage_key,
+        # line_start) via ON CONFLICT DO UPDATE.  The return value is the number of
+        # content_refs rows that changed — we sum this for the truthful counter.
+        for line_num, (mem_type, text) in enumerate(SEED_MEMORIES, start=1):
+            ch = _hashlib.sha256(text.encode("utf-8")).hexdigest()
+            ref_id = _hashlib.sha256(
+                f"{SEED_MARKER_KEY}:{line_num}:{ch}".encode()
+            ).hexdigest()[:16]
+
+            chunk = _Chunk(
+                id=ref_id,
+                content_hash=ch,
+                text=text,
+                source_path=SEED_MARKER_KEY,
+                line_start=line_num,
+                line_end=line_num,
+                source_type="memory",
+                trust="semi",
+                suspect=False,
+                mem_type=mem_type,
+                agent="seed",
+                recorded_date=now_iso,
+            )
+            vector = _emb.embed(text)
+
+            # upsert() handles content + content_vectors + content_refs insertion
+            # in one atomic transaction.  Returns count of changed rows.
+            seeded += store.upsert([(chunk, vector)])
 
         return seeded
     except Exception:

@@ -1190,11 +1190,14 @@ class Store:
             bytes_per_chunk = 4096
 
         def _still_over_budget() -> bool:
-            # Re-check live size only in non-dry_run mode (deletions actually happened).
-            if dry_run:
-                # In dry_run: estimate based on what we'd have removed.
-                return (current_size_mb - evicted_mb_estimate) > target_mb
-            return self._db_size_mb() > target_mb
+            # WI-CR-3 (v9.7.2): Use estimate-based accounting in BOTH dry_run and live
+            # modes.  SQLite does not reclaim disk pages until VACUUM, so the live
+            # _db_size_mb() never decreases mid-loop — using it caused the eviction
+            # loop to over-delete ALL evictable content even when only a small fraction
+            # needed removal.  The estimate (current_size_mb minus accumulated
+            # evicted_mb_estimate) accurately reflects how much storage will be freed
+            # once compact() runs VACUUM after eviction.
+            return (current_size_mb - evicted_mb_estimate) > target_mb
 
         def _protected_key_check(storage_key: str) -> bool:
             """Return True if storage_key is a protected path (never evict)."""
@@ -1422,6 +1425,7 @@ class Store:
         lock_path: "Path | None" = None,
         data_dir: "Path | None" = None,
         backup_retention_count: int = 3,
+        lock_stale_seconds: int = 600,
     ) -> dict:
         """Sweep orphaned content rows (no surviving content_refs) and VACUUM.
 
@@ -1461,20 +1465,59 @@ class Store:
               "integrity_check":             dict,   # run_integrity_check() result (when data_dir set)
             }
         """
-        # S3-RISK-003: abort if index.lock is held
+        # S3-RISK-003: abort if index.lock is held.
+        # WI-CX-1 (v9.7.2): stale locks (mtime older than lock_stale_seconds, default
+        # 600 s — matching session_monitor._CORTEX_LOCK_STALE_SECONDS) are reaped
+        # before the abort check.  A real, in-progress indexer cannot hold a lock
+        # longer than ~30 s (hook timeout), so 600 s is a safe staleness threshold.
+        # The reap is best-effort: on failure we still abort to avoid data races.
         if lock_path is not None and lock_path.exists():
-            _log.warning(
-                "compact: index.lock held at %s — aborting compact (S3-RISK-003)", lock_path
-            )
-            before_mb = self._db_size_mb()
-            return {
-                "orphan_content_rows_deleted": 0,
-                "freed_mb_estimate": 0.0,
-                "before_mb": before_mb,
-                "after_mb": before_mb,
-                "dry_run": dry_run,
-                "aborted_lock_held": True,
-            }
+            import time as _time
+            try:
+                lock_age = _time.time() - lock_path.stat().st_mtime
+                lock_is_stale = lock_age > lock_stale_seconds
+            except Exception:
+                lock_is_stale = False
+
+            if lock_is_stale:
+                try:
+                    lock_path.unlink()
+                    _log.warning(
+                        "compact: reaped stale index.lock at %s (age=%.0fs > threshold=%ds) "
+                        "(WI-CX-1, S3-RISK-003)",
+                        lock_path,
+                        lock_age,
+                        lock_stale_seconds,
+                    )
+                    # Lock removed — proceed with compact as if it was never held.
+                except Exception as exc:
+                    _log.warning(
+                        "compact: stale index.lock at %s could not be reaped (%s) — "
+                        "aborting compact (S3-RISK-003)", lock_path, exc
+                    )
+                    before_mb = self._db_size_mb()
+                    return {
+                        "orphan_content_rows_deleted": 0,
+                        "freed_mb_estimate": 0.0,
+                        "before_mb": before_mb,
+                        "after_mb": before_mb,
+                        "dry_run": dry_run,
+                        "aborted_lock_held": True,
+                    }
+            else:
+                _log.warning(
+                    "compact: index.lock held at %s (age=%.0fs) — aborting compact "
+                    "(S3-RISK-003)", lock_path, lock_age
+                )
+                before_mb = self._db_size_mb()
+                return {
+                    "orphan_content_rows_deleted": 0,
+                    "freed_mb_estimate": 0.0,
+                    "before_mb": before_mb,
+                    "after_mb": before_mb,
+                    "dry_run": dry_run,
+                    "aborted_lock_held": True,
+                }
 
         # Ensure schema exists before operating (safe on a fresh/empty DB).
         self.init_schema()
