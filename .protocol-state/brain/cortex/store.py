@@ -1473,6 +1473,7 @@ class Store:
         # The reap is best-effort: on failure we still abort to avoid data races.
         if lock_path is not None and lock_path.exists():
             import time as _time
+            lock_age = 0.0  # WI-CX-1-RACE: always defined; prevents UnboundLocalError
             try:
                 lock_age = _time.time() - lock_path.stat().st_mtime
                 lock_is_stale = lock_age > lock_stale_seconds
