@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 
 # JJK Character Reference Mapping
 **Version**: 1.1.0

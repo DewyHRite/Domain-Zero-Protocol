@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 # DZP Cortex Brain Skill
 
 **Name:** brain  

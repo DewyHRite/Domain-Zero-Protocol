@@ -1,5 +1,5 @@
 # Gojo Snapshot Integration Guide
-<!-- [CORE FILE] - Domain Zero Protocol v9.0.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 
 **Version**: 1.0.0
 **Created**: 2025-12-06

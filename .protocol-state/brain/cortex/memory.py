@@ -64,9 +64,13 @@ def remember(
     # INJECTION_PATTERNS is the single shared list imported from ingest — no
     # regex duplication.
     _is_suspect = any(pattern.search(text) for pattern in INJECTION_PATTERNS)
+    # WI-MEM-001 (SEC-CORTEX-MEM-001): use per-memory unique source_path so that
+    # the v2 UNIQUE(storage_key, line_start) constraint does not collapse all
+    # same-month memories to a single row.  The monthly bucket key (ts[:7])
+    # was the root cause of silent overwrite on v2/v3/v4 brains.
     chunk = Chunk(
         id=f"memory:{mem_id}",
-        source_path=f"memory:{ts[:7]}",
+        source_path=f"memory:{mem_id}",
         source_type="memory",
         line_start=1,
         line_end=1,

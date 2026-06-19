@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
 **Version:** v8.10.0

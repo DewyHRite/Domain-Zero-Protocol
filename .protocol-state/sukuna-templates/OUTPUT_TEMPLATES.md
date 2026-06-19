@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.7.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 
 # Sukuna System Update - Output Templates
 

@@ -6,6 +6,12 @@ max_file_bytes: 6000000  # SEC-CORTEX-003 (v9.3.2): per-file index cap; was hard
 include_folders:
   - protocol
   - docs
+  # C2 (v9.5.0, S-RISK-007 Case A): both archive roots in scope.
+  # SEC-UNIFIED-001 (CLOSED): classified as source_type='archive', trust='semi'.
+  # domain-record-rotate.py archives to .dzp-domain/archive/
+  # file-rotate.py archives to .protocol-state/archive/<key>/
+  - .dzp-domain/archive
+  - .protocol-state/archive
 include_files:
   - CLAUDE.md
   - protocol/CLAUDE.md

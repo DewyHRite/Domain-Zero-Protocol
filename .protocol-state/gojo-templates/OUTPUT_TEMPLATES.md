@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 
 # Gojo Mission Control - Output Templates
 

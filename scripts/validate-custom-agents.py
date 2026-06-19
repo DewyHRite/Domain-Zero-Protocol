@@ -258,6 +258,35 @@ class CustomAgentValidator:
 
         yaml_content = match.group(1)
 
+        # DUAL-SCAN ARCHITECTURE (SEC-P4-002, v9.5.0) — DO NOT REMOVE EITHER SCAN.
+        #
+        # Pre-parse scan (here): operates on the raw YAML string *before*
+        # yaml.safe_load runs.  Purpose: catch YAML deserialization tags such
+        # as !!python/, !!ruby/, !!binary, etc. that would cause safe_load to
+        # raise a ConstructorError — we want those reported as "Forbidden
+        # pattern" policy violations rather than as opaque parse errors.  The
+        # raw string scan also acts as a defence-in-depth layer against future
+        # parser changes that might silently accept otherwise-dangerous tags.
+        #
+        # Post-parse scan (_validate_yaml_content, called after this method):
+        # operates on the *parsed* frontmatter dict (via yaml.dump round-trip).
+        # Purpose: policy enforcement on structured content (prototype
+        # pollution, template injection, etc.) where the parsed representation
+        # is more reliable than a raw-string search.
+        #
+        # The two scans are complementary, not redundant.  A future maintainer
+        # should NOT delete one in favour of the other.
+        yaml_config = self.security.get('yaml_validation', {})
+        forbidden_patterns = yaml_config.get('forbidden_patterns', [])
+        for pattern in forbidden_patterns:
+            if re.search(pattern, yaml_content, re.IGNORECASE):
+                result.add_error(
+                    f"Forbidden pattern detected in YAML: '{pattern}'. "
+                    f"This may indicate a code injection attempt."
+                )
+                # Return None — do not proceed with further YAML validation.
+                return None
+
         try:
             frontmatter = yaml.safe_load(yaml_content)
             if not isinstance(frontmatter, dict):

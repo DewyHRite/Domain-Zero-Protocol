@@ -39,3 +39,11 @@ class SchemaMismatchError(CortexError):
     repaired DB; the engine fails closed instead of guessing (IMPL-001)."""
 
     exit_code = 6
+
+
+class GraphSchemaError(CortexError):
+    """Graph tables are absent or at incompatible schema — requires v9.6.0+ engine.
+    Raised when a caller attempts a graph operation on a v2 (pre-migration) DB,
+    or when required graph tables are missing from the schema. (WI-5, v9.6.0)"""
+
+    exit_code = 7

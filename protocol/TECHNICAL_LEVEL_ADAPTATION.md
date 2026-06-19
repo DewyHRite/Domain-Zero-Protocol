@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 
 # Technical Level Adaptation Standard
 

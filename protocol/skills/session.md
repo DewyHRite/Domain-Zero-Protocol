@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.1.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 # Session Management Skill
 ## Unified Interface for Work Session Tracking
 
@@ -128,24 +128,24 @@ DZP_AGENT=gojo python .protocol-state/session_monitor.py update --time-only
 3. **`.protocol-state/dev-notes.md`** - Implementation log, completed features, pending tasks
 4. **`.protocol-state/security-review.md`** - Security audit trail, findings, SEC-ID tracking
 
-**Cortex Re-Index (v9.1.0) — MANDATORY-TO-ATTEMPT, FAIL-SOFT**:
+**Cortex Re-Index (v9.5.0 / WI-29) — ROUTED THROUGH COORDINATOR, FAIL-SOFT**:
 
-Per the Cortex Integration Contract (`protocol/skills/brain.md`), `/session update` MUST attempt an incremental Cortex re-index after every successful project-document sync. This step is:
-- **Mandatory-to-attempt**: always run `brain status` + `brain index --incremental`
-- **Fail-soft**: if `brain status` reports not-ok, or if the index errors, log the failure and proceed — the sync is never blocked or wedged
-- **Status-gated**: only attempt the full index if `brain status` exits 0
-- **Never writes protected docs**: Cortex is a derived index, never canonical
+Per Phase 5b (WI-29), `/session update` now routes its Cortex step through the coordinator rather than calling `brain.ps1/sh` directly. The coordinator fires the Cortex step exactly once:
 
 ```bash
-# Step 5 — Cortex incremental re-index (after document sync succeeds)
-# Windows
-scripts/brain.ps1 status && scripts/brain.ps1 index --incremental
-
-# POSIX
-scripts/brain.sh status && scripts/brain.sh index --incremental
-
-# On any Cortex error: log "Cortex re-index skipped: <reason>" and continue.
+# v9.5.0+ — full sync via coordinator (single Cortex trigger)
+python dzp.py event session-update
 ```
+
+The coordinator chains: `session_monitor.py sync` (DZP_AGENT=gojo) → `cortex-medium` (cortex_trigger.py --level medium --reason session-update) → `custom-agent-list` + `tier-status` + `tier-statistics` (all fail-soft).
+
+- **Single-trigger**: coordinator owns the one Cortex path — no direct `brain.ps1/sh index` call
+- **Fail-soft**: Cortex error never blocks the overall sync
+- **Never writes protected docs**: Cortex is a derived index, never canonical
+
+Reindex scope per invocation:
+- `/session update` → **incremental** (only changed/new chunks, via cortex_trigger.py --level medium)
+- `/session end` → **full rebuild** (see /session end)
 
 Reindex scope per invocation:
 - `/session update` → **incremental** (only changed/new chunks)
@@ -228,12 +228,14 @@ python .protocol-state/session_monitor.py continue
 
 ### /session end
 
-**Action**: End current session and archive
+**Action**: End current session, archive state, full Cortex rebuild + export
 
 **Implementation**:
 ```bash
-# End session with Gojo permission (for domain.record.md access)
-DZP_AGENT=gojo python .protocol-state/session_monitor.py end
+# End session — v9.5.0+ routes through coordinator (WI-29)
+# Coordinator chains: session_monitor.py end (DZP_AGENT=gojo)
+#                     + end-snapshot + cortex-high --export (full rebuild)
+python dzp.py event session-end
 ```
 
 **State Files Updated** (PATCH-SESSION-005 - Extensions 2 & 3, PATCH-STATE-001):
@@ -248,15 +250,28 @@ DZP_AGENT=gojo python .protocol-state/session_monitor.py end
 
 **Note**: `DZP_AGENT=gojo` environment variable grants temporary Gojo permission for domain.record.md updates. All other state files are updated regardless of this variable.
 
-**Cortex REMEMBER + INDEX** (v9.1.0, fail-soft — per Cortex Integration Contract): after the session is archived, the session monitor triggers a full Cortex rebuild and optionally stores one distilled session-outcome fact. All steps are best-effort only — session end is never blocked:
+**Cortex Full Rebuild + Export (v9.5.0 / WI-29) — ROUTED THROUGH COORDINATOR, FAIL-SOFT**:
+
+Per Phase 5b (WI-29), `/session end` now routes its Cortex step through the coordinator:
+
 ```bash
-# Windows (POSIX: scripts/brain.sh)
-scripts/brain.ps1 remember "<session outcome: what shipped / decided>" --type decision --agent gojo
-scripts/brain.ps1 index   # full rebuild on session end (no --incremental)
+# v9.5.0+ — end session via coordinator (full rebuild + export via coordinator)
+python dzp.py event session-end
 ```
+
+The coordinator chains: `session_monitor.py end` (DZP_AGENT=gojo, required) → `end-snapshot` (fail-soft) → `cortex-high --export` (fail-soft, full rebuild + export snapshot).
+
+**PARITY NOTE**: Session-tracking / wellbeing logging / domain.record.md write are NOT lost — the coordinator `session-end` step runs `session_monitor.py end` with `DZP_AGENT=gojo`. The routing also RESTORES the previously-missing end-of-session Cortex rebuild + export (regression from 2026-06-17).
+
+To store a distilled session-outcome fact before ending, run manually before the coordinator:
+```bash
+# Windows (POSIX: scripts/brain.sh) — optional, before python dzp.py event session-end
+scripts/brain.ps1 remember "<session outcome: what shipped / decided>" --type decision --agent gojo
+```
+
 Best-effort: on any Cortex error, log and continue — session end is never blocked. Cortex never writes the protected docs.
 
-**Toji snapshot** (`export --snapshot`) is NOT automatically generated by `/session end`. To produce a fresh snapshot for Toji audits, run manually: `scripts/brain.ps1 export --snapshot` (writes `cortex-snapshot.md`, gitignored).
+**Toji snapshot** (`export --snapshot`) is automatically generated by the coordinator's `cortex-high --export` step. To produce an additional manual snapshot for Toji audits: `scripts/brain.ps1 export --snapshot`.
 
 ---
 

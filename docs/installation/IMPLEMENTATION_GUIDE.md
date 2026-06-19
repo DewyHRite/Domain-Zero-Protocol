@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.3.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
-**Version**: 9.3.0
-**Last Updated**: June 15, 2026
+**Version**: 9.7.2
+**Last Updated**: 2026-06-18
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
 
 > **9.x note**: v9.x adds **DZP Cortex** (local semantic memory) and a consolidated
@@ -194,6 +194,36 @@ Cortex data lives **outside** the repo (`%LOCALAPPDATA%\dzp-cortex\<id>` on Wind
 folder, so no action is needed. **Sharing one brain across a parent repo + nested submodules**:
 set the same `install_group:` in each install's `brain.config.yaml` (or `DZP_CORTEX_INSTALL_GROUP`).
 See `.protocol-state/brain/README.md` for both recipes.
+
+#### Cortex Schema Migrations (v1 → v4)
+
+If you are upgrading an existing Cortex installation, you need to run the schema migration
+scripts in sequence. Each migration is backup-first, parity-gated, and idempotent — always
+run `--check` before `--execute`.
+
+**Always run `--check` first.** Each script backs up the database before any changes.
+
+```bash
+# v1 → v2: Content-addressed storage (v9.4.0)
+# Requires: sqlite-vec installed (pip install -r .protocol-state/brain/requirements-brain.txt)
+python .protocol-state/migrate_cortex_storage_9_4.py --check
+python .protocol-state/migrate_cortex_storage_9_4.py --execute
+
+# v2 → v3: Graph structured recall (v9.6.0)
+python .protocol-state/migrate_cortex_graph_9_6.py --check
+python .protocol-state/migrate_cortex_graph_9_6.py --execute
+
+# v3 → v4: Storage elasticity (v9.7.0)
+python .protocol-state/brain/migrate_cortex_elastic_9_7.py --check
+python .protocol-state/brain/migrate_cortex_elastic_9_7.py --execute
+```
+
+If a migration fails, each script exposes a `--rollback` flag that restores from the
+backup created before the run. Run `scripts/brain.sh status` after each migration to
+confirm the schema version advanced.
+
+For the full Cortex architecture, retention configuration, and per-install storage
+budgets, see **[docs/guides/DZP_CORTEX.md](../guides/DZP_CORTEX.md)**.
 
 #### Optional: install the agent-file protection git hook
 

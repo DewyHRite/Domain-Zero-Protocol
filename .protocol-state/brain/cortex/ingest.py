@@ -274,7 +274,7 @@ def chunk_file(repo_root: str | Path, path: str | Path, cfg: dict, install_scope
     return chunks
 
 
-def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: bool = False, progress=None, install_scope: str | None = None) -> dict:
+def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: bool = False, force: bool = False, progress=None, install_scope: str | None = None) -> dict:
     batch_size = int((cfg.get("index") or {}).get("batch_size", 64))
     # BUG-CORTEX-005: derive the install scope (empty unless a shared store is opted
     # into). All source keys, state lookups, and orphan cleanup use the storage key.
@@ -292,7 +292,7 @@ def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: 
         skey = _storage_key(scope, rel)
         discovered_sources.add(skey)
         stat = path.stat()
-        if not dry_run and store.source_state(skey) == (stat.st_mtime_ns, stat.st_size):
+        if not dry_run and not force and store.source_state(skey) == (stat.st_mtime_ns, stat.st_size):
             skipped += 1
             continue
         file_chunks = chunk_file(repo_root, path, cfg, install_scope=scope)
@@ -322,7 +322,51 @@ def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: 
     for source in owned - discovered_sources:
         removed += store.delete_by_source(source)
     store.set_meta("last_index", now)
+    # WI-S3-5 (Stage 3 Phase 1, v9.7.0): post-index eviction.
+    # Run ONLY when storage_budget_mb is configured AND DB is over budget.
+    # Fail-soft: eviction errors log a WARNING but never fail the index run.
+    # Budget None (default) = unlimited = skip eviction entirely.
+    _run_post_index_eviction(store, cfg)
     return {"files_scanned": len(files), "files_skipped": skipped, "chunks": all_chunks, "upserted": upserted, "removed": removed}
+
+
+def _run_post_index_eviction(store: "Store", cfg: dict) -> None:
+    """WI-S3-5 helper: invoke eviction if over budget (fail-soft).
+
+    Separated from index() to keep the main function clean.
+    Uses a SEPARATE connection to run eviction outside the index transaction.
+    """
+    import logging as _logging
+    _elog = _logging.getLogger(__name__)
+
+    budget_mb = cfg.get("storage_budget_mb")
+    if budget_mb is None:
+        return  # unlimited — no eviction
+
+    try:
+        current_mb = store._db_size_mb()
+        if current_mb <= budget_mb:
+            return  # within budget — skip
+
+        _elog.info(
+            "Cortex: post-index eviction triggered (%.1f MB > budget %.1f MB)",
+            current_mb, budget_mb,
+        )
+        with store.connect() as conn:
+            result = store._evict_to_budget(conn, target_mb=float(budget_mb))
+        if result["evicted_count"] > 0:
+            _elog.info(
+                "Cortex: evicted %d chunks (~%.2f MB estimate) — tiers: %s",
+                result["evicted_count"],
+                result["evicted_mb_estimate"],
+                result["tiers_used"],
+            )
+    except Exception as exc:
+        # Fail-soft: eviction failure never fails the index run.
+        import logging as _l
+        _l.getLogger(__name__).warning(
+            "Cortex: post-index eviction failed (fail-soft): %s", exc
+        )
 
 
 def _flush(chunks: list[Chunk], store: Store, embedder) -> int:
@@ -373,7 +417,8 @@ def top_sources_by_chunks(store: "Store", *, n: int = 10) -> list[dict]:
     """
     store.init_schema()
     with store.connect() as conn:
-        if store._active_schema == 2:
+        if store._active_schema in (2, 3, 4):
+            # v2/v3: content-addressed — source paths are in content_refs.storage_key.
             rows = conn.execute(
                 """
                 SELECT storage_key AS source_path, COUNT(*) AS chunk_count
@@ -385,6 +430,7 @@ def top_sources_by_chunks(store: "Store", *, n: int = 10) -> list[dict]:
                 (n,),
             ).fetchall()
         else:
+            # v1 legacy — source paths are in chunks.source_path.
             rows = conn.execute(
                 """
                 SELECT source_path, COUNT(*) AS chunk_count
@@ -403,6 +449,18 @@ def top_sources_by_chunks(store: "Store", *, n: int = 10) -> list[dict]:
 
 
 def _source_type(rel: str) -> str:
+    # C2 (v9.5.0, S-RISK-007 Case A): archive roots are classified FIRST.
+    # SEC-UNIFIED-001 (CLOSED, Megumi Tier-3 @approved): archived protected-doc content
+    # uses source_type='archive', NOT 'protected'. This is intentionally distinct from
+    # the live protected-doc classification so that STAGE 3 eviction can treat archives
+    # as evictable (Priority 1) while live protected docs remain in the NEVER-evict block.
+    # NOTE: The plan prose (S-RISK-007 line ~1361) says "protected/trusted-equivalent"
+    # but SEC-UNIFIED-001 OVERRIDES that to 'archive'/'semi'. Implementation follows
+    # SEC-UNIFIED-001. Megumi to rule on prose discrepancy in Tier-3 review.
+    if rel.startswith(".dzp-domain/archive/") or rel.startswith(".protocol-state/archive/"):
+        return "archive"
+    # Live protected docs (must check AFTER archive guard above so archived rotations
+    # of dev-notes/security-review/domain.record are not misclassified as 'protected').
     if rel.startswith(".protocol-state/dev-notes") or rel.startswith(".protocol-state/security") or rel.startswith(".dzp-domain/"):
         return "protected"
     if rel.startswith("scripts/") or rel.endswith(".py") or rel.endswith(".ps1") or rel.endswith(".sh"):
@@ -417,6 +475,16 @@ def _trust_for(rel: str) -> str:
     # protocol material is `trusted`; ALL other content (docs/, project data, memories,
     # newly-indexed business/project files) defaults to `semi`. This prevents trust
     # inflation when Cortex scope is expanded beyond the protocol layer.
+    #
+    # C2 (v9.5.0, S-RISK-007 Case A): archive roots are explicitly 'semi'.
+    # SEC-UNIFIED-001 (CLOSED): archived content must use trust='semi' — they are
+    # historical, re-indexable from disk, and not live protected documents. This also
+    # ensures STAGE 3 can evict archive chunks under Priority 1 (evictable) without
+    # hitting the NEVER-evict guard that covers trust='trusted' chunks.
+    # Archive check must come BEFORE the scripts/ 'trusted' check since archive paths
+    # ending in .py/.ps1/.sh (unlikely but possible) must not inherit 'trusted'.
+    if rel.startswith(".dzp-domain/archive/") or rel.startswith(".protocol-state/archive/"):
+        return "semi"
     if rel.startswith("protocol/") or rel in {"CLAUDE.md", "AI_INSTRUCTIONS.md", "README.md"} or rel.startswith("scripts/"):
         return "trusted"
     return "semi"

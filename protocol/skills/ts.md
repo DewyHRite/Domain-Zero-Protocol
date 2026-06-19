@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.0.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 # TS (Tier Shift) - Troubleshooting Tier Management
 ## Context-Aware Bug Resolution with Hybrid Escalation
 
@@ -760,11 +760,11 @@ Mark session complete and archive to consolidated state.
 **Workflow**:
 Validate session is active. Prompt user for outcome and completion notes. Archive session to `project-state.json::troubleshooting.history`. Clear active session from `project-state.json::troubleshooting.active_session`. Log completion to dev-notes.md and domain.record.md. Falls back to legacy files when consolidated unavailable.
 
-**Cortex REMEMBER + INDEX** (v9.1.0, fail-soft — per Cortex Integration Contract): after archiving, store one distilled lesson and refresh the index so the next bug benefits from this resolution:
+**Cortex REMEMBER** (v9.5.0 / WI-29, fail-soft — per Cortex Integration Contract): after archiving, store one distilled lesson. The Cortex re-index is handled by the coordinator (ts-complete event fires `cortex_trigger.py --level medium`) — do NOT call `brain.ps1 index` here to avoid double-firing:
 ```bash
-# Windows (POSIX: scripts/brain.sh)
+# Windows (POSIX: scripts/brain.sh) — REMEMBER only; coordinator handles the re-index
 scripts/brain.ps1 remember "<bug> resolved: root cause <X>, fix <Y>, tests <Z>" --type lesson --agent gojo
-scripts/brain.ps1 index --incremental
+# Note: python dzp.py event ts-complete will fire cortex-medium after this step
 ```
 This is best-effort: on any Cortex error, log and continue — completion is never blocked. Cortex never writes the protected docs (dev-notes/security-review/domain.record stay canonical).
 

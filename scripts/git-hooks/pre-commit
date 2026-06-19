@@ -1,5 +1,5 @@
 #!/bin/sh
-# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.4.1)
+# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.5.0)
 # Combines: publish-branch skip + append-only guard + agent/protected-file guard
 #           + validate-protocol.py state validation.
 #

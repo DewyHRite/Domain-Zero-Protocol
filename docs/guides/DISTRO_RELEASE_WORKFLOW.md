@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.4.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 # DZP Distribution & Release Workflow
 
 How the **dev repo** (canonical) becomes a **sanitized public distribution**, how the
@@ -133,6 +133,34 @@ branch; never push a `Main-vX.Y.Z` dev branch to the public canonical (PII leak)
 
 > Tip: protect `DZP-v*` with a branch-protection rule requiring the CodeRabbit check + ≥1
 > approval, so step 5 is enforced by GitHub, not just convention.
+
+### 5a. Operational commands (the CodeRabbit cycle in practice)
+
+```bash
+# After dzp-publish pushes DZP-vX.Y.Z, open the gated PR (once per release):
+gh pr create --base <current-default-DZP> --head DZP-vX.Y.Z --title "DZP-vX.Y.Z" --body "..."
+
+# Poll the review decision. NOTE: CodeRabbit emits emoji/unicode; on Windows pipe through
+# Python with UTF-8 forced or you'll hit cp1252 'charmap' decode errors:
+PYTHONUTF8=1 gh pr view <#> --json state,reviewDecision,reviews
+gh api repos/<owner>/<repo>/pulls/<#>/comments --paginate   # inline findings
+
+#   reviewDecision: CHANGES_REQUESTED  → triage + fix; APPROVED → gate cleared.
+#   CodeRabbit's first comment is a "review in progress" placeholder — wait for the
+#   real review (inline findings appear, a review is submitted, or that marker clears).
+
+# Fix every finding on the DEV side (Main-vX.Y.Z), then update the SAME release branch/PR:
+bash scripts/dzp-publish.sh --force-clean          # re-stage+scrub+audit+gate+commit+push (fast-forward, never --force)
+
+# Re-request review (CodeRabbit also auto-reviews new pushes):
+gh pr comment <#> --body "@coderabbitai review"
+
+# Repeat until reviewDecision == APPROVED, then merge + promote to default:
+gh pr merge <#> --merge        # merge commit; do NOT delete the DZP-vX.Y.Z branch — it becomes the default
+gh api -X PATCH repos/<owner>/<repo> -f default_branch=DZP-vX.Y.Z
+```
+
+**Triage discipline:** evaluate each finding (real issue vs false positive) before implementing — don't blind-apply. Route code fixes through Yuuji (TDD) and protocol/doc fixes through Sukuna; keep unrelated/concurrent work out of the release commit. Worked example: PR #99 (DZP-v9.4.1) — CodeRabbit `CHANGES_REQUESTED` (8 findings: 3 code Majors incl. a pre-commit fail-open, 5 docs) → fixed on dev + re-published → `APPROVED` on re-review → merged + set default.
 
 ---
 

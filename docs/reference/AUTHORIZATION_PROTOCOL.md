@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 # Authorization Protocol
 
 **Version:** 1.0.0

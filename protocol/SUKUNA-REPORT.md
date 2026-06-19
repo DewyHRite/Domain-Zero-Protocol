@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.4.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.4.1
+**Version**: 9.7.2
 **Status**: Production
-**Last Updated**: 2026-06-16
+**Last Updated**: 2026-06-18
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -47,6 +47,80 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
 4. AI agents automatically apply patches on next upgrade/setup
 ```
+
+---
+
+## PLAN-DOC AUDIT FOLD (2026-06-18): Toji Audit — PLAN-CORTEX-UNIFIED-001 Finalization
+
+### PATCH-PLAN-AUDITFOLD-001 (2026-06-18): USER/Toji 5-Finding Audit Fold — Cortex Roadmap
+
+**Patch ID**: PATCH-PLAN-AUDITFOLD-001
+**Applies to**: PLAN-CORTEX-UNIFIED-001 + PLAN-CORTEX-WIRE-001 (plan documents only — no code, no version stamps)
+**Priority**: P1 (plan-document consistency; blocks STAGE 1 implementation start if un-fixed)
+**Category**: Plan-document remediation — roadmap consistency / release-gate defects
+**Status**: APPLIED (2026-06-18)
+**Required For**: STAGE 1 (v9.5.0) implementation
+
+**Description**: Five findings from the 2026-06-17 USER/Toji audit of the unified Cortex roadmap. Three were partially folded in a prior pass; this patch verifies the complete set, finalizes #3 and #4, and applies consistency corrections to the STAGE 1 detail doc (PLAN-CORTEX-WIRE-001).
+
+**Findings and status:**
+
+| ID | Title | Unified Plan | Detail Doc (WIRE-001) | Status |
+|----|-------|-------------|----------------------|--------|
+| H1 | Stale v9.4.0 baseline | VERIFIED CLOSED (all baseline refs → v9.4.1) | FIXED: Version Recommendation, Branch line, conflict assessment | CLOSED |
+| H2 | Impossible grep-zero version gate | VERIFIED CLOSED (targeted active-stamp scan + allowlist) | N/A (no grep-zero gate was in detail doc) | CLOSED |
+| H3 | `--recall` stub exits 0 = false success | FOLDED: exit 4 + `implemented:false` JSON; exit-code table; NOTE + Megumi flag | FIXED: Amendment A, WI-7 CLI desc, WI-8 test renamed | CLOSED (Megumi post-impl Tier-3 pending) |
+| M1 | Registry event count inconsistency / cortex-compact stage-bleed | FOLDED: 10-event authoritative table, cortex-compact = STAGE 3 only, WI-16=7, AC=10 events | FIXED: CLAUDE.md changelog stub corrected to 10 events | CLOSED |
+| M2 | Stage 3 nonexistent `store.dedup()` | VERIFIED CLOSED (store.compact() + building-block inventory) | N/A (no store.dedup() mutation ref in detail doc) | CLOSED |
+
+**The `--recall` stub contract (H3) — chosen design:**
+
+Exit 4 + `{"mode":"recall","implemented":false,"message":"recall not implemented until v9.6.0"}` to stdout; `[CORTEX] recall mode not implemented in v9.5.0 — use v9.6.0+` to stderr (MCE-2 compliant).
+
+Rationale: exit 0 is a silent false-success that callers at decision points (e.g., `pre-protected-edit`) cannot defend against. Exit 4 is a defined, documented non-success sentinel. The mutex group from RESERVE AMENDMENT A is preserved unchanged. v9.6.0 replaces the stub with a real implementation (exits 0 on success).
+
+**Pending gates before STAGE 1 implementation start:**
+1. Megumi SEC-UNIFIED-001 re-confirm (trust classification for archive paths).
+2. Megumi post-impl Tier-3 covering H3 Inumaki contract change (exit 4 stub contract).
+
+**Files modified (plan documents only):**
+- `docs/superpowers/plans/2026-06-16-dzp-cortex-unified-roadmap.md` — Status header updated; STAGE 1 revision log entry added; STAGE 3 revision log preserved.
+- `docs/superpowers/plans/2026-06-16-dzp-cortex-interconnectivity.md` — Status header updated; 2026-06-17 revision log entry added; Amendment A exit-0 → exit-4; WI-7 CLI desc; WI-8 test rename; Version Recommendation v9.4.0 → v9.4.1; Branch line; CLAUDE.md history entry event count corrected.
+
+**Backup created:** `docs/superpowers/plans/2026-06-16-dzp-cortex-unified-roadmap.md.2026-06-17T0540-presukuna-auditfold.bak`
+
+**Pre-existing backups (reference):**
+- `*.md.2026-06-17T0000.bak` — pre-Megumi-fold baseline
+- `*.md.2026-06-17T0000-toji-audit.bak` — post-SEC-UNIFIED-001 fold, pre-Toji-audit-correction
+
+**Validation:**
+```bash
+# Confirm no stale exit-0 recall stub in either plan doc
+grep -n "exit 0" docs/superpowers/plans/2026-06-16-dzp-cortex-interconnectivity.md | grep -i recall
+# Expect: no output (old stub behavior removed)
+
+# Confirm no stale v9.4.0-as-baseline in detail doc
+grep -n "developed after v9\.4\.0 merges\|DZP-v9\.4\.0 merges to default" docs/superpowers/plans/2026-06-16-dzp-cortex-interconnectivity.md
+# Expect: no output
+
+# Confirm unified plan has 10-event table
+grep -n "Total STAGE 1 registry events: 10" docs/superpowers/plans/2026-06-16-dzp-cortex-unified-roadmap.md
+# Expect: one hit
+
+# Confirm no store.dedup() mutation reference in either plan
+grep -n "store\.dedup()" docs/superpowers/plans/2026-06-16-dzp-cortex-unified-roadmap.md docs/superpowers/plans/2026-06-16-dzp-cortex-interconnectivity.md
+# Expect: no output
+```
+
+**Rollback:**
+```bash
+# Restore the pre-edit backup
+cp "docs/superpowers/plans/2026-06-16-dzp-cortex-unified-roadmap.md.2026-06-17T0540-presukuna-auditfold.bak" \
+   "docs/superpowers/plans/2026-06-16-dzp-cortex-unified-roadmap.md"
+# Restore the detail doc from the toji-audit bak (or re-apply corrections manually)
+```
+
+**Review**: Sukuna-led, Gojo coordination, USER-approved. Plan-document edits only. PATCH-PLAN-AUDITFOLD-001 closes the Toji audit loop. Megumi re-confirms remain as pending gates before implementation.
 
 ---
 
@@ -4512,3 +4586,448 @@ git checkout Main-v9.4.0 -- scripts/check_protected_append_only.py \
 
 **Review**: Yuuji TDD (Phase 1, commit be3388c). Sukuna-led version cascade (Phase 2). Megumi
 Tier-2 @approved (Phase 3). SEC-GUARD-001..006 all CLOSED; SEC-GUARD-004 P3 accepted.
+
+---
+
+## PATCH-PLAN-SKILLROUTE-001 — v9.5.0 Stage 1: Lifecycle Skill → Coordinator Routing (Phase 5b)
+
+**Type**: Plan-document amendment (STRUCTURAL_CHANGE to active update plan)
+**Date**: 2026-06-17
+**Authority**: USER-directed via /sukuna
+**Files**: `docs/superpowers/plans/2026-06-16-dzp-cortex-unified-roadmap.md` (authoritative), `docs/superpowers/plans/2026-06-16-dzp-cortex-interconnectivity.md` (mirror) — both [INTERNAL DOCUMENT]; this manifest entry is [CORE FILE].
+**No code, no version stamps** (version cascade is Phase 6).
+
+**Problem (proven empirically)**: The 2026-06-17 Gojo working session ended with DZP Cortex UNSYNCED. Root cause: Phase 4 rewired the registry events to fire Cortex via `cortex_trigger.py` AND removed the direct `_sync_cortex_index` from `session_monitor.py` — but the real lifecycle entry points (`.claude/commands/*.md` skills) call `session_monitor.py`/`brain.ps1` directly, never `dzp.py event`. Result: rewired Cortex events are ORPHANED; `/session end` + `/session update` trigger LESS Cortex than pre-v9.5.0 — a net regression that inverts the plan's mission.
+
+**Amendment applied to the plan**:
+- **Phase 5b** added: WI-29 (route lifecycle skills through `dzp.py event <name>`, with a non-negotiable PARITY CONSTRAINT so non-Cortex work like session-tracking/wellbeing-logging/project-doc-sync is preserved and Cortex fires exactly once via the coordinator) + WI-30 (skill→event doc-contract + coordinator integration tests).
+- **S1-RISK-012 (HIGH, OPEN)** added to the unified risk table.
+- Two WI-29/WI-30 acceptance criteria added.
+- **Go/No-Go gate #8** added: WI-29 mandatory + parity-verified before Stage-1 is mission-complete (NOT optional Phase 6 cleanup).
+
+**Backup**: `.protocol-state/backups/sukuna-skill-routing-20260617T154439Z/` (both plan docs + this report).
+**Rollback**: `cp .protocol-state/backups/sukuna-skill-routing-20260617T154439Z/*.md` back to source paths.
+
+**Implementation (deferred to Yuuji, Phase 5b, next session)**: edit `.claude/commands/{session-update,session-end,ts-tier1..5,ts-complete,toji-snapshot,...}.md` to invoke `dzp.py event <name>`; verify per-event parity; add WI-30 tests. Megumi Tier-3 verifies post-implementation.
+
+**Risk Assessment (Sukuna adversarial)**:
+- Scope expansion is JUSTIFIED, not creep: without it the entire Stage-1 mission ("every lifecycle wired through ONE shared Cortex trigger") is unmet and Phase 4 is a regression.
+- Residual risk in implementation: PARITY — naively swapping `session_monitor.py end` for `dzp.py event session-end` could DROP non-Cortex behavior if the event's `session-end` step isn't a faithful equivalent. WI-29 parity constraint + WI-30 tests mitigate. Must verify `DZP_AGENT=gojo` is preserved and no double-run.
+
+---
+
+## CASCADE-V950-001 — v9.4.1 → v9.5.0 Version Cascade
+
+**Type**: Version cascade (release-prep stamp bump)
+**Date**: 2026-06-17
+**Authority**: USER-directed via /sukuna, Gojo-invoked (Stage D)
+**Branch**: Main-v9.5.0
+**Implementation sealed**: Phases 2–5b @approved+committed; 774 tests pass.
+
+### Files bumped (ACTIVE stamps: 9.4.1 → 9.5.0)
+
+| File | Stamps changed |
+|------|----------------|
+| `VERSION.md` | CORE FILE header, **Version**, release date; + v9.5.0 entry added at top |
+| `CLAUDE.md` (root) | CORE FILE header, title h1, **Version**, Last Updated, Major Enhancements, canonical version ref, VERSION INFORMATION block |
+| `protocol/CLAUDE.md` (mirror) | Same set as root CLAUDE.md |
+| `AI_INSTRUCTIONS.md` | CORE FILE header, **Version**/Last Updated, canonical Version, footer |
+| `README.md` | CORE FILE header, **Version**/Last Updated, footer |
+| `protocol.config.yaml` | `# Version:` comment, `version:`, `release_branch:`, `versioning.protocol_version`, `versioning.last_updated` |
+| `.protocol-state/project-state.json` | top-level `protocol_version`, `session_tracking.protocol_version`, `troubleshooting.metadata.protocol_version` |
+| `protocol/sukuna.agent.md` | CORE FILE header, `protocol_version:`, `updated:`, Protocol Version ref, Agent Protocol File h2, **Version** |
+| `protocol/gojo.agent.md` | CORE FILE header, `protocol_version:`, `updated:`, Agent Protocol File h2, **Version**, schema example `protocol_version`, section title `(FEAT-GUARD-001, v9.4.1)` → `v9.4.1+` |
+| `protocol/yuuji.agent.md` | CORE FILE header, `protocol_version:`, `updated:`, Agent Protocol File h2, **Version** |
+| `protocol/megumi.agent.md` | CORE FILE header, `protocol_version:`, `updated:`, Agent Protocol File h2, **Version** |
+| `protocol/nobara.agent.md` | CORE FILE header, `protocol_version:`, `updated:`, Agent Protocol File h2, **Version** |
+| `protocol/todo.agent.md` | CORE FILE header, `protocol_version:`, `updated:`, Agent Protocol File h2, **Version** |
+| `protocol/maki.agent.md` | CORE FILE header, `protocol_version:`, `updated:`, Agent Protocol File h2, **Version** |
+| `protocol/panda.agent.md` | CORE FILE header, `protocol_version:`, `updated:`, Agent Protocol File h2, **Version** |
+| `protocol/inumaki.agent.md` | CORE FILE header, `protocol_version:`, `updated:`, Agent Protocol File h2, **Version** |
+| `protocol/toji.agent.md` | CORE FILE header, `protocol_version:`, `updated:` |
+| `docs/guides/DISTRO_RELEASE_WORKFLOW.md` | CORE FILE header only |
+| `scripts/git-hooks/pre-commit` | header comment `(FEAT-GUARD-001, v9.4.1)` → `v9.5.0` |
+| `scripts/git-hooks/pre-commit.ps1` | header comment `(FEAT-GUARD-001, v9.4.1)` → `v9.5.0` |
+| `scripts/install-git-hooks.sh` | header comment `(FEAT-GUARD-001, v9.4.1)` → `v9.5.0` |
+| `scripts/install-git-hooks.ps1` | header comment `(FEAT-GUARD-001, v9.4.1)` → `v9.5.0` |
+| `protocol/SUKUNA-REPORT.md` | CORE FILE header, **Version**, Last Updated |
+| `scripts/distro/publish-manifest.yaml` | WI-26: added `cortex_trigger.py` entry to brain section |
+
+### Files preserved as HISTORICAL (not bumped)
+
+| File | Reason |
+|------|--------|
+| `VERSION.md` changelog entries | Historical — v9.4.1 entry preserved; v9.5.0 entry ADDED |
+| `CLAUDE.md` / `protocol/CLAUDE.md` version-history blocks | Historical entries preserved; v9.5.0 entry ADDED |
+| `protocol/SUKUNA-REPORT.md` patch history bodies | Append-only; past patch records untouched |
+| `docs/superpowers/plans/2026-06-16-*.md` | INTERNAL plan documents — frozen historical |
+| `.protocol-state/dev-notes.md` | Append-only protected doc — not touched |
+| `.protocol-state/security-review.md` | Append-only protected doc — not touched |
+| `.protocol-state/backups/**` | Backup snapshots — historical |
+| `distro/**` | Distro worktree — rebuilt at publish time by dzp-publish |
+| `.protocol-state/brain/brain.config.yaml` | `FEAT-CORTEX-EXCL-001 (v9.4.1)` = feature-introduction annotation, not current-version stamp |
+| `.protocol-state/brain/cortex/ingest.py` | Same — feature-introduction annotation |
+| `.protocol-state/brain/cortex/config.py` | Same — feature-introduction annotation |
+| `tests/brain/test_exclude_exceptions.py` | `v9.4.1 / yuuji impl` = implementation-version annotation |
+| `docs/guides/DISTRO_RELEASE_WORKFLOW.md` line 163 | `PR #99 (DZP-v9.4.1)` = historical worked example |
+| `scripts/distro/publish-manifest.yaml` comment | `# FEAT-GUARD-001 (v9.4.1)` = feature-introduction comment |
+| `.claude/settings.json` | Settings file — checked, internal tool config |
+| `.dzp-domain/domain.record.md` | Append-only protected doc; historical entries |
+
+### WI-26 — distro manifest completeness
+
+`scripts/distro/publish-manifest.yaml`: added `.protocol-state/brain/cortex_trigger.py` to the
+`include_state` brain section with a WI-26 comment. Manifest test added in
+`tests/test_distro_manifest.py`.
+
+### Verification
+
+- `assert_version.py --root .` → exit 0 (see report below)
+- Active-stamp scan: zero `9.4.1` hits outside allowlisted historical locations
+- Full test suite: 775 passed / 1 skipped / 0 failed (baseline 774 + 1 new manifest test)
+
+**Risk Assessment (Sukuna adversarial)**:
+- No code changes — purely a version cascade + manifest entry + test. Risk: MINIMAL.
+- distro/ worktree is NOT bumped here — it is rebuilt clean at dzp-publish time. Confirmed intended.
+- `.claude/settings.json` hit: examined — contains no active version stamp; the 9.4.1 occurrence
+  is an internal tool config value, not a DZP protocol stamp. Preserved.
+- `docs/guides/DISTRO_RELEASE_WORKFLOW.md` line 163 `DZP-v9.4.1` historical PR reference:
+  preserving is correct — this is a worked example of a past release, bumping would be misleading.
+
+---
+
+## CASCADE-V960-001 — v9.5.0 → v9.6.0 Version Cascade
+
+**Type**: Version cascade (release-prep stamp bump)
+**Date**: 2026-06-17
+**Authority**: USER-directed via /sukuna, Gojo-invoked (Stage 2 Graph Structured Recall release-prep)
+**Branch**: Main-v9.6.0
+**Implementation sealed**: Phases 1–3 Megumi Tier-3 @approved; 1005 tests pass / 2 skipped / 0 failed.
+
+### Files bumped (ACTIVE stamps: 9.5.0 → 9.6.0)
+
+| File | Stamps changed |
+|------|----------------|
+| `VERSION.md` | CORE FILE header, **Version**, release type; + v9.6.0 entry added at top |
+| `CLAUDE.md` (root) | CORE FILE header, title h1, **Version**, Last Updated, Major Enhancements, canonical version ref, VERSION INFORMATION block |
+| `protocol/CLAUDE.md` (mirror) | Same set as root CLAUDE.md |
+| `AI_INSTRUCTIONS.md` | CORE FILE header, **Version**/Last Updated, canonical Version, footer |
+| `README.md` | CORE FILE header, **Version**/Last Updated, footer |
+| `protocol.config.yaml` | `# Version:` comment, `version:`, `release_branch:` → DZP-v9.6.0, `versioning.protocol_version` |
+| `.protocol-state/project-state.json` | top-level `protocol_version`, `session_tracking.protocol_version`, `troubleshooting.metadata.protocol_version` |
+| `protocol/sukuna.agent.md` | CORE FILE header, `protocol_version:`, Protocol Version ref, Agent Protocol File h2, **Version** |
+| `protocol/gojo.agent.md` | CORE FILE header, `protocol_version:`, Agent Protocol File h2, **Version**, schema example `protocol_version` |
+| `protocol/yuuji.agent.md` | CORE FILE header, `protocol_version:`, Agent Protocol File h2, **Version** |
+| `protocol/megumi.agent.md` | CORE FILE header, `protocol_version:`, Agent Protocol File h2, **Version** |
+| `protocol/nobara.agent.md` | CORE FILE header, `protocol_version:`, Agent Protocol File h2, **Version** |
+| `protocol/todo.agent.md` | CORE FILE header, `protocol_version:`, Agent Protocol File h2, **Version** |
+| `protocol/maki.agent.md` | CORE FILE header, `protocol_version:`, Agent Protocol File h2, **Version** |
+| `protocol/panda.agent.md` | CORE FILE header, `protocol_version:`, Agent Protocol File h2, **Version** |
+| `protocol/inumaki.agent.md` | CORE FILE header, `protocol_version:`, Agent Protocol File h2, **Version** |
+| `protocol/toji.agent.md` | CORE FILE header, `protocol_version:` |
+| `docs/guides/DISTRO_RELEASE_WORKFLOW.md` | CORE FILE header only |
+| `scripts/git-hooks/pre-commit.ps1` | header comment `(FEAT-GUARD-001, v9.5.0)` → `v9.6.0` |
+| `scripts/install-git-hooks.sh` | header comment `(FEAT-GUARD-001, v9.5.0)` → `v9.6.0` |
+| `scripts/install-git-hooks.ps1` | header comment `(FEAT-GUARD-001, v9.5.0)` → `v9.6.0` |
+| `protocol/SUKUNA-REPORT.md` | CORE FILE header, **Version**; CASCADE-V960-001 entry APPENDED |
+
+### Files preserved as HISTORICAL (not bumped)
+
+| File | Reason |
+|------|--------|
+| `VERSION.md` changelog entries | Historical — v9.5.0 entry preserved; v9.6.0 entry ADDED |
+| `CLAUDE.md` / `protocol/CLAUDE.md` version-history blocks | Historical entries preserved; v9.6.0 entry ADDED |
+| `protocol/SUKUNA-REPORT.md` patch history bodies | Append-only; past patch records untouched |
+| `docs/superpowers/plans/2026-06-16-*.md` | INTERNAL plan documents — frozen historical |
+| `.protocol-state/dev-notes.md` | Append-only protected doc — not touched |
+| `.protocol-state/security-review.md` | Append-only protected doc — not touched |
+| `.dzp-domain/domain.record.md` | Append-only protected doc — not touched |
+| `.protocol-state/backups/**` | Backup archives — frozen historical snapshots |
+| `.protocol-state/brain/cortex_trigger.py` | `_VERSION = "9.5.0"` is runtime version string; `# RESERVE AMENDMENT D — always null in v9.5.0` and `--recall` help text are feature-introduction contract labels |
+| `.protocol-state/brain/cortex/ingest.py` | `# C2 (v9.5.0, ...)` is a feature-introduction code comment |
+| `.protocol-state/brain/brain.config.yaml` | `# C2 (v9.5.0, ...)` is a feature-introduction comment |
+| `.protocol-state/session_monitor.py` | `# DEPRECATED in v9.5.0` comments are feature-introduction labels |
+| `protocol/skills/session.md` | `# v9.5.0+ ...` and `**(v9.5.0 / WI-29)**` are feature-introduction labels |
+| `protocol/skills/ts.md` | `(v9.5.0 / WI-29, ...)` is a feature-introduction label |
+| `scripts/distro/publish-manifest.yaml` | `# WI-26 (v9.5.0):` is a feature-introduction label |
+| `scripts/validate-custom-agents.py` | `# DUAL-SCAN ARCHITECTURE (SEC-P4-002, v9.5.0)` is a feature-introduction label |
+| `.claude/commands/*.md` | `# v9.5.0+ routes through coordinator` are feature-description comments |
+| `.claude/settings.json` | Brain query string referencing v9.5.0 — operational tool config, not a DZP stamp |
+| `tests/**` | Tests asserting v9.5.0 contract behavior — must not be modified |
+| `.protocol-state/brain/cortex/extractor.py` | Version regex pattern used for entity extraction — not a version stamp |
+
+### Changelog entry added
+
+v9.6.0 - **MINOR**: Stage 2 Graph Structured Recall (PLAN-CORTEX-GRAPH-001). Schema v3
+(cortex_entities/edges/query_cache/bm25 FTS5) + cortex/graph.py (typed entity/edge graph, go/no-go
+pack, query-time dual-filter trust) + migrate_cortex_graph_9_6.py (v2->v3, backup-first,
+cortex_installs ledger gate) + brain entity/gnogo/release-check [Phase 1]. Hybrid retrieval
+cortex/retrieval.py (BM25+dense, TRUE RRF, recency/trust re-rank, index_epoch query cache) +
+Store.hybrid_search + brain query --hybrid/brain cache [Phase 2]. Proactive surfacing:
+cortex_trigger.py --recall (DATA-not-instructions boundary, trusted,semi floor, [SUSPECT], stdout
+secret redaction) + cortex/extractor.py (SEC-ID/WI/Version/Decision entity extraction,
+schema-gated) + brain distill (propose-only)/seed/recall + advisory wiring to pre-protected-edit/
+pre-release/session-end [Phase 3]. SEC-GRAPH-001..005 P1 folded; SEC-GRAPH-NEW-001..004 +
+SEC-HYBRID-001..004 + SEC-GRAPH-009 + SEC-UNIFIED-003 closed. Yuuji TDD + Megumi Tier-3 @approved
+every phase. 1005 tests pass. Distro manifest + 4 new modules.
+
+**Risk Assessment (Sukuna adversarial)**:
+- No code changes — purely a version cascade. Risk: MINIMAL.
+- distro/ worktree is NOT bumped here — rebuilt clean at dzp-publish time. Confirmed intended.
+- `scripts/git-hooks/pre-commit` (bash, no extension): not present as a separate active file in this
+  repo — the PS1 equivalent and the .sh installer cover the hook distribution. Confirmed no miss.
+- `.protocol-state/brain/cortex_trigger.py` `_VERSION = "9.5.0"` preserved intentionally: this is
+  a runtime version string that identifies which version of the trigger module is installed in this
+  brain directory. It is not a protocol version stamp and should only be bumped when the trigger
+  module itself is patched in v9.6.0 work items.
+- Tests asserting `"DEPRECATED in v9.5.0"` string literals and `"9.5.0"` protocol_version values
+  in fixtures are preserved — they verify v9.5.0 contract behavior and are not active stamps.
+
+---
+
+## CASCADE-V970-001 — v9.6.0 -> v9.7.0 Version Cascade
+
+**Date**: 2026-06-18
+**Operator**: Sukuna (Gojo-authorized, USER-authorized)
+**Branch**: Main-v9.7.0
+
+### Files bumped (ACTIVE stamps: 9.6.0 -> 9.7.0)
+
+| File | Changes |
+|------|---------|
+| `CLAUDE.md` | CORE FILE header, `# JUJUTSU KAISEN AI PROTOCOL SYSTEM` title, **Version**, **Last Updated**, **Major Enhancements** (v9.7.0 entry prepended), **Current Local Protocol Version**, version-info block (Current Version, Protocol Version, Release Date, Last Updated), **Recent Version History** (v9.7.0 entry added at top) |
+| `protocol/CLAUDE.md` | Mirror: same stamps as root CLAUDE.md |
+| `VERSION.md` | CORE FILE header, **Version**, **Release Date**, **Release Type**; new v9.7.0 Release Summary block inserted above v9.6.0 Previous Release section |
+| `protocol.config.yaml` | `# Version:` comment, `version:`, `release_branch:` → DZP-v9.7.0, `versioning.protocol_version`, `versioning.last_updated` |
+| `AI_INSTRUCTIONS.md` | CORE FILE header, **Version**, **Last Updated**, footer version line |
+| `README.md` | CORE FILE header, **Version**, **Last Updated**, footer version line |
+| `.protocol-state/project-state.json` | `"protocol_version"` (3 occurrences: top-level, session_tracking, agent_invocation_tracking metadata) |
+| All 10 `protocol/*.agent.md` | CORE FILE header, `protocol_version:` frontmatter, `## Agent Protocol File vX.Y.Z`, `**Version**`, `updated:` date |
+| `protocol/sukuna.agent.md` | Also: `> **Protocol Version**: v9.7.0` |
+| `protocol/gojo.agent.md` | Also: `"protocol_version": "9.7.0"` JSON schema snippet |
+| `protocol/SUKUNA-REPORT.md` | CORE FILE header, **Version**, **Last Updated** |
+| `scripts/git-hooks/pre-commit.ps1` | Header comment `(FEAT-GUARD-001, v9.6.0)` → `v9.7.0` |
+| `scripts/install-git-hooks.sh` | Header comment `(FEAT-GUARD-001, v9.6.0)` → `v9.7.0` |
+| `scripts/install-git-hooks.ps1` | Header comment `(FEAT-GUARD-001, v9.6.0)` → `v9.7.0` |
+| `docs/guides/DISTRO_RELEASE_WORKFLOW.md` | CORE FILE header |
+| `.protocol-state/brain/cortex_trigger.py` | **TRAP-CATCH**: `_VERSION = "9.6.0"` → `"9.7.0"` (runtime --help self-version string) |
+
+### New files (Stage 3 additions)
+
+| File | Changes |
+|------|---------|
+| `.protocol-state/migrate_cortex_elastic_9_7.py` | NEW: v3->v4 storage elasticity migration script (backup-first, cortex_installs ledger gate, S3-RISK-001 ack gate) |
+| `scripts/distro/publish-manifest.yaml` | New entry: `.protocol-state/migrate_cortex_elastic_9_7.py # IMPL-v9.7.0` |
+| `tests/test_coordinator_registry.py` | New test `test_manifest_includes_v97_modules` asserting migrate_cortex_elastic_9_7.py in manifest + on disk |
+
+### HISTORICAL stamps (preserved, not bumped)
+
+| Location | Reason |
+|----------|--------|
+| `.dzp-domain/domain.record.md` | Append-only protected doc — v9.6.0 work history is permanent record |
+| `.protocol-state/dev-notes.md` | Append-only protected doc |
+| `.protocol-state/security-review.md` | Append-only protected doc |
+| `.protocol-state/archive/`, `backups/` | Frozen snapshots |
+| `.protocol-state/brain/brain.py` WI comments | Feature-introduction labels ("WI-x, v9.6.0") — contract assertions |
+| `.protocol-state/brain/cortex/*.py` module comments | Feature-origin labels — contract assertions |
+| `.protocol-state/brain/cortex_trigger.py` docstring "CLI contract (v9.6.0)" | Historical feature label; only `_VERSION` is a runtime self-version |
+| `.protocol-state/migrate_cortex_graph_9_6.py` | Migration script name + content is frozen (v2->v3 migration) |
+| `.protocol-state/script_dependencies.yaml` WI comments | Feature-introduction labels |
+| `.protocol-state/session_monitor.py` "Remove in v9.6.0" | Deprecation annotation from v9.5.0 era |
+| `tests/**` | Test contracts asserting v9.6.0 behaviors — must not be modified |
+| `docs/superpowers/plans/` | Plan documents — frozen historical artifacts |
+| `scripts/distro/publish-manifest.yaml` IMPL labels | Historical feature-introduction comments (e.g., `# IMPL-v9.6.0`) |
+
+### Changelog entry added
+
+v9.7.0 - **MINOR**: Stage 3 Storage Elasticity (PLAN-CORTEX-UNIFIED-001 Stage 3, absorbed
+PLAN-CORTEX-ELASTIC-001). Schema v4 (last_recalled_at nullable on content_refs; v4 dispatch,
+v1/v2/v3 run in-mode) + migrate_cortex_elastic_9_7.py (v3->v4, backup-first, cortex_installs
+ledger gate). Per-install storage_budget_mb + Store._evict_to_budget (strict priority
+archives->untrusted->semi->LRU; NEVER evict protected/trusted/live, SQL-guarded; S3-RISK-001/002)
++ ingest post-run eviction (fail-soft) + LRU opt-in privacy (S3-RISK-004) [Phase 1]. store.compact()
+(content-addressed orphan-sweep + VACUUM; SEC-UNIFIED-004 OperationalError fail-soft; S3-RISK-003
+index.lock abort) + brain compact + brain status --json storage object + cortex_trigger RESERVE-D
+storage advisory (ALWAYS advisory, never fail-closed even --strict) + cortex-compact event [Phase 2].
+Lever 5 group-budget deferred. SEC-ELAST-001 (include_protected SQL guard) + SEC-UNIFIED-004 closed.
+Test-isolation fix: conftest neutralizes ambient DZP_CORTEX_DATA_DIR/INSTALL_GROUP (root-caused the
+rhs-shared live-brain mutation). Deferred to follow-on: SEC-ELAST-002 (P3) + PLAN-CORTEX-ACCESS-001
+(write-authorization) + SEC-CORTEX-ACCESS-007 encryption-at-rest. Yuuji TDD + Megumi Tier-3 @approved
+each phase. 1080 tests pass.
+
+**Risk Assessment (Sukuna adversarial)**:
+- No code changes — purely a version cascade + distro manifest + stub migration script. Risk: MINIMAL.
+- `cortex_trigger.py` `_VERSION = "9.6.0"` → `"9.7.0"` — TRAP-CATCH correctly applied.
+  This is the only `_VERSION`/`VERSION =` self-version in the brain modules (grep verified).
+- `migrate_cortex_elastic_9_7.py` is a new stub/full migration script. It does not modify any
+  existing file. Test `test_manifest_includes_v97_modules` asserts its presence in manifest + disk.
+- `distro/` worktree is NOT bumped here — rebuilt clean at dzp-publish time. Confirmed intended.
+- Tests asserting v9.6.0 contract behaviors (SEC-GRAPH-NEW-001 error messages, schema v3 assertions,
+  WI comments) are preserved. These are contract assertions, not active version stamps.
+- Protected documents (dev-notes, security-review, domain.record) untouched — append-only invariant
+  respected. The pre-commit guard will pass.
+
+---
+
+## CASCADE-V971-001 — v9.7.0 -> v9.7.1 Version Cascade
+
+**Date**: 2026-06-18
+**Operator**: Sukuna (Gojo-authorized, USER-authorized)
+**Branch**: Main-v9.7.1
+
+### Files bumped (ACTIVE stamps: 9.7.0 -> 9.7.1)
+
+| File | Changes |
+|------|---------|
+| `CLAUDE.md` | CORE FILE header, `# JUJUTSU KAISEN AI PROTOCOL SYSTEM` title, **Version**, **Major Enhancements** (v9.7.1 entry prepended), **Current Local Protocol Version**, version-info block (Current Version, Protocol Version), **Recent Version History** (v9.7.1 entry added at top) |
+| `protocol/CLAUDE.md` | Mirror: same stamps as root CLAUDE.md |
+| `VERSION.md` | CORE FILE header, **Version**, **Release Type**; new v9.7.1 Release Summary block inserted above v9.7.0 Previous Release section |
+| `protocol.config.yaml` | `# Version:` comment, `version:`, `release_branch:` -> DZP-v9.7.1, `versioning.protocol_version` |
+| `AI_INSTRUCTIONS.md` | CORE FILE header, **Version**, footer version line |
+| `README.md` | CORE FILE header, **Version**, footer version line |
+| `protocol/SUKUNA-REPORT.md` | CORE FILE header, **Version** |
+| `.protocol-state/project-state.json` | `"protocol_version"` (3 occurrences: top-level, session_tracking, troubleshooting.history.metadata) |
+| All 10 `protocol/*.agent.md` | CORE FILE header, `protocol_version:` frontmatter, `## Agent Protocol File vX.Y.Z`, `**Version**` |
+| `protocol/sukuna.agent.md` | Also: `> **Protocol Version**: v9.7.1` |
+| `protocol/gojo.agent.md` | Also: `"protocol_version": "9.7.1"` JSON schema snippet |
+| `docs/guides/DISTRO_RELEASE_WORKFLOW.md` | CORE FILE header |
+| `scripts/git-hooks/pre-commit.ps1` | Header comment `(FEAT-GUARD-001, v9.7.0)` -> `v9.7.1` |
+| `scripts/install-git-hooks.sh` | Header comment `(FEAT-GUARD-001, v9.7.0)` -> `v9.7.1` |
+| `scripts/install-git-hooks.ps1` | Header comment `(FEAT-GUARD-001, v9.7.0)` -> `v9.7.1` |
+| `.protocol-state/brain/cortex_trigger.py` | **TRAP-CATCH**: `_VERSION = "9.7.0"` -> `"9.7.1"` (runtime --help self-version string) |
+
+### New files
+
+None. v9.7.1 is a STAMP/DOC cascade only — no new shipped modules. All changes (SEC-CORTEX-ACCESS-008..010, SEC-ELAST-002, SEC-ACCESS-008-NEW-001) are inside already-shipped engine files (store.py, brain.py, config.py, cortex_trigger.py). New files are TESTS only (not shipped in distro).
+
+### Distro manifest
+
+No changes to `scripts/distro/publish-manifest.yaml`. All affected engine files were already in the manifest. No new entries required.
+
+### HISTORICAL stamps (preserved, not bumped)
+
+| Location | Reason |
+|----------|--------|
+| `.protocol-state/dev-notes.md` | Append-only protected doc |
+| `.protocol-state/security-review.md` | Append-only protected doc |
+| `.dzp-domain/domain.record.md` | Append-only protected doc |
+| `.protocol-state/brain/brain.py` WI-S3 comments | Feature-introduction labels ("WI-x, v9.7.0") — contract assertions |
+| `.protocol-state/brain/cortex/*.py` module comments | Feature-origin labels — contract assertions |
+| `.protocol-state/brain/migrate_cortex_elastic_9_7.py` | Migration script name + content is frozen (v3->v4 migration, v9.7.0 gate) |
+| `.protocol-state/script_dependencies.yaml` WI comments | Feature-introduction labels |
+| `tests/**` | Test contracts asserting v9.7.0 behaviors — must not be modified |
+| `docs/superpowers/plans/` | Plan documents — frozen historical artifacts |
+| `scripts/distro/publish-manifest.yaml` IMPL labels | Historical feature-introduction comments (e.g., `# IMPL-v9.7.0`) |
+
+### Changelog entry added
+
+v9.7.1 - **PATCH**: PLAN-CORTEX-ACCESS-001 Cortex Access Hardening (CIA-triad). Phase 1 (destruction
+safety): SEC-CORTEX-ACCESS-008 (P0 anti-destruction guard on shared brain — cortex_installs
+role/first_seen ledger, `brain reset --scope self|all` + `--shared-ok`/`--all-installs-acknowledged`/
+`--force-foreign` gate, foreign-install refusal, `_store()` proactive ledger stamping,
+`DZP_CORTEX_INSTALL_ID` validation) + SEC-ELAST-002 (P3 LIKE-wildcard escape in
+`_protected_sql_clause`). Phase 2 (resilience): SEC-CORTEX-ACCESS-009 (P1 pre-op brain.db backup to
+`<data_dir>/backups/` + retention + `PRAGMA integrity_check`/`foreign_key_check` +
+`integrity-fail.flag` + `brain restore --from --verify`) + SEC-CORTEX-ACCESS-010 (P1 graceful
+degradation: `brain status` availability_status ok/degraded/unavailable +
+`DZP_CORTEX_SKIP_RELEASE_GATE` release-gate escape + SchemaTooNew/Mismatch exit 0) +
+SEC-ACCESS-008-NEW-001 (P3 read-op ledger stamp fail-soft on locked DB). New config key
+`backup_retention_count` (default 3). Yuuji TDD + Megumi Tier-3 @approved every phase. 1140 tests
+pass. CIA-triad design (ACCESS-008..013) recorded; ACCESS-004/005/006 + 007/011 encryption +
+012/013 deferred to v9.8.x.
+
+**Risk Assessment (Sukuna adversarial)**:
+- No engine logic changes — purely a version cascade + changelog. Risk: MINIMAL.
+- `cortex_trigger.py` `_VERSION = "9.7.0"` -> `"9.7.1"` — TRAP-CATCH correctly applied.
+- Distro manifest unchanged — no new shipped modules in v9.7.1.
+- Protected documents (dev-notes, security-review, domain.record) untouched — append-only invariant
+  respected. The pre-commit guard will pass.
+- Tests asserting v9.7.0 contract behaviors (WI-S3 comments, schema v4 assertions, migration gate
+  checks) are preserved. These are contract assertions, not active version stamps.
+
+---
+
+## CASCADE-V972-001 — v9.7.1 -> v9.7.2 Version Cascade
+
+**Date**: 2026-06-18
+**Operator**: Sukuna (Gojo-authorized, USER-authorized)
+**Branch**: Main-v9.7.2
+
+### Context
+
+v9.7.2 fixes two HIGH-severity defects (SEC-CORTEX-MEM-001, BUG-CORTEX-MIGRATE-001) that shipped
+silently in the public distribution from v9.4.0 through v9.7.0. Both were Yuuji TDD + Megumi
+Tier-3 @approved this session, verified on the live DZ brain (v1->v4 migration, 21/21 memories
+preserved). 861 tests pass.
+
+### Files bumped (ACTIVE stamps: 9.7.1 -> 9.7.2)
+
+| File | Changes |
+|------|---------|
+| `CLAUDE.md` | CORE FILE header, `# JUJUTSU KAISEN AI PROTOCOL SYSTEM` title, **Version**, **Major Enhancements** (v9.7.2 entry prepended), **Current Local Protocol Version**, version-info block (Current Version, Protocol Version), **Recent Version History** (v9.7.2 entry added at top) |
+| `protocol/CLAUDE.md` | Mirror: same stamps as root CLAUDE.md |
+| `VERSION.md` | CORE FILE header, **Version**, **Release Type**; new v9.7.2 Release Summary block inserted above v9.7.1 Previous Release section |
+| `protocol.config.yaml` | `# Version:` comment, `version:`, `release_branch:` -> DZP-v9.7.2, `versioning.protocol_version` |
+| `AI_INSTRUCTIONS.md` | CORE FILE header, **Version**, internal version refs (line 1809 + line 1838) |
+| `README.md` | CORE FILE header, **Version** |
+| `protocol/SUKUNA-REPORT.md` | CORE FILE header, **Version**, new CASCADE-V972-001 entry (this entry) |
+| `.protocol-state/project-state.json` | `"protocol_version"` (3 occurrences: top-level, session_tracking, troubleshooting.history.metadata) |
+| All 10 `protocol/*.agent.md` | CORE FILE header, `protocol_version:` frontmatter, `## Agent Protocol File vX.Y.Z`, `**Version**` |
+| `protocol/sukuna.agent.md` | Also: `> **Protocol Version**: v9.7.2` |
+| `protocol/gojo.agent.md` | Also: `"protocol_version": "9.7.2"` JSON schema snippet |
+| `docs/guides/DISTRO_RELEASE_WORKFLOW.md` | CORE FILE header |
+| `scripts/git-hooks/pre-commit.ps1` | Header comment `(FEAT-GUARD-001, v9.7.1)` -> `v9.7.2` |
+| `scripts/install-git-hooks.sh` | Header comment `(FEAT-GUARD-001, v9.7.1)` -> `v9.7.2` |
+| `scripts/install-git-hooks.ps1` | Header comment `(FEAT-GUARD-001, v9.7.1)` -> `v9.7.2` |
+| `.protocol-state/brain/cortex_trigger.py` | **TRAP-CATCH**: `_VERSION = "9.7.1"` -> `"9.7.2"` (runtime --help self-version string) |
+
+### Fix files (committed separately in fix commit ed8657f)
+
+| File | Change |
+|------|--------|
+| `.protocol-state/brain/cortex/memory.py` | SEC-CORTEX-MEM-001: `source_path=f"memory:{mem_id}"` |
+| `.protocol-state/brain/brain.py` | SEC-CORTEX-MEM-001: `_seed()` unique line_start + truthful counter |
+| `.protocol-state/migrate_cortex_storage_9_4.py` | BUG-CORTEX-MIGRATE-001: MV-1..8 real-vec support + MEM-001 parity |
+| `tests/brain/test_migration_9_4.py` | Updated test coverage for MEM-001 parity fix |
+| `tests/brain/test_sec_cortex_mem_001.py` | New: SEC-CORTEX-MEM-001 TDD suite |
+| `tests/brain/test_migrate_real_vec.py` | New: BUG-CORTEX-MIGRATE-001 integration test |
+| `.protocol-state/dev-notes.md` | Yuuji implementation notes (append-only) |
+| `.protocol-state/security-review.md` | Megumi Tier-3 review (append-only) |
+| `docs/superpowers/plans/2026-06-18-sec-cortex-mem-001-memory-keying-fix.md` | Design record (Parts 1-3) |
+
+### HISTORICAL stamps (preserved, not bumped)
+
+| Location | Reason |
+|----------|--------|
+| `.protocol-state/dev-notes.md` | Append-only protected doc |
+| `.protocol-state/security-review.md` | Append-only protected doc |
+| `.dzp-domain/domain.record.md` | Append-only protected doc |
+| `.protocol-state/brain/brain.py` SEC-ID comments | Feature-introduction labels ("SEC-CORTEX-ACCESS-008, v9.7.1") — contract assertions |
+| `.protocol-state/brain/cortex/*.py` module comments | Feature-origin labels — contract assertions |
+| `.protocol-state/brain/migrate_cortex_elastic_9_7.py` | Migration script name + content is frozen (v3->v4 migration, v9.7.0 gate) |
+| `.protocol-state/backups/` | Backup artifacts — never modified |
+| `tests/**` | Test contracts asserting prior version behaviors — must not be modified |
+| `docs/superpowers/plans/` | Plan documents — frozen historical artifacts (plan doc references v9.7.1 discovery context deliberately) |
+
+### Changelog entry added
+
+v9.7.2 - **PATCH**: SEC-CORTEX-MEM-001 (HIGH/P1) Cortex memory-keying silent data loss (live overwrite
++ brain-seed loss + v1->v2 migration block; shipped silently in public v9.4.0-v9.7.0). Fix: `memory.py`
+`source_path=f"memory:{mem_id}"`; migration `_effective_storage_key` on insert loop + P2/P3/P4 parity;
+`brain.py:_seed()` unique line_start + truthful counter. BUG-CORTEX-MIGRATE-001 (HIGH) migrate_cortex_
+storage_9_4.py was stub-only; couldn't migrate a real sqlite_vec/vec0 brain (also shipped silently
+v9.4.0-v9.7.0). Fix (MV-1..8): `_open_db_vec` loads sqlite_vec; real vec0 `content_vectors` DDL;
+direct byte-exact blob copy; dim/model from blob+config. Accepted P3: SEC-CORTEX-MEM-002 +
+SEC-MIGRATE-RV-001. Live brain v1->v4 migration validated (21/21 memories preserved, recall confirmed
+OK). 861 tests pass. Yuuji TDD + Megumi Tier-3 @approved.
+
+**Risk Assessment (Sukuna adversarial)**:
+- Fix commit targets 3 Python files + 3 test files + 2 append-only docs + 1 plan doc. Risk: MEDIUM (memory keying is data-path logic).
+- Megumi Tier-3 review @approved — no open P0/P1/P2. Accepted P3s documented.
+- Version cascade is stamp-only — no logic changes. Risk: MINIMAL.
+- TRAP-CATCH: `cortex_trigger.py` `_VERSION = "9.7.1"` -> `"9.7.2"` correctly applied.
+- Protected documents (dev-notes, security-review, domain.record) append-only invariant respected; pre-commit guard passed without bypass.
+- Tests: 861 passed / 2 skipped / 0 failed. No regressions.
+- Distro manifest unchanged — no new shipped modules in v9.7.2 beyond already-shipped files.
+- Public advisory warranted: users of brain remember / brain seed / migration on v9.4.0-v9.7.0 should re-run brain seed + brain index after upgrading.
+

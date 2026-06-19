@@ -1,9 +1,158 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.4.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v9.4.1
-**Release Date:** 2026-06-16
-**Release Type:** PATCH Release (Protected-Document Append-Only Enforcement — FEAT-GUARD-001)
+**Version:** v9.7.2
+**Release Date:** 2026-06-18
+**Release Type:** PATCH Release (SEC-CORTEX-MEM-001 memory-keying data loss + BUG-CORTEX-MIGRATE-001 real-vec migration)
+
+---
+
+## Release Summary — v9.7.2 (PATCH)
+
+v9.7.2 closes two HIGH-severity defects that shipped silently in the public distribution from v9.4.0 through v9.7.0.
+
+- **SEC-CORTEX-MEM-001 (HIGH/P1)** — Cortex memory-keying silent data loss: memories written via
+  `brain remember` shared a generic `source_path`, causing live overwrites (each new memory silently
+  replaced the previous one), `brain seed` loss (seed entries overwrote live memories), and v1→v2
+  migration blocks (duplicate-key constraint failures). Fix: `memory.py` keys on
+  `source_path=f"memory:{mem_id}"`; `migrate_cortex_storage_9_4.py` `_effective_storage_key` applied
+  on insert loop with P2/P3/P4 parity; `brain.py:_seed()` unique `line_start` + truthful counter.
+  Accepted P3: SEC-CORTEX-MEM-002 (theoretical key-collision edge case, advisory documented).
+- **BUG-CORTEX-MIGRATE-001 (HIGH)** — `migrate_cortex_storage_9_4.py` was stub-only: no `sqlite_vec`
+  extension load, no vec0 DDL, no vector blob copy, no dim/model resolution. Any user who attempted
+  v1→v4 migration on a real brain would silently get an empty vector table. Fix (MV-1..8):
+  `_open_db_vec` loads `sqlite_vec`; real `vec0 content_vectors` DDL with correct dim; direct
+  byte-exact blob copy from source `vec0`; dim + model resolved from blob + config fallback.
+  Accepted P3: SEC-MIGRATE-RV-001 (dim-mismatch detection advisory).
+- **Note**: Both defects shipped silently in the public canonical from v9.4.0 through v9.7.0.
+  All users of shared-brain or multi-install Cortex who relied on `brain remember` should re-run
+  `brain seed` + `brain index` after upgrading.
+- **Live brain validation**: DZ's own brain migrated v1→v4; 21/21 memories preserved; recall confirmed OK.
+- **Tests**: 861 passed / 2 skipped / 0 failed.
+- **Authorization**: Yuuji TDD + Megumi Tier-3 @approved.
+
+---
+
+## Previous Release — v9.7.1 (PATCH)
+
+---
+
+## Release Summary — v9.7.1 (PATCH)
+
+v9.7.1 delivers PLAN-CORTEX-ACCESS-001 Cortex Access Hardening (CIA-triad).
+
+- **Phase 1 — Destruction safety** (SEC-CORTEX-ACCESS-008): anti-destruction guard on shared brain
+  — `cortex_installs` role/first_seen ledger; `brain reset --scope self|all` with
+  `--shared-ok`/`--all-installs-acknowledged`/`--force-foreign` gate; foreign-install refusal;
+  `_store()` proactive ledger stamping; `DZP_CORTEX_INSTALL_ID` validation. SEC-ELAST-002 (P3):
+  LIKE-wildcard escape in `_protected_sql_clause`.
+- **Phase 2 — Resilience** (SEC-CORTEX-ACCESS-009): pre-op `brain.db` backup to
+  `<data_dir>/backups/` + retention + `PRAGMA integrity_check`/`foreign_key_check` +
+  `integrity-fail.flag` + `brain restore --from --verify`. (SEC-CORTEX-ACCESS-010): graceful
+  degradation — `brain status` `availability_status` ok/degraded/unavailable +
+  `DZP_CORTEX_SKIP_RELEASE_GATE` release-gate escape + SchemaTooNew/Mismatch exit 0.
+  SEC-ACCESS-008-NEW-001 (P3): read-op ledger stamp fail-soft on locked DB.
+- **New config key**: `backup_retention_count` (default 3).
+- **Deferred**: ACCESS-004/005/006 + 007/011 encryption + 012/013 to v9.8.x. CIA-triad design
+  (ACCESS-008..013) recorded.
+- **Tests**: 1140 passed. Yuuji TDD + Megumi Tier-3 @approved every phase.
+
+---
+
+## Previous Release — v9.7.0 (MINOR)
+
+---
+
+## Release Summary — v9.7.0 (MINOR)
+
+v9.7.0 delivers Stage 3 Storage Elasticity (PLAN-CORTEX-UNIFIED-001 Stage 3, absorbed
+PLAN-CORTEX-ELASTIC-001): per-install storage budgets with principled eviction, the `store.compact()`
+orphan-sweep + VACUUM, and live storage reporting in `brain status --json` and
+`cortex_trigger --level` output.
+
+- **Schema v4** (Phase 1): `last_recalled_at` nullable column on `content_refs`; v4 schema dispatch
+  (v1/v2/v3 DBs still run in-mode); `migrate_cortex_elastic_9_7.py` (v3→v4, backup-first,
+  `cortex_installs` ledger gate).
+- **Eviction engine** (Phase 1): `Store._evict_to_budget` with strict priority order
+  (archives→untrusted→semi→LRU; NEVER evicts protected/trusted/live chunks; SQL-guarded);
+  per-install `storage_budget_mb` config; ingest post-run eviction (fail-soft); LRU opt-in
+  privacy flag `lru_eviction_enabled` (S3-RISK-004).
+- **Compact + advisory** (Phase 2): `store.compact()` content-addressed orphan-sweep + VACUUM
+  (`SEC-UNIFIED-004` `OperationalError` fail-soft; `S3-RISK-003` `index.lock` abort); `brain compact`
+  CLI; `brain status --json` gains `"storage"` object; `cortex_trigger` RESERVE-D field now
+  populated (ALWAYS advisory, never fail-closed even under `--strict`); `cortex-compact` lifecycle
+  event wired.
+- **Security**: `SEC-ELAST-001` (`include_protected` SQL guard) + `SEC-UNIFIED-004` closed.
+  Deferred: `SEC-ELAST-002` (P3) + `PLAN-CORTEX-ACCESS-001` (write-authorization) +
+  `SEC-CORTEX-ACCESS-007` (encryption-at-rest).
+- **Test isolation fix**: `conftest.py` neutralizes ambient `DZP_CORTEX_DATA_DIR`/`INSTALL_GROUP`
+  env vars (root-caused the rhs-shared live-brain mutation).
+- **Tests**: 1080 passed / 2 skipped / 0 failed.
+- **Review**: Yuuji TDD + Megumi Tier-3 @approved each phase. Lever 5 (group-budget) deferred.
+
+---
+
+## Previous Release — v9.6.0 (MINOR)
+
+---
+
+## Release Summary — v9.6.0 (MINOR)
+
+v9.6.0 delivers Stage 2 Graph Structured Recall (PLAN-CORTEX-GRAPH-001): a typed entity/edge graph
+layer (schema v3), hybrid BM25+dense retrieval with true RRF re-ranking, and proactive surfacing via
+`cortex_trigger.py --recall`.
+
+- **Schema v3** (Phase 1): `cortex_entities`/`edges`/`query_cache`/BM25 FTS5 tables +
+  `migrate_cortex_graph_9_6.py` (v2→v3, backup-first, `cortex_installs` ledger gate) +
+  `brain entity`/`gnogo`/`release-check` CLI commands; `graph.py` typed entity/edge graph with
+  go/no-go pack + query-time dual-filter trust.
+- **Hybrid retrieval** (Phase 2): `cortex/retrieval.py` (BM25+dense, TRUE RRF, recency/trust
+  re-rank, index_epoch query cache) + `Store.hybrid_search` + `brain query --hybrid` / `brain cache`.
+- **Proactive surfacing** (Phase 3): `cortex_trigger.py --recall` (DATA-not-instructions boundary,
+  trusted,semi floor, [SUSPECT] flag, stdout secret redaction) + `cortex/extractor.py`
+  (SEC-ID/WI/Version/Decision entity extraction, schema-gated) + `brain distill` (propose-only) /
+  `brain seed` / `brain recall` + advisory wiring to `pre-protected-edit`, `pre-release`,
+  `session-end`.
+- **Security**: SEC-GRAPH-001..005 P1 folded; SEC-GRAPH-NEW-001..004 + SEC-HYBRID-001..004 +
+  SEC-GRAPH-009 + SEC-UNIFIED-003 closed.
+- **Tests**: 1005 passed / 2 skipped / 0 failed.
+- **Review**: Yuuji TDD + Megumi Tier-3 @approved every phase. Distro manifest + 4 new modules.
+
+---
+
+## Previous Release — v9.5.0 (MINOR)
+
+---
+
+## Release Summary — v9.5.0 (MINOR)
+
+v9.5.0 delivers full Cortex Interconnectivity (Stage 1): a single shared `cortex_trigger.py` wrapper
+replaces all ad-hoc Cortex calls; `brain.py` gains a lazy Embedder + `--full` flag (Phase 3); the
+DZP event registry is rewired so all 10 lifecycle events route through the coordinator (Phase 4);
+and lifecycle skills (`.claude/commands/*.md`) are updated to invoke `dzp.py event <name>` directly
+(Phase 5b), closing the orphaned-event regression that caused `/session end` + `/session update` to
+silently skip Cortex after Phase 4.
+
+- **`cortex_trigger.py`** (Phase 2): shared wrapper used by every lifecycle event; eliminates the
+  pre-v9.5.0 pattern of each script importing Cortex independently.
+- **`brain.py` lazy Embedder + `--full`** (Phase 3): embedder initialised on first use only;
+  `--full` forces a complete rebuild, bypassing the incremental-only guard.
+- **Registry rewire + double-trigger removal** (Phase 4): `script_dependencies.yaml` updated to
+  route all 7 pre-existing events through `cortex_trigger.py`; direct `_sync_cortex_index` calls
+  in `session_monitor.py` removed to prevent double-fire.
+- **10 lifecycle events total** (7 rewired + 3 net-new: `pre-publish`, `post-migration`,
+  `post-rotation`). Coordinator is now the single Cortex entry point for all lifecycle paths.
+- **Lifecycle skill → coordinator routing** (Phase 5b): `.claude/commands/` skill files route
+  through `dzp.py event <name>` with PARITY CONSTRAINT (session-tracking, wellbeing-logging,
+  and project-doc-sync preserved; Cortex fires exactly once via coordinator). Closes
+  S1-RISK-012 (orphaned-event regression, HIGH).
+- **Security**: SEC-P4-001..004 + SEC-UNIFIED-001 closed.
+- **Tests**: 774 passed / 1 skipped / 0 failed (baseline raised from 745 at Stage-1 start).
+- **Review**: Yuuji TDD Phases 2–5b + Megumi Tier-3 @approved (Phases 4, 5, 5b).
+
+---
+
+## Previous Release — v9.4.1 (PATCH)
 
 ---
 

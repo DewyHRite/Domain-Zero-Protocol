@@ -37,7 +37,14 @@ Plan mode ensures:
 [If plan mode already active, proceed to Step 2]
 ```
 
-**Step 2: All-Agent Briefing**
+**Step 2: Pre-Work Coordinator Event**
+
+Fire `ts-start` coordinator event (Cortex low trigger + session status + dependency scan):
+```bash
+python dzp.py event ts-start
+```
+
+**Step 3: All-Agent Briefing**
 
 
 Output briefing templates for ALL 9 agents.
@@ -173,7 +180,7 @@ Adversarial Review:
 - Devil's advocate recommendations
 ```
 
-**Step 3: Full Documentation Sync**
+**Step 4: Full Documentation Sync**
 
 ALL 6 state files MUST be updated:
 
@@ -215,7 +222,7 @@ Falls back to legacy `troubleshooting_session` when consolidated unavailable.
 
 6. **project-state.json::troubleshooting.history**: Session archive on completion. Falls back to legacy `troubleshooting-history.json` when consolidated unavailable.
 
-**Step 4: Gojo Unified Recommendation**
+**Step 5: Gojo Unified Recommendation**
 
 After all 9 agents complete, Gojo synthesizes:
 

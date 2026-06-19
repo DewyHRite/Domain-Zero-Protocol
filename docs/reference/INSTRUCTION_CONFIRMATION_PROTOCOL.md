@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v8.5.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
 ---
 title: "Instruction Confirmation Protocol"
 version: "1.0.0"
-protocol_version: "8.5.1"
+protocol_version: "9.7.2"
 last_updated: "2025-11-26"
 status: "Production-Ready"
 ---

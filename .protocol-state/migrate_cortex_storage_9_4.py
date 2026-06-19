@@ -103,6 +103,35 @@ def _open_db(db: Path, *, timeout: float = 10.0) -> sqlite3.Connection:
     return conn
 
 
+def _open_db_vec(db: Path, *, timeout: float = 10.0) -> sqlite3.Connection:
+    """Open the DB and load the sqlite_vec extension (MV-1, BUG-CORTEX-MIGRATE-001).
+
+    Like _open_db but also loads sqlite_vec so that the connection can read
+    the v1 chunk_vectors vec0 virtual table and create the v2 content_vectors
+    vec0 virtual table.  Mirrors Store._load_sqlite_vec() from cortex/store.py.
+
+    Raises RuntimeError with a clear message when sqlite_vec is not installed.
+    The enable_load_extension(True) guard is always reversed in a finally block.
+    """
+    try:
+        import sqlite_vec as _sv
+    except Exception as exc:
+        raise RuntimeError(
+            "sqlite_vec is not installed — cannot migrate a real vec0 brain. "
+            "Install requirements-brain.txt (pip install sqlite-vec) and retry."
+        ) from exc
+
+    conn = sqlite3.connect(str(db), timeout=timeout)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA busy_timeout = 10000")
+    conn.enable_load_extension(True)
+    try:
+        _sv.load(conn)
+    finally:
+        conn.enable_load_extension(False)
+    return conn
+
+
 def _get_user_version(conn: sqlite3.Connection) -> int:
     return int(conn.execute("PRAGMA user_version").fetchone()[0])
 
@@ -276,9 +305,160 @@ def build_v1_db(db: Path, chunks: list[dict]) -> None:
         conn.close()
 
 
+# MV-6: Real-vec v1 DDL (for build_v1_db_real_vec test helper).
+# chunk_vectors is a REAL vec0 virtual table, not the stub TEXT table.
+# The dimension placeholder is filled in at runtime from the first chunk's blob.
+_V1_REAL_VEC_DDL_NON_VEC = """
+CREATE TABLE IF NOT EXISTS chunks (
+  id           TEXT PRIMARY KEY,
+  source_path  TEXT NOT NULL,
+  source_type  TEXT NOT NULL,
+  line_start   INTEGER NOT NULL,
+  line_end     INTEGER NOT NULL,
+  content_hash TEXT NOT NULL,
+  recorded_date TEXT NOT NULL,
+  text         TEXT NOT NULL,
+  trust        TEXT NOT NULL,
+  suspect      INTEGER NOT NULL DEFAULT 0,
+  mem_type     TEXT,
+  agent        TEXT,
+  refs         TEXT
+);
+CREATE TABLE IF NOT EXISTS rowmap (
+  rowid    INTEGER PRIMARY KEY AUTOINCREMENT,
+  chunk_id TEXT UNIQUE NOT NULL
+);
+CREATE TABLE IF NOT EXISTS metadata (
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS source_state (
+  source_path TEXT PRIMARY KEY,
+  mtime_ns    INTEGER NOT NULL,
+  size        INTEGER NOT NULL,
+  indexed_at  TEXT NOT NULL
+);
+"""
+
+
+def build_v1_db_real_vec(db: Path, chunks: list[dict]) -> None:
+    """Seed a v1 DB with REAL sqlite_vec/vec0 chunk_vectors for migration tests.
+
+    MV-6 (BUG-CORTEX-MIGRATE-001): This helper is the real-vec counterpart to
+    build_v1_db (stub JSON).  It mirrors how the DZP Cortex engine actually built
+    v1 brains — chunk_vectors is a vec0 VIRTUAL TABLE and embeddings are stored
+    as raw float32 blobs (via sqlite_vec.serialize_float32).
+
+    Each dict must have:
+      - All keys from the chunks schema (id, source_path, source_type, etc.)
+      - 'embedding_blob': raw float32 bytes (bytes or bytearray of length dim*4)
+        Alternatively, 'embedding' as a list[float] is also accepted and will be
+        serialized via sqlite_vec.serialize_float32.
+
+    Keep build_v1_db (stub JSON) for tests that do NOT call cmd_execute
+    (e.g. _scan_duplicate_keys, _effective_storage_key unit tests, --check tests).
+    Stub helpers must not back any cmd_execute assertion (Toji IMPL-001).
+    """
+    try:
+        import sqlite_vec as _sv
+    except Exception as exc:
+        raise RuntimeError(
+            "sqlite_vec is required for build_v1_db_real_vec; "
+            "install requirements-brain.txt or use build_v1_db for stub tests."
+        ) from exc
+
+    # Derive dimension from the first chunk's blob (or embedding list).
+    _dim = 384  # default before probe
+    for ch in chunks:
+        blob = ch.get("embedding_blob")
+        if blob is not None and len(blob) > 0:
+            _dim = len(blob) // 4
+            break
+        emb = ch.get("embedding")
+        if emb:
+            _dim = len(emb)
+            break
+
+    conn = sqlite3.connect(str(db))
+    conn.enable_load_extension(True)
+    try:
+        _sv.load(conn)
+    finally:
+        conn.enable_load_extension(False)
+
+    try:
+        conn.executescript(_V1_REAL_VEC_DDL_NON_VEC)
+        # Create the real vec0 virtual table for chunk_vectors.
+        conn.execute(
+            f"CREATE VIRTUAL TABLE IF NOT EXISTS chunk_vectors "
+            f"USING vec0(embedding float[{_dim}])"
+        )
+        conn.execute("PRAGMA user_version = 1")
+        conn.execute(
+            "INSERT OR REPLACE INTO metadata(key, value) VALUES ('schema_version', '1')"
+        )
+        for ch in chunks:
+            conn.execute(
+                "INSERT OR REPLACE INTO rowmap(chunk_id) VALUES (?)", (ch["id"],)
+            )
+            rowid = conn.execute(
+                "SELECT rowid FROM rowmap WHERE chunk_id = ?", (ch["id"],)
+            ).fetchone()[0]
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO chunks(
+                  id, source_path, source_type, line_start, line_end,
+                  content_hash, recorded_date, text, trust,
+                  suspect, mem_type, agent, refs
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                """,
+                (
+                    ch["id"],
+                    ch["source_path"],
+                    ch["source_type"],
+                    ch["line_start"],
+                    ch["line_end"],
+                    ch["content_hash"],
+                    ch["recorded_date"],
+                    ch["text"],
+                    ch["trust"],
+                    ch.get("suspect", 0),
+                    ch.get("mem_type"),
+                    ch.get("agent"),
+                    json.dumps(ch.get("refs") or []),
+                ),
+            )
+            # Accept pre-serialized blob or a float list.
+            blob = ch.get("embedding_blob")
+            if blob is None:
+                emb = ch.get("embedding") or [0.0] * _dim
+                blob = _sv.serialize_float32(emb)
+            conn.execute(
+                "INSERT OR REPLACE INTO chunk_vectors(rowid, embedding) VALUES (?,?)",
+                (rowid, blob),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
 # ---------------------------------------------------------------------------
 # --check: read-only analysis
 # ---------------------------------------------------------------------------
+
+def _effective_storage_key(row) -> str:
+    """WI-MEM-003 (SEC-CORTEX-MEM-001): compute the v2 storage_key for a v1 row.
+
+    Memory rows: use the globally-unique v1 id ("memory:<mem_id>") as storage_key,
+    because their source_path is a monthly bucket ("memory:YYYY-MM") which collapses
+    all same-month memories to one (storage_key, line_start) pair.
+    File rows: source_path is already unique per (path, line_start); use it unchanged.
+
+    This helper must be applied consistently in the insert loop (WI-MEM-003) and
+    in ALL three parity checks P2, P3, P4 (WI-MEM-004).
+    """
+    return row["id"] if row["source_type"] == "memory" else row["source_path"]
+
 
 def _scan_duplicate_keys(conn: sqlite3.Connection) -> list[tuple[str, int]]:
     """Return a list of (source_path, line_start) pairs that appear more than
@@ -288,11 +468,18 @@ def _scan_duplicate_keys(conn: sqlite3.Connection) -> list[tuple[str, int]]:
     ON CONFLICT(storage_key, line_start) DO NOTHING (SEC-CORTEX-018).
     Note: same (source_path, line_start) with the SAME content_hash is benign
     deduplication; this function only returns genuinely conflicting pairs.
+
+    WI-MEM-002 (SEC-CORTEX-MEM-001): scoped to FILE chunks only.  Memory rows
+    legitimately share (source_path="memory:YYYY-MM", line_start=1) across months
+    — this is the bug being fixed (per-memory unique storage_key in live engine).
+    The migration handles them via _effective_storage_key; the guard must not abort
+    on them as false positives.
     """
     rows = conn.execute(
         """
         SELECT source_path, line_start, COUNT(*) AS c
         FROM chunks
+        WHERE source_path NOT LIKE 'memory:%'
         GROUP BY source_path, line_start
         HAVING c > 1
         """
@@ -467,13 +654,50 @@ def cmd_execute(db: Path) -> int:
     # --- Capture pre-migration snapshot for parity check ---
     pre_snap = _snapshot_v1(db)
 
-    # --- Build a temporary Store (stub) to get the v2 DDL from _create_v2_schema ---
+    # --- Derive dim + model from the first v1 row (MV-3, MV-5) ---
+    # We read the very first embedding blob from chunk_vectors (via a temporary
+    # vec-enabled connection) to derive the true embedding dimension.  The model
+    # name comes from brain.config.yaml (via cortex.config.load with allow_unsafe=True)
+    # with a fallback to DEFAULT_CONFIG["model"].  This replaces the old hard-coded
+    # dim=384/"stub" values and eliminates MV-5's stub sentinel.
+    try:
+        from cortex import config as _cfg
+        _cfg_data = _cfg.load(db.parent.parent, allow_unsafe=True)
+        _model = _cfg_data.get("model", _cfg.DEFAULT_CONFIG["model"])
+    except Exception:
+        # config.load may fail if the repo root cannot be determined from the DB path
+        # (e.g. when --db is given as an absolute path outside the repo).  Fall back
+        # to the canonical default rather than hard-coding "stub".
+        try:
+            from cortex.config import DEFAULT_CONFIG as _DC
+            _model = _DC["model"]
+        except Exception:
+            _model = "BAAI/bge-small-en-v1.5"
+
+    # Probe dim from the first real embedding blob (MV-3).
+    # We need a vec-enabled connection to read chunk_vectors.
+    _dim: int = 384  # conservative default before the probe
+    _probe_conn = _open_db_vec(db)
+    try:
+        _first_blob = _probe_conn.execute(
+            "SELECT cv.embedding FROM chunk_vectors cv LIMIT 1"
+        ).fetchone()
+        if _first_blob and isinstance(_first_blob[0], (bytes, bytearray)):
+            _dim = len(_first_blob[0]) // 4
+    finally:
+        _probe_conn.close()
+
+    # --- Build a temporary Store (real vec0) to get the v2 DDL from _create_v2_schema ---
     # We use a throw-away in-memory store for the DDL calls only; the actual
     # migration happens via raw SQL on the real DB.
-    store_helper = Store(":memory:", vector_backend="stub")
+    # MV-3: use vector_backend="sqlite_vec" and the probed dim so that
+    # _create_v2_schema emits the real vec0 DDL instead of the stub TEXT table.
+    store_helper = Store(":memory:", vector_backend="sqlite_vec", dim=_dim)
 
     # --- Single exclusive transaction: build + verify + swap + drop ---
-    conn = _open_db(db)
+    # MV-2: open via _open_db_vec so that we can both READ the v1 chunk_vectors
+    # (a vec0 virtual table) and CREATE the v2 content_vectors (also vec0).
+    conn = _open_db_vec(db)
     try:
         conn.execute("BEGIN IMMEDIATE")
 
@@ -497,23 +721,30 @@ def cmd_execute(db: Path) -> int:
         ).fetchall()
 
         # 3a. Insert content rows (one per distinct content_hash) — copy vector, no re-embed.
+        # MV-4: embedding from chunk_vectors is already a raw float32 blob (vec0 stores
+        # bytes natively); insert it directly into content_vectors without any JSON
+        # serialization/deserialization.  Keep the lastrowid-or-max(rowid) self-heal
+        # from the original implementation (SEC-CORTEX-016).
         seen_hashes: set[str] = set()
         for row in v1_rows:
             ch = row["content_hash"]
             if ch in seen_hashes:
                 continue
             seen_hashes.add(ch)
-            embedding_json = row["embedding"]  # stored as JSON text in the stub path
+            embedding_blob = row["embedding"]  # MV-4: raw float32 bytes from vec0
 
-            # Insert vector into content_vectors.
+            # Insert vector into content_vectors (real vec0 — accepts raw float32 bytes).
             cur = conn.execute(
-                "INSERT INTO content_vectors(embedding) VALUES (?)", (embedding_json,)
+                "INSERT INTO content_vectors(embedding) VALUES (?)", (embedding_blob,)
             )
+            # SEC-CORTEX-016 self-heal: lastrowid is reliable under BEGIN IMMEDIATE,
+            # but fall back to max(rowid) in case a driver returns 0.
             vector_rowid = cur.lastrowid or conn.execute(
                 "SELECT max(rowid) FROM content_vectors"
             ).fetchone()[0]
 
             # Insert content row.
+            # MV-5: write the probed _dim and resolved _model (no more "384"/"stub").
             conn.execute(
                 """
                 INSERT INTO content(content_hash, vector_rowid, text, dim, model, created_at)
@@ -523,16 +754,21 @@ def cmd_execute(db: Path) -> int:
                     ch,
                     vector_rowid,
                     row["text"],
-                    384,  # dim: default; could be derived from embedding length
-                    "stub",
+                    _dim,
+                    _model,
                     row["recorded_date"],
                 ),
             )
 
         # 3b. Insert content_refs rows (one per v1 chunks row).
+        # WI-MEM-003 (SEC-CORTEX-MEM-001): use _effective_storage_key so memory rows
+        # get their globally-unique id ("memory:<mem_id>") as storage_key instead of
+        # the shared monthly bucket ("memory:YYYY-MM").  ref_id is recomputed from the
+        # effective key so it stays deterministic and unique per row.
         for row in v1_rows:
+            eff_key = _effective_storage_key(row)
             ref_id = _make_ref_id(
-                row["source_path"], int(row["line_start"]), row["content_hash"]
+                eff_key, int(row["line_start"]), row["content_hash"]
             )
             refs_val = row["refs"]
             conn.execute(
@@ -547,7 +783,7 @@ def cmd_execute(db: Path) -> int:
                 (
                     ref_id,
                     row["content_hash"],
-                    row["source_path"],
+                    eff_key,
                     row["source_type"],
                     int(row["line_start"]),
                     int(row["line_end"]),
@@ -614,19 +850,26 @@ def cmd_execute(db: Path) -> int:
 # ---------------------------------------------------------------------------
 
 def _snapshot_v1(db: Path) -> dict:
-    """Capture a minimal pre-migration snapshot for recall-parity checks."""
+    """Capture a minimal pre-migration snapshot for recall-parity checks.
+
+    WI-MEM-004 (SEC-CORTEX-MEM-001): also captures id and source_type so that
+    _effective_storage_key() can be applied in P3/P4 parity checks, which must
+    compare against the post-migration storage_key (not the raw source_path).
+    """
     conn = _open_db(db)
     try:
         chunks = conn.execute(
-            "SELECT source_path, line_start, trust, content_hash FROM chunks"
+            "SELECT id, source_path, source_type, line_start, trust, content_hash FROM chunks"
         ).fetchall()
         return {
             "chunks": [
                 {
-                    "source_path": r[0],
-                    "line_start": int(r[1]),
-                    "trust": r[2],
-                    "content_hash": r[3],
+                    "id": r[0],
+                    "source_path": r[1],
+                    "source_type": r[2],
+                    "line_start": int(r[3]),
+                    "trust": r[4],
+                    "content_hash": r[5],
                 }
                 for r in chunks
             ]
@@ -665,14 +908,17 @@ def _parity_check(
         )
 
     # P2: every chunk maps to exactly one ref.
+    # WI-MEM-004 (SEC-CORTEX-MEM-001): use _effective_storage_key(r) instead of
+    # r["source_path"] so that same-month memories (which share source_path but have
+    # distinct ids) are counted as distinct pairs in unique_pairs.  Without this remap,
+    # N same-month memories would collapse to 1 pair and the refs_count != unique_pairs
+    # check would abort the migration that this plan is designed to unblock.
     refs_count = int(conn.execute("SELECT COUNT(*) FROM content_refs").fetchone()[0])
-    # After ON CONFLICT DO NOTHING, refs_count may be <= len(v1_rows) if there
-    # were genuine duplicates on (storage_key, line_start). Count unique pairs.
-    unique_pairs = len({(r["source_path"], r["line_start"]) for r in v1_rows})
+    unique_pairs = len({(_effective_storage_key(r), r["line_start"]) for r in v1_rows})
     if refs_count != unique_pairs:
         return False, (
             f"P2 FAIL: COUNT(content_refs)={refs_count} != "
-            f"unique (source_path,line_start) pairs={unique_pairs}"
+            f"unique (effective_storage_key,line_start) pairs={unique_pairs}"
         )
     # SEC-CORTEX-022 (Phase 5, defense-in-depth): the pre-flight duplicate scan already
     # guarantees no same-key/different-hash conflicts exist, so refs_count MUST also
@@ -687,9 +933,11 @@ def _parity_check(
         )
 
     # P3: public result contract parity.
-    # Build a dict from pre_snap: (source_path, line_start) -> {trust, content_hash}
+    # WI-MEM-004: build the pre-snap index keyed on (_effective_storage_key, line_start)
+    # so it aligns with the storage_key values written to content_refs (which also uses
+    # _effective_storage_key via the insert loop fix).
     pre_index: dict[tuple, dict] = {
-        (r["source_path"], r["line_start"]): r for r in pre_snap["chunks"]
+        (_effective_storage_key(r), r["line_start"]): r for r in pre_snap["chunks"]
     }
     post_rows = conn.execute(
         "SELECT storage_key, line_start, trust, content_hash FROM content_refs"
@@ -707,8 +955,12 @@ def _parity_check(
             )
 
     # P4: trust-filter parity.
-    # Compare distinct (source_path, line_start) sets for trusted-only.
-    pre_trusted = {(r["source_path"], r["line_start"]) for r in pre_snap["chunks"] if r["trust"] == "trusted"}
+    # WI-MEM-004: compare using _effective_storage_key so memory rows use their
+    # globally-unique id as the key, consistent with content_refs.storage_key.
+    pre_trusted = {
+        (_effective_storage_key(r), r["line_start"])
+        for r in pre_snap["chunks"] if r["trust"] == "trusted"
+    }
     post_trusted = {(r[0], int(r[1])) for r in conn.execute(
         "SELECT storage_key, line_start FROM content_refs WHERE trust = 'trusted'"
     ).fetchall()}
@@ -718,7 +970,10 @@ def _parity_check(
             f"pre={len(pre_trusted)}, post={len(post_trusted)}"
         )
 
-    pre_semi = {(r["source_path"], r["line_start"]) for r in pre_snap["chunks"] if r["trust"] == "semi"}
+    pre_semi = {
+        (_effective_storage_key(r), r["line_start"])
+        for r in pre_snap["chunks"] if r["trust"] == "semi"
+    }
     post_semi = {(r[0], int(r[1])) for r in conn.execute(
         "SELECT storage_key, line_start FROM content_refs WHERE trust = 'semi'"
     ).fetchall()}

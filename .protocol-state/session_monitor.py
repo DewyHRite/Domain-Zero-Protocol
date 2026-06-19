@@ -961,16 +961,9 @@ Template file not found at: {self.template_file}
 
         self.save_state(state)
 
-        # Workstream B: full Cortex rebuild on session end (periodic re-index).
-        # Fail-soft: any exception or non-zero exit is logged, never re-raised.
-        try:
-            cortex_result = self._sync_cortex_index(full=True)
-            if cortex_result.get('skipped'):
-                print(f"[CORTEX] end-of-session rebuild skipped ({cortex_result.get('status', 'unknown')})")
-            else:
-                print(f"[CORTEX] end-of-session rebuild complete ({cortex_result.get('status', 'unknown')})")
-        except Exception as exc:
-            print(f"[CORTEX] end-of-session rebuild failed (non-fatal): {exc}")
+        # NOTE: Cortex rebuild on session end is now coordinator-owned (v9.5.0, WI-15).
+        # The coordinator fires cortex_trigger.py --level high --export via the
+        # session-end registry event.  Direct _sync_cortex_index() call removed here.
 
         return state
 
@@ -1673,14 +1666,9 @@ Template file not found at: {self.template_file}
 
         results['success'] = len(results['documents_updated']) > 0 and len(results['errors']) == 0
 
-        # Workstream B: Cortex-in-sync — call AFTER doc writes + git, fail-soft.
-        cortex_result = self._sync_cortex_index(full=False)
-        results['cortex_index'] = cortex_result
-        status_label = cortex_result.get('status', 'unknown')
-        if cortex_result.get('skipped'):
-            print(f"[CORTEX] index skipped ({status_label})")
-        else:
-            print(f"[CORTEX] index complete ({status_label})")
+        # NOTE: Cortex index after sync is now coordinator-owned (v9.5.0, WI-15).
+        # The coordinator fires cortex_trigger.py --level medium via the
+        # session-update registry event.  Direct _sync_cortex_index() call removed here.
 
         print(f"[SYNC] Sync completed. {len(results['documents_updated'])} documents updated.")
         return results
@@ -1700,6 +1688,8 @@ Template file not found at: {self.template_file}
         this method returns False so the caller proceeds to re-index.
 
         Fail-soft: any error resolving the path → return False (let indexer try).
+
+        # DEPRECATED in v9.5.0 — Cortex sync now coordinator-owned. Remove in v9.6.0.
         """
         try:
             import subprocess as _sp
@@ -1737,6 +1727,11 @@ Template file not found at: {self.template_file}
         """Incrementally (or fully) re-index DZP Cortex after a document sync.
 
         Workstream B implementation — always fail-soft (never raises).
+
+        # DEPRECATED in v9.5.0 — Cortex sync now coordinator-owned (WI-15).
+        # Direct callers should migrate to: dzp.py event session-update / session-end.
+        # This method is retained as a stub for backward compatibility.
+        # Scheduled for removal in v9.6.0.
 
         Args:
             full: If True, perform a full rebuild (no --incremental flag).
@@ -1820,11 +1815,8 @@ Template file not found at: {self.template_file}
             for doc in results['documents_updated']:
                 print(f"  + {doc}")
 
-            cortex_info = results.get('cortex_index', {})
-            if cortex_info.get('skipped'):
-                print(f"[CORTEX] skipped ({cortex_info.get('status', 'unknown')})")
-            else:
-                print(f"[CORTEX] indexed ({cortex_info.get('status', 'unknown')})")
+            # NOTE: Cortex index step is coordinator-owned (v9.5.0, WI-15).
+            # [CORTEX] logging is emitted by cortex_trigger.py via the coordinator.
 
             if results['errors']:
                 print(f"[WARN] {len(results['errors'])} sync error(s):")

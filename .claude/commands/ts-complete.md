@@ -9,10 +9,13 @@ argument-hint: "No arguments required"
 
 Read protocol/skills/ts.md and execute `/ts complete` command.
 
-**Action**: Closes current troubleshooting session and archives to history
+**Action**: Closes current troubleshooting session, archives to history, and triggers Cortex re-index
 
-# Mark complete
+# Mark complete — v9.5.0+ routes Cortex step through coordinator (WI-29)
+# Step 1: Fire coordinator ts-complete event (Cortex medium re-index + tier stats + validation)
+python dzp.py event ts-complete
 
+# Step 2: Archive TS session in tracker (direct call: coordinator lacks this step — PARITY kept)
 RESOLUTION="Bug fixed: root cause was X, implemented fix Y with Z tests"
 python .protocol-state/troubleshooting_tracker.py complete "$RESOLUTION"
 
