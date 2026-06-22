@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
 # Slash Commands Installation Guide
 
 > **Protocol Version**: v8.5.1

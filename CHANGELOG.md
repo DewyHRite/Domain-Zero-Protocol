@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.8.0] - 2026-06-22
+
+### MINOR — Cortex Encryption-at-Rest (PLAN-CORTEX-ENC-001) + v9.7.2 upstream-upgrade fold-in
+
+#### Added
+- **Cortex encryption-at-rest (opt-in, default OFF)** — SQLCipher full-DB AES-256 with an
+  Argon2id + OS-keyring hybrid key model (`DZP_CORTEX_KEY` `file:` URI fallback). Reversible,
+  backup-first migration `migrate_cortex_encrypt_9_8.py` (vec0/FTS5 smoke-verify, atomic replace,
+  ledger refusal on shared brains). `brain key`/`brain encrypt` CLI; `brain status` reports
+  `encryption_status` + posture advisory. Plaintext (disabled) path byte-for-byte unchanged.
+- **`brain reset --scope orphans`** (BUG-CORTEX-PROLIF) — safe GC of orphaned Cortex install dirs;
+  dry-run default, quarantine-to-`.trash-*` on `--execute`, `--hard-delete` for permanent removal.
+
+#### Fixed (v9.7.2 upstream-upgrade bundle — downstream-reported, folded into this MINOR)
+- **Group A**: SEC-9720-001 (migration path-traversal guard), SEC-9720-006 (YAML inline-comment
+  parse), C-1 (Cortex-engine preflight on migration), SEC-9720-004 (placeholder contact → WARN not
+  hard ERROR), STATE-LEGACY (session-state sanitizer for legacy `pause`).
+- **Group C**: DRIFT-ENGINE (engine-parity release check), SEC-9720-005 (hook auto-install docs),
+  ONEDRIVE-LOCK + GUARD-FRICTION documentation.
+- **Orphan-GC P1 remediation**: SEC-9720-008 (execute-path TOCTOU re-validation + symlink/junction/
+  reparse/path-escape rejection), SEC-9720-009 (preserve graph rows/memories/recursive/unreadable/
+  missing-table), SEC-9720-010 (30-day recency gate + `--older-than-days`), SEC-9720-011
+  (quarantine-default; `--hard-delete` opt-in).
+
+#### Security
+- SEC-CORTEX-ENC-001..009 CLOSED; SEC-9720-008/009/010/011 CLOSED. Megumi Tier-3 @approved
+  (encryption + orphan-GC). 7 accepted P3 residuals deferred to v9.9.x (shared-brain key
+  provisioning + rotation, exports encryption, in-memory key zeroization).
+
+#### Tests
+- 935 passed, 3 skipped (`tests/brain`); full suite green.
+
 ## [9.7.2] - 2026-06-18
 
 ### PATCH — SEC-CORTEX-MEM-001 + BUG-CORTEX-MIGRATE-001 (silent data-loss exposure v9.4.0–v9.7.0)

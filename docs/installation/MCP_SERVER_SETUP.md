@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
 # MCP Server Setup Guide
 ## Domain Zero Protocol MCP Server Implementation
 

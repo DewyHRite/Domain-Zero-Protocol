@@ -404,10 +404,13 @@ function Test-ConfigCompleteness {
         return
     }
 
-    # Check for placeholder values that need to be updated
+    # Check for placeholder values that need to be updated.
+    # SEC-9720-004: the contact placeholder (email@example.com) is demoted to a
+    # WARNING so a fresh install passes verification; all other placeholders remain
+    # hard ERRORs because they affect project identity / repo references.
+    $ContactPlaceholder = "email@example.com"
     $Placeholders = @(
         "Your Name",
-        "email@example.com",
         "Your Project Name",
         "Your Organization",
         "your-org/your-repo",
@@ -421,8 +424,13 @@ function Test-ConfigCompleteness {
         }
     }
 
+    # Check the contact placeholder separately as a warning.
+    if ($ConfigContent -match [regex]::Escape($ContactPlaceholder)) {
+        Write-Warn "contact field still contains placeholder '$ContactPlaceholder' — update protocol.config.yaml with your real contact address."
+    }
+
     if ($PlaceholdersFound.Count -eq 0) {
-        Write-Pass "No placeholder values detected in config"
+        Write-Pass "No (non-contact) placeholder values detected in config"
     } else {
         Write-Fail "Configuration contains placeholder values that must be updated:"
         foreach ($Placeholder in $PlaceholdersFound) {

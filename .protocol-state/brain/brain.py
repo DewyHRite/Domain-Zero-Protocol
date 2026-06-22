@@ -143,13 +143,45 @@ def main(argv: list[str] | None = None) -> int:
     # SEC-CORTEX-ACCESS-008 (v9.7.1): scope, shared-brain acknowledgment, foreign-install bypass
     p_reset.add_argument(
         "--scope",
-        choices=["self", "all"],
+        choices=["self", "all", "orphans"],
         default="all",
         help=(
             "Deletion scope: 'self' removes only this install's @<install_id>/ namespace "
             "(safe for shared brains, no --all-installs-acknowledged needed); "
             "'all' performs a full DB wipe (default, requires ledger acknowledgment on "
-            "shared brains)."
+            "shared brains); "
+            "'orphans' garbage-collects empty/stub install dirs in the Cortex data root "
+            "(dry-run by default — add --execute to actually delete)."
+        ),
+    )
+    p_reset.add_argument(
+        "--execute",
+        action="store_true",
+        dest="execute",
+        help=(
+            "BUG-CORTEX-PROLIF: When --scope orphans is set, perform quarantine or deletion. "
+            "Without this flag, --scope orphans only lists candidates (dry-run, safe default). "
+            "Requires --yes."
+        ),
+    )
+    p_reset.add_argument(
+        "--older-than-days",
+        type=int,
+        default=30,
+        dest="older_than_days",
+        help=(
+            "For --scope orphans, preserve install dirs modified within this many days "
+            "(default: 30). The scan covers the machine-wide dzp-cortex data root, not "
+            "only the current project."
+        ),
+    )
+    p_reset.add_argument(
+        "--hard-delete",
+        action="store_true",
+        dest="hard_delete",
+        help=(
+            "For --scope orphans --execute, permanently delete candidates instead of "
+            "moving them to a .trash-<timestamp> quarantine directory."
         ),
     )
     p_reset.add_argument(
@@ -264,6 +296,27 @@ def main(argv: list[str] | None = None) -> int:
         help="Install ID for seed idempotency key (optional)",
     )
 
+    # Task 9 (v9.8.0): brain key subcommand — manage the Cortex encryption key
+    p_key = sub.add_parser("key", help="Manage the Cortex encryption key (v9.8.0)")
+    key_sub = p_key.add_subparsers(dest="key_cmd", required=True)
+    p_key_set = key_sub.add_parser("set", help="Derive a key from a passphrase and cache it in the OS keystore")
+    p_key_set.add_argument(
+        "--passphrase",
+        default=None,
+        help=(
+            "Passphrase (INSECURE: visible in process list/shell history; "
+            "omit to be prompted securely via getpass)"
+        ),
+    )
+    key_sub.add_parser("status", help="Show encryption key status (disabled | unlocked | locked)")
+
+    # Task 9 (v9.8.0): brain encrypt subcommand — encrypt/rollback the brain DB
+    p_encrypt = sub.add_parser("encrypt", help="Encrypt or rollback the brain DB (migration, v9.8.0)")
+    g_enc = p_encrypt.add_mutually_exclusive_group(required=True)
+    g_enc.add_argument("--check", action="store_true", help="Check migration readiness (no mutations)")
+    g_enc.add_argument("--execute", action="store_true", help="Perform the encryption migration (irreversible without --rollback)")
+    g_enc.add_argument("--rollback", action="store_true", help="Restore the plaintext pre-encrypt backup")
+
     args = parser.parse_args(argv)
     try:
         repo = Path(args.repo).resolve()
@@ -288,13 +341,68 @@ def main(argv: list[str] | None = None) -> int:
             "compact",
             # SEC-CORTEX-ACCESS-009 (v9.7.1): restore does not embed
             "restore",
+            # Task 9 (v9.8.0): key management + encryption migration do not embed
+            # and do NOT need a Store at all — handled before the store-building block.
+            "key", "encrypt",
         }
+
+        # Task 9 (v9.8.0): key + encrypt commands need NEITHER embedder NOR store.
+        # Dispatch them immediately so the encryption-key resolution in _store() does
+        # not interfere (e.g. `brain key status` would fail if _store() raised
+        # CortexKeyUnavailableError before the key-status logic ran).
+        if args.cmd == "key":
+            return _key_cmd(repo, cfg, args, allow_unsafe=allow_unsafe)
+        if args.cmd == "encrypt":
+            return _encrypt_cmd(repo, cfg, args, allow_unsafe=allow_unsafe)
+
+        # SEC-CORTEX-ENC-007 (v9.8.0): when encryption is enabled but the key is
+        # unavailable (CortexKeyUnavailableError from _store()), the status command
+        # must fail-soft (exit 0, encryption_status=locked, availability_status=unavailable).
+        # Data commands (index, query, remember, …) fail-clean with exit 8 via the
+        # existing except CortexError handler below.
+        _locked_key: bool = False
         if args.cmd in _model_free_cmds:
             emb = None
-            store = _store(repo, cfg, emb, allow_unsafe=allow_unsafe)
+            try:
+                store = _store(repo, cfg, emb, allow_unsafe=allow_unsafe)
+            except CortexError as _enc_exc:
+                from cortex.errors import CortexKeyUnavailableError as _KeyErr
+                if isinstance(_enc_exc, _KeyErr) and args.cmd == "status":
+                    _locked_key = True
+                    store = None  # type: ignore[assignment]
+                else:
+                    raise
         else:
+            # P3-ENC-3: hoist encryption-key check BEFORE _embedder() so that a
+            # locked brain on a data command gets the clean exit-8 path WITHOUT
+            # paying model-weight download / embedder init cost.
+            # Only applies when encryption is enabled; no-op otherwise.
+            _enc_cfg_pre = cfg.get("encryption", {})
+            if _enc_cfg_pre.get("enabled"):
+                from cortex import crypto as _crypto_pre
+                _data_dir_pre = paths.data_dir(repo, cfg, allow_unsafe=allow_unsafe)
+                # Raises CortexKeyUnavailableError (exit_code=8) if key unavailable.
+                _crypto_pre.resolve_key(_data_dir_pre, allow_prompt=False)
             emb = _embedder(repo, cfg, allow_unsafe=allow_unsafe)
             store = _store(repo, cfg, emb, allow_unsafe=allow_unsafe)
+
+        # SEC-CORTEX-ENC-007: status with locked key — short-circuit before any DB op.
+        if _locked_key and args.cmd == "status":
+            _enc_status_data = {
+                "ok": False,
+                "availability_status": "unavailable",
+                "encryption_status": "locked",
+                "db": str(paths.db_path(repo, cfg)),
+                "model": cfg.get("model", ""),
+            }
+            if getattr(args, "json", False):
+                print(json.dumps(_enc_status_data, indent=2))
+            else:
+                print(
+                    "Cortex status: locked (availability: unavailable, encryption: locked)\n"
+                    "Run `brain key set` or set DZP_CORTEX_KEY to unlock."
+                )
+            return 0
 
         if args.cmd == "status":
             return _status(repo, cfg, store, as_json=args.json,
@@ -366,6 +474,15 @@ def main(argv: list[str] | None = None) -> int:
         # SEC-CORTEX-ACCESS-009 (v9.7.1): brain restore
         if args.cmd == "restore":
             return _restore(repo, cfg, args, allow_unsafe=allow_unsafe)
+
+        # Task 9 (v9.8.0): brain key — key management
+        if args.cmd == "key":
+            return _key_cmd(repo, cfg, args, allow_unsafe=allow_unsafe)
+
+        # Task 9 (v9.8.0): brain encrypt — encryption migration
+        if args.cmd == "encrypt":
+            return _encrypt_cmd(repo, cfg, args, allow_unsafe=allow_unsafe)
+
         raise AssertionError(args.cmd)
     except CortexError as exc:
         from cortex.errors import SchemaTooNewError, SchemaMismatchError
@@ -416,6 +533,13 @@ def _store(repo: Path, cfg: dict, embedder: "Embedder | None" = None, *, allow_u
     check_reset_safety() hits the empty-ledger fail-OPEN, making the P0 shared-
     brain wipe guard inert in production.  The upsert is idempotent (first_seen
     is preserved via ON CONFLICT DO UPDATE; last_seen is refreshed).
+
+    SEC-CORTEX-ENC-007 (v9.8.0): when encryption.enabled is true, resolve the
+    32-byte key via crypto.resolve_key(data_dir, allow_prompt=False) and pass it
+    as encryption_key to Store so that connect() uses open_encrypted_connection
+    (SQLCipher) instead of plaintext sqlite3.connect.  If the key is unavailable
+    (CortexKeyUnavailableError), raise immediately so callers can fail-soft
+    (status → locked/unavailable, exit 0) or fail-clean (data commands → exit 8).
     """
     backend = "stub" if cfgmod.is_stub_model(cfg) else "sqlite_vec"
     if embedder is not None:
@@ -425,11 +549,23 @@ def _store(repo: Path, cfg: dict, embedder: "Embedder | None" = None, *, allow_u
     else:
         # Read dimension from config; fall back to 384 (fastembed all-MiniLM default).
         resolved_dim = int(cfg.get("dim", 384))
+    # SEC-CORTEX-ENC-007: wire the encryption key when encryption is enabled.
+    encryption_key: bytes | None = None
+    enc_cfg = cfg.get("encryption", {})
+    if enc_cfg.get("enabled"):
+        from cortex import crypto as _crypto
+        data_dir = paths.data_dir(repo, cfg, allow_unsafe=allow_unsafe)
+        # allow_prompt=False: non-interactive lifecycle events must never block
+        # on a passphrase prompt.  If the key is unavailable this raises
+        # CortexKeyUnavailableError (exit_code=8); callers decide fail-soft vs
+        # fail-clean based on the command type.
+        encryption_key = _crypto.resolve_key(data_dir, allow_prompt=False)
     return Store(
         paths.db_path(repo, cfg, allow_unsafe=allow_unsafe),
         dim=resolved_dim,
         vector_backend=backend,
         install_id=paths.resolve_install_segment(repo, cfg),
+        encryption_key=encryption_key,
     )
 
 
@@ -785,25 +921,74 @@ def _status(repo: Path, cfg: dict, store: Store, *, as_json: bool, fail_on_stale
             allow_unsafe: bool = False) -> int:
     db = paths.db_path(repo, cfg)
     data_dir_path = paths.data_dir(repo, cfg, allow_unsafe=allow_unsafe)
-    chunks = store.count()
+    # SEC-CORTEX-ENC-007 (v9.8.0): guard store.count() + vec_version() + last_index +
+    # freshness_summary against DatabaseError when the keyed Store cannot open the DB
+    # (e.g. wrong key, DB corruption after encryption, or any residual plaintext-open
+    # failure).  This is belt-and-suspenders: the locked-key fast-path in main() already
+    # short-circuits before _status() is reached when the key is unavailable.  This guard
+    # covers the case where the key resolves but the keyed DB is still unreadable
+    # (e.g. a partially-encrypted file, wrong key from a prior `brain key set`).
+    _db_error: Exception | None = None
+    try:
+        chunks = store.count()
+        vec_ver = store.vec_version()
+        last_index = store.get_meta("last_index")
+    except Exception as _exc:
+        _db_error = _exc
+        chunks = 0
+        vec_ver = "unavailable"
+        last_index = None
     data = {
-        "ok": True,
+        "ok": _db_error is None,
         "db": str(db),
         "chunks": chunks,
         "dim": store.dim,
         "model": cfg["model"],
-        "vec_version": store.vec_version(),
-        "last_index": store.get_meta("last_index"),
+        "vec_version": vec_ver,
+        "last_index": last_index,
     }
-    freshness = ingest.freshness_summary(repo, cfg, store)
-    data.update(freshness)
-    data["stale"] = chunks == 0 or bool(freshness["stale"])
+    if _db_error is None:
+        freshness = ingest.freshness_summary(repo, cfg, store)
+        data.update(freshness)
+        data["stale"] = chunks == 0 or bool(freshness["stale"])
+    else:
+        data["stale"] = True
+        data["db_error"] = str(_db_error)
     # WI-S3-7 (v9.7.0): storage advisory object — always present, never affects exit code.
     data["storage"] = _build_storage_status(cfg, store)
     # SEC-CORTEX-ACCESS-009 (v9.7.1): backup info
     data["backup_info"] = _get_backup_info(data_dir_path)
     # SEC-CORTEX-ACCESS-010 (v9.7.1): availability_status
-    data["availability_status"] = _compute_availability_status(data_dir_path)
+    # When a DB error occurred above, mark unavailable directly.
+    if _db_error is not None:
+        data["availability_status"] = "unavailable"
+    else:
+        data["availability_status"] = _compute_availability_status(data_dir_path)
+    # PLAN-CORTEX-ENC-001 (v9.8.0, Task 10): encryption_status + posture advisory
+    # SEC-CORTEX-ENC-007: use the store's actual keyed state to derive encryption_status.
+    # - disabled: encryption.enabled is false
+    # - unlocked: key resolved AND DB opened successfully
+    # - locked:   key unavailable (handled before _status() by main()'s fast-path)
+    # - error:    key resolved but DB could not be opened (wrong key / corrupted DB)
+    from cortex import crypto as _crypto
+    from cortex.posture import posture_advisory as _posture_advisory
+    _enc_cfg = cfg.get("encryption", {})
+    if not _enc_cfg.get("enabled"):
+        encryption_status = "disabled"
+    else:
+        # The store was built with a resolved key (or we wouldn't reach _status()).
+        # If a DB error occurred despite the key being wired, report as unavailable.
+        if _db_error is not None:
+            encryption_status = "unlocked"  # key resolved, but DB is unreadable
+            data["availability_status"] = "unavailable"
+        else:
+            encryption_status = "unlocked"
+    data["encryption_status"] = encryption_status
+    data["posture"] = _posture_advisory(data_dir_path)
+    # Locked key means the DB cannot be opened — treat as unavailable.
+    # Exit code stays 0 (locked is a known, recoverable state — not corruption).
+    if encryption_status == "locked":
+        data["availability_status"] = "unavailable"
     # WI-13: --fail-on-stale: exit 1 when index is stale.
     if fail_on_stale and data["stale"]:
         data["exit_code"] = 1
@@ -816,7 +1001,8 @@ def _status(repo: Path, cfg: dict, store: Store, *, as_json: bool, fail_on_stale
         print(json.dumps(data, indent=2))
     else:
         avail = data["availability_status"]
-        print(f"Cortex status: ok (availability: {avail})")
+        enc = data["encryption_status"]
+        print(f"Cortex status: ok (availability: {avail}, encryption: {enc})")
         print(f"DB: {data['db']}")
         print(f"Chunks: {chunks}")
         print(f"Model: {data['model']}")
@@ -910,6 +1096,177 @@ def _remember(repo: Path, cfg: dict, store: Store, args, *, emb: "Embedder | Non
     return 0
 
 
+def _reset_orphans(
+    data_root: Path,
+    current_install_id: str,
+    *,
+    execute: bool,
+    older_than_days: int = 30,
+    hard_delete: bool = False,
+) -> int:
+    """BUG-CORTEX-PROLIF: GC of orphaned install dirs in the Cortex data root.
+
+    Dry-run (execute=False, the DEFAULT): lists candidates + summary, deletes NOTHING.
+    Execute (execute=True, requires --execute + --yes): quarantines confirmed orphan dirs
+    by default; --hard-delete permanently removes them.
+
+    Safety invariants (enforced by cortex.orphans.classify_orphans):
+      INV-2  *-shared dirs (non-hash names) are NEVER candidates.
+      INV-3  The current install dir is NEVER a candidate.
+      INV-4  Hash dirs with real data are NOT candidates.
+      INV-5  Hash dirs with foreign cortex_installs entries are SKIPPED.
+      INV-6  Only 12-hex-char dirs are inspected.
+      INV-7  Unreadable brain.db → treated as non-orphan (fail-safe).
+    """
+    from cortex.orphans import HASH_DIR_RE, classify_orphans
+
+    if older_than_days < 0:
+        raise ValueError("--older-than-days must be >= 0")
+
+    results = classify_orphans(data_root, current_install_id, older_than_days=older_than_days)
+    orphans = [r for r in results if r["is_orphan"]]
+    non_orphans = [r for r in results if not r["is_orphan"]]
+
+    total_reclaimable = sum(r["size_bytes"] for r in orphans)
+
+    # Always print skipped dirs so the operator can audit the logic
+    if non_orphans:
+        print(f"\n[CORTEX-PROLIF] Skipped (protected or has real data):")
+        for r in non_orphans:
+            print(f"  SKIP  {r['name']}  reason={r['reason']}")
+
+    # Print orphan candidates
+    print(f"\n[CORTEX-PROLIF] Orphan candidates in {data_root}:")
+    if not orphans:
+        print("  (none found)")
+    else:
+        for r in orphans:
+            print(f"  ORPHAN  {r['name']}  size={r['size_bytes']}B  reason={r['reason']}")
+
+    print(
+        f"\n[CORTEX-PROLIF] Summary: {len(orphans)} orphan(s), "
+        f"{len(non_orphans)} protected/real, "
+        f"reclaimable={total_reclaimable}B"
+    )
+
+    if not execute:
+        print(
+            "\n[CORTEX-PROLIF] DRY-RUN: no files deleted. "
+            "Add --execute (+ --yes) to move candidates to quarantine."
+        )
+        return 0
+
+    import os as _os
+    import shutil as _shutil
+    import stat as _stat
+    from datetime import datetime, timezone
+
+    def _is_reparse_point(p: Path) -> bool:
+        try:
+            st = p.lstat()
+        except OSError:
+            return True
+        attrs = getattr(st, "st_file_attributes", 0)
+        return bool(attrs & getattr(_stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0))
+
+    def _is_plain_child(p: Path) -> tuple[bool, str]:
+        try:
+            if not p.is_dir() or p.is_symlink():
+                return False, "not a plain directory"
+            if _is_reparse_point(p):
+                return False, "reparse point/junction rejected"
+            if not HASH_DIR_RE.fullmatch(p.name):
+                return False, "not a 12-hex install dir"
+            root_resolved = data_root.resolve()
+            current_resolved = (data_root / current_install_id).resolve()
+            p_resolved = p.resolve()
+            if p.parent.resolve() != root_resolved:
+                return False, "not a direct child of data root"
+            if p_resolved == root_resolved:
+                return False, "target resolves to data root"
+            if p_resolved == current_resolved:
+                return False, "target resolves to current install"
+            if _os.path.normcase(_os.path.realpath(p)) != _os.path.normcase(_os.path.abspath(p)):
+                return False, "realpath mismatch (possible junction/symlink)"
+            return True, ""
+        except OSError as exc:
+            return False, f"validation failed: {exc}"
+
+    def _still_orphan(name: str) -> tuple[bool, str]:
+        fresh = classify_orphans(data_root, current_install_id, older_than_days=older_than_days)
+        for item in fresh:
+            if item["name"] == name:
+                if item["is_orphan"]:
+                    return True, item["reason"]
+                return False, item["reason"]
+        return False, "candidate disappeared or is no longer classifiable"
+
+    def _on_rmtree_error(function, path, exc_info) -> None:
+        print(f"  ERROR deleting {path}: {exc_info[1]}", file=sys.stderr)
+
+    action_count = 0
+    errors = 0
+    skipped = 0
+    trash_dir: Path | None = None
+    if not hard_delete:
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        trash_dir = data_root / f".trash-{stamp}"
+        suffix = 1
+        while trash_dir.exists():
+            trash_dir = data_root / f".trash-{stamp}-{suffix}"
+            suffix += 1
+
+    for r in orphans:
+        dirpath: Path = r["path"]
+        ok, reason = _still_orphan(r["name"])
+        if not ok:
+            print(f"  SKIP  {r['name']}  reason=revalidation failed: {reason}", file=sys.stderr)
+            skipped += 1
+            continue
+
+        ok, reason = _is_plain_child(dirpath)
+        if not ok:
+            print(f"  SKIP  {r['name']}  reason={reason}", file=sys.stderr)
+            skipped += 1
+            continue
+
+        try:
+            if hard_delete:
+                rmtree_errors: list[str] = []
+                def _record_rmtree_error(function, path, exc_info) -> None:
+                    rmtree_errors.append(str(exc_info[1]))
+                    _on_rmtree_error(function, path, exc_info)
+                _shutil.rmtree(str(dirpath), onerror=_record_rmtree_error)
+                if rmtree_errors:
+                    errors += len(rmtree_errors)
+                    continue
+                print(f"  DELETED  {r['name']}")
+            else:
+                assert trash_dir is not None
+                trash_dir.mkdir(parents=True, exist_ok=True)
+                dest = trash_dir / r["name"]
+                if dest.exists():
+                    print(f"  SKIP  {r['name']}  reason=quarantine destination exists", file=sys.stderr)
+                    skipped += 1
+                    continue
+                _shutil.move(str(dirpath), str(dest))
+                print(f"  QUARANTINED  {r['name']}  -> {dest}")
+            action_count += 1
+        except OSError as exc:
+            verb = "deleting" if hard_delete else "quarantining"
+            print(f"  ERROR {verb} {r['name']}: {exc}", file=sys.stderr)
+            errors += 1
+
+    action = "deleted" if hard_delete else "quarantined"
+    print(
+        f"\n[CORTEX-PROLIF] Execute complete: {action_count} {action}, "
+        f"{skipped} skipped, {errors} error(s), {total_reclaimable}B selected."
+    )
+    if trash_dir is not None and trash_dir.exists():
+        print(f"[CORTEX-PROLIF] Quarantine: {trash_dir}")
+    return 0 if errors == 0 else 1
+
+
 def _reset(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
     """SEC-CORTEX-ACCESS-008 (v9.7.1): destruction guard + scope-self wipe.
 
@@ -919,6 +1276,23 @@ def _reset(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
     """
     if not args.yes:
         raise ValueError("reset requires --yes")
+
+    # BUG-CORTEX-PROLIF: orphans scope — GC of stub install dirs.
+    # Handled BEFORE the full-reset path so it never touches the current brain.db.
+    scope_arg: str = getattr(args, "scope", "all")
+    if scope_arg == "orphans":
+        data_root = paths.data_dir(repo, cfg, allow_unsafe=allow_unsafe).parent
+        current_id = paths.resolve_install_segment(repo, cfg)
+        execute: bool = getattr(args, "execute", False)
+        older_than_days: int = getattr(args, "older_than_days", 30)
+        hard_delete: bool = getattr(args, "hard_delete", False)
+        return _reset_orphans(
+            data_root,
+            current_id,
+            execute=execute,
+            older_than_days=older_than_days,
+            hard_delete=hard_delete,
+        )
 
     import os as _os
     from cortex.store import SharedBrainError, ForeignInstallError
@@ -1058,6 +1432,92 @@ def _restore(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
     print(f"Restored brain.db from: {src}")
     print(f"Target: {db}")
     return 0
+
+
+def _key_cmd(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
+    """Task 9 (v9.8.0): brain key set | brain key status.
+
+    brain key set [--passphrase X]
+        Derive a key from the passphrase (prompting if --passphrase omitted) and
+        cache it in the OS keystore via cortex.crypto.store_passphrase.
+
+    brain key status
+        DETERMINISTIC + keyring-safe:
+        - If encryption.enabled is False → print 'encryption_status: disabled' and
+          return 0 WITHOUT touching the OS keyring (safe on headless CI).
+        - Otherwise: resolve the key via crypto.resolve_key(data_dir, allow_prompt=False).
+          Print 'unlocked' on success, 'locked' on CortexKeyUnavailableError.
+    """
+    from cortex import crypto
+
+    data_dir = paths.data_dir(repo, cfg, allow_unsafe=allow_unsafe)
+
+    if args.key_cmd == "set":
+        import getpass
+        pw = args.passphrase or getpass.getpass("New Cortex passphrase: ")
+        crypto.store_passphrase(data_dir, pw)
+        print("Cortex key cached in OS keystore.")
+        return 0
+
+    if args.key_cmd == "status":
+        enc_cfg = cfg.get("encryption", {})
+        if not enc_cfg.get("enabled", False):
+            print("encryption_status: disabled")
+            return 0
+        try:
+            crypto.resolve_key(data_dir, allow_prompt=False)
+            print("encryption_status: unlocked")
+        except crypto.CortexKeyUnavailableError:
+            print("encryption_status: locked")
+        return 0
+
+    raise AssertionError(f"unknown key_cmd: {args.key_cmd!r}")
+
+
+def _encrypt_cmd(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
+    """Task 9 (v9.8.0): brain encrypt --check | --execute | --rollback.
+
+    Delegates to the standalone migration module at
+    .protocol-state/migrate_cortex_encrypt_9_8.py via importlib so brain.py
+    does not statically import it (keeps sqlcipher3 / argon2-cffi optional).
+
+    --check:   pass --data-dir + --check to the migration; no key needed.
+    --execute: resolve the key via crypto.resolve_key(data_dir); pass --key-b64;
+               exit 8 if key unavailable (encrypted brain, no key).
+    --rollback: pass --data-dir + --rollback; no key needed.
+    """
+    import base64
+    import importlib.util
+
+    data_dir = paths.data_dir(repo, cfg, allow_unsafe=allow_unsafe)
+    mig_path = Path(__file__).resolve().parents[1] / "migrate_cortex_encrypt_9_8.py"
+
+    spec = importlib.util.spec_from_file_location("mig_enc", mig_path)
+    mig = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mig)
+
+    mig_argv = ["--data-dir", str(data_dir)]
+
+    if args.check:
+        mig_argv.append("--check")
+    elif args.rollback:
+        mig_argv.append("--rollback")
+    elif args.execute:
+        # --execute requires the key; resolve it now.
+        from cortex import crypto
+        try:
+            key_bytes = crypto.resolve_key(data_dir)
+        except crypto.CortexKeyUnavailableError as exc:
+            print(
+                f"ERROR: cannot encrypt — no key available: {exc}\n"
+                "Run `brain key set` first or set DZP_CORTEX_KEY.",
+                file=sys.stderr,
+            )
+            return 8
+        key_b64 = base64.b64encode(key_bytes).decode()
+        mig_argv += ["--execute", "--key-b64", key_b64]
+
+    return mig.main(mig_argv)
 
 
 def _export(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:

@@ -150,6 +150,17 @@ DEFAULT_CONFIG: dict[str, Any] = {
     # <data_dir>/backups/.  Oldest brain-*.db files beyond this count are pruned
     # after each new backup.  SEC-CORTEX-ACCESS-009 (v9.7.1).
     "backup_retention_count": 3,
+    # SEC-CORTEX-ACCESS-007 (v9.8.0): Encryption-at-rest configuration.
+    # enabled: False (default) = plaintext SQLite; True = encrypted via sqlcipher.
+    # backend: must be "sqlcipher" when enabled=True.
+    # key_env: environment variable name holding the encryption key (base64 or file: ref).
+    # kdf: key derivation function parameters (argon2id tuning).
+    "encryption": {
+        "enabled": False,
+        "backend": "sqlcipher",
+        "key_env": "DZP_CORTEX_KEY",
+        "kdf": {"algorithm": "argon2id", "memory_kib": 65536, "time_cost": 3, "parallelism": 1},
+    },
 }
 
 
@@ -263,6 +274,12 @@ def validate(cfg: dict[str, Any], repo_root: str | Path | None = None, *, allow_
     mfb = cfg.get("max_file_bytes", DEFAULT_CONFIG["max_file_bytes"])
     if isinstance(mfb, bool) or not isinstance(mfb, int) or mfb <= 0:
         raise ValueError("max_file_bytes must be a positive integer")
+    # SEC-CORTEX-ACCESS-007 (v9.8.0): validate encryption config block.
+    enc = cfg.get("encryption", DEFAULT_CONFIG["encryption"])
+    if not isinstance(enc, dict):
+        raise ValueError("encryption must be a mapping")
+    if enc.get("enabled") and enc.get("backend") != "sqlcipher":
+        raise ValueError("encryption.backend must be 'sqlcipher' when encryption.enabled is true")
     for key in ("include_folders", "include_files", "include_protected", "include_reports", "include_code", "exclude_tokens"):
         if not isinstance(cfg.get(key), list):
             raise ValueError(f"{key} must be a list")

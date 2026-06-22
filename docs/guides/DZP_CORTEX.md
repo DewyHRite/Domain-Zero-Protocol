@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
 # DZP Cortex — Complete Guide
 
-**Version**: 9.7.2
+**Version**: 9.8.0
 **Last Updated**: 2026-06-18
 **Status**: Production-Ready
 **Audience**: DZP operators and resident agents
@@ -251,6 +251,29 @@ Use the root wrappers (`scripts/brain.ps1` on Windows, `scripts/brain.sh` on POS
 | `SchemaTooNewError` / `SchemaMismatchError` | The DB is newer than this engine. Upgrade the engine, or restore a compatible backup. Fails closed on all ops by design. |
 | `brain status` shows `degraded`/`unavailable` | Inspect `backup_info` + `integrity-fail.flag`; restore via `brain restore --from <backup> --verify`. |
 | Memories seem to "vanish" pre-v9.7.2 | The SEC-CORTEX-MEM-001 keying bug — upgrade to v9.7.2, re-run `brain seed` (§5). |
+| `database is locked` / silent hang on Windows+OneDrive | See §10.1 below. |
+
+### 10.1 Windows + OneDrive: database lock during index / migration
+
+OneDrive's real-time sync can hold an open file handle on `brain.db` while it uploads
+a recent change. If `brain index` (full rebuild) or a schema migration (`--execute`) is
+run while OneDrive is actively syncing, SQLite may see a locked file and either fail or
+hang.
+
+**Mitigation (before any full index or schema migration):**
+
+1. In the system tray, click the OneDrive cloud icon.
+2. Select **"Pause syncing"** → choose **"2 hours"** (or "Until I restart").
+3. Run your `brain index` or migration command.
+4. Re-enable sync afterward.
+
+This is only needed for full rebuilds and migrations. Incremental re-indexes
+(`brain index --incremental`) and normal `brain query` / `brain remember` operations are
+short-lived and rarely conflict with OneDrive sync.
+
+> The default Cortex data directory (`%LOCALAPPDATA%\dzp-cortex\`) is **not** inside the
+> OneDrive-managed folder on most systems, so this issue arises only if you have
+> customized `data_dir:` in `brain.config.yaml` to a OneDrive-synced path.
 
 ---
 

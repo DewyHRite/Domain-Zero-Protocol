@@ -1,7 +1,7 @@
 # Domain Zero Protocol
-<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
 
-**Version**: 9.7.2 | **Last Updated**: 2026-06-18
+**Version**: 9.8.0 | **Last Updated**: 2026-06-22
 
 A nine-agent AI development system plus one external auditor inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
 
@@ -18,7 +18,6 @@ Domain Zero Protocol bundles a complete, opinionated AI-development workflow. Ev
 - **Safety-first design** — Absolute Zero Protocol, kill-switch emergency stop, work-session fatigue monitoring (4h/6h/8h alerts), and user-authority-first decisioning.
 - **Skills system** — `/session`, `/ts-tier*`, `/brain`, and per-agent slash commands for common operations.
 - **Protected project memory** — append-only dev-notes, security-review, and domain-record documents form a permanent, auditable project history.
-- **Distribution architecture** — a dev/distro split with an allowlist publisher that scrubs identity/PII and enforces a version-consistency gate before anything ships publicly.
 
 ---
 
@@ -285,6 +284,36 @@ The template pre-wires a `hooks.SessionEnd` index refresh and allow-lists the `b
 
 > **Note:** Cortex stores all runtime data (DB, memories, model cache) in an external dir (`%LOCALAPPDATA%/dzp-cortex/` on Windows; XDG equivalent on macOS/Linux), never inside the repo. The data dir refuses cloud-synced locations (OneDrive/Dropbox) and network shares.
 
+#### Encryption-at-Rest (v9.8.0, opt-in)
+
+Cortex supports SQLCipher-based AES-256 encryption of the vector database (PLAN-CORTEX-ENC-001).
+
+**Why it matters — OneDrive/cloud-sync exposure:** Even though the data dir rejects OneDrive paths at setup time, Windows occasionally redirects `%LOCALAPPDATA%` transparently (roaming profiles, IT policy). Enabling encryption ensures the `brain.db` file is unreadable without the key even if it lands in a synced folder.
+
+**Opt-in flow:**
+
+```bash
+# 1. Install encryption dependencies (one-time, not included in the base install)
+pip install -r requirements-enc.txt
+
+# 2. Set the encryption key (stored in the system keyring by default)
+scripts/brain.ps1 key set        # POSIX: scripts/brain.sh key set
+
+# 3. Encrypt the existing plaintext database (backup-first, atomic)
+scripts/brain.ps1 encrypt --execute   # POSIX: scripts/brain.sh encrypt --execute
+
+# 4. Verify
+scripts/brain.ps1 status         # expect: availability_status: ok, encrypted: true
+```
+
+**Scope — single-user only:** Encryption is per-install. Shared-brain installs (multiple DZP projects sharing one `brain.db`) cannot use encryption in v9.8.0 — the `encrypt` command will refuse when a shared ledger is detected. Multi-install shared-key support is deferred to v9.9.x.
+
+**Residuals to clean up after encrypting:**
+
+- `*.pre-encrypt.*.bak` — the plaintext backup created by `brain encrypt --execute`. Securely delete it once you have verified the encrypted brain is healthy (`brain status` reports ok).
+- `memories/*.jsonl` export snapshots — these are written in plaintext by `brain export`. Keep them encrypted or delete them when no longer needed.
+- **Windows salt-ACL caveat:** The Argon2id salt file written to the data dir is ACL-restricted to the current user on Windows. On non-Windows hosts the salt file falls back to `0600` permissions; verify with `ls -l` if you are on a shared system.
+
 ---
 
 ## 📚 Documentation Structure
@@ -416,6 +445,6 @@ Contributions welcome! Please read the contribution guidelines and submit pull r
 
 ---
 
-**Domain Zero Protocol v9.7.2**
+**Domain Zero Protocol v9.8.0**
 **AI-Assisted Development Done Right**
 

@@ -47,3 +47,12 @@ class GraphSchemaError(CortexError):
     or when required graph tables are missing from the schema. (WI-5, v9.6.0)"""
 
     exit_code = 7
+
+
+class CortexKeyUnavailableError(CortexError):
+    """The encryption key could not be resolved (no env key, no keystore entry,
+    and no interactive TTY for a passphrase prompt). v9.8.0 PLAN-CORTEX-ENC-001
+    (SEC-CORTEX-ACCESS-007b): non-interactive lifecycle events must surface this
+    as exit code 8 and fail-soft when the step is not required."""
+
+    exit_code = 8

@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
 # Memory Tool Configuration Guide
 ## Enabling Claude Memory Tool Beta for DZP v8.12.0
 

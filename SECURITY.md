@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
 # Security Policy
 
 ## Scope
@@ -6,7 +6,8 @@
 The Domain Zero Protocol security policy covers:
 
 ### In Scope
-- **Protocol Specifications**: Security flaws in agent protocols (`CLAUDE.md`, `YUUJI.md`, `MEGUMI.md`, `NOBARA.md`, `GOJO.md`)
+- **Protocol Specifications**: Security flaws in agent protocols (`CLAUDE.md` and `protocol/*.agent.md` — the 9 resident agents Gojo/Yuuji/Megumi/Nobara/Todo/Maki/Panda/Inumaki/Sukuna plus the Toji external auditor)
+- **DZP Cortex (local semantic memory)**: Flaws in the on-device brain index (`.protocol-state/brain/cortex/`), its trust boundaries, secret-detection, access guards, or storage handling
 - **Configuration Files**: Vulnerabilities in `protocol.config.yaml`, state templates, or AI instructions
 - **Security Agent Logic**: Flaws in MEGUMI's OWASP Top 10 review process or security standards
 - **Tier System**: Security bypasses or privilege escalation in tier enforcement
@@ -30,18 +31,12 @@ We provide security updates for the following versions:
 
 | Version | Supported          | Status |
 | ------- | ------------------ | ------ |
-| 8.11.0  | :white_check_mark: | Current stable release |
-| 8.10.0  | :white_check_mark: | Previous stable release (still supported) |
-| 8.8.0   | :white_check_mark: | Maintenance mode (critical fixes only) |
-| 8.6.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
-| 8.5.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
-| 8.4.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
-| 8.3.x   | :white_check_mark: | Maintenance mode (critical fixes only) |
-| 7.x     | :x:                | End of life (EOL) |
-| 6.x     | :x:                | End of life (EOL) |
-| < 6.0   | :x:                | End of life (EOL) |
+| 9.7.x   | :white_check_mark: | Current stable release (security + bug fixes) |
+| < 9.7.0 | :x:                | End of life (EOL) — upgrade to the latest 9.7.x release |
 
-**Upgrade Recommendation**: Users on unsupported versions should upgrade to v8.11.0 immediately.
+**Support Policy**: Only the **latest minor release line (currently 9.7.x)** receives security updates. All earlier versions are end-of-life.
+
+**Upgrade Recommendation**: Users on any version below the current 9.7.x line should upgrade to the latest release immediately. See `VERSION.md` for the current version.
 
 ---
 
@@ -212,7 +207,7 @@ You must NOT:
 Domain Zero Protocol's security design addresses OWASP Top 10 (2021):
 
 - **A01:2021 – Broken Access Control**: Tier system enforces least privilege
-- **A02:2021 – Cryptographic Failures**: MEGUMI reviews crypto implementations in Tier 3
+- **A02:2021 – Cryptographic Failures**: Megumi reviews crypto in Tier 3; DZP Cortex stores data on-device only (no cloud inference), with opt-in encryption-at-rest in development for v9.8.0
 - **A03:2021 – Injection**: YUUJI's TDD approach includes injection test cases
 - **A04:2021 – Insecure Design**: NOBARA integrates security into UX design
 - **A05:2021 – Security Misconfiguration**: `protocol.config.yaml` provides secure defaults
@@ -226,32 +221,22 @@ Domain Zero Protocol's security design addresses OWASP Top 10 (2021):
 
 ## Security Changelog
 
-### Version 6.2.7 (Current)
-- ✅ Enhanced verification scripts with PyYAML error handling
-- ✅ Added pre-push version verification requirements
-- ✅ Updated CODEOWNERS with tracked documentation files
-- ✅ Fixed GitHub Actions workflow configurations
+> Full version history is in `VERSION.md` and `CHANGELOG.md`; per-finding SEC-ID detail lives in
+> `.protocol-state/security-review.md`. Below are the recent **security-relevant** releases.
 
-### Version 6.2.3
-- ✅ Added comprehensive SECURITY.md with vulnerability disclosure policy
-- ✅ Established coordinated disclosure timeline (90 days)
-- ✅ Defined security severity levels (CVSS 3.1-based)
-- ✅ Implemented safe harbor protections for security researchers
+### Recent security-relevant releases (9.x)
+- **v9.7.2** — Cortex memory-keying silent data-loss fix (SEC-CORTEX-MEM-001) + content-addressed migration hardening
+- **v9.7.1** — Cortex Access Hardening (CIA-triad): anti-destruction guard on shared brains, pre-op backups + `PRAGMA integrity_check`, graceful degradation (SEC-CORTEX-ACCESS-008/009/010)
+- **v9.4.1** — Protected-document append-only enforcement (FEAT-GUARD-001): pre-commit byte-prefix guard on `dev-notes.md` / `security-review.md` / `domain.record.md`
+- **v9.3.2 – v9.3.4** — Cortex trust-boundary default-deny, placeholder-aware secret detection, and a fail-closed schema-version guard
+- **v9.1.0** — DZP Cortex local semantic memory introduced (on-device only; no cloud inference)
+- **v9.0.0** — Distro publish architecture: identity/PII scrub + content-PII audit + version-consistency gate for every published release
 
-### Version 6.2.1
-- ✅ Added CODEOWNERS for security-critical files
-- ✅ Implemented canonical source verification workflow
-- ✅ Enhanced agent self-identification standards
-- ✅ Updated MEGUMI protocol with OWASP Top 10 (2021) alignment
+*(In development for v9.8.0: opt-in encryption-at-rest for the Cortex brain — SQLCipher AES-256 with Argon2id/OS-keystore key management.)*
 
-### Version 6.1.0
-- ✅ Introduced Tier 3 multi-model security review
-- ✅ Added Trigger 19 intelligence reporting system
-- ✅ Implemented protocol authority enforcement (Revision 4)
-
-### Version 6.0.0
-- ✅ Initial public release with four-agent architecture
-- ✅ Baseline OWASP Top 10 security review process
+### Earlier history
+- **8.x** — Nine-agent system, Kill Switch protocol, Custom Agent Security Framework, Tier Validation, Toji external auditor
+- **6.x – 7.x** — Initial public release, coordinated-disclosure policy, CVSS severity levels, safe-harbor protections, Tier-3 security review (EOL)
 
 ---
 
@@ -288,9 +273,9 @@ When reporting, please indicate:
 
 This security policy is versioned alongside the Domain Zero Protocol:
 
-- **Current Version**: 1.4.0 (matches Domain Zero Protocol v8.11.0)
-- **Last Updated**: December 29, 2025
-- **Next Review**: January 2026 (or upon major protocol update)
+- **Current Version**: 1.5.0 (matches Domain Zero Protocol v9.8.0)
+- **Last Updated**: June 20, 2026
+- **Next Review**: Upon the next minor/major protocol update
 
 Changes to this policy will be documented in `CHANGELOG.md` and announced via GitHub releases.
 

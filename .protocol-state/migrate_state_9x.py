@@ -163,6 +163,65 @@ class StateMigration9x:
             applied += 1
         return applied
 
+    # -- STATE-LEGACY: invalid enum / missing manifest sanitization -----------
+
+    # Valid values for session_tracking...user_last_choice (continue|break|null).
+    _VALID_USER_LAST_CHOICE = {None, "continue", "break"}
+
+    def _find_invalid_user_last_choice(self, state: Dict[str, Any]) -> List[str]:
+        """Return list of dot-paths where user_last_choice holds an invalid value.
+
+        STATE-LEGACY: legacy state can carry user_last_choice=="pause" which is
+        not a valid enum member (valid set: continue|break|null).  Collecting
+        paths lets us report them in --check without mutating state.
+        """
+        bad: List[str] = []
+        tracking = state.get("session_tracking", {})
+        val = tracking.get("user_last_choice")
+        if val not in self._VALID_USER_LAST_CHOICE:
+            bad.append(f"session_tracking.user_last_choice = {val!r} → null")
+        # Also scan nested history entries.
+        for i, entry in enumerate(tracking.get("history", [])):
+            v = entry.get("user_last_choice")
+            if v not in self._VALID_USER_LAST_CHOICE:
+                bad.append(f"session_tracking.history[{i}].user_last_choice = {v!r} → null")
+        return bad
+
+    def apply_legacy_enum_fixes(self, state: Dict[str, Any]) -> int:
+        """Null out any invalid user_last_choice values. Returns count of fixes."""
+        fixed = 0
+        tracking = state.get("session_tracking")
+        if not isinstance(tracking, dict):
+            return fixed
+        if tracking.get("user_last_choice") not in self._VALID_USER_LAST_CHOICE:
+            tracking["user_last_choice"] = None
+            fixed += 1
+        for entry in tracking.get("history", []):
+            if isinstance(entry, dict) and entry.get("user_last_choice") not in self._VALID_USER_LAST_CHOICE:
+                entry["user_last_choice"] = None
+                fixed += 1
+        return fixed
+
+    def _ensure_snapshot_manifest(self) -> str | None:
+        """Create a minimal snapshot-manifest.json if it is absent.
+
+        STATE-LEGACY: some 8.x installs omit snapshot-manifest.json entirely,
+        which can cause validate-protocol to fail.  We create a minimal stub so
+        the validator finds the file.  Returns a description of the action taken,
+        or None if the file already existed.
+        """
+        manifest = self.state_dir / "snapshot-manifest.json"
+        if manifest.exists():
+            return None
+        stub = {
+            "version": "1.0.0",
+            "created": _now_iso(),
+            "snapshots": [],
+            "_note": "Auto-created by migrate_state_9x.py STATE-LEGACY sanitizer.",
+        }
+        manifest.write_text(json.dumps(stub, indent=2) + "\n", encoding="utf-8")
+        return f"created missing {manifest.name} (stub)"
+
     # -- timestamp sanitization --------------------------------------------
     def _walk_sanitize(self, node: Any, path: str,
                        changes: List[Tuple[str, str, str]], apply: bool) -> Any:
@@ -228,6 +287,8 @@ class StateMigration9x:
         state = self.load()
         key_changes = self.plan_key_injections(state)
         ts_changes = self.plan_timestamp_fixes(state)
+        enum_changes = self._find_invalid_user_last_choice(state)
+        manifest_missing = not (self.state_dir / "snapshot-manifest.json").exists()
         print("=== 8.x -> 9.x State Migration (DRY RUN) ===")
         print(f"State file: {self.state_file}")
         print(f"\nRequired-key injections ({len(key_changes)}):")
@@ -240,7 +301,13 @@ class StateMigration9x:
             print(f"  ~ {path}: {old} -> {new}")
         if not ts_changes:
             print("  (none - no naive timestamps detected)")
-        total = len(key_changes) + len(ts_changes)
+        print(f"\nSTATE-LEGACY enum fixes ({len(enum_changes)}):")
+        for c in enum_changes:
+            print(f"  ~ {c}")
+        if not enum_changes:
+            print("  (none - user_last_choice values are valid)")
+        print(f"\nSnapshot-manifest: {'MISSING (will create stub)' if manifest_missing else 'present'}")
+        total = len(key_changes) + len(ts_changes) + len(enum_changes) + (1 if manifest_missing else 0)
         print(f"\nTotal changes that WOULD be applied: {total}")
         print("Run with --execute to apply (a timestamped backup is created first).")
         return 0 if total >= 0 else 1
@@ -252,7 +319,9 @@ class StateMigration9x:
             state = self.load()
             key_changes = self.plan_key_injections(state)
             ts_changes = self.plan_timestamp_fixes(state)
-            total = len(key_changes) + len(ts_changes)
+            enum_changes = self._find_invalid_user_last_choice(state)
+            manifest_missing = not (self.state_dir / "snapshot-manifest.json").exists()
+            total = len(key_changes) + len(ts_changes) + len(enum_changes) + (1 if manifest_missing else 0)
             if total == 0:
                 print("[OK] State already conforms to 9.x shape. Nothing to do.")
                 return 0
@@ -260,8 +329,14 @@ class StateMigration9x:
             print(f"[BACKUP] {backup}")
             applied_keys = self.apply_key_injections(state)
             applied_ts = self.apply_timestamp_fixes(state)
+            applied_enum = self.apply_legacy_enum_fixes(state)
             self._atomic_write(state)
-        print(f"[OK] Injected {applied_keys} key(s); repaired {applied_ts} timestamp(s).")
+        # Manifest is created outside the state lock (it's a separate file).
+        manifest_action = self._ensure_snapshot_manifest()
+        print(f"[OK] Injected {applied_keys} key(s); repaired {applied_ts} timestamp(s); "
+              f"fixed {applied_enum} enum value(s).")
+        if manifest_action:
+            print(f"[OK] {manifest_action}")
         print(f"[OK] Wrote {self.state_file}")
         print("     Verify with: python scripts/validate-protocol.py --check")
         return 0

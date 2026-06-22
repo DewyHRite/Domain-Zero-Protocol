@@ -1,9 +1,31 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** v9.7.2
-**Release Date:** 2026-06-18
-**Release Type:** PATCH Release (SEC-CORTEX-MEM-001 memory-keying data loss + BUG-CORTEX-MIGRATE-001 real-vec migration)
+**Version:** 9.8.0
+**Release Date:** 2026-06-22
+**Release Type:** MINOR Release (Cortex encryption-at-rest + v9.7.2 upstream-upgrade fold-in)
+
+---
+
+## Release Summary — v9.8.0 (MINOR)
+
+v9.8.0 adds **Cortex encryption-at-rest** (PLAN-CORTEX-ENC-001) and folds in a downstream-reported
+**v9.7.2 upstream-upgrade bundle** plus the **orphan-GC** feature and its P1 security remediation.
+
+- **Cortex encryption-at-rest (opt-in, default OFF)** — SQLCipher full-DB AES-256; Argon2id + OS-keyring
+  hybrid key model (`DZP_CORTEX_KEY` `file:` fallback); reversible backup-first migration
+  (`migrate_cortex_encrypt_9_8.py`, vec0/FTS5 smoke-verify, atomic replace, shared-brain ledger refusal);
+  `brain key`/`brain encrypt` CLI; `brain status` `encryption_status` + posture advisory. Disabled path
+  byte-for-byte unchanged. **SEC-CORTEX-ENC-001..009 CLOSED; Megumi Tier-3 @approved.** 7 accepted P3
+  residuals → v9.9.x (shared-brain key provisioning + rotation, exports encryption, key zeroization).
+- **`brain reset --scope orphans`** (BUG-CORTEX-PROLIF) — safe GC of orphaned Cortex install dirs:
+  dry-run default; quarantine-to-`.trash-<UTC-ts>` on `--execute`; `--hard-delete` for permanent.
+  P1 remediation **SEC-9720-008/009/010/011 CLOSED** (TOCTOU re-validation + symlink/junction reject;
+  preserve graph/memories/recursive/unreadable; 30-day recency gate; quarantine default).
+- **v9.7.2 upstream-upgrade bundle** (Groups A/C) — SEC-9720-001/004/006, C-1 engine preflight,
+  STATE-LEGACY sanitizer, DRIFT-ENGINE engine-parity check, ONEDRIVE-LOCK + GUARD-FRICTION docs.
+- **Tests**: 935 passed / 3 skipped (`tests/brain`); full suite green. Yuuji TDD throughout.
+- **Note**: single-user encryption scope; shared-brain key provisioning + rotation deferred to v9.9.x.
 
 ---
 

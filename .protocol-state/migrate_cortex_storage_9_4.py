@@ -53,12 +53,24 @@ _BRAIN_DIR = _PROTO_STATE / "brain"
 if str(_BRAIN_DIR) not in sys.path:
     sys.path.insert(0, str(_BRAIN_DIR))
 
-# Shared constants / helpers from store.py so DDL and ref_id are not duplicated.
-from cortex.store import (  # noqa: E402
-    SUPPORTED_SCHEMA,
-    Store,
-    _make_ref_id,
-)
+# C-1: Cortex engine preflight — fail with a clear message if the engine package
+# is absent (framework-only sync omits brain/).  Keep identical behaviour when
+# the engine IS present so zero runtime cost is added to normal usage.
+try:
+    # Shared constants / helpers from store.py so DDL and ref_id are not duplicated.
+    from cortex.store import (  # noqa: E402
+        SUPPORTED_SCHEMA,
+        Store,
+        _make_ref_id,
+    )
+except ImportError as _cortex_import_err:  # pragma: no cover
+    print(
+        "ERROR: Cortex engine package not found (.protocol-state/brain/cortex). "
+        "A framework-only sync omits the engine; sync the full distro (brain/) "
+        "before running migrations.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 # ---------------------------------------------------------------------------
 # Schema version constants
@@ -152,13 +164,94 @@ def _table_exists(conn: sqlite3.Connection, name: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# SEC-9720-001: path-traversal guard (mirrors SEC-GRAPH-010 in migrate_cortex_graph_9_6.py)
+# ---------------------------------------------------------------------------
+
+def _validate_db_path(db_path_str: str) -> Path:
+    """Resolve and validate the DB path.
+
+    SEC-9720-001 (mirrors SEC-GRAPH-010 in migrate_cortex_graph_9_6.py):
+    - Reject paths that contain '..' components before resolution (traversal attempt).
+    - Resolve symlinks so the actual target is checked.
+    - The resolved path must be an absolute path (sanity check; Path.resolve() always is).
+
+    Returns the resolved Path if valid. Raises ValueError if traversal detected.
+    """
+    raw = Path(db_path_str)
+
+    # Check for '..' in the raw path parts before resolution — this catches
+    # intentional traversal attempts even if the resolved path happens to be safe.
+    if ".." in raw.parts:
+        raise ValueError(
+            f"SEC-9720-001: DB path contains '..' traversal component: {db_path_str!r}. "
+            "Specify an absolute path to the Cortex DB."
+        )
+
+    resolved = raw.expanduser().resolve()
+    return resolved
+
+
+# ---------------------------------------------------------------------------
+# SEC-9720-006: comment-aware YAML scalar extraction helper
+# ---------------------------------------------------------------------------
+
+def _parse_yaml_scalar(text: str) -> dict[str, str]:
+    """Parse simple key: value YAML scalars from *text*, stripping inline comments.
+
+    SEC-9720-006: the previous hand-rolled parser captured trailing comment text
+    (e.g. ``install_group: foo  # bar`` → value became ``"foo  # bar"``).
+
+    Strategy (in order):
+      1. Try yaml.safe_load() — PyYAML is a project dependency and handles all
+         quoting / comment / escaping correctly.
+      2. If yaml is unavailable (ImportError), fall back to a comment-aware line
+         parser that strips an unquoted trailing ``# ...`` comment before assigning
+         the scalar, and still strips surrounding quotes.
+
+    Only simple top-level ``key: value`` scalars are extracted; nested structures
+    are silently ignored (we only need a handful of scalar brain.config.yaml keys).
+    """
+    try:
+        import yaml as _yaml  # PyYAML — listed in project requirements
+        loaded = _yaml.safe_load(text) or {}
+        return {
+            str(k): str(v)
+            for k, v in loaded.items()
+            if isinstance(v, (str, int, float, bool)) and v is not None
+        }
+    except ImportError:
+        pass
+
+    # Fallback: comment-aware line parser.
+    result: dict[str, str] = {}
+    for line in text.splitlines():
+        m = re.match(r"^\s*(\w+)\s*:\s*(.+)", line)
+        if not m:
+            continue
+        key = m.group(1).strip()
+        raw_val = m.group(2).strip()
+        # If the value is quoted, use the quoted content verbatim (no comment strip).
+        if (raw_val.startswith('"') and raw_val.endswith('"')) or \
+                (raw_val.startswith("'") and raw_val.endswith("'")):
+            result[key] = raw_val[1:-1]
+        else:
+            # Strip trailing unquoted inline comment (`` # ...``).
+            comment_pos = raw_val.find(" #")
+            if comment_pos != -1:
+                raw_val = raw_val[:comment_pos]
+            result[key] = raw_val.strip()
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Resolve the DB path
 # ---------------------------------------------------------------------------
 
 def _resolve_db(args_db: str | None, args_repo: str | None) -> Path:
     """Return the brain.db path from --db, --repo, or the default OS location."""
     if args_db:
-        return Path(args_db).expanduser().resolve()
+        # SEC-9720-001: validate before accepting the caller-supplied path.
+        return _validate_db_path(args_db)
     # Derive via cortex.paths (respects DZP_CORTEX_DATA_DIR etc.)
     from cortex import paths as _paths
     repo = Path(args_repo).resolve() if args_repo else Path.cwd()
@@ -166,13 +259,9 @@ def _resolve_db(args_db: str | None, args_repo: str | None) -> Path:
         config: dict[str, Any] = {}
         cfg_file = repo / ".protocol-state" / "brain" / "brain.config.yaml"
         if cfg_file.exists():
-            import re as _re
-            # Minimal YAML scalar extraction: avoid requiring PyYAML at migration time.
+            # SEC-9720-006: use comment-aware YAML parser instead of raw regex.
             text = cfg_file.read_text(encoding="utf-8")
-            for line in text.splitlines():
-                m = _re.match(r"^\s*(\w+)\s*:\s*(.+)", line)
-                if m:
-                    config[m.group(1).strip()] = m.group(2).strip().strip('"').strip("'")
+            config = _parse_yaml_scalar(text)
         db = _paths.db_path(repo, config, allow_unsafe=True)
         return db
     except Exception as exc:
@@ -1049,7 +1138,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repo", metavar="PATH", help="Repo root (used to derive DB path)")
 
     args = parser.parse_args(argv)
-    db = _resolve_db(args.db, args.repo)
+    try:
+        db = _resolve_db(args.db, args.repo)
+    except ValueError as exc:
+        # SEC-9720-001: path-traversal detected — exit non-zero with a clear message.
+        print(f"[ERROR] {exc}", file=sys.stderr)
+        return 1
 
     if args.check:
         return cmd_check(db)

@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
-**Version**: 9.7.2
+**Version**: 9.8.0
 **Last Updated**: 2026-06-18
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
 
@@ -225,14 +225,59 @@ confirm the schema version advanced.
 For the full Cortex architecture, retention configuration, and per-install storage
 budgets, see **[docs/guides/DZP_CORTEX.md](../guides/DZP_CORTEX.md)**.
 
-#### Optional: install the agent-file protection git hook
+#### Post-upgrade / post-clone: install (or re-install) the git hooks
+
+After every DZP upgrade or fresh clone, run the hook installer once to wire the
+unified pre-commit guard (append-only enforcement, protected-path guard, protocol
+validation):
 
 ```bash
-sh scripts/install-git-hooks.sh        # POSIX
-# pwsh scripts/install-git-hooks.ps1   # Windows PowerShell
+# POSIX (macOS / Linux / WSL)
+sh scripts/install-git-hooks.sh
+
+# Windows PowerShell
+pwsh scripts\install-git-hooks.ps1
 ```
-This opt-in pre-commit hook blocks accidental commits to protected protocol/agent files
-(overridable with `git commit --no-verify`).
+
+The script backs up any non-DZP hook that was already present, then installs the
+DZP unified hook.
+
+**Husky repos**: if your project uses [Husky](https://typicode.github.io/husky/), the
+hook must live in `.husky/pre-commit` instead of `.git/hooks/pre-commit`. Copy (or
+source) `scripts/git-hooks/pre-commit` from there:
+
+```bash
+cat scripts/git-hooks/pre-commit >> .husky/pre-commit
+```
+
+This guard is the mechanical enforcement of the append-only rule for the three
+protected documents (`dev-notes.md`, `security-review.md`, `domain.record.md`).
+See the **FEAT-GUARD-001** section in `CLAUDE.md` for override instructions.
+
+#### Bypassing the guard for legitimate edits
+
+The guard protects the three append-only docs and immutable protocol paths. For
+**authorized** single-commit overrides (e.g. editing `protocol.config.yaml` when the
+agent-file guard blocks it, or performing a Sukuna-via-Gojo-sanctioned config change):
+
+```bash
+# One-shot bypass — skips all DZP pre-commit checks for this commit only:
+git commit --no-verify -m "chore: update protocol.config.yaml (authorized)"
+```
+
+For **authorized full rewrites** of the three protected documents specifically
+(file rotation, emergency snapshot restore — see `scripts/file-rotate.py`):
+
+```bash
+DZP_ALLOW_PROTECTED_REWRITE=1 git commit -m "chore: rotate dev-notes.md"
+```
+
+`DZP_ALLOW_PROTECTED_REWRITE=1` bypasses only the append-only guard; all other
+hook checks still run. `--no-verify` skips the entire hook.
+
+**Important**: `--no-verify` bypasses are sanctioned only through the Sukuna
+(System Update Adversary) via Gojo coordination or by explicit User authorization.
+All uses should be noted in the session domain record.
 
 ---
 

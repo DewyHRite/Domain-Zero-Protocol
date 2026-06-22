@@ -445,10 +445,13 @@ test_config_completeness() {
         return 1
     fi
 
-    # Check for placeholder values that need to be updated
+    # Check for placeholder values that need to be updated.
+    # SEC-9720-004: the contact placeholder (email@example.com) is demoted to a
+    # WARNING so a fresh install passes verification; all other placeholders remain
+    # hard ERRORs because they affect project identity / repo references.
+    local contact_placeholder="email@example.com"
     local placeholders=(
         "Your Name"
-        "email@example.com"
         "Your Project Name"
         "Your Organization"
         "your-org/your-repo"
@@ -462,8 +465,13 @@ test_config_completeness() {
         fi
     done
 
+    # Check the contact placeholder separately as a warning (SEC-9720-004).
+    if echo "$config_content" | grep -q "$contact_placeholder"; then
+        write_warn "contact field still contains placeholder '$contact_placeholder' — update protocol.config.yaml with your real contact address."
+    fi
+
     if [ ${#placeholders_found[@]} -eq 0 ]; then
-        write_pass "No placeholder values detected in config"
+        write_pass "No (non-contact) placeholder values detected in config"
     else
         write_fail "Configuration contains placeholder values that must be updated:"
         for placeholder in "${placeholders_found[@]}"; do

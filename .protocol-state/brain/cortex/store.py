@@ -18,6 +18,15 @@ _log = logging.getLogger(__name__)
 
 from .errors import DependencyError, GraphSchemaError, QueryUnavailable, SchemaMismatchError, SchemaTooNewError
 
+# P3-ENC-1: narrow except for the ALTER TABLE self-heal in init_schema.
+# Build the tuple defensively so the module loads even without sqlcipher3.
+_OPERATIONAL_ERRORS: tuple[type[Exception], ...] = (sqlite3.OperationalError,)
+try:
+    import sqlcipher3 as _sqlcipher3
+    _OPERATIONAL_ERRORS = (sqlite3.OperationalError, _sqlcipher3.dbapi2.OperationalError)
+except Exception:
+    pass
+
 
 # SEC-CORTEX-ACCESS-008 (v9.7.1): Anti-destruction guard exceptions.
 
@@ -94,6 +103,7 @@ class Store:
         install_id: str | None = None,
         lru_eviction_enabled: bool = False,
         include_protected: list[str] | None = None,
+        encryption_key: bytes | None = None,
     ):
         # SEC-CORTEX-009 (v9.3.4): dim is interpolated into DDL; reject anything that
         # is not a plain positive integer (bool is a subclass of int, so it must be
@@ -119,6 +129,17 @@ class Store:
         # WI-S3-3 (v9.7.0): set of protected source paths for the eviction NEVER-evict guard.
         # Paths here (repo-relative) are never evicted regardless of trust/source_type.
         self._include_protected: set[str] = set(include_protected or [])
+        # PLAN-CORTEX-ENC-001 (v9.8.0, Task 7): optional 32-byte AES-256 key.
+        # When set, connect() routes through open_encrypted_connection (SQLCipher).
+        # When None (default), the existing plaintext sqlite3 path is byte-for-byte unchanged.
+        # SEC-CORTEX-ENC-004 (v9.8.0): validate key length up front — reject non-32-byte keys
+        # before any DB operation so callers get a clear error rather than a SQLCipher page-1
+        # HMAC failure or silent weak-key acceptance.
+        if encryption_key is not None:
+            from .errors import CortexKeyUnavailableError
+            if not isinstance(encryption_key, (bytes, bytearray)) or len(encryption_key) != 32:
+                raise CortexKeyUnavailableError("encryption key must be exactly 32 bytes")
+        self._encryption_key: bytes | None = encryption_key
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         # WI-6/WI-9 (PLAN-CORTEX-GRAPH-001 Phase 1a): single probe at __init__ time.
         # FTS5 is standard from SQLite 3.9+ but can be compiled out on some Linux distros.
@@ -127,6 +148,11 @@ class Store:
         self._bm25_available: bool = self._probe_fts5()
 
     def connect(self) -> sqlite3.Connection:
+        # PLAN-CORTEX-ENC-001 (v9.8.0, Task 7): route through encrypted factory when keyed.
+        # Lazy import keeps sqlcipher3 optional — not required unless encryption is enabled.
+        if self._encryption_key is not None:
+            from .crypto import open_encrypted_connection
+            return open_encrypted_connection(self.db_path, self._encryption_key)
         # SEC-001 (PLAN-DESIGN-001 §4/§6): set busy_timeout before any lock acquisition
         # so write transactions do not silently fail-fast on contention.
         conn = sqlite3.connect(self.db_path, timeout=10.0)
@@ -420,12 +446,19 @@ class Store:
         # the first_seen column was added.  ALTER TABLE ... ADD COLUMN is idempotent-
         # safe: we catch the OperationalError that SQLite raises if the column already
         # exists (it does not support IF NOT EXISTS for columns).
+        # P3-ENC-1: narrowed from broad Exception to _OPERATIONAL_ERRORS tuple so that
+        # programming errors (AttributeError, TypeError, etc.) are never swallowed.
+        # The tuple includes both sqlite3.OperationalError and (when installed)
+        # sqlcipher3.dbapi2.OperationalError — the two are distinct classes even though
+        # sqlcipher3 mirrors the stdlib DB-API 2.0 interface.
         try:
             conn.execute(
                 "ALTER TABLE cortex_installs ADD COLUMN first_seen TEXT"
             )
-        except sqlite3.OperationalError:
-            pass  # column already exists — older DB is now self-healed
+        except _OPERATIONAL_ERRORS as _alter_exc:
+            if "duplicate column name" not in str(_alter_exc).lower():
+                raise  # re-raise unexpected OperationalErrors
+            # column already exists — older DB is now self-healed
 
     def _stamp_install(self, conn: sqlite3.Connection, *, protocol_version: str | None = None) -> None:
         """Upsert this engine's row into cortex_installs.

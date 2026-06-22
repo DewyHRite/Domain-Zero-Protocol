@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.7.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.7.2
+**Version**: 9.8.0
 **Status**: Production
 **Last Updated**: 2026-06-18
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
@@ -4974,7 +4974,7 @@ preserved). 861 tests pass.
 | `.protocol-state/project-state.json` | `"protocol_version"` (3 occurrences: top-level, session_tracking, troubleshooting.history.metadata) |
 | All 10 `protocol/*.agent.md` | CORE FILE header, `protocol_version:` frontmatter, `## Agent Protocol File vX.Y.Z`, `**Version**` |
 | `protocol/sukuna.agent.md` | Also: `> **Protocol Version**: v9.7.2` |
-| `protocol/gojo.agent.md` | Also: `"protocol_version": "9.7.2"` JSON schema snippet |
+| `protocol/gojo.agent.md` | Also: `"protocol_version": "9.8.0"` JSON schema snippet |
 | `docs/guides/DISTRO_RELEASE_WORKFLOW.md` | CORE FILE header |
 | `scripts/git-hooks/pre-commit.ps1` | Header comment `(FEAT-GUARD-001, v9.7.1)` -> `v9.7.2` |
 | `scripts/install-git-hooks.sh` | Header comment `(FEAT-GUARD-001, v9.7.1)` -> `v9.7.2` |
