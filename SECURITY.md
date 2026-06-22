@@ -31,12 +31,12 @@ We provide security updates for the following versions:
 
 | Version | Supported          | Status |
 | ------- | ------------------ | ------ |
-| 9.7.x   | :white_check_mark: | Current stable release (security + bug fixes) |
-| < 9.7.0 | :x:                | End of life (EOL) — upgrade to the latest 9.7.x release |
+| 9.8.x   | :white_check_mark: | Current stable release (security + bug fixes) |
+| < 9.8.0 | :x:                | End of life (EOL) — upgrade to the latest 9.8.x release |
 
-**Support Policy**: Only the **latest minor release line (currently 9.7.x)** receives security updates. All earlier versions are end-of-life.
+**Support Policy**: Only the **latest minor release line (currently 9.8.x)** receives security updates. All earlier versions are end-of-life.
 
-**Upgrade Recommendation**: Users on any version below the current 9.7.x line should upgrade to the latest release immediately. See `VERSION.md` for the current version.
+**Upgrade Recommendation**: Users on any version below the current 9.8.x line should upgrade to the latest release immediately. See `VERSION.md` for the current version.
 
 ---
 
@@ -207,7 +207,7 @@ You must NOT:
 Domain Zero Protocol's security design addresses OWASP Top 10 (2021):
 
 - **A01:2021 – Broken Access Control**: Tier system enforces least privilege
-- **A02:2021 – Cryptographic Failures**: Megumi reviews crypto in Tier 3; DZP Cortex stores data on-device only (no cloud inference), with opt-in encryption-at-rest in development for v9.8.0
+- **A02:2021 – Cryptographic Failures**: Megumi reviews crypto in Tier 3; DZP Cortex stores data on-device only (no cloud inference), with opt-in AES-256 encryption-at-rest available since v9.8.0 (SQLCipher + Argon2id/OS-keyring; disabled by default — see `brain encrypt` to enable)
 - **A03:2021 – Injection**: YUUJI's TDD approach includes injection test cases
 - **A04:2021 – Insecure Design**: NOBARA integrates security into UX design
 - **A05:2021 – Security Misconfiguration**: `protocol.config.yaml` provides secure defaults
@@ -225,14 +225,13 @@ Domain Zero Protocol's security design addresses OWASP Top 10 (2021):
 > `.protocol-state/security-review.md`. Below are the recent **security-relevant** releases.
 
 ### Recent security-relevant releases (9.x)
+- **v9.8.0** — Cortex encryption-at-rest (PLAN-CORTEX-ENC-001): opt-in SQLCipher AES-256 with Argon2id/OS-keyring key management; reversible backup-first migration; SEC-CORTEX-ENC-001..009 CLOSED
 - **v9.7.2** — Cortex memory-keying silent data-loss fix (SEC-CORTEX-MEM-001) + content-addressed migration hardening
 - **v9.7.1** — Cortex Access Hardening (CIA-triad): anti-destruction guard on shared brains, pre-op backups + `PRAGMA integrity_check`, graceful degradation (SEC-CORTEX-ACCESS-008/009/010)
 - **v9.4.1** — Protected-document append-only enforcement (FEAT-GUARD-001): pre-commit byte-prefix guard on `dev-notes.md` / `security-review.md` / `domain.record.md`
 - **v9.3.2 – v9.3.4** — Cortex trust-boundary default-deny, placeholder-aware secret detection, and a fail-closed schema-version guard
 - **v9.1.0** — DZP Cortex local semantic memory introduced (on-device only; no cloud inference)
 - **v9.0.0** — Distro publish architecture: identity/PII scrub + content-PII audit + version-consistency gate for every published release
-
-*(In development for v9.8.0: opt-in encryption-at-rest for the Cortex brain — SQLCipher AES-256 with Argon2id/OS-keystore key management.)*
 
 ### Earlier history
 - **8.x** — Nine-agent system, Kill Switch protocol, Custom Agent Security Framework, Tier Validation, Toji external auditor
@@ -274,7 +273,7 @@ When reporting, please indicate:
 This security policy is versioned alongside the Domain Zero Protocol:
 
 - **Current Version**: 1.5.0 (matches Domain Zero Protocol v9.8.0)
-- **Last Updated**: June 20, 2026
+- **Last Updated**: June 22, 2026
 - **Next Review**: Upon the next minor/major protocol update
 
 Changes to this policy will be documented in `CHANGELOG.md` and announced via GitHub releases.

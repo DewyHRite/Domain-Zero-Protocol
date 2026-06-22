@@ -243,11 +243,22 @@ The script backs up any non-DZP hook that was already present, then installs the
 DZP unified hook.
 
 **Husky repos**: if your project uses [Husky](https://typicode.github.io/husky/), the
-hook must live in `.husky/pre-commit` instead of `.git/hooks/pre-commit`. Copy (or
-source) `scripts/git-hooks/pre-commit` from there:
+hook must live in `.husky/pre-commit` instead of `.git/hooks/pre-commit`. Run the
+installer scripts — they handle Husky detection automatically:
 
 ```bash
-cat scripts/git-hooks/pre-commit >> .husky/pre-commit
+# macOS/Linux
+bash scripts/install-git-hooks.sh
+
+# Windows (PowerShell)
+pwsh scripts\install-git-hooks.ps1
+```
+
+Or, if you prefer a manual copy, overwrite (do not append) the hook file to avoid
+duplicating the guard on reinstall:
+
+```bash
+cp scripts/git-hooks/pre-commit .husky/pre-commit
 ```
 
 This guard is the mechanical enforcement of the append-only rule for the three

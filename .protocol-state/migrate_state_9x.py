@@ -165,8 +165,12 @@ class StateMigration9x:
 
     # -- STATE-LEGACY: invalid enum / missing manifest sanitization -----------
 
-    # Valid values for session_tracking...user_last_choice (continue|break|null).
-    _VALID_USER_LAST_CHOICE = {None, "continue", "break"}
+    # Valid values for session_tracking...user_last_choice:
+    #   null / None — initial / cleared state
+    #   "continue"  — session resumed
+    #   "break"     — legacy alias (kept for backward compat)
+    #   "save_and_break" — value written by session_monitor.py:869-875 (SEC-CR101-002)
+    _VALID_USER_LAST_CHOICE = {None, "continue", "break", "save_and_break"}
 
     def _find_invalid_user_last_choice(self, state: Dict[str, Any]) -> List[str]:
         """Return list of dot-paths where user_last_choice holds an invalid value.
@@ -219,7 +223,20 @@ class StateMigration9x:
             "snapshots": [],
             "_note": "Auto-created by migrate_state_9x.py STATE-LEGACY sanitizer.",
         }
-        manifest.write_text(json.dumps(stub, indent=2) + "\n", encoding="utf-8")
+        # SEC-CR101-003: atomic write prevents partial-write corruption.
+        # Write to a temp file in the same directory, then os.replace() atomically.
+        tmp_path_str = None
+        fd, tmp_path_str = tempfile.mkstemp(
+            dir=str(self.state_dir), suffix=".tmp", prefix="snapshot-manifest-"
+        )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fh.write(json.dumps(stub, indent=2) + "\n")
+            os.replace(tmp_path_str, str(manifest))
+            tmp_path_str = None  # replaced successfully — nothing to clean up
+        finally:
+            if tmp_path_str is not None and os.path.exists(tmp_path_str):
+                os.unlink(tmp_path_str)
         return f"created missing {manifest.name} (stub)"
 
     # -- timestamp sanitization --------------------------------------------
@@ -251,6 +268,7 @@ class StateMigration9x:
         return len(changes)
 
     # -- backup / write -----------------------------------------------------
+    # SEC-CR101-003-DEFER (v9.9.x): extend backup/rollback to also cover snapshot-manifest.json
     def _backup(self) -> Path:
         self.backups_dir.mkdir(parents=True, exist_ok=True)
         ts = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')

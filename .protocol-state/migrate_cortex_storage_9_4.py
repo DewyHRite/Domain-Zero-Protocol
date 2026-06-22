@@ -263,7 +263,11 @@ def _resolve_db(args_db: str | None, args_repo: str | None) -> Path:
             text = cfg_file.read_text(encoding="utf-8")
             config = _parse_yaml_scalar(text)
         db = _paths.db_path(repo, config, allow_unsafe=True)
+        _validate_db_path(str(db))  # SEC-CR101-001: same traversal guard as --db
         return db
+    except ValueError:
+        # Path-traversal detected in config-derived path — propagate so main() exits non-zero.
+        raise
     except Exception as exc:
         print(f"[WARN] Could not resolve DB via cortex.paths: {exc}", file=sys.stderr)
         print("[WARN] Falling back to cwd/brain.db — use --db to specify explicitly.", file=sys.stderr)

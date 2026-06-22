@@ -303,7 +303,7 @@ scripts/brain.ps1 key set        # POSIX: scripts/brain.sh key set
 scripts/brain.ps1 encrypt --execute   # POSIX: scripts/brain.sh encrypt --execute
 
 # 4. Verify
-scripts/brain.ps1 status         # expect: availability_status: ok, encrypted: true
+scripts/brain.ps1 status         # expect: availability_status: ok, encryption_status: unlocked
 ```
 
 **Scope — single-user only:** Encryption is per-install. Shared-brain installs (multiple DZP projects sharing one `brain.db`) cannot use encryption in v9.8.0 — the `encrypt` command will refuse when a shared ledger is detected. Multi-install shared-key support is deferred to v9.9.x.
