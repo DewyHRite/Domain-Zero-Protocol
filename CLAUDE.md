@@ -921,7 +921,7 @@ Every significant protocol update MUST include a version number increment to mai
 - ✅ **Document patches in `protocol/SUKUNA-REPORT.md`** patch manifest for AI-assisted application
 - ✅ Document changes in version control commit message
 
-**Release & publishing (maintainer-internal — not part of the consumer protocol)**: The versioned dev/published branch scheme, the sanitized distribution-publishing tool, and the PR + automated-review release gate by which the canonical maintainer cuts releases are **internal to the canonical source** and are intentionally **not** shipped as part of the consumer-facing protocol. Consumers receive only sanitized, published releases from the [canonical source](https://github.com/DewyHRite/Domain-Zero-Protocol). *(Maintainers/forks: the full release/branch/PR/publish process is documented in the dev-only `docs/guides/DISTRO_RELEASE_WORKFLOW.md`, which is excluded from the published distribution.)*
+**Release & publishing (maintainer-internal — not part of the consumer protocol)**: The versioned dev/published branch scheme, the sanitized distribution-publishing tool, and the PR + automated-review release gate by which the canonical maintainer cuts releases are **internal to the canonical source** and are intentionally **not** shipped as part of the consumer-facing protocol. Consumers receive only sanitized, published releases from the [canonical source](https://github.com/DewyHRite/Domain-Zero-Protocol). *(Maintainers/forks: the full release/branch/PR/publish process is documented in a dev-only maintainer guide that is excluded from the published distribution.)*
 
 ### Version Numbering System
 
