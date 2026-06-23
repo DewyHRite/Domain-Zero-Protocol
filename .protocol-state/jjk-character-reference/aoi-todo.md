@@ -4,7 +4,7 @@
 **Source**: Jujutsu Kaisen Fandom Wiki
 **URL**: <https://jujutsu-kaisen.fandom.com/wiki/Aoi_Todo>
 **Downloaded**: 2025-11-25
-**Protocol Version**: v8.4.1
+**Protocol Version**: v9.8.1
 
 ---
 

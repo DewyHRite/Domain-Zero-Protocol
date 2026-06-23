@@ -3,7 +3,7 @@
 ## Domain Zero Protocol MCP Server Implementation
 
 **Version**: 1.0.0
-**Protocol Version**: 8.5.1
+**Protocol Version**: 9.8.1
 **Last Updated**: November 27, 2025
 **Purpose**: Set up the Domain Zero Protocol MCP server for token-optimized agent operations
 

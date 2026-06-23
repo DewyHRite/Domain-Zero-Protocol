@@ -456,10 +456,20 @@ def main(argv=None) -> int:
     db_path = Path(args.data_dir) / "brain.db"
 
     if args.check:
+        # Guard: do NOT call _install_count (which creates the file via sqlite3.connect)
+        # when the DB is absent — the documented no-mutation guarantee requires us to
+        # leave the filesystem completely untouched in --check mode.
+        if not db_path.exists():
+            print(
+                f"check: db_exists=False sqlcipher={sqlcipher_available()} db={db_path}",
+                file=sys.stderr,
+            )
+            print("ERROR: brain.db not found (no mutations performed)", file=sys.stderr)
+            return 1
         count = _install_count(db_path)
         print(
             f"check: installs={count} sqlcipher={sqlcipher_available()} "
-            f"db_exists={db_path.exists()} db={db_path}"
+            f"db_exists=True db={db_path}"
         )
         if not sqlcipher_available():
             print("ERROR: sqlcipher3 not installed", file=sys.stderr)

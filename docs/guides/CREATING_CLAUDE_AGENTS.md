@@ -1695,7 +1695,7 @@ Use Domain Zero agents as templates when creating new agents via `/agents`.
 ---
 
 **Version**: 3.2.0 (Comprehensive Tool Support)
-**Protocol Version**: 8.12.0
+**Protocol Version**: 9.8.1
 **Last Updated**: 2025-12-29
 
 **Changelog v3.2.0** (MINOR):

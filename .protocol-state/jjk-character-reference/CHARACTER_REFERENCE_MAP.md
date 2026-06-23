@@ -3,7 +3,7 @@
 # JJK Character Reference Mapping
 **Version**: 1.1.0
 **Created**: 2025-11-25
-**Protocol Version**: v8.5.1
+**Protocol Version**: v9.8.1
 **Purpose**: Maps Domain Zero agents to Jujutsu Kaisen character references
 
 ---

@@ -8,7 +8,7 @@ status: "Production-Ready"
 ---
 
 # Agent Handoff Specification
-## Domain Zero Protocol v8.9.0
+## Domain Zero Protocol v9.8.1
 
 **Version**: 1.1.0
 **Created**: November 18, 2025

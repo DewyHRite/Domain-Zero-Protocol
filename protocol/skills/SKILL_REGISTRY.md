@@ -10,7 +10,7 @@ status: "Production-Ready"
 # Domain Zero Protocol - Skill Registry
 
 **Version**: 3.2.2
-**Protocol Version**: 8.13.0
+**Protocol Version**: 9.8.1
 **Last Updated**: 2025-12-29
 
 ---

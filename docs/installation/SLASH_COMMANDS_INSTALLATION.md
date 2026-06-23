@@ -1,7 +1,7 @@
 <!-- [CORE FILE] - Domain Zero Protocol v9.8.1 -->
 # Slash Commands Installation Guide
 
-> **Protocol Version**: v8.5.1
+> **Protocol Version**: v9.8.1
 > **Purpose**: Set up `.claude/commands/` for quick agent invocation
 > **Target Environment**: Claude Code CLI
 > **Last Updated**: 2025-11-26

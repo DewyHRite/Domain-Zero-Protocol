@@ -4,7 +4,7 @@
 **Source**: Jujutsu Kaisen Fandom Wiki
 **URL**: <https://jujutsu-kaisen.fandom.com/wiki/Ryomen_Sukuna>
 **Downloaded**: 2025-12-01
-**Protocol Version**: v8.5.1
+**Protocol Version**: v9.8.1
 
 ---
 

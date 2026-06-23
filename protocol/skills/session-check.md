@@ -284,7 +284,7 @@ rm slash-commands/session-check.md
 
 ---
 
-**Protocol Version**: 8.13.0
+**Protocol Version**: 9.8.1
 **Created**: 2025-12-29
 **Last Updated**: 2025-12-29
 **Status**: ACTIVE

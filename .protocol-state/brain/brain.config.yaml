@@ -54,10 +54,7 @@ chunk:
   overlap: 120
 index:
   batch_size: 64
-# Cortex encryption-at-rest (v9.8.0). LOCAL DEV INSTALL: encryption is ENABLED here.
-# The distro ALWAYS ships this disabled — scrub_brain_config() in dzp_publish_core.py
-# forces encryption.enabled=false in the published copy (commit 008d73f), so consumers
-# keep the opt-in default-OFF posture. Key is cached in the OS keystore via `brain key set`.
+# Cortex encryption-at-rest (v9.8.0): opt-in, DISABLED by default. To enable: set enabled: true and run `brain key set`.
 encryption:
   enabled: false
   backend: sqlcipher

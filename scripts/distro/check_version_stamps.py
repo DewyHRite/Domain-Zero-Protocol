@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-"""DZP full-repo version-stamp linter (v9.7.2+).
+"""DZP full-repo version-stamp linter (v9.8.1+).
 
-Scans the repository for the three stamp types that must equal the current
+Scans the repository for the stamp types that must equal the current
 protocol version (read from protocol.config.yaml):
 
   1. CORE FILE headers  <!-- [CORE FILE] - Domain Zero Protocol vX.Y.Z -->
   2. Bold footers       **Domain Zero Protocol vX.Y.Z**
   3. Frontmatter        protocol_version: "X.Y.Z"  (YAML / Markdown front matter)
+  4. Git-hook inline    # Domain Zero Protocol - ... Hook (FEAT-GUARD-001, vX.Y.Z)
+  5. Body headings      ## Domain Zero Protocol vX.Y.Z  (protocol/ scope only)
+  6. Metadata fields    **Protocol Version**: [v]X.Y.Z  (protocol/, docs/,
+                          .protocol-state/jjk-character-reference/ scope only)
 
 Exits 0 when all discovered stamps equal the current version.
 Exits 1 listing every stale stamp (file:line — found vs expected).
@@ -53,6 +57,67 @@ _PROTOCOL_VER_RX = re.compile(
 _GIT_HOOK_VER_RX = re.compile(
     r"Domain Zero Protocol\b.*?\(FEAT-GUARD-\d+,\s*v(\d+\.\d+\.\d+)\)",
     re.IGNORECASE,
+)
+# Type 5: Protocol-version-tracking body headings (v9.8.1+)
+# Matches Markdown H2 lines of the form:
+#   ## Domain Zero Protocol vX.Y.Z
+# (with an optional subtitle appended after the version, separated by whitespace/dash).
+# Scoped to protocol/**/*.md ONLY via _BODY_HEADING_PATH_PREFIX below — so
+# feature-attribution headings in docs/, .pr-description.md, .protocol-state/ are
+# NOT in scope and will never be falsely flagged.
+#
+# Intentional exclusions WITHIN protocol/ that carry a historical heading
+# (none currently; add here if a future file needs one frozen):
+_BODY_HEADING_RX = re.compile(
+    r"^##\s+Domain Zero Protocol\s+v(\d+\.\d+\.\d+)",
+    re.IGNORECASE,
+)
+# Only files whose repo-relative POSIX path starts with this prefix are subject
+# to the body-heading check.  All other files are silently skipped for Type 5.
+_BODY_HEADING_PATH_PREFIX = "protocol/"
+# Per-file allowlist for files inside _BODY_HEADING_PATH_PREFIX that legitimately
+# keep a non-current body heading (feature attributions, frozen historical docs).
+# Use repo-relative POSIX paths.
+_BODY_HEADING_ALLOWLIST: frozenset[str] = frozenset(
+    {
+        # Add entries here if a protocol/ file ever needs a frozen historical heading.
+        # Example: "protocol/modules/SOME_LEGACY_MODULE.md"
+    }
+)
+
+# Type 6: Markdown metadata field  **Protocol Version**: [v]X.Y.Z  (v9.8.1+)
+# Matches the field in both v-prefixed and bare forms, e.g.:
+#   **Protocol Version**: v9.8.1
+#   **Protocol Version**: 9.8.1
+# Also matches blockquote-prefixed variants:
+#   > **Protocol Version**: v8.5.1
+# Scoped to files whose repo-relative POSIX path starts with one of the
+# _PROTOCOL_VER_FIELD_PATH_PREFIXES below — so docs that live outside those
+# directories (copilot-instructions, Domain Zero Agents/, .pr-description.md,
+# etc.) are silently skipped, never falsely flagged.
+_PROTOCOL_VER_FIELD_RX = re.compile(
+    r"^(?:>\s*)?\*\*Protocol Version\*\*:\s*v?(\d+\.\d+\.\d+)",
+    re.IGNORECASE,
+)
+# Directory/path prefixes in scope for the Type-6 check.
+_PROTOCOL_VER_FIELD_PATH_PREFIXES = (
+    "protocol/",
+    "docs/",
+    ".protocol-state/jjk-character-reference/",
+)
+# Per-file allowlist for files inside the above prefixes whose **Protocol Version**
+# field is a frozen historical/contextual note that must NOT be enforced/bumped.
+# Use repo-relative POSIX paths.
+_PROTOCOL_VER_FIELD_ALLOWLIST: frozenset[str] = frozenset(
+    {
+        # Transition narrative ("v6.2.8.x") written at the time of canonical-source
+        # adoption; bumping it would destroy the historical context.
+        "protocol/CANONICAL_SOURCE_ADOPTION.md",
+        # Per-patch manifest records: each **Protocol Version** line names the
+        # version the patch was introduced for — historical attribution, not a
+        # current-version stamp.
+        "protocol/SUKUNA-REPORT.md",
+    }
 )
 
 # ---------------------------------------------------------------------------
@@ -197,6 +262,46 @@ def _scan_file(
                 if found_ver != current:
                     msg = (
                         f"  STALE [{stamp_type}]  {rel}:{lineno}"
+                        f"  found=v{found_ver}  expected=v{current}"
+                    )
+                    violations.append(msg)
+                    if verbose:
+                        print(msg)
+
+        # Type 5: Protocol-version-tracking body headings.
+        # Scoped to protocol/**/*.md only; feature-attribution headings in
+        # docs/, .pr-description.md, .protocol-state/ are outside this prefix
+        # and are intentionally NOT checked here.
+        if (
+            rel.startswith(_BODY_HEADING_PATH_PREFIX)
+            and rel not in _BODY_HEADING_ALLOWLIST
+        ):
+            m5 = _BODY_HEADING_RX.match(line)
+            if m5:
+                found_ver = m5.group(1)
+                if found_ver != current:
+                    msg = (
+                        f"  STALE [BODY-HEADING]  {rel}:{lineno}"
+                        f"  found=v{found_ver}  expected=v{current}"
+                    )
+                    violations.append(msg)
+                    if verbose:
+                        print(msg)
+
+        # Type 6: **Protocol Version**: [v]X.Y.Z metadata fields.
+        # Scoped to protocol/, docs/, and .protocol-state/jjk-character-reference/
+        # only.  Files in _PROTOCOL_VER_FIELD_ALLOWLIST are frozen historical
+        # records and are explicitly excluded from enforcement.
+        in_scope_t6 = any(
+            rel.startswith(prefix) for prefix in _PROTOCOL_VER_FIELD_PATH_PREFIXES
+        )
+        if in_scope_t6 and rel not in _PROTOCOL_VER_FIELD_ALLOWLIST:
+            m6 = _PROTOCOL_VER_FIELD_RX.match(line)
+            if m6:
+                found_ver = m6.group(1)
+                if found_ver != current:
+                    msg = (
+                        f"  STALE [PROTOCOL-VERSION]  {rel}:{lineno}"
                         f"  found=v{found_ver}  expected=v{current}"
                     )
                     violations.append(msg)
