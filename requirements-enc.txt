@@ -1,0 +1,5 @@
+# requirements-enc.txt — opt-in Cortex encryption-at-rest deps (v9.8.0, PLAN-CORTEX-ENC-001)
+# Install only when enabling encryption: pip install -r requirements-enc.txt
+sqlcipher3>=0.6.2
+argon2-cffi>=23.1.0
+keyring>=24.0.0

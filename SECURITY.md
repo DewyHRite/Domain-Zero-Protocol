@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.1 -->
 # Security Policy
 
 ## Scope
@@ -225,6 +225,7 @@ Domain Zero Protocol's security design addresses OWASP Top 10 (2021):
 > `.protocol-state/security-review.md`. Below are the recent **security-relevant** releases.
 
 ### Recent security-relevant releases (9.x)
+- **v9.8.1** — Cortex encryption migration user_version preservation (BUG-CORTEX-ENC-UV-001): `encrypt_brain()`/`decrypt_brain()` now capture + restore `PRAGMA user_version`; smoke-verify aborts on mismatch. Fixes silent `availability: unavailable` on any v9.8.0 encrypted brain.
 - **v9.8.0** — Cortex encryption-at-rest (PLAN-CORTEX-ENC-001): opt-in SQLCipher AES-256 with Argon2id/OS-keyring key management; reversible backup-first migration; SEC-CORTEX-ENC-001..009 CLOSED
 - **v9.7.2** — Cortex memory-keying silent data-loss fix (SEC-CORTEX-MEM-001) + content-addressed migration hardening
 - **v9.7.1** — Cortex Access Hardening (CIA-triad): anti-destruction guard on shared brains, pre-op backups + `PRAGMA integrity_check`, graceful degradation (SEC-CORTEX-ACCESS-008/009/010)
@@ -272,7 +273,7 @@ When reporting, please indicate:
 
 This security policy is versioned alongside the Domain Zero Protocol:
 
-- **Current Version**: 1.5.0 (matches Domain Zero Protocol v9.8.0)
+- **Current Version**: 1.5.0 (matches Domain Zero Protocol v9.8.1)
 - **Last Updated**: June 22, 2026
 - **Next Review**: Upon the next minor/major protocol update
 

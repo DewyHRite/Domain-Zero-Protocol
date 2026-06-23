@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.1 -->
 # Session Check Skill
 ## Automatic Work Session Alert Enforcement
 

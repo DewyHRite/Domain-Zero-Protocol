@@ -1,9 +1,22 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.1 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.8.0
-**Release Date:** 2026-06-22
-**Release Type:** MINOR Release (Cortex encryption-at-rest + v9.7.2 upstream-upgrade fold-in)
+**Version:** 9.8.1
+**Release Date:** 2026-06-23
+**Release Type:** PATCH Release (BUG-CORTEX-ENC-UV-001 — encryption migration user_version fix)
+
+---
+
+## Release Summary — v9.8.1 (PATCH)
+
+v9.8.1 fixes a silent breakage in the v9.8.0 encryption migration: `sqlcipher_export()` drops
+`PRAGMA user_version`, so any brain encrypted via `brain encrypt --execute` came up with
+`availability: unavailable` (SEC-ACCESS-010 schema-guard fail-closed, user_version=0 vs
+metadata.schema_version=4) despite all data being intact. Fix: `encrypt_brain()` and
+`decrypt_brain()` now capture the source `PRAGMA user_version` and restore it on the destination;
+the smoke-verify step ABORTS if the post-migration value does not match. No data loss; the
+encrypted brain was simply unusable until rollback or manual repair. 11/11 migration tests pass.
+Yuuji TDD.
 
 ---
 

@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.8.1] - 2026-06-23
+
+### PATCH — BUG-CORTEX-ENC-UV-001: Encryption migration user_version preservation
+
+#### Fixed
+- **BUG-CORTEX-ENC-UV-001**: The v9.8.0 encryption migration (`migrate_cortex_encrypt_9_8.py`)
+  silently shipped broken — SQLCipher `sqlcipher_export()` drops `PRAGMA user_version`, so an
+  encrypted brain surfaced `availability: unavailable` (`user_version=0` vs
+  `metadata.schema_version=4` → SEC-ACCESS-010 schema-guard fail-closed) despite all data being
+  intact. Any public v9.8.0 consumer who enabled encryption would hit this on every startup after
+  migration. Fix: `encrypt_brain()` and `decrypt_brain()` now capture the source
+  `PRAGMA user_version` and restore it on the destination before verification; the migration
+  smoke-verify step ABORTS if the post-migration `user_version` does not match the source.
+  Shipped silently broken in public v9.8.0; no data loss, but the encrypted brain was effectively
+  unusable until rollback or manual `PRAGMA user_version` repair. Yuuji TDD: 11/11 migration
+  tests pass.
+
+#### Tests
+- 11/11 `tests/brain/test_migrate_encrypt_9_8.py` assertions pass (user_version round-trip
+  verified for both encrypt and decrypt paths).
+
+#### Notes
+- Other commits on this branch (`008d73f` distro neutralizer, `2fc143a` recovery-design docs,
+  `5139e44` local brain.config.yaml enable) are maintainer-tooling / distro-excluded / not
+  consumer-facing content changes.
+
 ## [9.8.0] - 2026-06-22
 
 ### MINOR — Cortex Encryption-at-Rest (PLAN-CORTEX-ENC-001) + v9.7.2 upstream-upgrade fold-in

@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.1 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.8.0
+**Version**: 9.8.1
 **Status**: Production
-**Last Updated**: 2026-06-18
+**Last Updated**: 2026-06-23
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -47,6 +47,38 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
 4. AI agents automatically apply patches on next upgrade/setup
 ```
+
+---
+
+## v9.8.1 PATCH MANIFEST (2026-06-23): BUG-CORTEX-ENC-UV-001
+
+### PATCH-ENC-UV-001 (2026-06-23): Encryption Migration PRAGMA user_version Preservation
+
+**Patch ID**: PATCH-ENC-UV-001
+**Applies To**: v9.8.0 consumers who have enabled Cortex encryption (`brain encrypt --execute`)
+**Priority**: P1-High (encrypted brain comes up `availability: unavailable`; all ops blocked until rollback or manual repair)
+**Category**: Bugfix
+**Status**: ACTIVE — Required for any v9.8.0 installation where encryption was enabled
+**Required For**: Upgrades from v9.8.0 with encryption enabled
+
+**Description**: SQLCipher's `sqlcipher_export()` copies all data from the source database but silently drops `PRAGMA user_version`. After `brain encrypt --execute`, the new encrypted brain has `user_version=0` while `metadata.schema_version=4`. The SEC-ACCESS-010 schema guard detects this as a fatal mismatch and fails-closed on ALL operations, making the encrypted brain completely unusable despite all data being intact. The fix captures the source `user_version` before export and restores it on the destination database; the smoke-verify step now ABORTS the migration if the post-migration `user_version` does not match the source (preventing silent delivery of a broken encrypted brain). The decrypt path (`brain encrypt --rollback`) applies the same fix symmetrically.
+
+**Affected operations**: `brain encrypt --execute` and `brain encrypt --rollback`
+**Not affected**: plaintext (disabled-encryption) path — byte-for-byte unchanged.
+**Data safety**: No data loss in v9.8.0; the database was intact but inaccessible. Upgrade to v9.8.1, rollback the encryption (`brain encrypt --rollback` from v9.8.0 if still accessible), then re-encrypt with v9.8.1.
+
+**Files changed**:
+- `.protocol-state/migrate_cortex_encrypt_9_8.py` — `encrypt_brain()` and `decrypt_brain()` now capture + restore `user_version`; `_smoke_verify()` ABORTS on `user_version` mismatch.
+
+**Validation**:
+```bash
+python -m pytest tests/brain/test_migrate_encrypt_9_8.py -q
+# Expect: 11 passed, 0 failed
+```
+
+**Rollback**: Downgrade to v9.8.0 source; run `brain encrypt --rollback` on the affected brain (the plaintext backup was created automatically by the migration and remains intact).
+
+**Authorization**: Yuuji TDD — 11/11 migration tests pass. Sukuna adversarial review — APPROVED. Gojo + User authorized cascade to v9.8.1.
 
 ---
 

@@ -1,7 +1,7 @@
 # Domain Zero Protocol
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.1 -->
 
-**Version**: 9.8.0 | **Last Updated**: 2026-06-22
+**Version**: 9.8.1 | **Last Updated**: 2026-06-22
 
 A nine-agent AI development system plus one external auditor inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
 
@@ -284,7 +284,7 @@ The template pre-wires a `hooks.SessionEnd` index refresh and allow-lists the `b
 
 > **Note:** Cortex stores all runtime data (DB, memories, model cache) in an external dir (`%LOCALAPPDATA%/dzp-cortex/` on Windows; XDG equivalent on macOS/Linux), never inside the repo. The data dir refuses cloud-synced locations (OneDrive/Dropbox) and network shares.
 
-#### Encryption-at-Rest (v9.8.0, opt-in)
+#### Encryption-at-Rest (v9.8.1, opt-in)
 
 Cortex supports SQLCipher-based AES-256 encryption of the vector database (PLAN-CORTEX-ENC-001).
 
@@ -306,7 +306,7 @@ scripts/brain.ps1 encrypt --execute   # POSIX: scripts/brain.sh encrypt --execut
 scripts/brain.ps1 status         # expect: availability_status: ok, encryption_status: unlocked
 ```
 
-**Scope — single-user only:** Encryption is per-install. Shared-brain installs (multiple DZP projects sharing one `brain.db`) cannot use encryption in v9.8.0 — the `encrypt` command will refuse when a shared ledger is detected. Multi-install shared-key support is deferred to v9.9.x.
+**Scope — single-user only:** Encryption is per-install. Shared-brain installs (multiple DZP projects sharing one `brain.db`) cannot use encryption in v9.8.1 — the `encrypt` command will refuse when a shared ledger is detected. Multi-install shared-key support is deferred to v9.9.x.
 
 **Residuals to clean up after encrypting:**
 
@@ -445,6 +445,6 @@ Contributions welcome! Please read the contribution guidelines and submit pull r
 
 ---
 
-**Domain Zero Protocol v9.8.0**
+**Domain Zero Protocol v9.8.1**
 **AI-Assisted Development Done Right**
 
