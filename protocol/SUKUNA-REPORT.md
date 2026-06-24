@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.2 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.8.1
+**Version**: 9.8.2
 **Status**: Production
 **Last Updated**: 2026-06-23
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
@@ -47,6 +47,35 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
 4. AI agents automatically apply patches on next upgrade/setup
 ```
+
+---
+
+## v9.8.2 PATCH MANIFEST (2026-06-23): Windows cp1252 Coordinator UTF-8 Capture Fix
+
+### PATCH-COORD-UTF8-001 (2026-06-23): script_coordinator.py Windows cp1252 UnicodeDecodeError Fix
+
+**Patch ID**: PATCH-COORD-UTF8-001
+**Applies To**: v9.8.1 (Windows consumers who use `/session update` or any lifecycle event that routes through the coordinator)
+**Priority**: P3-Low (fail-soft — step reports `failure` but does not block the overall sync; affects Windows cp1252 consoles only)
+**Category**: Bugfix
+**Status**: ACTIVE — Required for Windows v9.8.1 installations
+**Required For**: Upgrades from v9.8.1 on Windows
+
+**Description**: `.protocol-state/script_coordinator.py` `_run_step()` used the default OS encoding when capturing subprocess output. On Windows cp1252 consoles, any coordinator step emitting non-ASCII characters (e.g. `custom_agent_monitor.py --list` printing `✅`) raised `UnicodeDecodeError`/`UnicodeEncodeError`, causing the step to be reported as `failure` even though the step itself completed successfully. Not a data-loss or blocking issue; the overall `/session update` continued (fail-soft). Linux/macOS not affected (default encoding is UTF-8).
+
+**Files changed**:
+- `.protocol-state/script_coordinator.py` — `_run_step()` now injects `PYTHONUTF8=1` into the child environment and calls `subprocess.run(…, encoding="utf-8", errors="replace")`.
+
+**Validation**:
+```bash
+# On Windows: run a session update that includes custom_agent_monitor.py --list
+# Verify: no UnicodeDecodeError in coordinator output; step result is "success" not "failure"
+python dzp.py event session-update
+```
+
+**Rollback**: Revert the two-line change to `_run_step()` in `script_coordinator.py` (remove `env=` kwarg and `encoding`/`errors` kwargs from `subprocess.run`).
+
+**Authorization**: Gojo + User authorized cascade to v9.8.2. Sukuna adversarial review — APPROVED (low risk, targeted fix).
 
 ---
 

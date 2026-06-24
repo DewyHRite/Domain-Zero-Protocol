@@ -1,9 +1,21 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.2 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.8.1
+**Version:** 9.8.2
 **Release Date:** 2026-06-23
-**Release Type:** PATCH Release (BUG-CORTEX-ENC-UV-001 — encryption migration user_version fix)
+**Release Type:** PATCH Release (cp1252 coordinator UTF-8 capture fix — Windows /session update)
+
+---
+
+## Release Summary — v9.8.2 (PATCH)
+
+v9.8.2 fixes a Windows-only encoding crash in `.protocol-state/script_coordinator.py`:
+`_run_step()` captured subprocess output without forcing UTF-8, so any step emitting non-ASCII
+(e.g. `custom_agent_monitor.py --list` printing `✅`) raised `UnicodeDecodeError`/`UnicodeEncodeError`
+on cp1252 Windows consoles. The step was then incorrectly reported as `failure` despite completing
+successfully. Fix: `PYTHONUTF8=1` injected into the child environment + `encoding="utf-8",
+errors="replace"` on the `subprocess.run()` call. Fail-soft (did not block the overall `/session
+update` sync); consumer-facing; low severity.
 
 ---
 

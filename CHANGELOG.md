@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.8.2] - 2026-06-23
+
+### PATCH — cp1252 coordinator UTF-8 capture fix (Windows `/session update`)
+
+#### Fixed
+- **Windows `UnicodeDecodeError`/`UnicodeEncodeError` in `.protocol-state/script_coordinator.py`**:
+  `_run_step()` did not force UTF-8 on the subprocess capture path, so any coordinator step that
+  emitted non-ASCII output (e.g. `custom_agent_monitor.py --list` printing `✅`) raised an
+  encoding error on Windows cp1252 consoles. The step was then reported as `failure` even though
+  it completed successfully. Fix: `PYTHONUTF8=1` injected into the child environment and
+  `subprocess.run(…, encoding="utf-8", errors="replace")` used for capture. Fail-soft (did not
+  block the overall `/session update` sync); low severity for single-user installs. Affects
+  Windows consumers only; Linux/macOS unaffected. Consumer-facing via `/session update`.
+- Other commits on this branch (session-update churn `804d8b1`, validation-baseline refresh
+  `d7adf8f`) are dev-state housekeeping, not consumer content changes.
+
+#### Tests
+- No new test file (coordinator test infra is dev-only / distro-excluded); the fix is a
+  targeted env+encoding change verified manually on Windows.
+
 ## [9.8.1] - 2026-06-23
 
 ### PATCH — BUG-CORTEX-ENC-UV-001: Encryption migration user_version preservation

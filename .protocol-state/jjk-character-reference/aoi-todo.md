@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.8.2 -->
 
 # Aoi Todo - JJK Character Reference
 **Source**: Jujutsu Kaisen Fandom Wiki
 **URL**: <https://jujutsu-kaisen.fandom.com/wiki/Aoi_Todo>
 **Downloaded**: 2025-11-25
-**Protocol Version**: v9.8.1
+**Protocol Version**: v9.8.2
 
 ---
 

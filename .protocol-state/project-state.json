@@ -1,5 +1,5 @@
 {
-  "protocol_version": "9.8.1",
+  "protocol_version": "9.8.2",
   "compaction_recovery": {
     "last_recovery_timestamp": null,
     "recovery_count": 0,
@@ -81,7 +81,7 @@
     "name": "YOUR_PROJECT_NAME",
     "description": "Your project description",
     "created": "2025-12-25T00:00:00Z",
-    "last_updated": "2026-06-17T05:26:48.606766+00:00"
+    "last_updated": "2026-06-24T00:09:34.877036+00:00"
   },
   "mission_status": {
     "yuuji_briefed": false,
@@ -326,10 +326,10 @@
   "session_tracking": {
     "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.11.0)",
     "current_session": {
-      "session_id": null,
-      "session_active": false,
-      "start_time": null,
-      "last_interaction_time": null,
+      "session_id": "session_20260623_235402",
+      "session_active": true,
+      "start_time": "2026-06-23T23:54:02.707559+00:00",
+      "last_interaction_time": "2026-06-24T00:09:34.780938+00:00",
       "last_alert_time": null,
       "alert_count": 0,
       "escalation_level": 0,
@@ -338,14 +338,14 @@
       "high_risk_operations_blocked": false
     },
     "session_metrics": {
-      "total_duration_minutes": 188,
-      "continuous_work_minutes": 188,
+      "total_duration_minutes": 15,
+      "continuous_work_minutes": 15,
       "break_timestamps": [],
       "total_breaks": 0,
-      "alerts_issued": 4,
+      "alerts_issued": 0,
       "alerts_ignored": 0,
       "continues_chosen": 0,
-      "breaks_chosen": 1
+      "breaks_chosen": 0
     },
     "thresholds": {
       "initial_alert_minutes": 240,
@@ -411,8 +411,8 @@
         "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-06-16T18:59:13.655396",
-    "protocol_version": "9.8.1"
+    "last_updated": "2026-06-23T20:09:34.799687",
+    "protocol_version": "9.8.2"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",
@@ -20759,7 +20759,7 @@
       ],
       "metadata": {
         "created": "2025-12-31T00:00:00Z",
-        "protocol_version": "9.8.1",
+        "protocol_version": "9.8.2",
         "last_updated": "2026-06-17T00:00:00Z",
         "total_sessions_all_time": 1004
       }
@@ -20854,7 +20854,7 @@
     }
   },
   "script_orchestration": {
-    "_schema_version": "1.0.0",
+    "_schema_version": 1,
     "_comment": "Script orchestration run history \u2014 compact per-event records only. results{} stores the LATEST run per event (latest-wins). history[] is a chronological log capped at 50 entries (history_max).",
     "history_max": 50,
     "results": {
@@ -20945,6 +20945,206 @@
         ]
       }
     ],
-    "last_updated": "2026-06-15T03:27:17.412609+00:00"
+    "last_updated": "2026-06-24T00:09:51.360798+00:00",
+    "last_event": "session-update",
+    "events": [
+      {
+        "event": "session-update",
+        "finished_at": "2026-06-23T23:54:20.148074+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.968
+          },
+          {
+            "name": "cortex-medium",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 16.297
+          },
+          {
+            "name": "custom-agent-list",
+            "status": "failure",
+            "exit_code": 1,
+            "duration_seconds": 0.235
+          },
+          {
+            "name": "tier-status",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.297
+          },
+          {
+            "name": "tier-statistics",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.328
+          }
+        ]
+      },
+      {
+        "event": "session-update",
+        "finished_at": "2026-06-24T00:07:53.717943+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.093
+          },
+          {
+            "name": "cortex-medium",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 16.063
+          },
+          {
+            "name": "custom-agent-list",
+            "status": "failure",
+            "exit_code": 1,
+            "duration_seconds": 0.265
+          },
+          {
+            "name": "tier-status",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.329
+          },
+          {
+            "name": "tier-statistics",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.328
+          }
+        ]
+      },
+      {
+        "event": "session-update",
+        "finished_at": "2026-06-24T00:08:19.756651+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.891
+          },
+          {
+            "name": "cortex-medium",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 15.39
+          },
+          {
+            "name": "custom-agent-list",
+            "status": "failure",
+            "exit_code": 1,
+            "duration_seconds": 0.25
+          },
+          {
+            "name": "tier-status",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.328
+          },
+          {
+            "name": "tier-statistics",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.391
+          }
+        ]
+      },
+      {
+        "event": "session-update",
+        "finished_at": "2026-06-24T00:09:51.360798+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.875
+          },
+          {
+            "name": "cortex-medium",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 15.437
+          },
+          {
+            "name": "custom-agent-list",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.25
+          },
+          {
+            "name": "tier-status",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.313
+          },
+          {
+            "name": "tier-statistics",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.312
+          }
+        ]
+      }
+    ],
+    "last_status_by_event": {
+      "session-update": {
+        "event": "session-update",
+        "finished_at": "2026-06-24T00:09:51.360798+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.875
+          },
+          {
+            "name": "cortex-medium",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 15.437
+          },
+          {
+            "name": "custom-agent-list",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.25
+          },
+          {
+            "name": "tier-status",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.313
+          },
+          {
+            "name": "tier-statistics",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.312
+          }
+        ]
+      }
+    }
   }
 }
