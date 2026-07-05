@@ -155,7 +155,7 @@ def main(argv: list[str] | None = None) -> int:
     p_input.add_argument(
         "text", nargs="?", help="Query text (omit for stdin/interactive)"
     )
-    p_input.add_argument("-k", type=int, default=5)
+    p_input.add_argument("-k", type=int, default=None)  # F1: None so _query falls through to cfg["top_k"] (was 5, silently bypassed config)
     p_input.add_argument(
         "--trust",
         default=None,
@@ -1295,10 +1295,20 @@ def _escrow_passphrase(*, allow_prompt: bool = True) -> "str | None":
 
 def _open_brain_db(data_dir):
     """Open brain.db with the encryption key if encrypted, otherwise plaintext sqlite3.
-    Returns a DB connection. Caller is responsible for closing it."""
+    Returns a DB connection. Caller is responsible for closing it.
+
+    F2 (SEC-CR104-MAJOR): an absent brain.db must raise immediately rather than letting
+    sqlite3.connect() silently create an empty file.  An empty DB has no schema so
+    subsequent operations (memory-export, recovery) silently produce empty/broken output.
+    """
     import sqlite3 as _sqlite3
     from cortex import crypto as _crypto
     db = Path(data_dir) / "brain.db"
+    if not db.exists():
+        raise FileNotFoundError(
+            f"brain.db not found at {db}. "
+            "Run 'brain index' to build the Cortex index, or restore from a backup."
+        )
     if _candidate_is_encrypted(db):
         return _crypto.open_encrypted_connection(db, _crypto.resolve_key(data_dir, allow_prompt=False))
     return _sqlite3.connect(str(db))
@@ -1730,11 +1740,40 @@ def _recover_cmd(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> 
         if escrow_src:
             import getpass as _gp
             try:
-                _crypto_fin.import_wrapped(
+                _unwrapped_key, _binding = _crypto_fin.import_wrapped(
                     Path(escrow_src).read_bytes(),
                     _gp.getpass("Escrow passphrase to verify self-containment: "),
                 )
-                verified = True
+                # F3 (SEC-CR104-CRITICAL): import_wrapped only proves the artifact
+                # decrypts with the passphrase — it does NOT prove the key belongs to
+                # this install's current generation.  A stale or foreign escrow can
+                # set escrow_verified=True and remove brain.db.salt, cutting off
+                # passphrase-based recovery.
+                #
+                # Before setting verified=True we MUST confirm:
+                #   (a) binding.install_id == current install_id
+                #   (b) binding.key_generation == current key_generation
+                # A mismatch leaves verified=False so the salt is KEPT.
+                _current_iid = _recovery.current_install_id(data_dir)
+                _current_gen = _recovery.current_key_generation(data_dir)
+                _esc_iid = _binding.get("install_id", "")
+                _esc_gen = _binding.get("key_generation", "")
+                if _esc_iid != _current_iid:
+                    print(
+                        f"escrow verification refused: binding install_id={_esc_iid!r} "
+                        f"does not match current install_id={_current_iid!r}; "
+                        "salt sidecar will be kept.",
+                        file=sys.stderr,
+                    )
+                elif _current_gen is not None and _esc_gen != _current_gen:
+                    print(
+                        f"escrow verification refused: binding key_generation={_esc_gen!r} "
+                        f"is stale (current={_current_gen!r}); "
+                        "salt sidecar will be kept.",
+                        file=sys.stderr,
+                    )
+                else:
+                    verified = True
             except Exception as exc:
                 print(
                     f"escrow verification failed ({exc}); salt sidecar will be kept.",

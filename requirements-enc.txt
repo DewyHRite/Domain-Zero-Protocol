@@ -3,5 +3,5 @@
 sqlcipher3>=0.6.2
 argon2-cffi>=23.1.0
 keyring>=24.0.0
-cryptography>=43,<46   # AESGCM authenticated wrapping for self-contained key escrow (§18.1)
+cryptography>=46.0.7   # AESGCM authenticated wrapping for self-contained key escrow (§18.1); >=46.0.7 drops CVE-2026-39892 (affects 45.x)
 pywin32; sys_platform == "win32"   # Windows DACL for owner-only key-equivalent artifacts (SEC-001)

@@ -190,7 +190,17 @@ def write_owner_only(path: Path, data: bytes) -> None:
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
     fd = os.open(str(path), flags, 0o600)
     try:
-        os.write(fd, data)
+        # F5 (SEC-CR104-MAJOR): a single os.write() may short-write on some POSIX
+        # systems (pipes, unusual filesystems).  Loop until all bytes are written so
+        # large key-equivalent artifacts (escrow blobs, export files) are never
+        # silently truncated.  fsync() before close for crash-safe durability.
+        view = memoryview(data)
+        total = len(data)
+        written = 0
+        while written < total:
+            n = os.write(fd, view[written:])
+            written += n
+        os.fsync(fd)
     finally:
         os.close(fd)
     if sys.platform == "win32":

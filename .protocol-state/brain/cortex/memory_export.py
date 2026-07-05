@@ -89,13 +89,20 @@ def verify_memory_export(path, passphrase: str) -> dict:
 
 
 def restore_memories(conn, path, passphrase: str) -> int:
-    """Re-seed cortex_memories rows from an export artifact into a fresh (empty) DB.
-    Returns the number of rows inserted. Commits atomically.
+    """Re-seed cortex_memories (and memory-sourced cortex_entities) from an export
+    artifact into a fresh (empty) DB.  Returns the number of cortex_memories rows
+    inserted. Commits atomically.
 
     SEC-B3-001: column names are validated against the target DB's live schema via
     PRAGMA table_info before any INSERT is constructed.  Unknown/malicious keys from
     the deserialized artifact are silently dropped; only known columns are inserted.
     Rows where zero valid columns remain are skipped entirely.
+
+    F4 (CodeRabbit PR#104): serialize_memories captures memory-sourced cortex_entities
+    but the original restore_memories only re-inserted cortex_memories rows, silently
+    dropping the entities on F8 re-seed.  We now restore them too using the same
+    schema-validated column allow-set pattern.  If the target DB has no cortex_entities
+    table (minimal brain / schema-gated), entity restore is skipped silently.
     """
     data, _ = crypto.unwrap_payload(Path(path).read_bytes(), passphrase)
     doc = json.loads(data.decode("utf-8"))
@@ -121,6 +128,31 @@ def restore_memories(conn, path, passphrase: str) -> int:
             tuple(valid[k] for k in col_list),
         )
         n += 1
+
+    # F4: restore memory-sourced entities (captured by serialize_memories).
+    # Fail-soft if cortex_entities table is absent (schema-gated / minimal brain).
+    entity_rows = doc.get("cortex_entities", [])
+    if entity_rows:
+        try:
+            entity_allowed = {
+                row[1]
+                for row in conn.execute("PRAGMA table_info(cortex_entities)").fetchall()
+            }
+            if entity_allowed:  # table exists in target DB
+                for er in entity_rows:
+                    valid_e = {k: v for k, v in er.items() if k in entity_allowed}
+                    if not valid_e:
+                        continue
+                    col_list_e = list(valid_e.keys())
+                    cols_e = ",".join(col_list_e)
+                    ph_e = ",".join("?" for _ in col_list_e)
+                    conn.execute(
+                        f"INSERT OR IGNORE INTO cortex_entities({cols_e}) VALUES ({ph_e})",
+                        tuple(valid_e[k] for k in col_list_e),
+                    )
+        except Exception:
+            pass  # fail-soft: entity restore is best-effort; memories already committed below
+
     conn.commit()
     return n
 

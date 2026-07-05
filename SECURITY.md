@@ -274,7 +274,7 @@ When reporting, please indicate:
 This security policy is versioned alongside the Domain Zero Protocol:
 
 - **Current Version**: 1.5.0 (matches Domain Zero Protocol v9.9.0)
-- **Last Updated**: June 22, 2026
+- **Last Updated**: July 4, 2026
 - **Next Review**: Upon the next minor/major protocol update
 
 Changes to this policy will be documented in `CHANGELOG.md` and announced via GitHub releases.
