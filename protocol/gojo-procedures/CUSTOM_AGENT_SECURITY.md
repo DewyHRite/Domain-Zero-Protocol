@@ -1,5 +1,5 @@
 # Gojo Custom Agent Security Integration Guide
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
 
 **Purpose**: Guide for Gojo to enforce custom agent security policies
 **Version**: 9.0.0

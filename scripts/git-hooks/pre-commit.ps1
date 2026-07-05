@@ -1,4 +1,4 @@
-# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.8.2)
+# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.0)
 # PowerShell equivalent of scripts/git-hooks/pre-commit for PowerShell-driven git
 # hook setups.
 #

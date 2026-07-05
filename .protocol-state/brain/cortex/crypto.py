@@ -218,3 +218,148 @@ def open_encrypted_connection(db_path, key: bytes):
     finally:
         conn.enable_load_extension(False)
     return conn
+
+
+# ---------------------------------------------------------------------------
+# Task 1 (R1a): Version/KDF-authenticated self-contained wrapped escrow
+# (CODE-001, CODE-002, §18.1) — PLAN-CORTEX-RECOVERY-001
+# ---------------------------------------------------------------------------
+
+import json as _json
+
+_WRAP_MAGIC = "DZPC-ESCROW-1"
+_WRAP_VERSION = 1
+_WRAP_NONCE_LEN = 12
+# Accepted Argon2id bounds (parameter-agility guardrails, CODE-001)
+_KDF_BOUNDS = {"memory_cost": (8192, 1 << 21), "time_cost": (1, 10), "parallelism": (1, 16), "hash_len": (32, 32)}
+
+
+def _wrap_aad(version, kdf, salt_b64, nonce_b64, binding) -> bytes:
+    return _json.dumps(
+        {"version": version, "kdf": kdf, "salt": salt_b64, "nonce": nonce_b64, "binding": binding},
+        sort_keys=True, separators=(",", ":"),
+    ).encode("utf-8")
+
+
+def export_wrapped(key: bytes, passphrase: str, *, binding: dict) -> bytes:
+    if not isinstance(key, (bytes, bytearray)) or len(key) != 32:
+        raise ValueError("wrapped-escrow key must be exactly 32 bytes")
+    try:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    except Exception as exc:  # pragma: no cover
+        raise DependencyError("cryptography not installed; install requirements-enc.txt") from exc
+    salt = os.urandom(16)
+    kdf = {"algorithm": "argon2id", **{k: ARGON2_PARAMS[k] for k in ("memory_cost", "time_cost", "parallelism", "hash_len")}}
+    wrap_key = derive_key(passphrase, salt)
+    nonce = os.urandom(_WRAP_NONCE_LEN)
+    salt_b64, nonce_b64 = base64.b64encode(salt).decode(), base64.b64encode(nonce).decode()
+    aad = _wrap_aad(_WRAP_VERSION, kdf, salt_b64, nonce_b64, binding)
+    ct = AESGCM(wrap_key).encrypt(nonce, bytes(key), aad)
+    doc = {"magic": _WRAP_MAGIC, "version": _WRAP_VERSION, "kdf": kdf,
+           "salt": salt_b64, "nonce": nonce_b64,
+           "ciphertext": base64.b64encode(ct).decode(), "binding": binding}
+    return _json.dumps(doc, indent=2).encode("utf-8")
+
+
+def _derive_from_artifact_kdf(passphrase: str, salt: bytes, kdf: dict) -> bytes:
+    if kdf.get("algorithm") != "argon2id":
+        raise CortexKeyUnavailableError(f"unsupported escrow KDF algorithm: {kdf.get('algorithm')!r}")
+    for name, (lo, hi) in _KDF_BOUNDS.items():
+        v = kdf.get(name)
+        if not isinstance(v, int) or not (lo <= v <= hi):
+            raise CortexKeyUnavailableError(f"escrow KDF param {name}={v!r} out of accepted bounds [{lo},{hi}]")
+    try:
+        from argon2.low_level import hash_secret_raw, Type
+    except Exception as exc:  # pragma: no cover
+        raise DependencyError("argon2-cffi not installed") from exc
+    return hash_secret_raw(secret=passphrase.encode("utf-8"), salt=salt,
+                           time_cost=kdf["time_cost"], memory_cost=kdf["memory_cost"],
+                           parallelism=kdf["parallelism"], hash_len=kdf["hash_len"], type=Type.ID)
+
+
+# ---------------------------------------------------------------------------
+# Task 5 (R1b): Generic payload wrap/unwrap — self-contained AEAD for arbitrary bytes
+# (§18.3, PLAN-CORTEX-RECOVERY-001). Wrapped under the ESCROW passphrase (NOT the DB
+# key) so memory exports survive total DB-key loss.
+# ---------------------------------------------------------------------------
+
+_PAYLOAD_MAGIC = "DZPC-PAYLOAD-1"
+_PAYLOAD_VERSION = 1
+
+
+def wrap_payload(data: bytes, passphrase: str, *, meta: dict) -> bytes:
+    """AEAD-wrap arbitrary bytes under passphrase (escrow path). Self-contained:
+    salt + nonce embedded, version+kdf+meta are authenticated (bound in AAD).
+    Returns a JSON envelope as bytes (owner-only write is the caller's responsibility)."""
+    try:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    except Exception as exc:  # pragma: no cover
+        raise DependencyError("cryptography not installed; install requirements-enc.txt") from exc
+    salt = os.urandom(16)
+    kdf = {"algorithm": "argon2id", **{k: ARGON2_PARAMS[k] for k in ("memory_cost", "time_cost", "parallelism", "hash_len")}}
+    wrap_key = derive_key(passphrase, salt)
+    nonce = os.urandom(_WRAP_NONCE_LEN)
+    salt_b64, nonce_b64 = base64.b64encode(salt).decode(), base64.b64encode(nonce).decode()
+    aad = _wrap_aad(_PAYLOAD_VERSION, kdf, salt_b64, nonce_b64, meta)
+    ct = AESGCM(wrap_key).encrypt(nonce, bytes(data), aad)
+    return _json.dumps({"magic": _PAYLOAD_MAGIC, "version": _PAYLOAD_VERSION, "kdf": kdf,
+                        "salt": salt_b64, "nonce": nonce_b64,
+                        "ciphertext": base64.b64encode(ct).decode(), "meta": meta}, indent=2).encode("utf-8")
+
+
+def unwrap_payload(blob: bytes, passphrase: str) -> tuple[bytes, dict]:
+    """Unwrap a DZPC-PAYLOAD-1 envelope. Raises CortexKeyUnavailableError on tamper
+    or wrong passphrase (matches the escrow error surface so callers have one catch)."""
+    try:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        from cryptography.exceptions import InvalidTag
+    except Exception as exc:  # pragma: no cover
+        raise DependencyError("cryptography not installed") from exc
+    try:
+        doc = _json.loads(blob.decode("utf-8"))
+        if doc.get("magic") != _PAYLOAD_MAGIC:
+            raise CortexKeyUnavailableError("not a DZPC payload artifact")
+        if doc.get("version") != _PAYLOAD_VERSION:
+            raise CortexKeyUnavailableError(f"unsupported payload version {doc.get('version')!r}")
+        kdf, meta = doc["kdf"], doc["meta"]
+        salt = base64.b64decode(doc["salt"], validate=True)
+        nonce = base64.b64decode(doc["nonce"], validate=True)
+        ct = base64.b64decode(doc["ciphertext"], validate=True)
+    except (ValueError, KeyError, binascii.Error) as exc:
+        raise CortexKeyUnavailableError(f"malformed payload artifact: {exc}")
+    wrap_key = _derive_from_artifact_kdf(passphrase, salt, kdf)
+    aad = _wrap_aad(doc["version"], kdf, doc["salt"], doc["nonce"], meta)
+    try:
+        data = AESGCM(wrap_key).decrypt(nonce, ct, aad)
+    except InvalidTag:
+        raise CortexKeyUnavailableError("payload unwrap failed — wrong passphrase or tampered artifact")
+    return data, meta
+
+
+def import_wrapped(blob: bytes, passphrase: str) -> tuple[bytes, dict]:
+    try:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        from cryptography.exceptions import InvalidTag
+    except Exception as exc:  # pragma: no cover
+        raise DependencyError("cryptography not installed") from exc
+    try:
+        doc = _json.loads(blob.decode("utf-8"))
+        if doc.get("magic") != _WRAP_MAGIC:
+            raise CortexKeyUnavailableError("not a DZPC escrow artifact")
+        if doc.get("version") != _WRAP_VERSION:
+            raise CortexKeyUnavailableError(f"unsupported escrow artifact version {doc.get('version')!r}")
+        kdf = doc["kdf"]; binding = doc["binding"]
+        salt = base64.b64decode(doc["salt"], validate=True)
+        nonce = base64.b64decode(doc["nonce"], validate=True)
+        ct = base64.b64decode(doc["ciphertext"], validate=True)
+    except (ValueError, KeyError, binascii.Error) as exc:
+        raise CortexKeyUnavailableError(f"malformed escrow artifact: {exc}")
+    wrap_key = _derive_from_artifact_kdf(passphrase, salt, kdf)
+    aad = _wrap_aad(doc["version"], kdf, doc["salt"], doc["nonce"], binding)
+    try:
+        key = AESGCM(wrap_key).decrypt(nonce, ct, aad)
+    except InvalidTag:
+        raise CortexKeyUnavailableError("escrow unwrap failed — wrong passphrase or tampered artifact")
+    if len(key) != 32:
+        raise CortexKeyUnavailableError(f"unwrapped key is {len(key)} bytes, expected 32")
+    return key, binding

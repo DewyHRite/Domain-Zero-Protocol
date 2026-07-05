@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
 # Mission Control Identity Isolation
-## Domain Zero Protocol v9.8.2
+## Domain Zero Protocol v9.9.0
 
 > **Module Type:** Shared Protocol Behavior
 > **Referenced By:** 7 agents (NOT Gojo - he IS Mission Control)

@@ -317,6 +317,29 @@ def encrypt_brain(db_path, key: bytes, *, ledger_check: bool = True) -> dict:
     # Step 5: atomic replace — only reached if integrity check + smoke-test passed.
     os.replace(tmp, db_path)
 
+    # Task 6 IMPL-NEW-001 (§18.5): write a sibling recovery manifest next to the
+    # encrypted brain.db so `restore --verify` can digest-check and key-match it.
+    # Fail-soft: a manifest hiccup must NEVER abort or raise from encrypt_brain.
+    try:
+        from cortex import recovery as _recovery
+        _install_id = _recovery.current_install_id(db_path.parent)
+        _recovery.write_manifest(
+            db_path,
+            _recovery.RecoveryManifest(
+                1,
+                time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                _recovery.current_key_generation(db_path.parent) or "unknown",
+                src_user_version,
+                "encrypted",
+                _install_id,
+                _install_id,
+                _recovery.sha256_digest(db_path),
+                "encrypt_brain",
+            ),
+        )
+    except Exception:
+        pass  # fail-soft: manifest hiccup must never abort encrypt_brain
+
     return {"backup": str(backup), "encrypted": True}
 
 

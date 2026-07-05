@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
 
 # JJK Character Reference Mapping
 **Version**: 1.1.0
 **Created**: 2025-11-25
-**Protocol Version**: v9.8.2
+**Protocol Version**: v9.9.0
 **Purpose**: Maps Domain Zero agents to Jujutsu Kaisen character references
 
 ---

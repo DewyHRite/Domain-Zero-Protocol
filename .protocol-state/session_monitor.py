@@ -452,7 +452,15 @@ class SessionMonitor:
                 raise RuntimeError(f"Failed to create session state file at {self.state_file}: {e}")
 
     def _default_state(self) -> Dict:
-        """Return default session state structure (v8.13.0 - uses loaded thresholds)."""
+        """Return default session state structure (v8.13.0 - uses loaded thresholds).
+
+        BUG-SESSION-002 (v9.9.x Track C): `last_updated` MUST be a valid ISO-8601
+        string, never null.  The session-state schema requires `type: string` for
+        `last_updated`; a null value causes `validate-protocol.py --check` to fail
+        with a type error which in turn blocks every repo commit via the pre-commit
+        hook.  We now initialise it to the current UTC timestamp at construction time
+        so that every reset/default path produces a schema-valid file.
+        """
         return {
             "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.13.0)",
             "current_session": {
@@ -486,7 +494,8 @@ class SessionMonitor:
                 "minimum_break_minutes": 15
             },
             "session_history": [],
-            "last_updated": None,
+            # BUG-SESSION-002: Must be a string (ISO-8601), never null.
+            "last_updated": datetime.now(timezone.utc).isoformat(),
             "protocol_version": "8.13.0"
         }
 
@@ -1432,7 +1441,11 @@ Template file not found at: {self.template_file}
 **Continues Chosen:** {session_data['continues_chosen']}
 
 """
-            with open(dev_notes_file, 'a', encoding='utf-8') as f:
+            # BUG-SESSION-003: newline="\n" forces LF on Windows so that the
+            # staged index blob (always LF under core.autocrlf=true) matches
+            # the working-tree file.  Eliminates CRLF churn warnings and removes
+            # any residual excuse for the DZP_ALLOW_PROTECTED_REWRITE override.
+            with open(dev_notes_file, 'a', encoding='utf-8', newline="\n") as f:
                 f.write(entry)
 
             print(f"[OK] Logged session end to dev-notes.md")
@@ -1471,7 +1484,8 @@ Template file not found at: {self.template_file}
 - **Session Pattern:** {'Extended session' if session_data['total_duration_minutes'] > 360 else 'Standard session'}
 
 """
-            with open(domain_record_file, 'a', encoding='utf-8') as f:
+            # BUG-SESSION-003: newline="\n" — see _log_session_end_to_dev_notes.
+            with open(domain_record_file, 'a', encoding='utf-8', newline="\n") as f:
                 f.write(entry)
 
             print(f"[OK] Logged session end to domain.record.md (Gojo permission)")
@@ -1522,7 +1536,8 @@ Template file not found at: {self.template_file}
             else:
                 return
 
-            with open(security_review_file, 'a', encoding='utf-8') as f:
+            # BUG-SESSION-003: newline="\n" — see _log_session_end_to_dev_notes.
+            with open(security_review_file, 'a', encoding='utf-8', newline="\n") as f:
                 f.write(entry)
 
             print(f"[OK] Logged {event_type} to security review")
@@ -1989,7 +2004,8 @@ Template file not found at: {self.template_file}
         self._backup_before_append(filepath)
 
         try:
-            with open(filepath, 'a', encoding='utf-8') as f:
+            # BUG-SESSION-003: newline="\n" forces LF on Windows.
+            with open(filepath, 'a', encoding='utf-8', newline="\n") as f:
                 f.write(content)
         except (IOError, OSError) as e:
             raise Exception(f"Failed to write to {filepath.name}: {e}")
@@ -2132,6 +2148,15 @@ Template file not found at: {self.template_file}
     def _git_commit_and_push_with_approval(self, files: List[str], secrets_found: List[Dict]) -> Dict:
         """
         Commit and push project documents with user approval.
+
+        BUG-SESSION-001 (v9.9.x Track C): This method MUST NEVER set
+        DZP_ALLOW_PROTECTED_REWRITE=1 in the environment before running git.
+        The append-only guard (FEAT-GUARD-001, SEC-GUARD-002) already normalises
+        CRLF, so pure EOF appends always pass without the override.  Routinely
+        bypassing the guard disarms the exact mechanism that exists to catch
+        accidental overwrites of protected project memory.  Reserve the override
+        strictly for authorised rotation/restore (scoped to that one invocation
+        and explicitly announced to the user).
 
         Args:
             files: List of filenames to commit

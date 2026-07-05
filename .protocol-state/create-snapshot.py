@@ -331,16 +331,21 @@ def create_snapshot(
     manifest = load_manifest()
     manifest["total_snapshots"] += 1
     manifest["last_snapshot_created"] = timestamp_str
-    manifest["snapshots"].append({
+    # BUG-SESSION-004 (v9.9.x Track C): `description` must be a string (not null)
+    # when present; omit the key entirely rather than writing null so that the
+    # snapshot-manifest schema validator never sees a type violation.
+    manifest_entry: Dict[str, Any] = {
         "snapshot_id": snapshot_id,
         "created_at": timestamp_str,
         "tier": tier,
         "reason": trigger,
         "file_path": snapshot_filename,
         "size_bytes": compressed_size,
-        "description": description,
-        "tagged": False  # Can be tagged later for preservation
-    })
+        "tagged": False,  # Can be tagged later for preservation
+    }
+    if description is not None:
+        manifest_entry["description"] = description
+    manifest["snapshots"].append(manifest_entry)
 
     save_manifest(manifest)
 

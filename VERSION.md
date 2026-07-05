@@ -1,9 +1,28 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.8.2
-**Release Date:** 2026-06-23
-**Release Type:** PATCH Release (cp1252 coordinator UTF-8 capture fix — Windows /session update)
+**Version:** 9.9.0
+**Release Date:** 2026-06-27
+**Release Type:** MINOR Release (PLAN-CORTEX-RECOVERY-001 R1 Cortex Key-Recovery subsystem + BUG-SESSION-001/002/003/004)
+
+---
+
+## Release Summary — v9.9.0 (MINOR)
+
+v9.9.0 ships the R1 Cortex Key-Recovery subsystem (PLAN-CORTEX-RECOVERY-001, 44 commits,
+Megumi Tier-3 @approved) and the BUG-SESSION-001/002/003/004 session-lifecycle tooling fix.
+
+- **R1a** — Escrow + manifest + key-matched restore: structured escrow files, integrity-checked
+  manifest, and key-fingerprint validation before any restore attempt.
+- **R1b** — `cortex/recover.py` (predicate/journal/probe/ladder) + `cortex/memory_export.py`
+  (escrow-wrapped memory snapshot) + reset preserving/unrecoverable split + `brain recover`
+  CLI (ladder/repair/finalize subcommands).
+- **R1c** — `brain input`/`/input` UX + §17.7 access matrix + AI-001 structured output +
+  slash registration (`/input` slash command).
+- **BUG-SESSION-001/002/003/004** — session_monitor ISO last_updated + LF writes +
+  `.gitattributes` + snapshot reason-enum + override-prohibition. Megumi Tier-3 @approved.
+- **Deferred → v9.9.1**: Track C C1/C2 encryption debt (shared-brain key provisioning,
+  key rotation, export encryption, key zeroization).
 
 ---
 

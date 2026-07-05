@@ -406,6 +406,15 @@ class Store:
         # (status/query) from the stamp write so a locked DB never crashes a read-op.
         self._stamp_install_soft()
 
+        # RISK-RECOVERY-R1-003 / R1b Task 1 Step 5: record high-water baseline on every
+        # successful Store open (fail-soft — never block a normal open).
+        try:
+            from . import recovery as _recovery
+            with self.connect() as _hw_conn:
+                _recovery.record_high_water(_hw_conn, self.db_path.parent)
+        except Exception:
+            pass  # high-water is advisory baseline; never block a normal open
+
     # -------------------------------------------------------------------------
     # cortex_installs ledger helpers (PLAN-DESIGN-001 §0, Phase 3, v9.4.0)
     # -------------------------------------------------------------------------
@@ -569,6 +578,35 @@ class Store:
                             _log.info("SEC-ACCESS-009: pruned old backup %s", old)
                         except OSError as prune_exc:
                             _log.warning("SEC-ACCESS-009: could not prune backup %s — %s", old, prune_exc)
+
+            # Task 6 IMPL-NEW-001 (§18.5): write a sibling recovery manifest so
+            # `restore --verify` can digest-check and key-match this backup.
+            # Fail-soft: a manifest hiccup must NEVER abort a backup.
+            try:
+                import time as _time
+                from cortex import recovery as _recovery
+                _enc_state = (
+                    "encrypted"
+                    if open(dest, "rb").read(16) != b"SQLite format 3\x00"
+                    else "plaintext"
+                )
+                _install_id = _recovery.current_install_id(data_dir)
+                _recovery.write_manifest(
+                    dest,
+                    _recovery.RecoveryManifest(
+                        1,
+                        _time.strftime("%Y-%m-%dT%H:%M:%SZ", _time.gmtime()),
+                        _recovery.current_key_generation(data_dir) or "unknown",
+                        int(SUPPORTED_SCHEMA),
+                        _enc_state,
+                        _install_id,
+                        _install_id,
+                        _recovery.sha256_digest(dest),
+                        "Store.backup_db",
+                    ),
+                )
+            except Exception:
+                pass  # fail-soft: manifest write failure must not abort the backup
 
             return dest
         except Exception as exc:
@@ -1442,6 +1480,24 @@ class Store:
                 target_mb,
             )
 
+        # RISK-RECOVERY-R1-003 / R1b Task 1 Step 5b: re-baseline the high-water DOWN
+        # after an intentional eviction shrink so data-intact gate doesn't self-brick.
+        # Only re-baseline when actual deletions occurred (non-dry_run, evicted_count > 0).
+        #
+        # SEC-R1B-B1-005: Open a FRESH connection for the re-baseline read.
+        # The candidate-query `conn` above may be on a stale WAL snapshot and would
+        # NOT see the rows committed by _delete_by_source_v2()'s own BEGIN IMMEDIATE
+        # transaction, causing reset_high_water to write the PRE-eviction count and
+        # wrongly blocking a later --repair-schema-marker.  A fresh connection always
+        # sees the latest committed state.
+        if not dry_run and evicted_count > 0:
+            try:
+                from . import recovery as _recovery
+                with self.connect() as _rb_conn:
+                    _recovery.reset_high_water(_rb_conn, self.db_path.parent)
+            except Exception:
+                pass  # re-baseline is advisory; never block eviction
+
         return {
             "evicted_count": evicted_count,
             "evicted_mb_estimate": evicted_mb_estimate,
@@ -1615,6 +1671,28 @@ class Store:
                 orphan_count += 1
 
             conn.execute("COMMIT")
+
+            # RISK-RECOVERY-R1-003 / R1b Task 1 Step 5b: re-baseline the high-water DOWN
+            # after a compact() shrink so the data-intact gate doesn't self-brick.
+            # Only when actual deletions occurred (orphan_count > 0).
+            #
+            # SEC-R1B-B1-001 (clarifying comment): The trigger here is orphan_count > 0,
+            # meaning compact() deleted orphaned `content` rows.  compact() does NOT
+            # directly shrink `content_refs`; the gate that data_intact checks measures
+            # content_refs rows.  This re-baseline is therefore a no-op-by-design in
+            # the current implementation — the content_refs count is unchanged by
+            # compact().  It is retained as a defensive hook: if a future extension
+            # causes compact() to also prune content_refs, the re-baseline will
+            # automatically protect against a self-brick without any further changes.
+            # Note: the conn here is used BEFORE the VACUUM (COMMIT already ran above),
+            # so it sees the just-deleted content rows — but content_refs is unchanged,
+            # making this safe to use the same conn (no stale-WAL concern for this site).
+            if orphan_count > 0:
+                try:
+                    from .recovery import reset_high_water as _reset_hw
+                    _reset_hw(conn, self.db_path.parent)
+                except Exception:
+                    pass  # re-baseline is advisory; never block compaction
 
         # VACUUM reclaims freed pages.
         # SEC-UNIFIED-004: _compact_vacuum() handles the try/except internally.

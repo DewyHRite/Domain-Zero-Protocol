@@ -1,14 +1,14 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
 ---
 title: "Research Mode Specification"
 version: "1.0.0"
-protocol_version: "9.8.2"
+protocol_version: "9.9.0"
 last_updated: "2025-12-22"
 status: "Production-Ready"
 ---
 
 # RESEARCH MODE SPECIFICATION
-## Domain Zero Protocol v9.8.2
+## Domain Zero Protocol v9.9.0
 
 **Purpose**: Establish a standardized, auditable, privacy‑respecting workflow that allows each agent (Yuuji, Megumi, Nobara, Gojo, Todo, Maki, Panda, Inumaki) to perform recurring, specialization‑aligned web / literature / standards research, producing structured, citable updates that feed back into project decision-making without contaminating core protocol files.
 

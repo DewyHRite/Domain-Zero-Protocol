@@ -608,6 +608,13 @@ schemas:
                 - manual
                 - operation_count
                 - tier_change
+                - session-end
+                - session-start
+              # BUG-SESSION-004 (v9.9.x Track C): added session-end and session-start.
+              # snapshot_integration.py emits reason="session-end" on /session end;
+              # the lifecycle coordinator can also emit reason="session-start".
+              # Neither value was in the original enum, causing 8 validator errors
+              # that blocked repo commits during this session.
               description: "Reason snapshot was created"
             file_path:
               type: string
@@ -659,6 +666,10 @@ schemas:
           - manual
           - operation_count
           - tier_change
+          - session-end
+          - session-start
+        # BUG-SESSION-004 (v9.9.x Track C): added session-end and session-start.
+        # Mirrors the snapshot-manifest schema fix above.
         description: "Reason for snapshot creation"
 
       state_files:

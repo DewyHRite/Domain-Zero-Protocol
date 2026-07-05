@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
 # DZP Cortex Brain Skill
 
 **Name:** brain  
@@ -101,3 +101,80 @@ This is mandatory to attempt, never mandatory to succeed. Cortex remains fail-so
 ### First-use note (model download)
 
 The first `query`/`index` after install downloads the embedding model (network, one-time). Run `brain index` once during setup so this happens at setup time, not mid-workflow. See the Cortex setup section in `README.md` / `PROTOCOL_QUICKSTART.md`.
+
+---
+
+## `/input` — General Cortex Query Entrypoint (§17.1, UX-001)
+
+`/input` (`brain input`) is the first-class general-query entrypoint. It has **full parity
+with `brain query`** plus `--full`, one-shot / interactive-TTY / piped-stdin modes, and the
+§17.7 persona + decision-purpose authorization matrix. It shares the same `_query` retrieval
+path — no privilege bypass of its own.
+
+### Usage
+
+```powershell
+# one-shot
+scripts/brain.ps1 input "why did we exclude Toji from CLI access"
+
+# interactive (TTY): /help lists all commands, /exit, /full <text> for untruncated output
+scripts/brain.ps1 input
+
+# piped: one query per line, non-zero outcomes preserved
+some-producer | scripts/brain.ps1 input
+```
+
+```bash
+# POSIX equivalents
+scripts/brain.sh input "prior decision"
+scripts/brain.sh input          # interactive
+some-producer | scripts/brain.sh input
+```
+
+### Options
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-k N` | 5 | Number of results |
+| `--trust TIERS` | see §17.7 | Override trust tiers |
+| `--hybrid` | off | BM25 + dense hybrid retrieval |
+| `--no-cache` | off | Skip query cache |
+| `--json` | off | Structured JSON output |
+| `--full` | off | Print full result content (default truncates to 800 chars) |
+| `--agent` | off | Agent-mediated mode: `trusted,semi` + JSON forced |
+| `--allow-untrusted` | off | (agent, general purpose only) opt in to untrusted recall |
+| `--purpose` | `general` | `general` / `recovery` / `release` / `security` |
+
+### Authorization Matrix (§17.7)
+
+| Persona | `--purpose` | Trust default | Untrusted? |
+|---------|-------------|---------------|------------|
+| Human (no `--agent`) | `general` | `trusted,semi,untrusted` | allowed, labeled |
+| Agent (`--agent`) | `general` | `trusted,semi` | requires `--allow-untrusted` |
+| Agent (`--agent --allow-untrusted`) | `general` | `trusted,semi,untrusted` | opt-in |
+| Any persona | `recovery`/`release`/`security` | `trusted,semi` | **PROHIBITED** regardless of `--allow-untrusted` |
+
+### Interaction States
+
+`/input` surfaces the following state notices after results (human non-JSON mode):
+
+- `model-download` — embedding model was downloaded on first use (one-time)
+- `stale-index` — `index.lock` present; results may be stale
+- `no-results` — nothing matched the query
+- `partial-result` — returned fewer than `-k` requested results
+
+The `locked`/`unavailable` state is surfaced before retrieval: if the Cortex DB is
+encryption-locked or missing, the command exits non-zero with a clear message.
+
+### `/full` in interactive mode
+
+In the TTY REPL, `/full <text>` runs the query with full content (no 800-char truncation).
+`/help` lists all interactive commands including `/full`. Non-zero query outcomes are
+preserved and returned as the session exit code on `/exit`.
+
+### Toji boundary (non-negotiable)
+
+`/input` does **NOT** grant Toji Cortex CLI access. No code path gives Toji access to
+`brain input` or any other Cortex CLI command. Toji reads only an exported
+`cortex-snapshot.md` if the owner provides one. This is a hard boundary — no exceptions.
+See `protocol/toji.agent.md` and Rule 7 of the Integration Contract above.

@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
 # Security Policy
 
 ## Scope
@@ -273,7 +273,7 @@ When reporting, please indicate:
 
 This security policy is versioned alongside the Domain Zero Protocol:
 
-- **Current Version**: 1.5.0 (matches Domain Zero Protocol v9.8.2)
+- **Current Version**: 1.5.0 (matches Domain Zero Protocol v9.9.0)
 - **Last Updated**: June 22, 2026
 - **Next Review**: Upon the next minor/major protocol update
 

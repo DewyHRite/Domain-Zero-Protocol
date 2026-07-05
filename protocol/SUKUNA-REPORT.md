@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.8.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.8.2
+**Version**: 9.9.0
 **Status**: Production
-**Last Updated**: 2026-06-23
+**Last Updated**: 2026-06-27
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -47,6 +47,42 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
 4. AI agents automatically apply patches on next upgrade/setup
 ```
+
+---
+
+## v9.9.0 MINOR RELEASE MANIFEST (2026-06-27): Cortex Key-Recovery R1 + BUG-SESSION Fix
+
+### CASCADE-990-001 (2026-06-27): v9.9.0 Version Cascade
+
+**Patch ID**: CASCADE-990-001
+**Applies To**: v9.8.2 installations upgrading to v9.9.0
+**Priority**: P2-Medium (new capability + bug fixes)
+**Category**: Enhancement + Bugfix
+**Status**: ACTIVE
+**Required For**: Upgrades from v9.8.2
+
+**Description**: v9.9.0 ships the R1 Cortex Key-Recovery subsystem (PLAN-CORTEX-RECOVERY-001)
+and BUG-SESSION-001/002/003/004 session-lifecycle tooling fixes. New modules: `cortex/recover.py`
+(predicate/journal/probe/ladder recovery engine), `cortex/memory_export.py` (escrow-wrapped memory
+snapshot). New CLI: `brain recover` (ladder/repair/finalize), `brain input` + `/input` slash command.
+BUG-SESSION fixes: session_monitor ISO last_updated + LF writes + `.gitattributes` +
+snapshot reason-enum + override-prohibition. Track C (C1/C2 encryption debt) deferred → v9.9.1.
+
+**Files added**:
+- `cortex/recover.py` — key-recovery ladder/probe/journal/predicate engine
+- `cortex/memory_export.py` — escrow-wrapped memory snapshot for pre-reset export
+
+**Validation**:
+```bash
+python scripts/distro/assert_version.py --root .
+# Expected: ASSERT OK: all sources at v9.9.0
+python .protocol-state/brain/brain.py --version
+python -c "from cortex import recover, memory_export; print('R1 modules OK')"
+```
+
+**Rollback**: Revert version cascade via `git revert` on the cascade commit.
+
+**Authorization**: Gojo + User authorized cascade to v9.9.0. Sukuna adversarial review — APPROVED (MINOR, R1 Megumi Tier-3 @approved, BUG-SESSION Megumi Tier-3 @approved).
 
 ---
 
