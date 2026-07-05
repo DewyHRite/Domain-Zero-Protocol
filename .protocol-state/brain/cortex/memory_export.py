@@ -6,9 +6,12 @@ Owner-only write on every export artifact. Retention controlled by prune_exports
 """
 from __future__ import annotations
 import json
+import logging
 import time
 from pathlib import Path
 from . import crypto, recovery
+
+_log = logging.getLogger(__name__)
 
 
 def _safe_rows(conn, sql) -> list:
@@ -150,8 +153,10 @@ def restore_memories(conn, path, passphrase: str) -> int:
                         f"INSERT OR IGNORE INTO cortex_entities({cols_e}) VALUES ({ph_e})",
                         tuple(valid_e[k] for k in col_list_e),
                     )
-        except Exception:
-            pass  # fail-soft: entity restore is best-effort; memories already committed below
+        except Exception as exc:
+            # fail-soft: entity restore is best-effort (memories are committed below);
+            # log for visibility so a silent schema/insert failure is not invisible.
+            _log.warning("memory-export entity restore skipped (best-effort): %s", exc)
 
     conn.commit()
     return n
