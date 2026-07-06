@@ -7,6 +7,7 @@ import base64
 import binascii
 import os
 import stat
+import subprocess
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -26,6 +27,12 @@ def load_or_create_salt(data_dir: str | Path) -> bytes:
     never visible to other OS users with less-restrictive permissions between
     creation and chmod.  If a concurrent process wins the race (FileExistsError),
     fall back to reading the existing salt.
+
+    C2-2 (v9.9.1, RISK-ENC-003 P3 residual #2): on Windows, 0o600 (passed to
+    os.open above) sets no NTFS ACL — the salt file remains readable by any
+    account with filesystem access to the containing directory.  Immediately
+    after creating the file, ``_harden_windows_acl`` restricts the ACL to the
+    current user only (fail-soft; never blocks brain operation).
     """
     path = Path(data_dir) / SALT_FILENAME
     if path.exists():
@@ -43,7 +50,66 @@ def load_or_create_salt(data_dir: str | Path) -> bytes:
         # Another process created the salt file between our exists() check and
         # our O_EXCL open — read the winner's salt instead.
         return path.read_bytes()
+    _harden_windows_acl(path)
     return salt
+
+
+def _harden_windows_acl(path: Path) -> None:
+    """Best-effort Windows ACL hardening for a just-created key-equivalent file.
+
+    C2-2 (v9.9.1): POSIX-style 0o600 bits (set via os.open above) have no effect
+    on Windows NTFS ACLs, so the salt sidecar remains readable by any account
+    with filesystem access to the containing directory unless the ACL is
+    explicitly restricted.  Uses the built-in ``icacls`` CLI via subprocess
+    (no new dependency) rather than pywin32: this salt-creation path can run
+    before the encryption extras (which bundle pywin32 on Windows, per
+    requirements-enc.txt) are installed, so we avoid taking on a hard pywin32
+    import here.
+
+    Fail-soft by design: never raises and never blocks brain operation. On any
+    failure (icacls missing, non-NTFS volume, permission denied, etc.) prints a
+    single stderr warning and continues — the file still has the 0o600-style
+    bits set by the caller. No-op on non-Windows platforms.
+    """
+    if sys.platform != "win32":
+        return
+    current_user = os.environ.get("USERNAME") or os.environ.get("USER") or ""
+    if not current_user:
+        try:
+            import getpass
+            current_user = getpass.getuser()
+        except Exception:
+            current_user = ""
+    if not current_user:
+        print(
+            f"WARNING: could not determine current user to harden Windows ACL on {path}; "
+            "skipping ACL hardening (fail-soft, C2-2). The salt file relies on 0o600-style "
+            "bits only, which NTFS does not enforce.",
+            file=sys.stderr,
+        )
+        return
+    try:
+        result = subprocess.run(
+            ["icacls", str(path), "/inheritance:r", "/grant:r", f"{current_user}:F"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if result.returncode != 0:
+            print(
+                f"WARNING: failed to harden Windows ACL on {path} "
+                f"(icacls exit {result.returncode}): {result.stderr.strip()}. "
+                "Continuing without ACL hardening (fail-soft, C2-2) — the salt file "
+                "relies on 0o600-style bits only, which NTFS does not enforce.",
+                file=sys.stderr,
+            )
+    except Exception as exc:
+        print(
+            f"WARNING: failed to harden Windows ACL on {path}: {exc}. "
+            "Continuing without ACL hardening (fail-soft, C2-2) — the salt file "
+            "relies on 0o600-style bits only, which NTFS does not enforce.",
+            file=sys.stderr,
+        )
 
 
 def derive_key(passphrase: str, salt: bytes) -> bytes:

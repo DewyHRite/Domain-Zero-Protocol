@@ -268,14 +268,48 @@ class StateMigration9x:
         return len(changes)
 
     # -- backup / write -----------------------------------------------------
-    # SEC-CR101-003-DEFER (v9.9.x): extend backup/rollback to also cover snapshot-manifest.json
+    # SEC-CR101-003 (CLOSED v9.9.1): backup/rollback cover snapshot-manifest.json presence/absence
     def _backup(self) -> Path:
         self.backups_dir.mkdir(parents=True, exist_ok=True)
         ts = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
         dest = self.backups_dir / f"{BACKUP_PREFIX}{ts}"
         dest.mkdir(parents=True, exist_ok=True)
         shutil.copy2(self.state_file, dest / "project-state.json")
+
+        # SEC-CR101-003: track snapshot-manifest.json's original presence/absence
+        # so rollback() can restore it (or its original absence) faithfully.
+        manifest = self.state_dir / "snapshot-manifest.json"
+        manifest_present = manifest.exists()
+        if manifest_present:
+            shutil.copy2(manifest, dest / "snapshot-manifest.json")
+
+        meta = {"manifest_present": manifest_present, "created_utc": _now_iso()}
+        with open(dest / "backup-meta.json", "w", encoding="utf-8") as f:
+            json.dump(meta, f, indent=2)
+            f.write("\n")
+
         return dest
+
+    def _load_backup_meta(self, backup: Path) -> Dict[str, Any] | None:
+        """Load backup-meta.json from a backup dir.
+
+        Returns None when the file is absent (a legacy backup created before
+        SEC-CR101-003) or unreadable, so callers can fall back to the original
+        project-state-only rollback behavior with a clear warning.
+        """
+        meta_path = backup / "backup-meta.json"
+        if not meta_path.exists():
+            return None
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, json.JSONDecodeError) as exc:
+            print(
+                f"[WARN] backup-meta.json unreadable ({exc}); treating backup as legacy "
+                "(manifest state cannot be restored).",
+                file=sys.stderr,
+            )
+            return None
 
     def _atomic_write(self, state: Dict[str, Any]) -> None:
         fd, tmp = tempfile.mkstemp(dir=str(self.state_dir), suffix=".tmp")
@@ -365,9 +399,45 @@ class StateMigration9x:
         if not src.exists():
             print(f"[ERROR] Backup missing project-state.json: {src}", file=sys.stderr)
             return 2
+
+        # SEC-CR101-003: pre-flight the manifest restore BEFORE touching
+        # project-state.json, so an inconsistent backup fails cleanly instead
+        # of leaving a half-applied rollback.
+        meta = self._load_backup_meta(backup)
+        backup_manifest = backup / "snapshot-manifest.json"
+        if meta is not None and meta.get("manifest_present") and not backup_manifest.exists():
+            print(
+                f"[ERROR] backup-meta.json indicates snapshot-manifest.json was present "
+                f"at backup time, but it is missing from the backup: {backup_manifest}",
+                file=sys.stderr,
+            )
+            return 2
+
         with self._state_lock():
             shutil.copy2(src, self.state_file)
         print(f"[OK] Rolled back project-state.json from {backup}")
+
+        # Manifest restore happens outside the state lock (separate file),
+        # mirroring how execute() creates the manifest stub outside the lock.
+        manifest_path = self.state_dir / "snapshot-manifest.json"
+        if meta is None:
+            print(
+                "[WARN] Legacy backup (no backup-meta.json): manifest state cannot be "
+                "restored from this backup; snapshot-manifest.json left as-is.",
+                file=sys.stderr,
+            )
+            return 0
+
+        if meta.get("manifest_present"):
+            shutil.copy2(backup_manifest, manifest_path)
+            print(f"[OK] Restored snapshot-manifest.json from {backup}")
+        else:
+            if manifest_path.exists():
+                manifest_path.unlink()
+                print("[OK] Removed snapshot-manifest.json (absent at backup time)")
+            else:
+                print("[OK] snapshot-manifest.json remains absent (matches backup-time state)")
+
         return 0
 
 

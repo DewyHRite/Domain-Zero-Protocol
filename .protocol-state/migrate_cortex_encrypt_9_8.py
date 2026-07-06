@@ -33,10 +33,20 @@ correctly.
 
 Usage
 -----
-  python migrate_cortex_encrypt_9_8.py --data-dir <dir> --key-b64 <b64> --check
-  python migrate_cortex_encrypt_9_8.py --data-dir <dir> --key-b64 <b64> --execute
+  python migrate_cortex_encrypt_9_8.py --data-dir <dir> --check
   python migrate_cortex_encrypt_9_8.py --data-dir <dir> --rollback
-  python migrate_cortex_encrypt_9_8.py --data-dir <dir> --key-b64 <b64> --decrypt
+
+  # --key-b64 exposes the key via process argv (visible to other same-user
+  # processes) and therefore requires --insecure-key-argv-ok (C2-3, v9.9.1).
+  # Prefer the safe alternatives instead: in-process `brain encrypt --execute`,
+  # or DZP_CORTEX_KEY (raw base64 or a file:<path> reference).
+  python migrate_cortex_encrypt_9_8.py --data-dir <dir> --key-b64 <b64> --insecure-key-argv-ok --execute
+  python migrate_cortex_encrypt_9_8.py --data-dir <dir> --key-b64 <b64> --insecure-key-argv-ok --decrypt
+
+  # --purge-backup (C2-1, v9.9.1): opt-in, best-effort secure deletion of the
+  # plaintext pre-encrypt backup, ONLY after a successful --execute. See the
+  # --purge-backup help text for the SSD/wear-leveling caveat.
+  python migrate_cortex_encrypt_9_8.py --data-dir <dir> --key-b64 <b64> --insecure-key-argv-ok --execute --purge-backup
 """
 from __future__ import annotations
 
@@ -343,6 +353,65 @@ def encrypt_brain(db_path, key: bytes, *, ledger_check: bool = True) -> dict:
     return {"backup": str(backup), "encrypted": True}
 
 
+def secure_delete_backup(path) -> bool:
+    """Best-effort secure deletion of a plaintext pre-encrypt backup file.
+
+    RISK-ENC-003 (C2-1, v9.9.1): opt-in via ``--purge-backup``, and ONLY ever
+    invoked by ``main()`` AFTER ``encrypt_brain()`` has already returned
+    successfully -- i.e. the smoke-verify passed and the atomic ``os.replace``
+    already succeeded. If ``encrypt_brain`` raises, this function is never
+    reached, so the plaintext backup (the only rollback path) is preserved.
+
+    Performs a best-effort single-pass zero-overwrite, followed by an
+    ``fsync`` and delete.
+
+    NOTE (SSD / copy-on-write caveat): on SSDs, copy-on-write filesystems, and
+    cloud-synced folders (e.g. OneDrive), wear-leveling and journaling mean
+    this overwrite is NOT a cryptographically certified erasure -- the
+    original plaintext bytes may still be physically recoverable from
+    reallocated blocks despite the logical overwrite succeeding. This is a
+    best-effort mitigation only, not certified media sanitization.
+
+    Returns
+    -------
+    bool
+        True on success, False on (non-fatal) failure. A purge failure must
+        NEVER raise or fail the overall migration -- the caller has already
+        succeeded; this is cleanup only.
+    """
+    path = Path(path)
+    print(
+        f"WARNING: purging plaintext pre-encrypt backup at {path} "
+        "(best-effort single-pass zero-overwrite; THIS IS IRREVERSIBLE -- the "
+        "backup is your ONLY rollback path once purged). SSDs and copy-on-write "
+        "filesystems may retain recoverable fragments despite the overwrite "
+        "(wear-leveling / journaling; physical erasure is not guaranteed).",
+        file=sys.stderr,
+    )
+    try:
+        size = path.stat().st_size
+        with open(path, "r+b") as f:
+            chunk = b"\x00" * 65536
+            remaining = size
+            while remaining > 0:
+                n = min(len(chunk), remaining)
+                f.write(chunk[:n])
+                remaining -= n
+            f.flush()
+            os.fsync(f.fileno())
+        path.unlink()
+    except OSError as exc:
+        print(
+            f"WARNING: failed to purge backup at {path}: {exc}. The plaintext "
+            "backup remains on disk -- delete it manually if you no longer need "
+            "it as a rollback path.",
+            file=sys.stderr,
+        )
+        return False
+    print(f"Purged plaintext backup: {path}", file=sys.stderr)
+    return True
+
+
 def rollback(db_path) -> dict:
     """Restore the most recent pre-encrypt backup over the live db_path.
 
@@ -469,14 +538,74 @@ def main(argv=None) -> int:
         description="DZP Cortex v9.8.0 encryption migration utility."
     )
     ap.add_argument("--data-dir", required=True, help="Path to the DZP Cortex data directory")
-    ap.add_argument("--key-b64", help="32-byte encryption key as base64 (required for --execute / --decrypt)")
+    ap.add_argument(
+        "--key-b64",
+        help=(
+            "32-byte encryption key as base64 (required for --execute / --decrypt). "
+            "SECURITY WARNING (C2-3): process argv is visible to other processes "
+            "owned by the same OS user (e.g. /proc on Linux, `ps`, Windows Task "
+            "Manager's command-line column). Prefer the safe alternatives: "
+            "in-process `brain encrypt --execute` (never touches argv), or set "
+            "DZP_CORTEX_KEY to a raw base64 key or a file:<path> reference. Using "
+            "--key-b64 requires --insecure-key-argv-ok."
+        ),
+    )
+    ap.add_argument(
+        "--insecure-key-argv-ok",
+        action="store_true",
+        help=(
+            "Explicit acknowledgment required to use --key-b64, which exposes the "
+            "encryption key via process argv. Only set this if you understand the "
+            "risk and cannot use the safe alternatives: in-process `brain encrypt "
+            "--execute`, or DZP_CORTEX_KEY (raw base64 or file:<path> reference)."
+        ),
+    )
     ap.add_argument("--check", action="store_true", help="Check migration readiness (no mutations)")
     ap.add_argument("--execute", action="store_true", help="Perform the encryption migration")
     ap.add_argument("--rollback", action="store_true", help="Restore the pre-encrypt backup")
+    ap.add_argument(
+        "--purge-backup",
+        action="store_true",
+        help=(
+            "RISK-ENC-003 (C2-1): after a successful --execute (smoke-verify passed "
+            "AND the atomic replace already succeeded), best-effort securely delete "
+            "the plaintext pre-encrypt backup (single-pass zero-overwrite + flush + "
+            "delete). Opt-in; default OFF. Refused/never invoked if the migration did "
+            "not complete successfully -- the backup is your ONLY rollback path. "
+            "WARNING: this is irreversible. NOTE: on SSDs and copy-on-write "
+            "filesystems, wear-leveling / journaling means physical erasure of the "
+            "overwritten bytes is NOT guaranteed even after this overwrite."
+        ),
+    )
     ap.add_argument("--decrypt", action="store_true", help="Decrypt an encrypted brain.db back to plaintext")
     args = ap.parse_args(argv)
 
     db_path = Path(args.data_dir) / "brain.db"
+
+    # C2-3: --key-b64 argv-exposure gating. Checked immediately after parsing
+    # (before --check and before any other branch) because the argv-exposure
+    # risk exists the instant --key-b64 appears on the command line, regardless
+    # of which subcommand ultimately consumes it.
+    if args.key_b64:
+        if not args.insecure_key_argv_ok:
+            print(
+                "ERROR: --key-b64 exposes the encryption key via process argv, "
+                "which is visible to other processes owned by the same OS user. "
+                "Use a safe alternative instead:\n"
+                "  - in-process: `brain encrypt --execute` (never touches argv)\n"
+                "  - env var: set DZP_CORTEX_KEY to a raw base64 key or a "
+                "file:<path> reference\n"
+                "If you understand the risk and must use --key-b64 anyway, pass "
+                "--insecure-key-argv-ok.",
+                file=sys.stderr,
+            )
+            return 2
+        print(
+            "WARNING: --key-b64 passes the encryption key via process argv, "
+            "visible to other same-user processes. Prefer DZP_CORTEX_KEY or "
+            "in-process `brain encrypt --execute` instead.",
+            file=sys.stderr,
+        )
 
     if args.check:
         # Guard: do NOT call _install_count (which creates the file via sqlite3.connect)
@@ -519,6 +648,12 @@ def main(argv=None) -> int:
             "After confirming the encrypted brain works, securely delete it — "
             "it defeats encryption-at-rest if left in place."
         )
+        # C2-1: only reached when encrypt_brain() has ALREADY returned
+        # successfully (smoke-verify passed + atomic replace succeeded). If
+        # encrypt_brain raised, this line is never reached, so the backup is
+        # preserved as the rollback path.
+        if args.purge_backup:
+            secure_delete_backup(result["backup"])
         return 0
 
     if args.rollback:

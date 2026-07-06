@@ -1,9 +1,36 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.9.0
-**Release Date:** 2026-06-27
-**Release Type:** MINOR Release (PLAN-CORTEX-RECOVERY-001 R1 Cortex Key-Recovery subsystem + BUG-SESSION-001/002/003/004)
+**Version:** 9.9.1
+**Release Date:** 2026-07-06
+**Release Type:** PATCH Release (Track C encryption-debt closure — PLAN-CORTEX-ENC-001 residuals)
+
+---
+
+## Release Summary — v9.9.1 (PATCH)
+
+v9.9.1 closes the Track C encryption-debt residuals deferred from v9.9.0 (`d62d773` feat bundle +
+`938c53f` protocol doc companion), all Megumi Tier-3 @approved (0 must-fix).
+
+- **C1** — SEC-CR101-003 CLOSED: `migrate_state_9x.py` `_backup()`/`rollback()` now track and
+  restore `snapshot-manifest.json` presence via `backup-meta.json`; rollback pre-flights manifest
+  restore; legacy-backup fallback preserved. +6 TDD tests (19 green).
+- **C2-1** — RISK-ENC-003: `--purge-backup` post-verify zero-overwrite shred (default OFF).
+- **C2-2** — Windows salt-sidecar owner-only ACL via `icacls` (fail-soft, win32-only).
+- **C2-3** — `--key-b64` now requires `--insecure-key-argv-ok`; `brain encrypt` in-process call
+  fixed to match.
+- **C2-5** — `requirements-enc.txt` hash-pinned (19 packages, 283 sha256 hashes;
+  `cryptography==49.0.0`).
+- **C2-4** — RISK-ENC-006: plaintext export is consent-gated (`--plaintext-ok`, exit 9) when
+  encryption is enabled; escrow memory-export path unaffected; disabled (plaintext) path remains
+  byte-identical.
+- **Inherent boundaries** (keystore same-user access, no key zeroization) documented in the
+  encryption-at-rest design spec §12 + `SECURITY.md`.
+- **Rider** — BUG-CORTEX-STATUS-ENC-001 CLOSED-WITH-EVIDENCE: `brain status` text/json share one
+  source dict; 3 parity regression tests added; zero code change required.
+
+Megumi Tier-3 review: @approved, 0 must-fix. Accepted residuals: SEC-CORTEX-ENC-010/011/012 (P3) +
+SEC-CR101-004 (P2). Engine parity 19/19.
 
 ---
 

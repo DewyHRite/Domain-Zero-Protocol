@@ -292,6 +292,22 @@ def main(argv: list[str] | None = None) -> int:
     p_export = sub.add_parser("export")
     p_export.add_argument("--snapshot", action="store_true")
     p_export.add_argument("--out", default="")
+    # C2-4 (v9.9.1, RISK-ENC-006 remainder): consent-gate plaintext export when
+    # the brain's encryption is enabled. USER decision (2026-07-05): keep the
+    # Toji snapshot plaintext (not encrypt-by-default) but require explicit
+    # opt-in. No effect when encryption.enabled is false (unchanged, no flag
+    # needed).
+    p_export.add_argument(
+        "--plaintext-ok",
+        action="store_true",
+        dest="plaintext_ok",
+        help=(
+            "Required when the brain's encryption is enabled: explicitly acknowledge "
+            "that this writes a PLAINTEXT snapshot derived from an encrypted brain. "
+            "Without this flag, export refuses when encryption.enabled=true. "
+            "See 'brain memory-export' for an escrow-encrypted alternative."
+        ),
+    )
     # IMPL-003 (v9.3.3): diagnostic-only commands
     p_dedup = sub.add_parser("dedup")
     p_dedup.add_argument("--report", action="store_true", required=True, help="Print duplicate ratio report (read-only)")
@@ -2229,7 +2245,15 @@ def _encrypt_cmd(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> 
             )
             return 8
         key_b64 = base64.b64encode(key_bytes).decode()
-        mig_argv += ["--execute", "--key-b64", key_b64]
+        # C2-3 (v9.9.1): the migration's --key-b64 requires --insecure-key-argv-ok
+        # because a real CLI invocation exposes the key via OS-visible process
+        # argv. This call is safe without that caveat applying: `mig.main(mig_argv)`
+        # is an in-process Python function call (importlib module_from_spec above,
+        # not subprocess.run) -- mig_argv is a plain list passed as a function
+        # argument, so the key never appears in this process's actual argv or any
+        # other process's view of it. The ack flag is passed purely to satisfy the
+        # migration's own CLI-level gate.
+        mig_argv += ["--execute", "--key-b64", key_b64, "--insecure-key-argv-ok"]
 
     return mig.main(mig_argv)
 
@@ -2239,6 +2263,32 @@ def _export(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
         raise ValueError("export currently requires --snapshot")
     out = Path(args.out).resolve() if args.out else repo / ".protocol-state" / "brain" / "cortex-snapshot.md"
     _validate_snapshot_out(repo, out)
+
+    # C2-4 (v9.9.1, RISK-ENC-006 remainder): consent-gate plaintext export when
+    # the brain's encryption is enabled. This snapshot reads memories JSONL
+    # directly from disk -- a plaintext-disclosure surface that bypasses the
+    # encrypted brain.db entirely (memories JSONL is not covered by SQLCipher).
+    # USER decision (2026-07-05, domain.record.md): keep the export plaintext
+    # (do NOT encrypt-by-default); require explicit --plaintext-ok consent
+    # instead. getattr() is used defensively so direct internal callers that
+    # construct args without this attribute (e.g. test harnesses) default to
+    # False rather than raising AttributeError.
+    enc_enabled = bool((cfg.get("encryption") or {}).get("enabled"))
+    plaintext_ok = getattr(args, "plaintext_ok", False)
+    if enc_enabled and not plaintext_ok:
+        from cortex.errors import PlaintextExportRefusedError
+        raise PlaintextExportRefusedError(
+            f"Refusing to write a plaintext snapshot from an encryption-enabled brain: {out}\n"
+            "Pass --plaintext-ok to export anyway, or use 'brain memory-export' for an "
+            "escrow-encrypted alternative that never writes plaintext memory content to disk."
+        )
+    if enc_enabled and plaintext_ok:
+        print(
+            f"[CORTEX] WARNING: writing a PLAINTEXT snapshot derived from an "
+            f"ENCRYPTION-ENABLED brain (--plaintext-ok was passed). Path: {out}",
+            file=sys.stderr,
+        )
+
     memories = paths.memories_dir(repo, cfg, allow_unsafe=allow_unsafe)
     lines = ["# DZP Cortex Memory Snapshot", "", "_Read-only snapshot for Toji audits._", ""]
     for file in sorted(memories.glob("*.jsonl")):

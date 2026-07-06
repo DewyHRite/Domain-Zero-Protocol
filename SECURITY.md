@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
 # Security Policy
 
 ## Scope
@@ -217,6 +217,25 @@ Domain Zero Protocol's security design addresses OWASP Top 10 (2021):
 - **A09:2021 – Logging Failures**: `dev-notes.md` and `security-review.md` maintain audit trails
 - **A10:2021 – SSRF**: MEGUMI's security checklist includes SSRF prevention
 
+### Accepted Security Boundaries (Cortex Encryption-at-Rest)
+
+Two residuals of DZP Cortex's opt-in encryption-at-rest (v9.8.0+) are **permanent, structural
+boundaries** of the architecture, not open bugs or deferred work — no future patch closes them
+without changing the underlying implementation:
+
+- **Same-user malware can read the OS keystore.** The encryption key is cached in the per-user OS
+  keystore (Windows Credential Manager / macOS Keychain / Linux Secret Service). Any process
+  running as the *same OS user* has the same keystore access Cortex does — identical to the
+  boundary every credential-manager-backed tool (browsers, git credential helpers, cloud CLIs)
+  accepts. The mitigation is OS/endpoint hygiene, not a product control.
+- **No in-memory key zeroization.** The resolved key is held in ordinary Python objects; CPython
+  gives no guarantee that backing memory is wiped before garbage collection. True zeroization
+  requires a language with manual memory control, which is out of scope for a cross-platform
+  Python CLI.
+
+Full threat-model rationale: `docs/superpowers/specs/2026-06-19-cortex-encryption-at-rest-design.md`
+§12. Tracking: `.protocol-state/security-review.md:1922-1923` (Megumi @approved, non-blocking).
+
 ---
 
 ## Security Changelog
@@ -273,7 +292,7 @@ When reporting, please indicate:
 
 This security policy is versioned alongside the Domain Zero Protocol:
 
-- **Current Version**: 1.5.0 (matches Domain Zero Protocol v9.9.0)
+- **Current Version**: 1.5.0 (matches Domain Zero Protocol v9.9.1)
 - **Last Updated**: July 4, 2026
 - **Next Review**: Upon the next minor/major protocol update
 

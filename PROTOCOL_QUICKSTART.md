@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
 # Domain Zero Protocol - Quick Start Guide
 
 ## Get Up and Running with Domain Zero in 2 Minutes
@@ -515,6 +515,6 @@ You'll know Domain Zero is working when:
 
 ---
 
-**Domain Zero Protocol v9.9.0** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v9.9.1** - Perfect Code Through Infinite Collaboration
 
 *The weight is real. The protocol is absolute. Domain Zero is active.*

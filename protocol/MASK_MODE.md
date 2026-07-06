@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
 ---
 title: "Mask Mode Specification"
 version: "1.0.0"
-protocol_version: "9.9.0"
+protocol_version: "9.9.1"
 last_updated: "2025-12-22"
 status: "Production-Ready"
 ---
@@ -716,6 +716,6 @@ Whether you use YUUJI or "Implementation Specialist," the workflow remains:
 5. Get approval
 6. Ship confidently
 
-**Domain Zero Protocol v9.9.0** - Mask Mode
+**Domain Zero Protocol v9.9.1** - Mask Mode
 
 *Choose your presentation. Keep the structure.*

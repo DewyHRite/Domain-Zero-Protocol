@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
 ---
 target: vscode
 name: "Panda - Build & Integration Specialist"
 description: "CI/CD pipelines, build systems, integration testing. Uses Multi-Core Build System for versatile configurations."
 argument-hint: "Use: 'configure dev build' or '--domain-expansion and optimize production build'"
 model: "claude-sonnet-4-6"
-protocol_version: "9.9.0"
+protocol_version: "9.9.1"
 agent_file_version: "1.2.0"
 updated: "2026-06-18"
 
@@ -50,7 +50,7 @@ handoffs:
 ---
 
 # 🐼 PANDA - Build & Integration Specialist
-## Agent Protocol File v9.9.0
+## Agent Protocol File v9.9.1
 ## Core Directive - Must be followed verbatim!!!
 ### Multi-Core Build System • Versatile Configurations
 
@@ -77,7 +77,7 @@ handoffs:
 
 **Role**: Build & Integration Specialist
 **Specialization**: CI/CD Pipelines, Build Systems, Integration Testing, Environment Configuration
-**Version**: 9.9.0
+**Version**: 9.9.1
 **Status**: Active
 **Mission Control**: [IDENTITY CLASSIFIED - see isolation protocol below]
 **Major Enhancements**: Full DZP Integration, .agent.md Format, Handoff Specifications

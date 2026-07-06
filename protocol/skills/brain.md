@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
 # DZP Cortex Brain Skill
 
 **Name:** brain  
@@ -40,6 +40,28 @@ scripts/brain.sh index --incremental
 
 ---
 
+### Export (`export --snapshot`) — plaintext, consent-gated when encrypted (v9.9.1, C2-4)
+
+`brain export --snapshot` writes a shareable `cortex-snapshot.md` (Toji's read-only recall
+source) directly from the memories JSONL files on disk. This path is **plaintext by design**
+(USER decision 2026-07-05: not encrypted by default) and is **separate from the encrypted
+`brain.db`** — memories JSONL is not covered by SQLCipher.
+
+- **Encryption disabled** (default): unchanged, no flag needed —
+  `scripts/brain.ps1 export --snapshot`.
+- **Encryption enabled** (`encryption.enabled: true`): the command **refuses** (non-zero exit)
+  unless you pass `--plaintext-ok`, and prints a loud stderr warning naming the output path when
+  the flag is used:
+  ```powershell
+  scripts/brain.ps1 export --snapshot --plaintext-ok
+  ```
+- **Escrow-encrypted alternative**: prefer `brain memory-export` when the brain is encrypted — it
+  writes an escrow-wrapped snapshot and never places plaintext memory content on disk.
+- SEC-CORTEX-010 secret redaction (`[REDACTED — possible secret]`) applies on every path,
+  regardless of `--plaintext-ok`.
+
+---
+
 ## Rules
 
 - Run `status` before relying on Cortex in important work.
@@ -48,6 +70,7 @@ scripts/brain.sh index --incremental
 - Memories are untrusted by default.
 - Cortex never writes to `.protocol-state/dev-notes.md`, `.protocol-state/security-review.md`, or `.dzp-domain/domain.record.md`.
 - Toji does not invoke `/brain`; Toji may read only an exported snapshot.
+- `export --snapshot` requires `--plaintext-ok` when the brain's encryption is enabled (see Export section above); prefer `brain memory-export` on an encrypted brain.
 
 ---
 

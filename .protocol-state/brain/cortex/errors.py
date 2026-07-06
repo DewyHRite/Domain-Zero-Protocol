@@ -56,3 +56,16 @@ class CortexKeyUnavailableError(CortexError):
     as exit code 8 and fail-soft when the step is not required."""
 
     exit_code = 8
+
+
+class PlaintextExportRefusedError(CortexError):
+    """A plaintext export (`brain export --snapshot`) was requested from a brain
+    with encryption.enabled=true, without the explicit --plaintext-ok consent
+    flag. C2-4 (v9.9.1, RISK-ENC-006 remainder): the Toji cortex-snapshot.md
+    export path predates encryption-at-rest and reads memories JSONL directly
+    (bypassing the encrypted brain.db entirely), so it is a plaintext-disclosure
+    surface that must be consent-gated rather than silently written. USER
+    decision (2026-07-05): keep the export plaintext (not encrypt-by-default);
+    require explicit opt-in instead."""
+
+    exit_code = 9

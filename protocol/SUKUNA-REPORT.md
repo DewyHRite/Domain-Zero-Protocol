@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.9.0
+**Version**: 9.9.1
 **Status**: Production
-**Last Updated**: 2026-06-27
+**Last Updated**: 2026-07-06
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -47,6 +47,60 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
 4. AI agents automatically apply patches on next upgrade/setup
 ```
+
+---
+
+## v9.9.1 PATCH MANIFEST (2026-07-06): Track C Encryption-Debt Closure
+
+### PATCH-ENC-TRACKC-001 (2026-07-06): Track C Encryption-Debt Residuals (C1 + C2-1..5)
+
+**Patch ID**: PATCH-ENC-TRACKC-001
+**Applies To**: v9.9.0 installations upgrading to v9.9.1 (any install with Cortex encryption-at-rest enabled or planning to use `migrate_state_9x.py`)
+**Priority**: P2-Medium (closes accepted P3 residuals + one P2 from the v9.8.0/v9.9.0 reviews; no P0/P1)
+**Category**: Security + Bugfix
+**Status**: ACTIVE
+**Required For**: Upgrades from v9.9.0 that use Cortex encryption-at-rest or `migrate_state_9x.py`
+
+**Description**: Closes the Track C encryption-debt residuals deferred from v9.9.0 (committed on dev
+as `d62d773` feat bundle + `938c53f` protocol doc companion). C1 (SEC-CR101-003): `migrate_state_9x.py`
+`_backup()`/`rollback()` now track and restore `snapshot-manifest.json` presence via `backup-meta.json`;
+rollback pre-flights manifest restore; legacy-backup fallback preserved. C2-1 (RISK-ENC-003):
+`--purge-backup` post-verify zero-overwrite shred (default OFF). C2-2: Windows salt-sidecar owner-only
+ACL via `icacls` (fail-soft, win32-only). C2-3: `--key-b64` now requires `--insecure-key-argv-ok`;
+`brain encrypt` in-process call fixed to match. C2-5: `requirements-enc.txt` hash-pinned (19 packages,
+283 sha256 hashes; `cryptography==49.0.0`). C2-4 (RISK-ENC-006): plaintext export is consent-gated
+(`--plaintext-ok`, exit 9) when encryption is enabled; escrow memory-export path unaffected; disabled
+(plaintext) path remains byte-identical. Inherent boundaries (keystore same-user access, no key
+zeroization) documented in the encryption-at-rest design spec §12 + `SECURITY.md`. Rider:
+BUG-CORTEX-STATUS-ENC-001 CLOSED-WITH-EVIDENCE (`brain status` text/json share one source dict; 3
+parity regression tests added; zero code change required).
+
+**Files changed**:
+- `.protocol-state/migrate_state_9x.py` — `_backup()`/`rollback()` manifest-presence tracking (C1)
+- `.protocol-state/brain/cortex/crypto.py` — `--purge-backup` shred, salt-sidecar ACL, `--key-b64` gating (C2-1/2/3)
+- `.protocol-state/brain/cortex/errors.py` — new error types for the C2 gates
+- `.protocol-state/brain/brain.py` — CLI wiring for `--purge-backup`, `--insecure-key-argv-ok`, `--plaintext-ok`
+- `.protocol-state/migrate_cortex_encrypt_9_8.py` — encrypt/decrypt path updates supporting C2
+- `requirements-enc.txt` — hash-pinned (19 packages, 283 sha256; `cryptography==49.0.0`)
+- `SECURITY.md` — inherent-boundaries documentation (§ keystore access, no key zeroization)
+- `docs/superpowers/specs/2026-06-19-cortex-encryption-at-rest-design.md` — enc spec §12 addition
+- `protocol/skills/brain.md` — `--plaintext-ok` consent-gate export contract documentation
+
+**Validation**:
+```bash
+python scripts/distro/assert_version.py --root .
+# Expected: ASSERT OK: all sources at v9.9.1
+python -m pytest tests/brain/test_migrate_encrypt.py tests/brain/test_crypto.py tests/brain/test_brain_encrypt_cli.py tests/test_migrate_state_legacy.py -q
+python scripts/distro/check_engine_parity.py --root .
+```
+
+**Rollback**: Revert version cascade + Track C commits via `git revert` on the cascade commit(s)
+(`d62d773`, `938c53f`, and this cascade commit).
+
+**Authorization**: Gojo + User authorized cascade to v9.9.1 (Track C plan approved 2026-07-05
+"Proceed"). Megumi Tier-3 review — @approved, 0 must-fix; accepted residuals SEC-CORTEX-ENC-010/011/012
+(P3) + SEC-CR101-004 (P2), deferred beyond v9.9.1. Sukuna adversarial review — APPROVED (PATCH,
+targeted encryption-debt closure, no new attack surface introduced).
 
 ---
 

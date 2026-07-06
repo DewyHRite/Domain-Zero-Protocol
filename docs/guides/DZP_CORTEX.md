@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
 # DZP Cortex — Complete Guide
 
-**Version**: 9.9.0
+**Version**: 9.9.1
 **Last Updated**: 2026-06-18
 **Status**: Production-Ready
 **Audience**: DZP operators and resident agents
@@ -221,7 +221,7 @@ Use the root wrappers (`scripts/brain.ps1` on Windows, `scripts/brain.sh` on POS
 | `compact` | Orphan-sweep + `VACUUM` (v4) |
 | `dedup [--report]` / `doctor` | Read-only diagnostics |
 | `restore --from <bak> [--verify]` | Restore a pre-op backup |
-| `export --snapshot` | Write a shareable `cortex-snapshot.md` |
+| `export --snapshot [--plaintext-ok]` | Write a shareable `cortex-snapshot.md` (plaintext; `--plaintext-ok` required when `encryption.enabled: true` — see `protocol/skills/brain.md`) |
 | `reset --scope self\|all [flags]` | Destroy data (guarded — see §6) |
 
 **Run `brain status` before relying on Cortex in important work.** The full command contract lives in
