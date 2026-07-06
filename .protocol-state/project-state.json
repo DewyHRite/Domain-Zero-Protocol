@@ -329,20 +329,22 @@
       "session_id": "session_20260705_020344",
       "session_active": true,
       "start_time": "2026-07-05T02:03:44.580822+00:00",
-      "last_interaction_time": "2026-07-05T02:03:44.580822+00:00",
-      "last_alert_time": null,
-      "alert_count": 0,
+      "last_interaction_time": "2026-07-06T08:42:25.414586+00:00",
+      "last_alert_time": "2026-07-06T07:10:11.890849+00:00",
+      "alert_count": 1,
       "escalation_level": 0,
       "user_last_choice": null,
       "break_acknowledged": false,
       "high_risk_operations_blocked": false
     },
     "session_metrics": {
-      "total_duration_minutes": 0,
-      "continuous_work_minutes": 0,
-      "break_timestamps": [],
-      "total_breaks": 0,
-      "alerts_issued": 0,
+      "total_duration_minutes": 1838,
+      "continuous_work_minutes": 91,
+      "break_timestamps": [
+        "2026-07-06T07:10:42.803368+00:00"
+      ],
+      "total_breaks": 1,
+      "alerts_issued": 1,
       "alerts_ignored": 0,
       "continues_chosen": 0,
       "breaks_chosen": 0
@@ -420,7 +422,7 @@
         "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-07-04T22:03:44.593800",
+    "last_updated": "2026-07-06T04:42:25.430537",
     "protocol_version": "9.9.1"
   },
   "troubleshooting": {
