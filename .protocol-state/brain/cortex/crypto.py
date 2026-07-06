@@ -97,9 +97,15 @@ def _harden_windows_acl(path: Path) -> None:
         return
     userdomain = os.environ.get("USERDOMAIN", "").strip()
     principal = f"{userdomain}\\{current_user}" if userdomain else current_user
+    # CodeRabbit PR#105 round-2 (ruff S607): fully-qualified icacls path so a
+    # writable dir earlier in PATH can't shadow the system binary. Fail-soft:
+    # if the resolved path is absent the FileNotFoundError below warns+continues.
+    icacls_exe = os.path.join(
+        os.environ.get("SystemRoot", r"C:\Windows"), "System32", "icacls.exe"
+    )
     try:
         result = subprocess.run(
-            ["icacls", str(path), "/inheritance:r", "/grant:r", f"{principal}:F"],
+            [icacls_exe, str(path), "/inheritance:r", "/grant:r", f"{principal}:F"],
             capture_output=True,
             text=True,
             timeout=10,
