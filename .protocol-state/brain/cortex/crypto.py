@@ -70,6 +70,13 @@ def _harden_windows_acl(path: Path) -> None:
     failure (icacls missing, non-NTFS volume, permission denied, etc.) prints a
     single stderr warning and continues — the file still has the 0o600-style
     bits set by the caller. No-op on non-Windows platforms.
+
+    CodeRabbit PR#105 (v9.9.1, closes accepted-P3 edge on SEC-CORTEX-ENC-010/
+    RISK-ENC-003): a bare username passed to ``icacls /grant:r <user>:F`` is
+    ambiguous/unreliable on domain-joined machines (local vs. domain account
+    resolution). When ``USERDOMAIN`` is present and non-empty, the grant
+    target is qualified as ``DOMAIN\\user``; otherwise the bare
+    ``USERNAME``/``USER``/``getpass.getuser()`` fallback is used unchanged.
     """
     if sys.platform != "win32":
         return
@@ -88,9 +95,11 @@ def _harden_windows_acl(path: Path) -> None:
             file=sys.stderr,
         )
         return
+    userdomain = os.environ.get("USERDOMAIN", "").strip()
+    principal = f"{userdomain}\\{current_user}" if userdomain else current_user
     try:
         result = subprocess.run(
-            ["icacls", str(path), "/inheritance:r", "/grant:r", f"{current_user}:F"],
+            ["icacls", str(path), "/inheritance:r", "/grant:r", f"{principal}:F"],
             capture_output=True,
             text=True,
             timeout=10,

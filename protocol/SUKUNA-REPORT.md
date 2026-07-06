@@ -85,6 +85,7 @@ parity regression tests added; zero code change required).
 - `SECURITY.md` — inherent-boundaries documentation (§ keystore access, no key zeroization)
 - `docs/superpowers/specs/2026-06-19-cortex-encryption-at-rest-design.md` — enc spec §12 addition
 - `protocol/skills/brain.md` — `--plaintext-ok` consent-gate export contract documentation
+- `docs/guides/DZP_CORTEX.md` — `export --snapshot [--plaintext-ok]` command-reference update
 
 **Validation**:
 ```bash

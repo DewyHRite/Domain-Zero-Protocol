@@ -3,7 +3,7 @@
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
 **Version**: 9.9.1
-**Last Updated**: 2026-06-18
+**Last Updated**: 2026-07-06
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
 
 > **9.x note**: v9.x adds **DZP Cortex** (local semantic memory) and a consolidated
