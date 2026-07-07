@@ -336,7 +336,23 @@ def main(argv: list[str] | None = None) -> int:
     p_restore.add_argument(
         "--verify",
         action="store_true",
-        help="Run integrity_check on the source before restoring",
+        help=(
+            "[COMPAT] No-op: verification (digest/key/integrity/schema) now runs "
+            "by DEFAULT (SEC-002, v9.9.2). Flag kept for backward compatibility "
+            "with existing invocations/scripts."
+        ),
+    )
+    p_restore.add_argument(
+        "--force-unverified",
+        action="store_true",
+        dest="force_unverified",
+        help=(
+            "BREAK-GLASS (SEC-002, v9.9.2): explicitly SKIP digest/key/integrity/"
+            "schema verification of the restore candidate. Prints a loud warning. "
+            "The pre-op backup of the current brain.db is still taken. Use only "
+            "when you have independently verified the candidate or accept the "
+            "data-loss/corruption risk."
+        ),
     )
 
     # WI-21 (v9.6.0): brain recall convenience alias (delegates to cortex_trigger recall path)
@@ -417,6 +433,19 @@ def main(argv: list[str] | None = None) -> int:
     g_enc.add_argument("--check", action="store_true", help="Check migration readiness (no mutations)")
     g_enc.add_argument("--execute", action="store_true", help="Perform the encryption migration (irreversible without --rollback)")
     g_enc.add_argument("--rollback", action="store_true", help="Restore the plaintext pre-encrypt backup")
+    p_encrypt.add_argument(
+        "--purge-backup",
+        action="store_true",
+        dest="purge_backup",
+        help=(
+            "IMPL-001 (v9.9.2): forward to the migration's --purge-backup "
+            "(RISK-ENC-003, C2-1). Only meaningful with --execute: after a "
+            "successful encrypt (smoke-verify + atomic replace already "
+            "succeeded), best-effort securely delete the plaintext pre-encrypt "
+            "backup. Opt-in; default OFF. Irreversible -- the backup is your "
+            "ONLY rollback path once purged."
+        ),
+    )
 
     # Task 5/6 (R1b §18.3): brain memory-export — write an escrow-wrapped memory-only snapshot
     # SEC-R1-NEW-003 (P3, accepted residual): DZP_CORTEX_ESCROW_PASSPHRASE is visible via
@@ -1988,15 +2017,25 @@ def _reset(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
 
 
 def _restore(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
-    """SEC-CORTEX-ACCESS-009 (v9.7.1): brain restore --from <path> [--verify].
+    """SEC-CORTEX-ACCESS-009 (v9.7.1) / SEC-002 (v9.9.2): brain restore --from <path>
+    [--verify] [--force-unverified].
 
-    Copies the specified backup file over the current brain.db.  If --verify is
-    set, runs integrity_check on the BACKUP before restoring; on failure exits 1
-    with a clear error (never overwrites a live DB with a known-corrupt backup).
+    Copies the specified backup file over the current brain.db.
+
+    SEC-002 (CWE-345, Toji audit v9.8.0->v9.9.1): verification (digest/key/
+    integrity/schema) now runs by DEFAULT for ANY DB replacement -- previously
+    it ran ONLY when --verify was explicitly passed, so an unverified restore
+    could silently copy any file (corrupt, foreign, or plaintext-when-encrypted-
+    expected) over a healthy live brain with no safety check whatsoever.
+    `--verify` remains accepted (now a no-op) for backward compatibility.
+    `--force-unverified` is the explicit, loud break-glass bypass; the pre-op
+    backup of the current brain.db is still taken even on that path.
 
     Steps:
       1. Resolve source path.
-      2. [--verify] integrity_check on source; exit 1 if non-OK.
+      2. Verify (default) unless --force-unverified: digest/key/integrity/
+         schema-version checks on the candidate; exit non-zero on any failure,
+         never falling through to the copy.
       3. Backup existing brain.db (fail-soft) to preserve the current state.
       4. Copy source → brain.db.
       5. Print confirmation and exit 0.
@@ -2011,9 +2050,22 @@ def _restore(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
     data_dir_path = paths.data_dir(repo, cfg, allow_unsafe=allow_unsafe)
     retention = int(cfg.get("backup_retention_count", 3))
 
-    if args.verify:
+    force_unverified = bool(getattr(args, "force_unverified", False))
+    if force_unverified:
+        # SEC-002 break-glass: verification is explicitly and loudly skipped.
+        print(
+            "WARNING (SEC-002 break-glass): --force-unverified was specified.\n"
+            "WARNING: SKIPPING digest/key/integrity/schema verification of the\n"
+            "WARNING: restore candidate. This can overwrite a healthy live brain\n"
+            "WARNING: with a corrupt, foreign, or otherwise invalid database with\n"
+            "WARNING: ZERO safety checks. Use only when you have independently\n"
+            "WARNING: verified the candidate, or you accept the data-loss risk.",
+            file=sys.stderr,
+        )
+    else:
         # Task 6 (IMPL-001 / §18.4): single-branch key-matched verify — NO fall-through.
-        # Replaces the previous plaintext-only sqlite3.connect verify block.
+        # SEC-002 (v9.9.2): this now runs UNCONDITIONALLY by default (not gated on
+        # args.verify, which is kept only as an accepted backward-compat no-op).
         from cortex import recovery as _recovery
         cand = src
         man = _recovery.read_manifest(cand)
@@ -2066,7 +2118,8 @@ def _restore(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
             )
             return 4
 
-    # Backup current brain.db before overwriting (fail-soft).
+    # Backup current brain.db before overwriting (fail-soft). Always runs, even
+    # on the --force-unverified break-glass path.
     Store.backup_db(db, data_dir_path, retention_count=retention)
 
     # Copy source over the live DB.
@@ -2254,6 +2307,13 @@ def _encrypt_cmd(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> 
         # other process's view of it. The ack flag is passed purely to satisfy the
         # migration's own CLI-level gate.
         mig_argv += ["--execute", "--key-b64", key_b64, "--insecure-key-argv-ok"]
+        # IMPL-001 (v9.9.2): forward --purge-backup so the recommended in-process
+        # `brain encrypt --execute` workflow can reach the v9.9.1 purge mitigation
+        # (RISK-ENC-003). Previously this flag existed on the migration but was
+        # never wired through from brain.py, making it unreachable via `brain
+        # encrypt`. Default remains OFF (only passed through when the user set it).
+        if getattr(args, "purge_backup", False):
+            mig_argv.append("--purge-backup")
 
     return mig.main(mig_argv)
 

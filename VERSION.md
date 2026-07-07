@@ -1,9 +1,37 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.2 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.9.1
-**Release Date:** 2026-07-06
-**Release Type:** PATCH Release (Track C encryption-debt closure — PLAN-CORTEX-ENC-001 residuals)
+**Version:** 9.9.2
+**Release Date:** 2026-07-07
+**Release Type:** PATCH Release (Toji-audit remediation — SEC-001/SEC-002/IMPL-001/CODE-001/TEST-001)
+
+---
+
+## Release Summary — v9.9.2 (PATCH)
+
+v9.9.2 remediates the findings from the 2026-07-06 Toji audit
+(`.protocol-state/toji-reports/2026-07-06-toji-audit-DZP-v9.8.0-to-v9.9.1.md`), all Megumi Tier-3
+@approved (0 must-fix).
+
+- **SEC-001** (HIGH, CWE-732) — CLOSED: `cortex/recovery.py` `write_owner_only()` is now fail-closed;
+  a DACL-hardening failure unlinks the secret artifact then re-raises. All 3 callers audited (the
+  journal was independently verified secret-free by Megumi). New test file (5 tests).
+- **SEC-002** (HIGH, CWE-345) — CLOSED: `brain restore` verifies by DEFAULT (digest/key/integrity/
+  schema); `--verify` kept as a no-op; `--force-unverified` break-glass with a loud warning and a
+  mandatory pre-op backup. Restore tests 3 → 9.
+- **IMPL-001** (MED) — CLOSED: `brain encrypt` forwards `--purge-backup`; purge is structurally
+  unreachable on failed verification via both CLI paths. Encrypt-CLI tests 13 → 15.
+- **CODE-001** (MED, CWE-391) — CLOSED: `cortex/memory_export.py` distinguishes table-absent from
+  query failure (failures now FAIL the export instead of producing a hollow artifact); manifest
+  gains backward-compatible `table_meta` counts. Export tests 4 → 11.
+- **TEST-001** — CLOSED: Stripe docs-key literal replaced with a runtime synthetic token (still trips
+  `contains_secret`); kills dev-repo secret-scanner false-positive noise.
+- **Incidental** — BUG-TEST-WINLOCK-001: e2e WinError-5 flake fixed (unreleased Store handle).
+
+Megumi Tier-3 review: @approved, 0 must-fix. Accepted residuals: SEC-CORTEX-ENC-013 (P3,
+success-path pre-hardening window), SEC-CORTEX-ENC-014 (P3, flag-precedence silent win), and
+TEST-001-RESIDUAL (2 test files keep the literal). Scoped tests 109 passed/1 skipped; engine
+parity 19/19. Resilience suite verified 23/23 (restore/recovery/export all green).
 
 ---
 

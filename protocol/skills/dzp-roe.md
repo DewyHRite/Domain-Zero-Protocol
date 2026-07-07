@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.2 -->
 # DZP Rules of Engagement (ROE)
 ## Post-Compaction Protocol Recovery (Gojo)
 

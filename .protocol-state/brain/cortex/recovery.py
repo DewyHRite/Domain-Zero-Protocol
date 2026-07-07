@@ -23,6 +23,13 @@ class RecoveryManifest:
     db_identity: str
     integrity_digest: str
     provenance: str
+    # CODE-001 (CWE-391, v9.9.2): optional per-table diagnostics (JSON string,
+    # e.g. {"cortex_memories": {"present": true, "rows": 2}, ...}). Appended
+    # LAST with a default so every pre-existing manifest producer/consumer
+    # (encryption backups, key-escrow exports, etc.) is unaffected -- old
+    # on-disk manifests lacking this key still reconstruct via read_manifest()
+    # (RecoveryManifest(**json)) because the field defaults to "".
+    table_meta: str = ""
 
 
 def _manifest_path(t: Path) -> Path:
@@ -203,10 +210,27 @@ def write_owner_only(path: Path, data: bytes) -> None:
         os.fsync(fd)
     finally:
         os.close(fd)
-    if sys.platform == "win32":
-        _set_windows_owner_only_dacl(path)
-    if not verify_owner_only(path):
-        raise PermissionError(f"failed to establish owner-only permissions on {path}")
+    # SEC-001 (CWE-732, Toji audit v9.8.0->v9.9.1, v9.9.2 remediation): fail CLOSED
+    # on ACL-hardening failure. Previously, if _set_windows_owner_only_dacl() raised
+    # (or verify_owner_only() returned False), the exception propagated but the
+    # just-written secret-bearing artifact was NEVER removed -- it was left on disk
+    # with inherited/default ACLs and no owner-only guarantee. A caller catching the
+    # exception had no way to know an unprotected artifact still existed. Now: the
+    # harden+verify step is guarded; on ANY failure, best-effort unlink the artifact
+    # before re-raising (bare `raise` preserves the original exception type and
+    # traceback -- cleanup failure is intentionally swallowed so it never masks the
+    # real error).
+    try:
+        if sys.platform == "win32":
+            _set_windows_owner_only_dacl(path)
+        if not verify_owner_only(path):
+            raise PermissionError(f"failed to establish owner-only permissions on {path}")
+    except Exception:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            pass  # best-effort cleanup; do not mask the original exception
+        raise
 
 
 def _set_windows_owner_only_dacl(path: Path) -> None:  # pragma: no cover - Windows only

@@ -7,6 +7,7 @@ Owner-only write on every export artifact. Retention controlled by prune_exports
 from __future__ import annotations
 import json
 import logging
+import sqlite3
 import time
 from pathlib import Path
 from . import crypto, recovery
@@ -14,23 +15,53 @@ from . import crypto, recovery
 _log = logging.getLogger(__name__)
 
 
-def _safe_rows(conn, sql) -> list:
-    """Execute SQL and return list-of-dicts. Returns [] if table absent (minimal brain)."""
+def _safe_rows(conn, sql) -> "tuple[list, bool]":
+    """Execute SQL and return (list-of-dicts, table_present).
+
+    CODE-001 (CWE-391, Toji audit v9.8.0->v9.9.1, remediated v9.9.2): a
+    genuinely absent table (sqlite3.OperationalError whose message contains
+    "no such table" -- the expected, documented shape for a minimal/schema-
+    gated brain) returns ([], False). ANY OTHER exception -- a locked/corrupt
+    DB, a real query error, an unexpected connection failure -- is RE-RAISED.
+    Previously a bare `except Exception: return []` silently converted every
+    failure into "empty table", so a corrupt DB or a mid-query I/O error
+    produced an export/manifest that LOOKED valid (0 rows) instead of failing
+    loudly; callers had no way to tell "genuinely empty" from "query broke".
+    """
     try:
         cur = conn.execute(sql)
         cols = [d[0] for d in cur.description]
-        return [dict(zip(cols, r)) for r in cur.fetchall()]
-    except Exception:
-        return []   # table absent (minimal brain) -> empty
+        return [dict(zip(cols, r)) for r in cur.fetchall()], True
+    except sqlite3.OperationalError as exc:
+        if "no such table" in str(exc).lower():
+            return [], False  # expected: table absent (minimal brain / schema-gated)
+        raise  # unexpected DB error -- must FAIL the export, never silently swallow
 
 
 def serialize_memories(conn) -> bytes:
     """Serialize cortex_memories (+ memory-sourced cortex_entities) to JSON bytes.
-    Format: dzp-memory-export/1 — tables absent -> empty lists (portable across schemas)."""
+    Format: dzp-memory-export/1 — tables absent -> empty lists (portable across schemas).
+
+    CODE-001: per-table presence + row-count diagnostics are embedded under the
+    private `_table_meta` key (not consumed by restore_memories/verify_memory_export,
+    which only read `cortex_memories`/`cortex_entities`) so callers such as
+    export_memories() can record them in the sidecar manifest without a second
+    DB round-trip. Any query failure OTHER than "no such table" propagates from
+    `_safe_rows` above, so a corrupt/locked DB FAILS this function outright
+    instead of silently producing a hollow-but-valid artifact.
+    """
+    memories_rows, memories_present = _safe_rows(conn, "SELECT * FROM cortex_memories")
+    entities_rows, entities_present = _safe_rows(
+        conn, "SELECT * FROM cortex_entities WHERE source='memory'"
+    )
     doc = {
         "format": "dzp-memory-export/1",
-        "cortex_memories": _safe_rows(conn, "SELECT * FROM cortex_memories"),
-        "cortex_entities": _safe_rows(conn, "SELECT * FROM cortex_entities WHERE source='memory'"),
+        "cortex_memories": memories_rows,
+        "cortex_entities": entities_rows,
+        "_table_meta": {
+            "cortex_memories": {"present": memories_present, "rows": len(memories_rows)},
+            "cortex_entities": {"present": entities_present, "rows": len(entities_rows)},
+        },
     }
     return json.dumps(doc, separators=(",", ":")).encode("utf-8")
 
@@ -53,6 +84,15 @@ def export_memories(
     """
     out_path = Path(out_path)
     payload = serialize_memories(conn)
+    # CODE-001: pull the per-table diagnostic metadata that serialize_memories()
+    # already computed and embedded in the payload, so the sidecar manifest can
+    # record row counts + absent tables without a second DB round-trip (and
+    # without changing serialize_memories()'s bytes-only return contract, which
+    # existing callers/tests depend on).
+    try:
+        _table_meta = json.loads(payload.decode("utf-8")).get("_table_meta", {})
+    except Exception:
+        _table_meta = {}
     meta = {
         "kind": "memory-export",
         "install_id": install_id,
@@ -73,6 +113,7 @@ def export_memories(
         db_identity=install_id,
         integrity_digest=digest,
         provenance="memory-export",
+        table_meta=json.dumps(_table_meta, separators=(",", ":")),
     )
     recovery.write_manifest(out_path, manifest)
     return out_path

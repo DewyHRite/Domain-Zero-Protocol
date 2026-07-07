@@ -1,5 +1,5 @@
 {
-  "protocol_version": "9.9.1",
+  "protocol_version": "9.9.2",
   "compaction_recovery": {
     "last_recovery_timestamp": null,
     "recovery_count": 0,
@@ -330,8 +330,8 @@
       "session_active": true,
       "start_time": "2026-07-05T02:03:44.580822+00:00",
       "last_interaction_time": "2026-07-06T08:42:25.414586+00:00",
-      "last_alert_time": "2026-07-06T07:10:11.890849+00:00",
-      "alert_count": 1,
+      "last_alert_time": "2026-07-06T14:27:19.049960+00:00",
+      "alert_count": 2,
       "escalation_level": 0,
       "user_last_choice": null,
       "break_acknowledged": false,
@@ -344,7 +344,7 @@
         "2026-07-06T07:10:42.803368+00:00"
       ],
       "total_breaks": 1,
-      "alerts_issued": 1,
+      "alerts_issued": 2,
       "alerts_ignored": 0,
       "continues_chosen": 0,
       "breaks_chosen": 0
@@ -422,8 +422,8 @@
         "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-07-06T04:42:25.430537",
-    "protocol_version": "9.9.1"
+    "last_updated": "2026-07-06T10:27:19.061437",
+    "protocol_version": "9.9.2"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",
@@ -20770,7 +20770,7 @@
       ],
       "metadata": {
         "created": "2025-12-31T00:00:00Z",
-        "protocol_version": "9.9.1",
+        "protocol_version": "9.9.2",
         "last_updated": "2026-06-17T00:00:00Z",
         "total_sessions_all_time": 1004
       }

@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.2 -->
 # DZP Cortex — Complete Guide
 
-**Version**: 9.9.1
+**Version**: 9.9.2
 **Last Updated**: 2026-06-18
 **Status**: Production-Ready
 **Audience**: DZP operators and resident agents

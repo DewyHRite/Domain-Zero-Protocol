@@ -1,5 +1,5 @@
 # Safe Process Termination Guidelines
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.2 -->
 
 **Version**: 1.0.0
 **Created**: 2025-12-16

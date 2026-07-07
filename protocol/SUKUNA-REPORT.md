@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.2 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.9.1
+**Version**: 9.9.2
 **Status**: Production
-**Last Updated**: 2026-07-06
+**Last Updated**: 2026-07-07
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -47,6 +47,67 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
 4. AI agents automatically apply patches on next upgrade/setup
 ```
+
+---
+
+## v9.9.2 PATCH MANIFEST (2026-07-07): Toji-Audit Remediation
+
+### PATCH-TOJI-9920-001 (2026-07-07): SEC-001/SEC-002/IMPL-001/CODE-001/TEST-001
+
+**Patch ID**: PATCH-TOJI-9920-001
+**Applies To**: v9.9.1 installations upgrading to v9.9.2 (any install using Cortex encryption-at-rest,
+`brain restore`, or `brain encrypt`)
+**Priority**: P1-High (closes two HIGH findings — CWE-732 fail-open write path, CWE-345 restore
+integrity gap — plus MED/housekeeping items; no P0)
+**Category**: Security + Bugfix
+**Status**: ACTIVE
+**Required For**: Upgrades from v9.9.1 that use Cortex encryption-at-rest, `brain restore`, or
+`brain encrypt`
+
+**Description**: Remediates the findings from the 2026-07-06 Toji audit
+(`.protocol-state/toji-reports/2026-07-06-toji-audit-DZP-v9.8.0-to-v9.9.1.md`). SEC-001 (HIGH,
+CWE-732): `cortex/recovery.py` `write_owner_only()` is now fail-closed — a DACL-hardening failure
+unlinks the secret artifact then re-raises; all 3 callers audited. SEC-002 (HIGH, CWE-345):
+`brain restore` verifies by DEFAULT (digest/key/integrity/schema); `--verify` kept as a no-op;
+`--force-unverified` break-glass with a loud warning and a mandatory pre-op backup. IMPL-001 (MED):
+`brain encrypt` forwards `--purge-backup`; purge is structurally unreachable on failed verification
+via both CLI paths. CODE-001 (MED, CWE-391): `cortex/memory_export.py` distinguishes table-absent
+from query failure (failures now FAIL the export instead of producing a hollow artifact); manifest
+gains backward-compatible `table_meta` counts. TEST-001: Stripe docs-key literal replaced with a
+runtime synthetic token (still trips `contains_secret`), killing dev-repo secret-scanner false-positive
+noise. Incidental: BUG-TEST-WINLOCK-001 e2e WinError-5 flake fixed (unreleased Store handle).
+
+**Files changed**:
+- `.protocol-state/brain/cortex/recovery.py` — `write_owner_only()` fail-closed unlink-on-DACL-failure (SEC-001)
+- `.protocol-state/brain/brain.py` — `brain restore` verify-by-default + `--force-unverified` break-glass (SEC-002); `brain encrypt --purge-backup` passthrough (IMPL-001)
+- `.protocol-state/brain/cortex/memory_export.py` — table-absent vs query-failure split + manifest `table_meta` (CODE-001)
+- `tests/brain/test_recovery_write_owner_only.py` — new test file (5 tests, SEC-001) [dev-only, not shipped]
+- `tests/brain/test_restore_encrypted.py` — restore tests 3 → 9 (SEC-002) [dev-only, not shipped]
+- `tests/brain/test_brain_encrypt_cli.py` — encrypt-CLI tests 13 → 15 (IMPL-001) + docs-key fixture (TEST-001) [dev-only, not shipped]
+- `tests/brain/test_memory_export.py` — export tests 4 → 11 (CODE-001) [dev-only, not shipped]
+- `.protocol-state/toji-reports/2026-07-06-toji-audit-DZP-v9.8.0-to-v9.9.1.md` — source audit (historical, not shipped)
+
+**Validation**:
+```bash
+python scripts/distro/assert_version.py --root .
+# Expected: ASSERT OK: all sources at v9.9.2
+python -m pytest tests/brain/test_recovery_write_owner_only.py tests/brain/test_restore_encrypted.py tests/brain/test_brain_encrypt_cli.py tests/brain/test_memory_export.py -q
+python scripts/distro/check_engine_parity.py --root .
+```
+
+**Rollback**: `git revert` on the cascade commit(s) (`a29dcce` content commit + this cascade commit).
+
+**Authorization**: Gojo + User authorized cascade to v9.9.2 (Toji-audit remediation plan approved
+2026-07-06/07 "proceed"). Megumi Tier-3 review — @approved, 0 must-fix; accepted residuals
+SEC-CORTEX-ENC-013/014 (P3) + TEST-001-RESIDUAL, deferred as permanent residuals. Sukuna adversarial
+review — APPROVED (PATCH, targeted security-hygiene fix to already-@approved v9.9.1 code, no new
+attack surface introduced). Resilience suite verified 23/23 (restore/recovery/export all green).
+
+**Backlog (not a v9.9.2 blocker)**: BUG-TEST-RESET-HANG-001 (P3, test-infra) —
+`tests/brain/test_access_resilience.py::TestBackupBeforeDestructiveOp::test_backup_created_before_full_reset`
+hangs indefinitely in headless runs (its `_run_brain(...reset --yes --all-installs-acknowledged)`
+subprocess blocks, likely on keyring/lock; needs a subprocess timeout or closed stdin). Pre-existing —
+v9.9.2 touched no reset code.
 
 ---
 
