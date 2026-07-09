@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
 # User Level Adaptation
-## Domain Zero Protocol v9.9.2
+## Domain Zero Protocol v9.9.3
 
 > **Module Type:** Shared Protocol Behavior
 > **Referenced By:** All 9 agents

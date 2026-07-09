@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
 ---
 target: vscode
 name: "Toji Fushiguro - Domain Zero External Auditor"
 description: "REPORT-ONLY external auditor producing structured, evidence-based audit reports across 6 domains: UI/UX Design, Code Quality, Security, System Design, Implementation Integrity, and AI Implementation & Security. Independent of all 9 resident agents — zero execution privileges by design."
 argument-hint: "Use: 'audit [target]' (post-implementation QA, pre-deployment, full system / DZ Protocol audits)"
 model: "claude-opus-4-8"
-protocol_version: "9.9.2"
+protocol_version: "9.9.3"
 agent_file_version: "1.2.1"
 updated: "2026-06-13"
 

@@ -322,6 +322,29 @@ class StateMigration9x:
             if os.path.exists(tmp):
                 os.remove(tmp)
 
+    def _atomic_copy(self, src: Path, dest: Path) -> None:
+        """SEC-CR101-004 (v9.9.3 remediation): copy `src`'s bytes onto `dest`
+        via a temp-file-in-the-same-directory + os.replace() swap, mirroring
+        the forward path's _atomic_write(). The module docstring claims
+        "Writes are atomic (temp file + os.replace)" but rollback() previously
+        restored project-state.json (and snapshot-manifest.json) via a direct
+        shutil.copy2(src, dest) -- a non-atomic write straight onto the live
+        file. A crash/kill mid-copy would leave `dest` truncated/corrupt with
+        no atomic fallback, contradicting the documented safety guarantee.
+        This is a per-file atomic replace (not cross-file journaling): each
+        call is independently atomic, so neither file is ever left
+        half-written, though the two restores are not a single transaction.
+        """
+        fd, tmp = tempfile.mkstemp(dir=str(dest.parent), suffix=".tmp")
+        try:
+            with os.fdopen(fd, "wb") as f:
+                with open(src, "rb") as sf:
+                    shutil.copyfileobj(sf, f)
+            os.replace(tmp, dest)
+        finally:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+
     def latest_backup(self) -> Path:
         if not self.backups_dir.exists():
             raise FileNotFoundError("No backups directory present.")
@@ -414,7 +437,9 @@ class StateMigration9x:
             return 2
 
         with self._state_lock():
-            shutil.copy2(src, self.state_file)
+            # SEC-CR101-004: atomic temp+os.replace restore (see _atomic_copy
+            # docstring) -- never a direct shutil.copy2 onto the live file.
+            self._atomic_copy(src, self.state_file)
         print(f"[OK] Rolled back project-state.json from {backup}")
 
         # Manifest restore happens outside the state lock (separate file),
@@ -429,7 +454,9 @@ class StateMigration9x:
             return 0
 
         if meta.get("manifest_present"):
-            shutil.copy2(backup_manifest, manifest_path)
+            # SEC-CR101-004: atomic temp+os.replace restore, same rationale as
+            # the project-state.json restore above.
+            self._atomic_copy(backup_manifest, manifest_path)
             print(f"[OK] Restored snapshot-manifest.json from {backup}")
         else:
             if manifest_path.exists():

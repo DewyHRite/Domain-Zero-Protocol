@@ -197,6 +197,29 @@ def write_owner_only(path: Path, data: bytes) -> None:
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
     fd = os.open(str(path), flags, 0o600)
     try:
+        # SEC-CORTEX-ENC-013 (Windows pre-hardening exposure window, v9.9.3
+        # remediation): os.open()'s mode argument (0o600 above) is IGNORED on
+        # Windows -- the file is created with the parent directory's
+        # inherited/default ACLs. The old order wrote+fsynced+closed the full
+        # secret payload FIRST and only hardened the ACL afterward, so a fully
+        # populated secret sat with weak ACLs for the entire write duration.
+        # O_EXCL above guarantees THIS process just created a new, EMPTY file,
+        # so it is safe (and required) to harden the ACL now, before any
+        # secret byte is written. Fail CLOSED: if hardening the still-empty
+        # file fails, close the fd, best-effort unlink the (empty) artifact,
+        # and re-raise -- never fall through to writing the secret payload
+        # into a file whose ACL we failed to harden.
+        if sys.platform == "win32":
+            try:
+                _set_windows_owner_only_dacl(path)
+            except Exception:
+                os.close(fd)
+                fd = None
+                try:
+                    path.unlink(missing_ok=True)
+                except OSError:
+                    pass  # best-effort cleanup; do not mask the original exception
+                raise
         # F5 (SEC-CR104-MAJOR): a single os.write() may short-write on some POSIX
         # systems (pipes, unusual filesystems).  Loop until all bytes are written so
         # large key-equivalent artifacts (escrow blobs, export files) are never
@@ -209,20 +232,20 @@ def write_owner_only(path: Path, data: bytes) -> None:
             written += n
         os.fsync(fd)
     finally:
-        os.close(fd)
+        if fd is not None:
+            os.close(fd)
     # SEC-001 (CWE-732, Toji audit v9.8.0->v9.9.1, v9.9.2 remediation): fail CLOSED
-    # on ACL-hardening failure. Previously, if _set_windows_owner_only_dacl() raised
-    # (or verify_owner_only() returned False), the exception propagated but the
+    # on post-write permission verification failure. Previously, if
+    # verify_owner_only() returned False, the exception propagated but the
     # just-written secret-bearing artifact was NEVER removed -- it was left on disk
-    # with inherited/default ACLs and no owner-only guarantee. A caller catching the
-    # exception had no way to know an unprotected artifact still existed. Now: the
-    # harden+verify step is guarded; on ANY failure, best-effort unlink the artifact
-    # before re-raising (bare `raise` preserves the original exception type and
-    # traceback -- cleanup failure is intentionally swallowed so it never masks the
-    # real error).
+    # with no owner-only guarantee. A caller catching the exception had no way to
+    # know an unprotected artifact still existed. Now: the verify step is guarded;
+    # on ANY failure, best-effort unlink the artifact before re-raising (bare
+    # `raise` preserves the original exception type and traceback -- cleanup
+    # failure is intentionally swallowed so it never masks the real error). The
+    # Windows DACL hardening itself already happened pre-write (above, SEC-CORTEX-
+    # ENC-013); this is the existing defence-in-depth double-check.
     try:
-        if sys.platform == "win32":
-            _set_windows_owner_only_dacl(path)
         if not verify_owner_only(path):
             raise PermissionError(f"failed to establish owner-only permissions on {path}")
     except Exception:

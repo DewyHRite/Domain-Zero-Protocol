@@ -2051,6 +2051,23 @@ def _restore(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
     retention = int(cfg.get("backup_retention_count", 3))
 
     force_unverified = bool(getattr(args, "force_unverified", False))
+    # SEC-CORTEX-ENC-014 (v9.9.3 remediation): --verify is a documented compat
+    # no-op (verification already runs by default, SEC-002) and
+    # --force-unverified unconditionally wins when both are passed. Previously
+    # that override was silent -- a user who explicitly typed --verify (perhaps
+    # out of habit, or copy-pasted from an old script) alongside
+    # --force-unverified would see no indication that their --verify was being
+    # ignored. This does NOT change behavior (--force-unverified still wins,
+    # --verify remains an accepted no-op); it only makes the override visible.
+    if bool(getattr(args, "verify", False)) and force_unverified:
+        print(
+            "WARNING (SEC-CORTEX-ENC-014): both --verify and --force-unverified "
+            "were specified -- these conflict. --verify is a compatibility "
+            "no-op; --force-unverified WINS and verification will be SKIPPED. "
+            "Remove --force-unverified if you intended to verify the restore "
+            "candidate.",
+            file=sys.stderr,
+        )
     if force_unverified:
         # SEC-002 break-glass: verification is explicitly and loudly skipped.
         print(

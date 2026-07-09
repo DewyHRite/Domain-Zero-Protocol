@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.9.2
+**Version**: 9.9.3
 **Status**: Production
 **Last Updated**: 2026-07-07
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
@@ -47,6 +47,78 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
 4. AI agents automatically apply patches on next upgrade/setup
 ```
+
+---
+
+## v9.9.3 PATCH MANIFEST (2026-07-07): Accepted-P3 Backlog Closeout
+
+### PATCH-P3CLOSEOUT-9930-001 (2026-07-07): SEC-CORTEX-ENC-013/014 + SEC-CR101-004 + Export-UX + TEST-001-RESIDUAL + Type-7 Linter
+
+**Patch ID**: PATCH-P3CLOSEOUT-9930-001
+**Applies To**: v9.9.2 installations (any install using Cortex encryption-at-rest, `brain restore`,
+`migrate_state_9x.py` rollback, or `cortex_trigger` advisory snapshot export)
+**Priority**: P3 (accepted residuals from the v9.9.2 Toji-audit remediation, plus one linter blind
+spot fix; no P0/P1/P2)
+**Category**: Security hardening + UX + tooling
+**Status**: ACTIVE
+**Required For**: Upgrades from v9.9.2 wanting the accepted-P3 residuals closed
+
+**Description**: Closes the accepted-P3 backlog carried forward from the v9.9.2 Toji-audit
+remediation, plus the version-cascade-trap linter blind spot. SEC-CORTEX-ENC-013 (P3, CWE-732):
+`cortex/recovery.py` `write_owner_only()` now applies the Windows owner-only DACL to the O_EXCL
+empty file BEFORE the secret payload write, closing the success-path pre-hardening exposure window
+(fail-closed pre-write; the SEC-001 post-write verification guard remains as defence-in-depth).
+SEC-CORTEX-ENC-014 (P3, CWE-345): `brain restore` emits a loud stderr conflict warning when
+`--verify` and `--force-unverified` are passed together (was a silent override); `--verify` remains
+an accepted compat no-op; SEC-002 verify-by-default is unweakened. SEC-CR101-004 (P3):
+`migrate_state_9x.rollback()` restores `project-state.json` and `snapshot-manifest.json` via an
+atomic `_atomic_copy` (temp file + `os.replace`, same-directory), closing the crash-mid-copy
+corruption path a direct `shutil.copy2` left open. Megumi UX finding: `cortex_trigger` now emits a
+mandatory stderr warning plus an `export_skipped_reason` JSON field when the advisory snapshot
+export exits 9 (plaintext-export consent gate) on an encryption-enabled brain — previously a silent
+fail-soft skip readable as "success" by automation watching only the exit code; the consent gate
+itself is unweakened. TEST-001-RESIDUAL: the last 4 Stripe docs-key literals replaced with a
+runtime-synthesized `'sk_live_' + 'Zz' * 12` token. version-cascade-trap: new Type-7 `release_branch`
+stamp rule added to `check_version_stamps.py`, closing the blind spot where
+`canonical_repository.release_branch` could silently drift from `protocol_version` on a version
+bump ((2) root-file / (3) historical-reference widening considered and deferred as fragile).
+
+**Files changed**:
+- `.protocol-state/brain/cortex/recovery.py` — `write_owner_only()` pre-write DACL hardening (SEC-CORTEX-ENC-013)
+- `.protocol-state/brain/brain.py` — `--verify`/`--force-unverified` conflict warning (SEC-CORTEX-ENC-014)
+- `.protocol-state/migrate_state_9x.py` — `_atomic_copy()` + atomic rollback restores (SEC-CR101-004)
+- `.protocol-state/brain/cortex_trigger.py` — `_check_export_consent_gate_skip()` + `export_skipped_reason` envelope field (Megumi UX finding)
+- `scripts/distro/check_version_stamps.py` — Type-7 `release_branch` stamp rule (version-cascade-trap)
+- `scripts/git-hooks/pre-commit` / `pre-commit.ps1` — header stamp cascade only, no logic change
+- `tests/brain/test_recovery_write_owner_only.py` — pre-write DACL-hardening regression test [dev-only, not shipped]
+- `tests/brain/test_restore_encrypted.py` — `--verify`/`--force-unverified` conflict warning tests [dev-only, not shipped]
+- `tests/brain/test_cortex_trigger.py` — export consent-gate skip warning/JSON tests (incl. TEST-COV-001 plain-text-mode coverage) [dev-only, not shipped]
+- `tests/test_migrate_state_legacy.py` — rollback atomicity regression tests [dev-only, not shipped]
+- `tests/distro/test_check_version_stamps.py` — Type-7 unit tests + repo-integration ground truth bumped to 9.9.3 [dev-only, not shipped]
+- `tests/distro/test_wi_cr_distro_remediation.py` — WI-CR-6 ground truth bumped to v9.9.3 [dev-only, not shipped]
+- `tests/brain/test_store_memory_ingest.py`, `tests/brain/test_v934_preflight.py` — last 2 Stripe docs-key literals → synthetic token (TEST-001-RESIDUAL) [dev-only, not shipped]
+- `.github/secret_scanning.yml` — NEW: `paths-ignore` for `.protocol-state/dev-notes.md` (SEC-CORTEX-ENC-015 tooling-level closure, maintainer-internal, not shipped)
+
+**Validation**:
+```bash
+python scripts/distro/check_version_stamps.py --root .
+# Expected: STAMP LINTER OK: all stamps at v9.9.3
+python scripts/distro/assert_version.py --root .
+# Expected: ASSERT OK: all sources at v9.9.3
+python -m pytest tests/brain/test_recovery_write_owner_only.py tests/brain/test_restore_encrypted.py tests/brain/test_cortex_trigger.py tests/test_migrate_state_legacy.py tests/brain/test_store_memory_ingest.py tests/brain/test_v934_preflight.py tests/distro/ -q
+python scripts/distro/check_engine_parity.py --root .
+```
+
+**Rollback**: `git revert` on the cascade commit(s) for the DZP-v9.9.3 branch.
+
+**Authorization**: Gojo + User authorized cascade to v9.9.3 (accepted-P3 backlog closeout). Megumi
+Tier-3 review — @approved, 0 must-fix; 1 accepted P3 residual (SEC-CORTEX-ENC-015, CWE-540 — the
+full Stripe public-docs example key remains, as historical fact, in the append-only
+`.protocol-state/dev-notes.md` v9.9.2 entry; cannot be scrubbed without violating FEAT-GUARD-001
+append-only integrity, so it is handled at the tooling level via `.github/secret_scanning.yml`
+`paths-ignore` + an admin alert dismissal, not a doc rewrite). TEST-COV-001 (plain-text-mode
+consent-gate warning coverage gap) closed same-day. Sukuna adversarial review — APPROVED (PATCH,
+targeted P3-residual closure on already-@approved v9.9.2 code, no new attack surface introduced).
 
 ---
 

@@ -45,7 +45,7 @@ from pathlib import Path
 # Module-level constants
 # ---------------------------------------------------------------------------
 
-_VERSION = "9.9.2"
+_VERSION = "9.9.3"
 
 # cortex_trigger.py lives at .protocol-state/brain/cortex_trigger.py
 # Two dirs up from here is the repo root.
@@ -687,6 +687,42 @@ def _run_recall(
 # Output helpers
 # ---------------------------------------------------------------------------
 
+# SEC-CORTEX-ENC-014 / v9.9.3 remediation (item 5, Megumi UX finding):
+# brain.py's `export --snapshot` refuses with PlaintextExportRefusedError
+# (cortex/errors.py, exit_code=9) when the brain is encryption-enabled and
+# --plaintext-ok was not passed. The export step is advisory, so the
+# trigger's aggregate exit_code stays 0 — but NO snapshot was written.
+# Automation watching only the exit code sees "success" when nothing
+# happened; only a stderr line hinted at it. This constant + helper make
+# that skip loud (mandatory stderr warning) and machine-detectable (a
+# distinct JSON envelope field), mirroring the existing SEC-ACCESS-010
+# schema-error advisory-override pattern below.
+_EXPORT_CONSENT_GATE_EXIT_CODE = 9
+
+
+def _check_export_consent_gate_skip(steps: list[dict]) -> "str | None":
+    """Detect an advisory 'export' step that exited with the brain.py
+    consent-gate code (PlaintextExportRefusedError, exit 9). If found, print
+    a MANDATORY stderr warning and return a machine-readable reason string
+    for the JSON envelope's 'export_skipped_reason' field. Returns None when
+    no export step ran, or it did not hit the consent gate.
+
+    NON-NEGOTIABLE: this NEVER weakens the consent gate and NEVER auto-passes
+    --plaintext-ok — it only surfaces the existing skip more visibly.
+    """
+    for s in steps:
+        if s.get("name") == "export" and s.get("exit_code") == _EXPORT_CONSENT_GATE_EXIT_CODE:
+            print(
+                "[CORTEX-TRIGGER] WARNING: snapshot export SKIPPED — brain is "
+                "encryption-enabled and plaintext export requires consent; NO "
+                "snapshot was written. Use 'brain memory-export' for an "
+                "escrow-encrypted snapshot.",
+                file=sys.stderr,
+            )
+            return "encrypted_consent_gate"
+    return None
+
+
 def _build_envelope(
     level: str,
     reason: str,
@@ -696,12 +732,17 @@ def _build_envelope(
     rotation_recommended: list[str] | None = None,
     rotation_recommended_details: dict | None = None,
     storage: "dict | None" = None,
+    export_skipped_reason: "str | None" = None,
 ) -> dict:
     """Build the full JSON output envelope.
 
     WI-S3-8 (v9.7.0 Phase 2): HIGH path now populates 'storage' from
     _parse_storage_from_status().  LOW and MEDIUM paths pass storage=None.
     NON-NEGOTIABLE: storage is ALWAYS advisory — it NEVER affects exit_code.
+
+    export_skipped_reason (v9.9.3, SEC-CORTEX-ENC-014): set to
+    "encrypted_consent_gate" when the advisory export step hit brain.py's
+    plaintext-export consent gate (exit 9); omitted entirely otherwise.
     """
     envelope: dict = {
         "mode": "trigger",              # RESERVE AMENDMENT C
@@ -717,6 +758,8 @@ def _build_envelope(
         envelope["rotation_recommended"] = rotation_recommended
     if rotation_recommended_details is not None:
         envelope["rotation_recommended_details"] = rotation_recommended_details
+    if export_skipped_reason is not None:
+        envelope["export_skipped_reason"] = export_skipped_reason
     return envelope
 
 
@@ -864,28 +907,38 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if level == "low":
             steps, exit_code = _run_low(repo, strict=strict, as_json=as_json)
+            export_skipped_reason = _check_export_consent_gate_skip(steps)
             if as_json:
-                envelope = _build_envelope(level, reason, strict, steps, exit_code)
+                envelope = _build_envelope(
+                    level, reason, strict, steps, exit_code,
+                    export_skipped_reason=export_skipped_reason,
+                )
                 print(json.dumps(envelope, indent=2), flush=True)
 
         elif level == "medium":
             steps, exit_code = _run_medium(
                 repo, strict=strict, as_json=as_json, do_export=do_export
             )
+            export_skipped_reason = _check_export_consent_gate_skip(steps)
             if as_json:
-                envelope = _build_envelope(level, reason, strict, steps, exit_code)
+                envelope = _build_envelope(
+                    level, reason, strict, steps, exit_code,
+                    export_skipped_reason=export_skipped_reason,
+                )
                 print(json.dumps(envelope, indent=2), flush=True)
 
         elif level == "high":
             steps, exit_code, rotation_recommended, rotation_recommended_details, storage = _run_high(
                 repo, reason, strict=strict, as_json=as_json, do_export=do_export
             )
+            export_skipped_reason = _check_export_consent_gate_skip(steps)
             if as_json:
                 envelope = _build_envelope(
                     level, reason, strict, steps, exit_code,
                     rotation_recommended=rotation_recommended,
                     rotation_recommended_details=rotation_recommended_details,
                     storage=storage,
+                    export_skipped_reason=export_skipped_reason,
                 )
                 print(json.dumps(envelope, indent=2), flush=True)
 

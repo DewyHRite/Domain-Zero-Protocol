@@ -1,9 +1,47 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.9.2
+**Version:** 9.9.3
 **Release Date:** 2026-07-07
-**Release Type:** PATCH Release (Toji-audit remediation — SEC-001/SEC-002/IMPL-001/CODE-001/TEST-001)
+**Release Type:** PATCH Release (Accepted-P3 backlog closeout — Toji-audit v9.9.2 residuals + version-cascade-trap)
+
+---
+
+## Release Summary — v9.9.3 (PATCH)
+
+v9.9.3 closes the accepted-P3 backlog remaining from the 2026-07-06 Toji audit remediation (v9.9.2)
+plus the version-cascade-trap linter blind spot, all Megumi Tier-3 @approved (0 must-fix).
+
+- **SEC-CORTEX-ENC-013** (P3, CWE-732) — CLOSED: `cortex/recovery.py` `write_owner_only()` now
+  applies the Windows owner-only DACL to the O_EXCL empty file BEFORE the secret payload write,
+  closing the success-path pre-hardening exposure window (fail-closed pre-write; the SEC-001
+  post-write verification guard remains intact as defence-in-depth).
+- **SEC-CORTEX-ENC-014** (P3, CWE-345) — CLOSED: `brain restore` emits a loud stderr conflict
+  warning when `--verify` and `--force-unverified` are passed together (previously a silent
+  override); `--verify` remains an accepted compat no-op; SEC-002 verify-by-default is unweakened.
+- **SEC-CR101-004** (P3) — CLOSED: `migrate_state_9x.rollback()` restores `project-state.json` and
+  `snapshot-manifest.json` via an atomic `_atomic_copy` (temp file + `os.replace`, same-directory),
+  closing the crash-mid-copy corruption path that a direct `shutil.copy2` onto the live file left
+  open.
+- **Megumi UX finding** — CLOSED: `cortex_trigger` now emits a mandatory stderr warning plus an
+  `export_skipped_reason` JSON field when the advisory snapshot export exits 9 (plaintext-export
+  consent gate) on an encryption-enabled brain — previously a silent fail-soft skip that could read
+  as "success" to automation watching only the exit code. The consent gate itself is unweakened.
+- **TEST-001-RESIDUAL** — CLOSED: the last 4 Stripe docs-key literals (`tests/brain/
+  test_recovery_write_owner_only.py`, `test_restore_encrypted.py`, `test_store_memory_ingest.py`,
+  `test_v934_preflight.py`) replaced with a runtime-synthesized `'sk_live_' + 'Zz' * 12` token.
+- **version-cascade-trap** — a new Type-7 `release_branch` stamp rule was added to
+  `check_version_stamps.py`, closing the blind spot where `canonical_repository.release_branch`
+  could silently drift out of sync with `protocol_version` on a version bump.
+
+Accepted P3 residual: **SEC-CORTEX-ENC-015** (CWE-540) — the full Stripe public-docs example key
+remains, as historical fact, in the append-only `.protocol-state/dev-notes.md` v9.9.2 entry (cannot
+be scrubbed without violating FEAT-GUARD-001 append-only integrity). Handled at the tooling level via
+`.github/secret_scanning.yml` `paths-ignore` + an admin alert dismissal, not a doc rewrite.
+
+Megumi Tier-3 review: @approved, 0 must-fix, 1 accepted P3 (SEC-CORTEX-ENC-015). TEST-COV-001
+(coverage gap on the plain-text-mode consent-gate warning) closed same-day. Yuuji TDD. Distro
+re-synced byte-identical; no new publish-manifest entries required.
 
 ---
 
