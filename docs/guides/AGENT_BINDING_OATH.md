@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
 # Agent Binding Oath - Absolute Zero Protocol
 ## Domain Zero Protocol v9.9.3
 

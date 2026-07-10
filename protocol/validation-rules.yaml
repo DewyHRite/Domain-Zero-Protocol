@@ -451,6 +451,17 @@ schemas:
                 description: "Validation errors found (if any)"
                 items:
                   type: string
+              attested_seq:
+                type: integer
+                minimum: 0
+                description: >-
+                  ISS-083: last local write-attestation seq accepted by the
+                  checker for this file (from .protocol-state/.attestation.json,
+                  gitignored). Not required -- absent on installs/files that
+                  predate ISS-083 or have no attested writer. Used only to
+                  reject replay of an old (file + ledger-entry) pair; never
+                  authoritative on its own without a valid HMAC + matching
+                  content hash.
 
       drift_alerts:
         type: array

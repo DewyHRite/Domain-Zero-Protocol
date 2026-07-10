@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
 # DUAL WORKFLOW ENFORCEMENT GUIDE
 ## Domain Zero Protocol v9.9.3 - Mandatory Yuuji-Megumi Collaboration
 
@@ -861,6 +861,6 @@ Before deploying v7.1.0 with mandatory dual workflow:
 
 **END OF DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md**
 
-**Domain Zero Protocol v9.9.3** - Perfect Code Through Mandatory Collaboration
+**Domain Zero Protocol v9.9.4** - Perfect Code Through Mandatory Collaboration
 
 *Yuuji and Megumi are now inseparable for production code. This is the way.*

@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.9.3
+**Version**: 9.9.4
 **Status**: Production
-**Last Updated**: 2026-07-07
+**Last Updated**: 2026-07-09
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -47,6 +47,181 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
 4. AI agents automatically apply patches on next upgrade/setup
 ```
+
+---
+
+## v9.9.4 PATCH MANIFEST (2026-07-09): Toji Capability Upgrade + Toji-Audit-2026-07-09 Remediation + Sukuna RHS-Report Canonical Items
+
+### PATCH-TOJI-9940-001 (2026-07-09): Toji v1.3.0 Append-Only Audit-Log Access (SEC-TOJI-101/102/103)
+
+**Patch ID**: PATCH-TOJI-9940-001
+**Applies To**: v9.9.3 installations (any install using the Toji external-auditor agent)
+**Priority**: P1 (SEC-TOJI-101 — false "mechanically enforced" append-only claim on a gitignored
+file), P3 (SEC-TOJI-102/103 — supporting hardening + a doc-drift miss)
+**Category**: Security / access-control correction + capability upgrade
+**Status**: ACTIVE
+**Required For**: Upgrades from v9.9.3 wanting Toji's new append-only audit-log capability
+
+**Description**: Toji (Sentinel) is upgraded from v1.2.1 to v1.3.0. Toji gains standing (always)
+read across all Domain Zero records — unchanged in substance, made explicit — plus a new,
+narrowly-scoped `edit` tool that may append exactly one signed Record Log Entry stub per completed
+audit to each of the two records genuinely covered by FEAT-GUARD-001's pre-commit byte-prefix guard:
+`.protocol-state/dev-notes.md` and `.protocol-state/security-review.md`. Full audit reports are now
+written to a new human-facing `audits/` folder (`audits/YYYY-MM-DD-toji-<scope>.md`); the two prior
+reports under `.protocol-state/toji-reports/` were migrated there, and that directory now carries a
+pointer `README.md`. **SEC-TOJI-101 (P1, Megumi Tier-3 finding)**: the original v1.3.0 draft claimed
+FEAT-GUARD-001 "mechanically enforces append-only" across all three protected records, but
+`.dzp-domain/domain.record.md` is listed in `.gitignore` (`.gitignore:342`) — it has no committed
+blob for the guard to diff against, so the guard silently no-ops there. Fix (USER decision): Toji's
+`edit` tool never targets `domain.record.md` at all; Gojo (who already owns that file) appends the
+equivalent Record Log Entry stub on Toji's behalf after reviewing Toji's report. CONSTRAINT_012
+revised accordingly; every "three protected records" reference across the agent spec, the three
+`CLAUDE.md` files, the `~/.claude/agents/toji.md` runtime stub, `AI_INSTRUCTIONS.md`, and
+`.github/copilot-instructions.md` corrected to "two guard-enforced protected records" +
+Gojo-logs-domain-record language. **SEC-TOJI-103 (P3)**: `AI_INSTRUCTIONS.md`'s "What's New"
+Toji block still read v1.2.1 with a stale "Read-only access to dev-notes, security-reviews, and
+domain records" line after the first pass — corrected to the v1.3.0 access model. **SEC-TOJI-102**
+(routed to Yuuji separately) adds a mechanical stub→report existence check to the pre-commit guard
+so a Record Log Entry stub can never be committed pointing at a report that doesn't exist on disk.
+
+**Files changed**:
+- `protocol/toji.agent.md` — `agent_file_version` 1.2.1→1.3.0; frontmatter `tools:` gains `edit`
+  (append-only-scoped, commented); description, §1.2 AUTHORITY + prose, §1.3 intro, new §1.3.4
+  (Record Log Entry stub format + rules), CONSTRAINT_012, §6.2 output, activation block, and the
+  version-history table all updated for the two-record + Gojo-logs-domain-record model
+- `CLAUDE.md` (root), `protocol/CLAUDE.md`, `~/.claude/CLAUDE.md` (global) — Toji `Access`/
+  `REPORT-ONLY` bullets + `Edit` tool-matrix cell (`Append-only (2 records)`) corrected
+- `~/.claude/agents/toji.md` — frontmatter `tools`/`description`, "Access model" paragraph, "Domain
+  Record Access" section, "Constraints" bullets, activation-block record-access lines; version
+  bumped to 1.3.0
+- `AI_INSTRUCTIONS.md` — "What's New" Toji block (version tag + access line) and the "External
+  Auditor (Toji)" section's `Important` line corrected to the v1.3.0 two-record model
+- `.github/copilot-instructions.md` — Position block `AUTHORITY`, Hard Constraints paragraph, "Can
+  Toji fix issues?" FAQ answer, `**Toji Agent Version**` line updated
+- `audits/` — NEW folder; 2 existing Toji reports migrated in from `.protocol-state/toji-reports/`
+- `.protocol-state/toji-reports/README.md` — NEW pointer stub (folder is now otherwise empty)
+
+**Validation**:
+```bash
+python scripts/distro/check_version_stamps.py --root .
+# Expected: STAMP LINTER OK: all stamps at v9.9.4
+python scripts/distro/assert_version.py --root .
+# Expected: ASSERT OK: all sources at v9.9.4
+```
+
+**Rollback**: `git revert` on the cascade commit(s) for the DZP-v9.9.4 branch.
+
+**Authorization**: Gojo + User authorized cascade to v9.9.4. Megumi Tier-3 review —
+@remediation-required on the first pass (SEC-TOJI-101 P1 + SEC-TOJI-103 P3; a third finding
+SEC-TOJI-102 routed to Yuuji), then @approved after remediation. Sukuna adversarial review —
+APPROVED (access-model narrowing that closes a false-safety-guarantee gap; no new attack surface).
+
+---
+
+### PATCH-TOJIAUDIT-9940-002 (2026-07-09): Toji-Audit-2026-07-09 Remediation (SEC-001/IMPL-001)
+
+**Patch ID**: PATCH-TOJIAUDIT-9940-002
+**Applies To**: v9.9.3 installations (protected-records integrity + session-record accuracy)
+**Priority**: MED (both findings)
+**Category**: Security hardening + data-integrity correction
+**Status**: ACTIVE
+**Required For**: Upgrades from v9.9.3 wanting the 2026-07-09 Toji-audit findings closed
+
+**Description**: Closes the findings from the 2026-07-09 Toji audit. **SEC-001** (MED): FEAT-GUARD-001
+guarantees append-only shape but never inspected *content* for secret leakage on append — a new
+compensating scanner, `scripts/scan_protected_records.py`, runs over the three protected records,
+allowlisting only the one known historical Stripe public-docs example literal already present in
+`dev-notes.md` (see the v9.9.3 SEC-CORTEX-ENC-015 accepted-P3 note) and failing closed on any other
+secret-shaped match. Wired into pre-commit and CI alongside the existing append-only guard.
+`.github/secret_scanning.yml` annotated with an Owner/Review-by note so the allowlist entry doesn't
+go stale silently. **IMPL-001** (MED): a signed session-record reconciliation for
+`session_20260707_203626` was appended to `dev-notes.md` and `security-review.md`, using
+`project-state.json` as the authoritative source of truth (the parallel program-L record for the
+same window was reviewed and ruled non-authoritative for DZP-mainline purposes), plus a domain-record
+correction entry. `scripts/check_branch_record_isolation.py` is added as a standing detector for two
+classes of drift going forward: append-only-vs-merge-base violations, and conflicting terminal
+records for the same session/branch pairing across branches. Program-L's own record reconciliation
+is explicitly deferred pending a separate USER decision — this patch only reconciles the DZP-mainline
+session record.
+
+**Files changed**:
+- `scripts/scan_protected_records.py` — NEW: compensating secret scanner (SEC-001)
+- `.github/secret_scanning.yml` — Owner/Review-by annotation added to the existing allowlist entry
+- `scripts/git-hooks/pre-commit` / `pre-commit.ps1` — wire the new scanner into the existing guard
+  sequence
+- `.protocol-state/dev-notes.md`, `.protocol-state/security-review.md` — append-only signed
+  reconciliation entries for `session_20260707_203626` (IMPL-001) [Gojo-appended per protected-record
+  rules, not Sukuna]
+- `.dzp-domain/domain.record.md` — append-only correction entry [Gojo-appended]
+- `scripts/check_branch_record_isolation.py` — NEW: append-only-vs-merge-base + conflicting-terminal-
+  records detector (IMPL-001)
+- `tests/` — 20 new secret-scanner tests, 21 new branch-isolation tests
+
+**Validation**:
+```bash
+python scripts/scan_protected_records.py --root .
+python scripts/check_branch_record_isolation.py --root .
+python -m pytest tests/ -k "scan_protected_records or branch_record_isolation" -q
+```
+
+**Rollback**: `git revert` on the cascade commit(s) for the DZP-v9.9.4 branch. Note: the protected-
+record reconciliation entries themselves are append-only and cannot be rolled back without violating
+FEAT-GUARD-001 (by design — see `DZP_ALLOW_PROTECTED_REWRITE` for authorized exceptions).
+
+**Authorization**: Megumi @approved. Accepted P3: SEC-IMPL-001-RESIDUAL (the branch-isolation
+detector's Layer-2 conflicting-terminal-records check is fail-soft, not fail-closed — documented
+residual, not a blocker).
+
+---
+
+### PATCH-RHSCANON-9940-003 (2026-07-09): Sukuna RHS-Report Canonical Items (ISS-083/084/085/086)
+
+**Patch ID**: PATCH-RHSCANON-9940-003
+**Applies To**: v9.9.3 installations
+**Priority**: P3 (ISS-083, ISS-086), P2 (ISS-084/085)
+**Category**: Security hardening (attestation) + distro-manifest completeness
+**Status**: ACTIVE
+**Required For**: Optional — hardening items, not required for baseline v9.9.4 functionality
+
+**Description**: Lands three canonical items carried in the Sukuna RHS report. **ISS-083** (P3):
+authorized-writer attestation — `.protocol-state/attestation.py` implements a side-channel HMAC
+ledger with a monotonic sequence number; sanctioned DZP state writers (the scripts that are supposed
+to touch `project-state.json` and friends) are stamped on write. `validate-protocol --check` reads
+the ledger and suppresses drift alerts for attested writes while still alerting on unattested,
+forged, or stale entries. Non-blocking by design (advisory, not a hard gate). The HMAC key itself
+gets a Windows owner-only ACL. Threat model is explicitly local-integrity only: it detects
+accidental/unsanctioned writes and basic tampering, not a fully compromised local user account
+(documented, not a gap being silently claimed away). **ISS-084/085** (P2): root `dzp.py` was missing
+from the publish allowlist and from the orchestration-trio completeness gate (Scope 5) — a
+`dzp-publish` run could ship the coordinator (`script_coordinator.py`) and the event registry
+(`script_dependencies.yaml`) without their own root entry-point. Both are now added. **ISS-086**
+(P3): reviewed and closed as REPORT-ONLY — it concerns the install-side `dzp-sync` tooling, which by
+design has no canonical-repo target (each install's `dzp-sync` config is intentionally
+install-specific); no code change is applicable here.
+
+**Files changed**:
+- `.protocol-state/attestation.py` — NEW: HMAC ledger + monotonic sequence + Windows owner-only ACL
+  (ISS-083)
+- `scripts/validate-protocol.py` (or equivalent `validate-protocol` entry point) — reads the
+  attestation ledger; suppresses drift alerts for attested writes, alerts on unattested/forged/stale
+  (ISS-083)
+- `scripts/distro/publish-manifest.yaml` — root `dzp.py` added (ISS-084)
+- `scripts/distro/dzp_publish_core.py` (orchestration-trio completeness gate, Scope 5) — `dzp.py`
+  added to the required-trio check (ISS-085)
+- `tests/` — 55 new attestation tests, 11 new distro-completeness tests
+
+**Validation**:
+```bash
+python -m pytest tests/ -k "attestation or manifest_completeness" -q
+python scripts/distro/dzp_publish_core.py --check   # or equivalent dry-run completeness check
+```
+
+**Rollback**: `git revert` on the cascade commit(s) for the DZP-v9.9.4 branch. Attestation is
+additive and non-blocking — disabling it (removing the ledger file) fails open to the pre-attestation
+behavior, not closed.
+
+**Authorization**: Megumi Tier-3 @approved every phase. Accepted P3: the attestation subsystem's
+inherent local-integrity boundary (documented above, not a defect).
 
 ---
 

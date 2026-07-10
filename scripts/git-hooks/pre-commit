@@ -1,11 +1,12 @@
 #!/bin/sh
-# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.3)
-# Combines: publish-branch skip + append-only guard + agent/protected-file guard
-#           + validate-protocol.py state validation.
+# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.4)
+# Combines: publish-branch skip + append-only guard + protected-records secret scan
+#           + agent/protected-file guard + validate-protocol.py state validation.
 #
 # Run order:
 #   1. Publish-branch skip  (DZP-v* / release branches bypass all dev-state checks)
 #   2. Append-only guard    (FEAT-GUARD-001: protected docs must only grow)
+#   2b. Secret scan         (SEC-001: protected records always scanned for secrets)
 #   3. Agent/file guard     (FEAT-REQ-001: Cross-Agent Edit Restrictions)
 #   4. Protocol validation  (validate-protocol.py --check)
 #
@@ -47,6 +48,24 @@ if [ -f "$GUARD" ]; then
         "$PYG" "$GUARD" || exit 1
     else
         echo "[protected-guard] WARNING: python not found — append-only guard SKIPPED" >&2
+    fi
+fi
+
+# ============================================================================
+# 2b. SEC-001: PROTECTED-RECORDS SECRET SCAN (compensates the GitHub
+#     secret_scanning.yml file-wide path-ignore on dev-notes.md — see that file
+#     and scripts/scan_protected_records.py for full rationale)
+# ============================================================================
+SECRET_SCAN="$ROOT/scripts/scan_protected_records.py"
+if [ -f "$SECRET_SCAN" ]; then
+    PYS=""
+    if command -v python3 >/dev/null 2>&1; then PYS=python3
+    elif command -v python >/dev/null 2>&1; then PYS=python
+    fi
+    if [ -n "$PYS" ]; then
+        "$PYS" "$SECRET_SCAN" || exit 1
+    else
+        echo "[protected-secret-scan] WARNING: python not found — secret scan SKIPPED" >&2
     fi
 fi
 

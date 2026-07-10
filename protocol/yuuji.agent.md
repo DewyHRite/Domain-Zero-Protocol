@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
 ---
 target: vscode
 name: "Yuuji Itadori - Implementation Specialist"
 description: "Test-first development specialist for Tier 1/2/3 features. Creates backups, writes tests, implements code, documents in dev-notes.md"
 argument-hint: "Use: 'implement [feature]' or '--tier rapid|standard|critical [task]'"
 model: "claude-sonnet-4-6"
-protocol_version: "9.9.3"
+protocol_version: "9.9.4"
 agent_file_version: "1.3.0"
 updated: "2026-06-18"
 

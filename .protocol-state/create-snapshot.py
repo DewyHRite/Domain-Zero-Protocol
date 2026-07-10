@@ -51,6 +51,14 @@ except ImportError:
     STATE_MANAGER_AVAILABLE = False
     # Silent fallback for create-snapshot (optional dependency)
 
+# ISS-083: local write-attestation (fail-soft; module lives alongside this
+# one in .protocol-state/). Absence must never break snapshot creation.
+try:
+    from attestation import record_write as _attest_record_write
+    _ATTESTATION_AVAILABLE = True
+except ImportError:
+    _ATTESTATION_AVAILABLE = False
+
 # =============================================================================
 # Constants
 # =============================================================================
@@ -117,6 +125,15 @@ def save_manifest(manifest: Dict[str, Any]) -> None:
 
     with open(MANIFEST_FILE, 'w', encoding='utf-8') as f:
         json.dump(manifest, f, indent=2)
+
+    # ISS-083: attest this sanctioned write of snapshot-manifest.json.
+    # Fail-soft, best-effort -- never blocks snapshot creation.
+    if _ATTESTATION_AVAILABLE:
+        try:
+            content = MANIFEST_FILE.read_bytes()
+            _attest_record_write(STATE_DIR, MANIFEST_FILE.name, content, writer="create-snapshot")
+        except Exception:
+            pass
 
 
 # =============================================================================

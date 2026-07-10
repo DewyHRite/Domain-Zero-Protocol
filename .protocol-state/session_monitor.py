@@ -29,6 +29,14 @@ except ImportError:
     STATE_MANAGER_AVAILABLE = False
     # Silent fallback to legacy file I/O for backward compatibility
 
+# ISS-083: local write-attestation (fail-soft; module lives alongside this
+# one in .protocol-state/). Absence must never break session monitoring.
+try:
+    from attestation import record_write as _attest_record_write
+    _ATTESTATION_AVAILABLE = True
+except ImportError:
+    _ATTESTATION_AVAILABLE = False
+
 # Session duration limits (PATCH-SEC-005 - SEC-DZP-008 remediation)
 MAX_BREAK_DURATION = 480  # 8 hours
 MIN_BREAK_DURATION = 1    # 1 minute
@@ -448,6 +456,7 @@ class SessionMonitor:
                 self.state_file.parent.mkdir(parents=True, exist_ok=True)
                 with open(self.state_file, 'w') as f:
                     json.dump(self._default_state(), f, indent=2)
+                self._attest_write(self.state_file)
             except (IOError, OSError) as e:
                 raise RuntimeError(f"Failed to create session state file at {self.state_file}: {e}")
 
@@ -561,6 +570,33 @@ class SessionMonitor:
             except OSError:
                 pass  # Cleanup failure is non-critical
             raise IOError(f"Failed to save session state: {e}")
+
+        # ISS-083: attest this sanctioned (legacy-path) write. Only reached
+        # when ProjectStateManager is unavailable/failed above; the
+        # ProjectStateManager path already attests project-state.json itself.
+        self._attest_write(self.state_file)
+
+    def _attest_write(self, target_file: Path, writer: str = "SessionMonitor") -> None:
+        """
+        Best-effort ISS-083 write attestation for a just-completed write to
+        *target_file*.
+
+        Reads back the exact bytes now on disk so the recorded content hash
+        always matches reality, and stamps a signed ledger entry keyed by
+        the file's basename (the same key scripts/validate-protocol.py's
+        drift detection uses).
+
+        Never raises: attestation is advisory metadata for drift detection,
+        not a correctness requirement of the write itself (which has
+        already completed by the time this runs).
+        """
+        if not _ATTESTATION_AVAILABLE:
+            return
+        try:
+            content = target_file.read_bytes()
+            _attest_record_write(target_file.parent, target_file.name, content, writer=writer)
+        except Exception:
+            pass
 
     def start_session(self, session_id: Optional[str] = None) -> Dict:
         """
@@ -1410,6 +1446,12 @@ Template file not found at: {self.template_file}
 
             os.replace(tmp_path, project_state_file)
             print(f"[OK] Updated project-state.json with session metrics")
+
+            # ISS-083: this write bypasses ProjectStateManager entirely (direct
+            # read-modify-write of project-state.json), so it must attest itself
+            # -- ProjectStateManager's own attestation hook never runs for this
+            # code path.
+            self._attest_write(project_state_file)
 
         except (IOError, OSError, json.JSONDecodeError) as e:
             print(f"[ERROR] Failed to update project-state.json: {e}")

@@ -1,10 +1,11 @@
-﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.3)
+﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.4)
 # PowerShell equivalent of scripts/git-hooks/pre-commit for PowerShell-driven git
 # hook setups.
 #
 # Run order:
 #   1. Publish-branch skip  (DZP-v* / release branches bypass all dev-state checks)
 #   2. Append-only guard    (FEAT-GUARD-001: protected docs must only grow)
+#   2b. Secret scan         (SEC-001: protected records always scanned for secrets)
 #   3. Agent/file guard     (FEAT-REQ-001: Cross-Agent Edit Restrictions)
 #   4. Protocol validation  (validate-protocol.py --check)
 #
@@ -37,6 +38,22 @@ if (Test-Path $guard) {
         if ($LASTEXITCODE -ne 0) { exit 1 }
     } else {
         [Console]::Error.WriteLine('[protected-guard] WARNING: python not found — append-only guard SKIPPED')
+    }
+}
+
+# ============================================================================
+# 2b. SEC-001: PROTECTED-RECORDS SECRET SCAN (compensates the GitHub
+#     secret_scanning.yml file-wide path-ignore on dev-notes.md — see that file
+#     and scripts/scan_protected_records.py for full rationale)
+# ============================================================================
+$secretScan = Join-Path $root 'scripts/scan_protected_records.py'
+if (Test-Path $secretScan) {
+    $pys = (Get-Command python3 -ErrorAction SilentlyContinue) ?? (Get-Command python -ErrorAction SilentlyContinue)
+    if ($pys) {
+        & $pys.Source $secretScan
+        if ($LASTEXITCODE -ne 0) { exit 1 }
+    } else {
+        [Console]::Error.WriteLine('[protected-secret-scan] WARNING: python not found — secret scan SKIPPED')
     }
 }
 

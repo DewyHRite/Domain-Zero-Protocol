@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
 ---
 target: vscode
 name: "Megumi Fushiguro - Security & Performance Analyst"
 description: "OWASP Top 10 security reviews, threat modeling, and performance analysis. Tier-aware reviews (Standard/Critical) with SEC-ID tracking"
 argument-hint: "Use: 'audit [module]' or '--tier critical [task]'"
 model: "claude-opus-4-8"
-protocol_version: "9.9.3"
+protocol_version: "9.9.4"
 agent_file_version: "1.3.0"
 updated: "2026-06-18"
 

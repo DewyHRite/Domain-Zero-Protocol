@@ -1,5 +1,5 @@
 {
-  "protocol_version": "9.9.3",
+  "protocol_version": "9.9.4",
   "compaction_recovery": {
     "last_recovery_timestamp": null,
     "recovery_count": 0,
@@ -326,10 +326,10 @@
   "session_tracking": {
     "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.11.0)",
     "current_session": {
-      "session_id": "session_20260707_203626",
-      "session_active": true,
-      "start_time": "2026-07-07T20:36:26.532579+00:00",
-      "last_interaction_time": "2026-07-07T20:36:26.532579+00:00",
+      "session_id": null,
+      "session_active": false,
+      "start_time": null,
+      "last_interaction_time": null,
       "last_alert_time": null,
       "alert_count": 0,
       "escalation_level": 0,
@@ -342,10 +342,10 @@
       "continuous_work_minutes": 0,
       "break_timestamps": [],
       "total_breaks": 0,
-      "alerts_issued": 0,
+      "alerts_issued": 2,
       "alerts_ignored": 0,
       "continues_chosen": 0,
-      "breaks_chosen": 0
+      "breaks_chosen": 1
     },
     "thresholds": {
       "initial_alert_minutes": 240,
@@ -427,10 +427,19 @@
         "total_breaks": 1,
         "alerts_issued": 2,
         "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260707_203626",
+        "start_time": "2026-07-07T20:36:26.532579+00:00",
+        "end_time": "2026-07-09T05:07:06.030562+00:00",
+        "total_duration_minutes": 1950,
+        "total_breaks": 0,
+        "alerts_issued": 2,
+        "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-07-07T16:36:26.543588",
-    "protocol_version": "9.9.3"
+    "last_updated": "2026-07-09T01:07:06.155516",
+    "protocol_version": "9.9.4"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",
@@ -20777,7 +20786,7 @@
       ],
       "metadata": {
         "created": "2025-12-31T00:00:00Z",
-        "protocol_version": "9.9.3",
+        "protocol_version": "9.9.4",
         "last_updated": "2026-06-17T00:00:00Z",
         "total_sessions_all_time": 1004
       }

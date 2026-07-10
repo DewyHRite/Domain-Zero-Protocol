@@ -28,6 +28,14 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 from contextlib import contextmanager
 
+# ISS-083: local write-attestation (fail-soft; module lives alongside this
+# one in .protocol-state/). Absence must never break state read/write.
+try:
+    from attestation import record_write as _attest_record_write
+    _ATTESTATION_AVAILABLE = True
+except ImportError:
+    _ATTESTATION_AVAILABLE = False
+
 # Lock configuration constants
 LOCK_TIMEOUT_SECONDS = 30
 LOCK_RETRY_DELAY_SECONDS = 0.1
@@ -348,6 +356,36 @@ class ProjectStateManager:
                 except OSError:
                     pass
             raise
+
+        # ISS-083: stamp a local write-attestation for this sanctioned
+        # write. This runs AFTER the write has already succeeded above and
+        # is strictly best-effort observability for drift detection -- any
+        # failure here must never surface as a failure of the state write
+        # itself (hence the isolated try/except and no re-raise).
+        self._attest_write(target_file)
+
+    def _attest_write(self, target_file: Path) -> None:
+        """
+        Best-effort ISS-083 write attestation for a just-completed atomic
+        write to *target_file*.
+
+        Reads back the exact bytes now on disk (rather than re-serializing
+        the in-memory dict) so the recorded content hash always matches
+        reality, and stamps a signed ledger entry keyed by the file's
+        basename -- the same key scripts/validate-protocol.py's drift
+        detection uses (Path(result.file).name).
+
+        Never raises: attestation is advisory metadata for drift detection,
+        not a correctness requirement of the state write itself (which has
+        already completed by the time this runs).
+        """
+        if not _ATTESTATION_AVAILABLE:
+            return
+        try:
+            content = target_file.read_bytes()
+            _attest_record_write(self.state_dir, target_file.name, content, writer="ProjectStateManager")
+        except Exception:
+            pass
 
     def load_project_state(self) -> Dict[str, Any]:
         """

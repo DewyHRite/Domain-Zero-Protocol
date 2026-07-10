@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
 # Escape Path Protocol
-## Domain Zero Protocol v9.9.3
+## Domain Zero Protocol v9.9.4
 
 > **Module Type:** Shared Protocol Behavior
 > **Referenced By:** 4 core agents (Yuuji, Megumi, Nobara, Gojo)

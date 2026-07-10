@@ -1,9 +1,45 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.9.3
-**Release Date:** 2026-07-07
-**Release Type:** PATCH Release (Accepted-P3 backlog closeout — Toji-audit v9.9.2 residuals + version-cascade-trap)
+**Version:** 9.9.4
+**Release Date:** 2026-07-09
+**Release Type:** PATCH Release (Toji external-auditor capability upgrade + Toji-audit-2026-07-09 remediation + Sukuna RHS-report canonical items)
+
+---
+
+## Release Summary — v9.9.4 (PATCH)
+
+v9.9.4 upgrades Toji (Sentinel) to v1.3.0 with standing read + scoped append-only audit-log write,
+closes the findings from the 2026-07-09 Toji audit, and lands three Sukuna RHS-report canonical
+items (attestation, publish-manifest completeness, and a report-only note).
+
+- **Toji v1.3.0** — external auditor gains standing (always) read + append-only audit-log write to
+  the two FEAT-GUARD-001-enforced protected records (`dev-notes.md`, `security-review.md`) via a
+  scoped `edit` tool; full reports now written to a new `audits/` folder (2 existing reports
+  migrated). `domain.record.md`'s stub is logged by Gojo instead — that file is gitignored and
+  outside FEAT-GUARD-001's coverage, so Toji never writes it. CONSTRAINT_012 revised; tool-access
+  matrices updated across root + protocol + global `CLAUDE.md`, the `~/.claude/agents/toji.md`
+  stub, `AI_INSTRUCTIONS.md`, and `copilot-instructions.md`. Mechanical stub→report existence
+  check added to the pre-commit guard. Megumi Tier-3 @approved (SEC-TOJI-101/102/103 closed).
+- **Toji audit 2026-07-09** — **SEC-001** (MED): compensating protected-records secret scanner
+  (`scripts/scan_protected_records.py`; allowlists only the historical Stripe docs literal,
+  fails-closed on any other match; wired into pre-commit + CI; `.github/secret_scanning.yml`
+  annotated Owner/Review-by). **IMPL-001** (MED): signed session-record reconciliation for
+  `session_20260707_203626` appended to `dev-notes.md`/`security-review.md` (authoritative values
+  sourced from `project-state.json`; the program-L record was ruled non-authoritative), a
+  domain-record correction, plus `scripts/check_branch_record_isolation.py` (append-only-vs-merge-base
+  and conflicting-terminal-records detector); program-L reconciliation itself deferred (USER
+  decision). Megumi @approved.
+- **Sukuna RHS-report canonical items** — **ISS-083** (P3): authorized-writer attestation
+  (`.protocol-state/attestation.py` — side-channel HMAC ledger + monotonic sequence; sanctioned
+  state writers are stamped; `validate-protocol --check` suppresses drift alerts for attested
+  writes and alerts on unattested/forged/stale ones; non-blocking; Windows owner-only ACL on the
+  key; local-integrity threat model documented). **ISS-084/085** (P2): root `dzp.py` added to the
+  publish manifest + orchestration-trio completeness gate (Scope 5). **ISS-086** (P3): no
+  canonical target exists (install-side `dzp-sync`); remains REPORT-ONLY.
+- Yuuji TDD throughout; Megumi Tier-3 @approved every phase. Accepted P3: SEC-IMPL-001-RESIDUAL
+  (branch-check Layer-2 fail-soft) + the attestation local-integrity boundary. New tests:
+  attestation 55, distro completeness 11, secret scanner 20, branch-isolation 21, guard 46.
 
 ---
 

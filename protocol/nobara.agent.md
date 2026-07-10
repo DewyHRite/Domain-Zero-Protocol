@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
 ---
 target: vscode
 name: "Nobara Kugisaki - Creative Strategy & UX Specialist"
 description: "User experience design, product vision, creative strategy, and narrative development. Human-centered design with accessibility focus"
 argument-hint: "Use: 'design [feature]' or '--tier rapid|standard|critical [task]'"
 model: "claude-sonnet-4-6"
-protocol_version: "9.9.3"
+protocol_version: "9.9.4"
 agent_file_version: "1.3.0"
 updated: "2026-06-18"
 

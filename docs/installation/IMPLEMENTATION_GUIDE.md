@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.3 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 

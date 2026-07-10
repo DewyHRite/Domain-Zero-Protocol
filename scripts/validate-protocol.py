@@ -63,6 +63,17 @@ SCHEMA_FILE = PROJECT_ROOT / "protocol" / "validation-rules.yaml"
 STATE_DIR = PROJECT_ROOT / ".protocol-state"
 VALIDATION_STATE_FILE = STATE_DIR / "validation" / "validation-state.json"
 
+# ISS-083: local write-attestation (fail-soft; module lives in .protocol-state/,
+# alongside project_state_manager.py / session_monitor.py, the sanctioned
+# writers this check consults). Absence must never break --check.
+if str(STATE_DIR) not in sys.path:
+    sys.path.insert(0, str(STATE_DIR))
+try:
+    import attestation as _attestation
+    _ATTESTATION_AVAILABLE = True
+except ImportError:
+    _ATTESTATION_AVAILABLE = False
+
 
 class ExitCode(Enum):
     """Exit codes for validation script"""
@@ -144,6 +155,10 @@ class ValidationResult:
     checksum: Optional[str] = None
     drift_detected: bool = False
     auto_fixes: List[AutoFix] = field(default_factory=list)
+    # ISS-083: seq accepted this run via a valid write-attestation (None when
+    # no attestation was consulted/accepted this run -- update_validation_state()
+    # carries the prior persisted value forward in that case).
+    attested_seq: Optional[int] = None
 
 
 @dataclass
@@ -356,16 +371,34 @@ def calculate_checksum(file_path: Path) -> str:
 # Drift Detection
 # =============================================================================
 
-def detect_drift(current_results: List[ValidationResult], last_validation_state: Optional[Dict[str, Any]]) -> List[DriftAlert]:
+def detect_drift(
+    current_results: List[ValidationResult],
+    last_validation_state: Optional[Dict[str, Any]],
+    state_dir: Path = STATE_DIR,
+) -> List[DriftAlert]:
     """
     Detect unauthorized changes since last validation by comparing checksums
 
     Args:
         current_results: Current validation results with checksums
         last_validation_state: Previous validation state from validation-state.json
+        state_dir: The `.protocol-state` directory (attestation ledger + key
+            location). Defaults to the real STATE_DIR; overridable for tests.
 
     Returns:
         List of DriftAlert objects for files with detected drift
+
+    ISS-083 (authorized-writer attestation): before raising a drift alert for
+    a checksum mismatch, consult the local attestation ledger. A valid,
+    non-stale attestation for the file's CURRENT content -- with a seq
+    strictly greater than the last seq this checker has already accepted for
+    that file -- proves the change came from a sanctioned writer holding the
+    local HMAC key, and the alert is suppressed for this run (the new
+    checksum becomes the baseline via update_validation_state(), same as
+    today). A missing/invalid/stale/replayed attestation still raises the
+    alert exactly as before: this is fail-closed for anything that looks
+    like tamper, and fail-soft (identical to pre-ISS-083 behavior) when the
+    attestation infrastructure itself is absent.
     """
     drift_alerts = []
 
@@ -391,7 +424,24 @@ def detect_drift(current_results: List[ValidationResult], last_validation_state:
         previous_checksum = previous.get('checksum')
 
         if previous_checksum and result.checksum != previous_checksum:
-            # Drift detected!
+            # Checksum changed since last run -- candidate drift. Consult the
+            # attestation ledger before alerting.
+            if _ATTESTATION_AVAILABLE:
+                check = _attestation.verify_current_content(state_dir, file_key, result.checksum)
+                if check.attested and check.seq is not None:
+                    try:
+                        previous_seq = int(previous.get('attested_seq', 0) or 0)
+                    except (TypeError, ValueError):
+                        previous_seq = 0
+                    if check.seq > previous_seq:
+                        # Authorized, non-replayed write: accept as the new
+                        # baseline, suppress the alert, and remember the seq
+                        # so a replay of this same (or older) attestation is
+                        # rejected on a future run.
+                        result.attested_seq = check.seq
+                        continue
+                    # else: seq did not advance -- replay. Fall through to alert.
+
             drift_alerts.append(DriftAlert(
                 file=result.file,
                 detected_at=datetime.now(timezone.utc).isoformat() + 'Z',
@@ -616,12 +666,26 @@ def update_validation_state(results: List[ValidationResult], auto_fixes: List[Au
     for result in results:
         if result.checksum:
             file_key = Path(result.file).name
-            state["state_file_integrity"][file_key] = {
+            entry = {
                 "checksum": result.checksum,
                 "last_validated": datetime.now(timezone.utc).isoformat() + 'Z',
                 "status": result.status.value,
                 "errors": [e.message for e in result.errors[:5]]  # Store first 5 errors
             }
+
+            # ISS-083: persist the attested seq we've accepted for this file
+            # (if any) so future runs can detect replay -- a stamp whose seq
+            # does not exceed this value is rejected even if it is otherwise
+            # a validly-signed, content-matching attestation. Carry the prior
+            # value forward when this run didn't consult/accept a new one
+            # (unchanged checksum, or an unattested/rejected mismatch).
+            prior_entry = state["state_file_integrity"].get(file_key, {})
+            if result.attested_seq is not None:
+                entry["attested_seq"] = result.attested_seq
+            elif "attested_seq" in prior_entry:
+                entry["attested_seq"] = prior_entry["attested_seq"]
+
+            state["state_file_integrity"][file_key] = entry
 
     # Add auto-fix history
     for fix in auto_fixes:
@@ -941,6 +1005,20 @@ Exit Codes:
             sys.exit(ExitCode.ERRORS.value)
 
         # Drift detection
+        # ISS-083: informational note (never an error/warning) when the local
+        # attestation ledger hasn't been initialized yet on this install --
+        # drift detection runs exactly as it did before ISS-083 (every
+        # checksum mismatch alerts) until the next sanctioned write creates
+        # .protocol-state/.attestation.json. This is a benign, one-time
+        # transition state, never a crash or hard failure.
+        if not args.file and _ATTESTATION_AVAILABLE and not _attestation.ledger_exists(STATE_DIR):
+            print(
+                "[INFO] Attestation ledger not yet initialized "
+                f"({STATE_DIR / _attestation.LEDGER_FILENAME}); drift detection is "
+                "running unattested until the next sanctioned state write creates it "
+                "(ISS-083)."
+            )
+
         last_validation_state = load_validation_state()
         drift_alerts = detect_drift(results, last_validation_state)
 

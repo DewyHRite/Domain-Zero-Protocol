@@ -9,6 +9,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.9.4] - 2026-07-09
+
+### PATCH — Toji external-auditor capability upgrade + Toji-audit-2026-07-09 remediation + Sukuna RHS-report canonical items
+
+#### Added
+- **Toji v1.3.0 (external auditor)** — standing (always) read across all Domain Zero records; a
+  scoped `edit` tool that may append exactly one signed Record Log Entry stub per audit to the two
+  FEAT-GUARD-001-enforced protected records (`.protocol-state/dev-notes.md`,
+  `.protocol-state/security-review.md`); full audit reports now written to a new `audits/` folder
+  (naming convention `audits/YYYY-MM-DD-toji-<scope>.md`; 2 existing reports migrated out of
+  `.protocol-state/toji-reports/`, which now carries a pointer `README.md`).
+  `.dzp-domain/domain.record.md` is gitignored and outside FEAT-GUARD-001's coverage, so Toji never
+  writes it directly — Gojo logs the equivalent stub there on Toji's behalf. CONSTRAINT_012 revised
+  to reflect the append-only-but-scoped write. Tool-access matrices updated across root + protocol +
+  global `CLAUDE.md`, the `~/.claude/agents/toji.md` runtime stub, `AI_INSTRUCTIONS.md`, and
+  `.github/copilot-instructions.md`. Megumi Tier-3 @approved (SEC-TOJI-101/102/103 closed).
+- **`scripts/scan_protected_records.py`** (SEC-001, MED) — compensating secret scanner for the three
+  protected records; allowlists only the one known historical Stripe docs-example literal in
+  `dev-notes.md`, fails closed on any other match. Wired into pre-commit + CI.
+- **`scripts/check_branch_record_isolation.py`** (part of IMPL-001) — append-only-vs-merge-base and
+  conflicting-terminal-records detector for the protected records across branches.
+- **`.protocol-state/attestation.py`** (ISS-083, P3) — authorized-writer attestation: a side-channel
+  HMAC ledger with a monotonic sequence number; sanctioned state writers are stamped on write;
+  `validate-protocol --check` suppresses drift alerts for attested writes and alerts on
+  unattested/forged/stale ones. Non-blocking. Windows owner-only ACL on the HMAC key. Local-integrity
+  threat model documented (not tamper-proof against a fully compromised local account).
+
+#### Fixed
+- **IMPL-001** (MED, Toji audit 2026-07-09) — signed session-record reconciliation for
+  `session_20260707_203626`, appended to `dev-notes.md`/`security-review.md` with authoritative
+  values sourced from `project-state.json`; the parallel program-L record was ruled non-authoritative
+  for this session and a domain-record correction was logged. Program-L reconciliation itself is
+  deferred pending a separate USER decision.
+- **ISS-084/085** (P2, Sukuna RHS report) — root `dzp.py` added to the publish manifest and the
+  orchestration-trio publish-manifest-completeness gate (Scope 5), closing a gap where the root
+  entry-point could ship without its coordinator dependencies.
+
+#### Notes
+- **ISS-086** (P3, Sukuna RHS report) — no canonical target exists for this item (it concerns the
+  install-side `dzp-sync` tooling, which is intentionally out of canonical scope); remains
+  REPORT-ONLY.
+- Accepted P3 residuals: **SEC-IMPL-001-RESIDUAL** (branch-isolation check's Layer-2 detector is
+  fail-soft, not fail-closed) and the attestation subsystem's inherent local-integrity boundary
+  (same-user-account threat model; no protection against a fully compromised OS account).
+- Yuuji TDD throughout; Megumi Tier-3 @approved every phase.
+
+#### Tests
+- New: `tests/` coverage for attestation (55), distro publish-manifest completeness (11), the
+  protected-records secret scanner (20), branch-record isolation (21), and the extended
+  protected-append-only guard (46).
+
 ## [9.8.2] - 2026-06-23
 
 ### PATCH — cp1252 coordinator UTF-8 capture fix (Windows `/session update`)

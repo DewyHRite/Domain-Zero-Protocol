@@ -41,12 +41,29 @@ SEC-GUARD-002 (CRLF normalization):
   The byte-prefix check normalizes both sides by stripping \\r before comparison
   so a working-tree CRLF append (repos lacking text=auto) never false-positives.
 
+SEC-TOJI-102 (mechanical fabrication tripwire for the Toji audit-log stub):
+  Toji (protocol/toji.agent.md Section 1.3.4) appends a standardized one-line
+  "[TOJI AUDIT LOG]" stub to dev-notes.md and security-review.md after writing
+  a full report to audits/<filename>.md. That tripwire was behavioral only —
+  nothing verified the referenced report actually existed, so a forged stub
+  was trivial to commit. This guard mechanizes it: for every NEWLY-ADDED
+  staged line (never pre-existing/committed content) matching the
+  "[TOJI AUDIT LOG]" format in dev-notes.md or security-review.md, the
+  "full report: <path>" reference must resolve to a real file (on disk,
+  staged in the index, or tracked in HEAD) or the commit is blocked.
+
+  Override (legit exceptional case): set DZP_ALLOW_TOJI_STUB_UNVERIFIED=1.
+  Separate from DZP_ALLOW_PROTECTED_REWRITE because this checks report
+  *existence*, not the append-only byte-prefix invariant. The bypass is
+  always printed to stderr — never silent.
+
 Exit codes: 0 = clean (or overridden / disabled), 1 = violation(s) blocking commit.
 """
 
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -248,6 +265,97 @@ def find_violations(
 
 
 # ---------------------------------------------------------------------------
+# SEC-TOJI-102: Toji "[TOJI AUDIT LOG]" stub existence check
+# ---------------------------------------------------------------------------
+
+# Only these two protected records receive the standardized Toji stub check
+# (per protocol/toji.agent.md Section 1.3.4 / CLAUDE.md). domain.record.md
+# is out of scope for THIS mechanical check by design.
+TOJI_STUB_SCOPE: tuple[str, ...] = (
+    ".protocol-state/dev-notes.md",
+    ".protocol-state/security-review.md",
+)
+
+TOJI_STUB_MARKER = "[TOJI AUDIT LOG]"
+TOJI_STUB_OVERRIDE_ENV = "DZP_ALLOW_TOJI_STUB_UNVERIFIED"
+
+# Matches the "full report: <path>" field in the standardized stub, e.g.:
+#   ... · full report: audits/2026-07-09-toji-full-se-qa.md · —Toji ...
+_TOJI_REPORT_RE = re.compile(r"full report:\s*(\S+)")
+
+
+def _added_lines(head: Optional[bytes], staged: bytes) -> list[str]:
+    """Return the lines newly present in `staged` that are not part of `head`.
+
+    Normalizes CRLF (consistent with is_append_only) before diffing. When the
+    normalized `head` is a prefix of normalized `staged` (the expected,
+    append-only case), this returns exactly the appended tail. If it is NOT a
+    prefix (a mid-file rewrite — already a separate append-only violation),
+    this falls back to scanning the full staged content so a forged stub
+    is never silently missed; it does not raise.
+    """
+    staged_norm = _normalize(staged)
+    head_norm = _normalize(head) if head is not None else b""
+    if staged_norm.startswith(head_norm):
+        tail = staged_norm[len(head_norm):]
+    else:
+        tail = staged_norm
+    return tail.decode("utf-8", errors="replace").splitlines()
+
+
+def _report_ref_exists(repo_root: Path, rel_path: str) -> bool:
+    """True if `rel_path` exists on disk, is staged in the index, or is tracked in HEAD."""
+    rel_path = rel_path.strip()
+    if not rel_path:
+        return False
+    try:
+        if (repo_root / rel_path).is_file():
+            return True
+    except OSError:
+        pass
+    if staged_blob(repo_root, rel_path) is not None:
+        return True
+    if head_blob(repo_root, rel_path) is not None:
+        return True
+    return False
+
+
+def find_toji_stub_violations(
+    repo_root: Path,
+    paths: tuple[str, ...] = TOJI_STUB_SCOPE,
+) -> list[str]:
+    """Return violation messages for newly-staged "[TOJI AUDIT LOG]" stubs whose
+    referenced report does not exist.
+
+    Only NEWLY-ADDED staged lines are inspected (see _added_lines) — pre-existing
+    committed content, including old free-form Toji entries predating the
+    standardized stub format, is never flagged. Fails soft (skips) on a stub-like
+    line it cannot parse a report path from; fails CLOSED (reports a violation)
+    when a report path is parsed but does not resolve to a real file.
+    """
+    violations: list[str] = []
+    for path in paths:
+        staged = staged_blob(repo_root, path)
+        if staged is None:
+            continue  # nothing staged for this file
+        head = head_blob(repo_root, path)
+        for line in _added_lines(head, staged):
+            if TOJI_STUB_MARKER not in line:
+                continue
+            match = _TOJI_REPORT_RE.search(line)
+            if not match:
+                # Fail-soft: looks stub-like but unparseable — do not block on ambiguity.
+                continue
+            report_ref = match.group(1)
+            if not _report_ref_exists(repo_root, report_ref):
+                violations.append(
+                    f"{path}: [TOJI AUDIT LOG] stub references a report that does not "
+                    f"exist: '{report_ref}' (offending line: {line.strip()!r})"
+                )
+    return violations
+
+
+# ---------------------------------------------------------------------------
 # Repo detection
 # ---------------------------------------------------------------------------
 
@@ -290,39 +398,71 @@ def main(
         )
         return 0
 
+    exit_code = 0
+
+    # --- Check 1: append-only byte-prefix invariant ------------------------
     violations = find_violations(repo_root, protected=protected)
-    if not violations:
-        return 0
+    if violations:
+        override = os.environ.get(override_env) == "1"
+        bullet = "\n".join(f"    - {v}" for v in violations)
 
-    override = os.environ.get(override_env) == "1"
-    bullet = "\n".join(f"    - {v}" for v in violations)
+        if override:
+            print(
+                "[protected-guard] APPEND-ONLY OVERRIDE ACTIVE "
+                f"({override_env}=1) - allowing non-append change to protected doc(s):\n"
+                f"{bullet}\n"
+                "    This rewrites permanent project memory. Ensure it is intentional "
+                "(rotation / authorized restore).\n"
+                f"    Scope this variable to the single commit invocation "
+                f"(e.g. `{override_env}=1 git commit ...`) — "
+                "do not export it globally in CI.",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                "[protected-guard] COMMIT BLOCKED - protected document(s) are APPEND-ONLY but the\n"
+                "   staged change is NOT a pure append (mid-file edit or deletion detected):\n"
+                f"{bullet}\n\n"
+                "   These files are permanent project memory (CLAUDE.md PROJECT DOCUMENTS PROTECTION).\n"
+                "   Fix: restore the file from HEAD and re-append only your new content, e.g.:\n"
+                "     git restore --staged <file> && git checkout -- <file>\n"
+                "     # then append your additions to the end and re-stage\n\n"
+                f"   Legit rewrite (rotation / authorized restore)? Re-run with {override_env}=1.",
+                file=sys.stderr,
+            )
+            exit_code = 1
 
-    if override:
-        print(
-            "[protected-guard] APPEND-ONLY OVERRIDE ACTIVE "
-            f"({override_env}=1) - allowing non-append change to protected doc(s):\n"
-            f"{bullet}\n"
-            "    This rewrites permanent project memory. Ensure it is intentional "
-            "(rotation / authorized restore).\n"
-            f"    Scope this variable to the single commit invocation "
-            f"(e.g. `{override_env}=1 git commit ...`) — "
-            "do not export it globally in CI.",
-            file=sys.stderr,
-        )
-        return 0
+    # --- Check 2 (SEC-TOJI-102): "[TOJI AUDIT LOG]" stub report existence --
+    toji_violations = find_toji_stub_violations(repo_root)
+    if toji_violations:
+        toji_override = os.environ.get(TOJI_STUB_OVERRIDE_ENV) == "1"
+        toji_bullet = "\n".join(f"    - {v}" for v in toji_violations)
 
-    print(
-        "[protected-guard] COMMIT BLOCKED - protected document(s) are APPEND-ONLY but the\n"
-        "   staged change is NOT a pure append (mid-file edit or deletion detected):\n"
-        f"{bullet}\n\n"
-        "   These files are permanent project memory (CLAUDE.md PROJECT DOCUMENTS PROTECTION).\n"
-        "   Fix: restore the file from HEAD and re-append only your new content, e.g.:\n"
-        "     git restore --staged <file> && git checkout -- <file>\n"
-        "     # then append your additions to the end and re-stage\n\n"
-        f"   Legit rewrite (rotation / authorized restore)? Re-run with {override_env}=1.",
-        file=sys.stderr,
-    )
-    return 1
+        if toji_override:
+            print(
+                "[toji-stub-guard] OVERRIDE ACTIVE "
+                f"({TOJI_STUB_OVERRIDE_ENV}=1) - allowing unverifiable [TOJI AUDIT LOG] stub(s):\n"
+                f"{toji_bullet}\n"
+                "    Ensure this is an authorized exception (e.g. report published separately).\n"
+                f"    Scope this variable to the single commit invocation "
+                f"(e.g. `{TOJI_STUB_OVERRIDE_ENV}=1 git commit ...`) — "
+                "do not export it globally in CI.",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                "[toji-stub-guard] COMMIT BLOCKED - a newly-added [TOJI AUDIT LOG] stub references\n"
+                "   a report file that does not exist (fabrication tripwire, SEC-TOJI-102):\n"
+                f"{toji_bullet}\n\n"
+                "   Per protocol/toji.agent.md Section 1.3.4, a stub must never be committed\n"
+                "   without a real, written report at the stated audits/ path.\n"
+                "   Fix: write the missing report, or correct the stub's report path, then re-stage.\n\n"
+                f"   Authorized exception? Re-run with {TOJI_STUB_OVERRIDE_ENV}=1.",
+                file=sys.stderr,
+            )
+            exit_code = 1
+
+    return exit_code
 
 
 if __name__ == "__main__":
