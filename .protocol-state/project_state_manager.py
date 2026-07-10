@@ -392,6 +392,13 @@ class ProjectStateManager:
         "attestation attempted and failed" (warned, worth investigating).
         Still fully fail-soft: never re-raises, never blocks the caller.
 
+        CodeRabbit PR#108 round 2: `record_write()` is fail-soft internally
+        -- it can return False (e.g. lock never acquired, ledger save
+        failed) WITHOUT raising. The exception handler alone missed that
+        path, silently dropping the exact observability gap ISS-083 exists
+        to close. A False return now gets the same class of stderr warning
+        as an exception; a True return stays silent (the common case).
+
         SEC-ATTEST-PSM-001 (Megumi, P2, CWE-532): REDACTED -- only the
         file's basename (never the full `target_file` path) and the
         exception's TYPE name (never `str(e)`) are printed. For the
@@ -399,13 +406,23 @@ class ProjectStateManager:
         absolute path that failed (e.g. `C:\\Users\\<user>\\...`), which
         would leak the local username/path layout to stderr/CI logs/
         transcripts. Mirrors the same redaction already applied to
-        `session_monitor.py::_attest_write` (Megumi @approved there).
+        `session_monitor.py::_attest_write` (Megumi @approved there). The
+        new False-return warning below carries no path/exception detail
+        either -- only the basename and a fixed reason token.
         """
         if not _ATTESTATION_AVAILABLE:
             return
         try:
             content = target_file.read_bytes()
-            _attest_record_write(self.state_dir, target_file.name, content, writer="ProjectStateManager")
+            attested = _attest_record_write(
+                self.state_dir, target_file.name, content, writer="ProjectStateManager"
+            )
+            if not attested:
+                print(
+                    f"[WARN] Write attestation returned failure for {target_file.name} "
+                    "(record_write returned False)",
+                    file=sys.stderr,
+                )
         except Exception as e:
             print(
                 f"[WARN] Write attestation failed for {target_file.name} ({type(e).__name__})",

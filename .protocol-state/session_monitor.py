@@ -602,12 +602,27 @@ class SessionMonitor:
         or file contents are ever in scope here to begin with -- attestation
         only ever handles the HMAC key file and ledger internally, never
         this method's own locals.
+
+        CodeRabbit PR#108 round 2: `record_write()` is fail-soft internally
+        -- it can return False (e.g. lock never acquired, ledger save
+        failed) WITHOUT raising. The exception handler alone missed that
+        path. A False return now gets the same class of stderr warning as
+        an exception (basename + a fixed reason token only, no path/
+        exception detail); a True return stays silent (the common case).
         """
         if not _ATTESTATION_AVAILABLE:
             return
         try:
             content = target_file.read_bytes()
-            _attest_record_write(target_file.parent, target_file.name, content, writer=writer)
+            attested = _attest_record_write(
+                target_file.parent, target_file.name, content, writer=writer
+            )
+            if not attested:
+                print(
+                    f"[WARN] Write attestation returned failure for {target_file.name} "
+                    "(record_write returned False)",
+                    file=sys.stderr,
+                )
         except Exception as e:
             print(
                 f"[WARN] Write attestation failed for {target_file.name} ({type(e).__name__})",
