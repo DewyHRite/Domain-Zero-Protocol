@@ -77,15 +77,26 @@ import secrets
 import subprocess
 import sys
 import tempfile
+import time
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterator, Optional
 
 LEDGER_FILENAME = ".attestation.json"
 KEY_FILENAME = ".attestation.key"
+LOCK_FILENAME = ".attestation.lock"
 KEY_SIZE_BYTES = 32
 SCHEMA_VERSION = "1.0.0"
+
+# CodeRabbit PR#108: cross-process lock timing for the key-gen + ledger
+# read-modify-write critical sections below. Short and best-effort by
+# design -- see `_cross_process_lock()` docstring for the fail-soft
+# rationale (a lock that can never be acquired must never block a
+# sanctioned writer from completing its real state write).
+_LOCK_TIMEOUT_SECONDS = 5.0
+_LOCK_RETRY_DELAY_SECONDS = 0.05
 
 
 # ---------------------------------------------------------------------------
@@ -195,6 +206,154 @@ def _harden_windows_acl(path: Path) -> None:
         )
 
 
+# ---------------------------------------------------------------------------
+# Cross-process locking (CodeRabbit PR#108)
+# ---------------------------------------------------------------------------
+#
+# Both the key-gen critical section (`get_or_create_key`) and the ledger
+# read-modify-write critical section (`record_write`) were previously
+# unprotected against concurrent DZP writers (e.g. two `/session update`
+# invocations, or a hook + a manual script, racing). For key-gen this could
+# leave two processes momentarily holding two DIFFERENT in-memory keys
+# before `os.replace()` settles on one; for the ledger, two concurrent
+# `record_write()` calls for two DIFFERENT `file_key`s each load the WHOLE
+# ledger, mutate only their own entry, and write back the WHOLE ledger --
+# so a naive interleaving can silently lose one of the two updates (the
+# second writer's save clobbers the first writer's added entry).
+#
+# `_cross_process_lock()` is a small, dependency-free, standalone lock
+# (msvcrt on win32 -- the primary platform for this control -- fcntl
+# elsewhere) local to this module. It is deliberately NOT borrowed from
+# `ProjectStateManager._file_lock()` (project_state_manager.py): that class
+# already imports `record_write` FROM this module (see its module
+# docstring / callers), so importing `ProjectStateManager` back into
+# `attestation.py` would create an import cycle. `ProjectStateManager`'s
+# lock is also a bound *method* requiring a fully constructed instance
+# (protocol_root, namespaced lock files, etc.), not a standalone function
+# attestation.py's simpler procedural style can reuse cleanly.
+
+
+@contextmanager
+def _cross_process_lock(state_dir: Path) -> Iterator[bool]:
+    """Best-effort cross-process exclusive lock guarding attestation state.
+
+    Yields True if the lock was actually acquired, False if it was not
+    (lock file could not be opened/created, or another holder did not
+    release it within `_LOCK_TIMEOUT_SECONDS`). The caller's `with` block
+    always runs either way -- this is advisory, best-effort serialization,
+    not a hard mutex: per the module's fail-soft contract, attestation must
+    NEVER block or fail a sanctioned writer's real state write just because
+    a lock could not be taken. On a platform/filesystem where locking is
+    unavailable, the pre-existing (unlocked) behavior is reproduced exactly,
+    which is only ever a benign, spurious drift-alert risk under a genuine
+    race -- never data corruption of the caller's actual state file (that
+    file's own write path, e.g. ProjectStateManager, has its own locking).
+
+    Any exception raised INSIDE the `with` block propagates normally (only
+    lock acquisition itself is wrapped in fail-soft handling) so existing
+    `except OSError` handling in `get_or_create_key()`/`record_write()`
+    is unaffected.
+    """
+    state_dir = Path(state_dir)
+    lock_path = state_dir / LOCK_FILENAME
+    handle = None
+    try:
+        state_dir.mkdir(parents=True, exist_ok=True)
+        handle = open(lock_path, "a+b")
+    except OSError:
+        handle = None
+
+    locked = False
+    if handle is not None:
+        deadline = time.monotonic() + _LOCK_TIMEOUT_SECONDS
+        while True:
+            try:
+                if sys.platform == "win32":
+                    import msvcrt
+
+                    handle.seek(0)
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+                else:
+                    import fcntl
+
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                locked = True
+                break
+            except OSError:
+                if time.monotonic() >= deadline:
+                    break
+                time.sleep(_LOCK_RETRY_DELAY_SECONDS)
+
+    try:
+        yield locked
+    finally:
+        if handle is not None:
+            if locked:
+                try:
+                    if sys.platform == "win32":
+                        import msvcrt
+
+                        handle.seek(0)
+                        msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+                    else:
+                        import fcntl
+
+                        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+                except OSError:
+                    pass
+            try:
+                handle.close()
+            except OSError:
+                pass
+
+
+def _get_or_create_key_locked(state_dir: Path) -> Optional[bytes]:
+    """Body of `get_or_create_key()`, assumed to run inside `_cross_process_lock()`."""
+    path = _key_path(state_dir)
+    if path.exists():
+        data = path.read_bytes()
+        if data:
+            return data
+        # Empty/corrupt key file -- fall through and regenerate.
+
+    key = secrets.token_bytes(KEY_SIZE_BYTES)
+    state_dir.mkdir(parents=True, exist_ok=True)
+
+    tmp_fd, tmp_name = tempfile.mkstemp(
+        dir=str(state_dir), prefix=".attestation.key.", suffix=".tmp"
+    )
+    try:
+        with os.fdopen(tmp_fd, "wb") as f:
+            f.write(key)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_name, path)
+    finally:
+        if os.path.exists(tmp_name):
+            try:
+                os.unlink(tmp_name)
+            except OSError:
+                pass
+
+    # Best-effort owner-only permissions (POSIX only; no-op/ignored on
+    # platforms -- e.g. Windows -- where chmod bits don't apply the same
+    # way). Never fail the key creation over a permissions warning.
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass
+
+    # P3 (Megumi): chmod alone is a no-op on Windows NTFS ACLs. Harden
+    # with an owner-only DACL via icacls there too (fail-soft; never
+    # blocks key creation -- see _harden_windows_acl() docstring).
+    try:
+        _harden_windows_acl(path)
+    except Exception:
+        pass
+
+    return key
+
+
 def get_or_create_key(state_dir: Path) -> Optional[bytes]:
     """
     Load the local HMAC attestation key for *state_dir*, generating it on
@@ -203,52 +362,17 @@ def get_or_create_key(state_dir: Path) -> Optional[bytes]:
     Fail-soft: returns None (never raises) if the key cannot be read or
     created (read-only filesystem, permission errors, etc.). Callers MUST
     treat None as "attestation unavailable" and skip stamping/verifying.
+
+    CodeRabbit PR#108: the read-check-generate-write sequence below runs
+    under `_cross_process_lock()` so two concurrent first-use callers
+    cannot race to generate (and briefly disagree on) the key -- see that
+    function's docstring for why a local lock is used here rather than
+    `ProjectStateManager`'s.
     """
     state_dir = Path(state_dir)
-    path = _key_path(state_dir)
     try:
-        if path.exists():
-            data = path.read_bytes()
-            if data:
-                return data
-            # Empty/corrupt key file -- fall through and regenerate.
-
-        key = secrets.token_bytes(KEY_SIZE_BYTES)
-        state_dir.mkdir(parents=True, exist_ok=True)
-
-        tmp_fd, tmp_name = tempfile.mkstemp(
-            dir=str(state_dir), prefix=".attestation.key.", suffix=".tmp"
-        )
-        try:
-            with os.fdopen(tmp_fd, "wb") as f:
-                f.write(key)
-                f.flush()
-                os.fsync(f.fileno())
-            os.replace(tmp_name, path)
-        finally:
-            if os.path.exists(tmp_name):
-                try:
-                    os.unlink(tmp_name)
-                except OSError:
-                    pass
-
-        # Best-effort owner-only permissions (POSIX only; no-op/ignored on
-        # platforms -- e.g. Windows -- where chmod bits don't apply the same
-        # way). Never fail the key creation over a permissions warning.
-        try:
-            os.chmod(path, 0o600)
-        except OSError:
-            pass
-
-        # P3 (Megumi): chmod alone is a no-op on Windows NTFS ACLs. Harden
-        # with an owner-only DACL via icacls there too (fail-soft; never
-        # blocks key creation -- see _harden_windows_acl() docstring).
-        try:
-            _harden_windows_acl(path)
-        except Exception:
-            pass
-
-        return key
+        with _cross_process_lock(state_dir):
+            return _get_or_create_key_locked(state_dir)
     except OSError:
         return None
 
@@ -339,35 +463,48 @@ def record_write(state_dir: Path, file_key: str, content: bytes, writer: str) ->
         True if the attestation was recorded, False on any failure
         (fail-soft -- never raises, never blocks the caller's real write,
         which has already succeeded by the time this is called).
+
+    CodeRabbit PR#108: the whole key-gen-if-needed + ledger
+    load-modify-save sequence below runs under ONE `_cross_process_lock()`
+    acquisition (never two nested acquisitions -- that would deadlock a
+    same-process caller under `msvcrt`/`fcntl`, which treat independent
+    file handles to the same lock file independently). This closes a
+    lost-update race: without the lock, two concurrent `record_write()`
+    calls for two DIFFERENT `file_key`s could each load the same prior
+    ledger, mutate only their own key, and save the whole ledger back --
+    the second save would silently discard the first call's new entry.
     """
     try:
         state_dir = Path(state_dir)
-        key = get_or_create_key(state_dir)
-        if key is None:
-            return False
+        with _cross_process_lock(state_dir):
+            key = _get_or_create_key_locked(state_dir)
+            if key is None:
+                return False
 
-        ledger = _load_ledger(state_dir)
-        files = ledger.setdefault("files", {})
-        prev_entry = files.get(file_key, {}) if isinstance(files.get(file_key), dict) else {}
-        try:
-            prev_seq = int(prev_entry.get("seq", 0))
-        except (TypeError, ValueError):
-            prev_seq = 0
+            ledger = _load_ledger(state_dir)
+            files = ledger.setdefault("files", {})
+            prev_entry = (
+                files.get(file_key, {}) if isinstance(files.get(file_key), dict) else {}
+            )
+            try:
+                prev_seq = int(prev_entry.get("seq", 0))
+            except (TypeError, ValueError):
+                prev_seq = 0
 
-        seq = prev_seq + 1
-        content_sha256 = hashlib.sha256(content).hexdigest()
-        ts = datetime.now(timezone.utc).isoformat()
-        digest = _sign(key, writer, seq, content_sha256, ts)
+            seq = prev_seq + 1
+            content_sha256 = hashlib.sha256(content).hexdigest()
+            ts = datetime.now(timezone.utc).isoformat()
+            digest = _sign(key, writer, seq, content_sha256, ts)
 
-        files[file_key] = {
-            "writer": writer,
-            "seq": seq,
-            "content_sha256": content_sha256,
-            "ts": ts,
-            "hmac": digest,
-        }
+            files[file_key] = {
+                "writer": writer,
+                "seq": seq,
+                "content_sha256": content_sha256,
+                "ts": ts,
+                "hmac": digest,
+            }
 
-        return _save_ledger(state_dir, ledger)
+            return _save_ledger(state_dir, ledger)
     except Exception:
         # Defense in depth: attestation must NEVER raise into a caller's
         # write path -- it is best-effort metadata, not a correctness gate.

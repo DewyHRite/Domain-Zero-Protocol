@@ -3,11 +3,14 @@
 # hook setups.
 #
 # Run order:
-#   1. Publish-branch skip  (DZP-v* / release branches bypass all dev-state checks)
-#   2. Append-only guard    (FEAT-GUARD-001: protected docs must only grow)
-#   2b. Secret scan         (SEC-001: protected records always scanned for secrets)
-#   3. Agent/file guard     (FEAT-REQ-001: Cross-Agent Edit Restrictions)
-#   4. Protocol validation  (validate-protocol.py --check)
+#   1. Secret scan           (SEC-001: protected records always scanned for secrets —
+#                              runs BEFORE the publish-branch skip so DZP-v*/release
+#                              branches are scanned too, see step 2's comment)
+#   2. Publish-branch skip   (DZP-v* / release branches bypass the REMAINING dev-state
+#                              checks below, but NOT the secret scan above)
+#   3. Append-only guard     (FEAT-GUARD-001: protected docs must only grow)
+#   4. Agent/file guard      (FEAT-REQ-001: Cross-Agent Edit Restrictions)
+#   5. Protocol validation   (validate-protocol.py --check)
 #
 $ErrorActionPreference = 'Stop'
 
@@ -16,8 +19,36 @@ if (-not $root) { $root = (Get-Location).Path }
 $config = Join-Path $root 'protocol.config.yaml'
 
 # ============================================================================
-# 1. PUBLISH-BRANCH SKIP
+# 1. SEC-001: PROTECTED-RECORDS SECRET SCAN (compensates the GitHub
+#    secret_scanning.yml file-wide path-ignore on dev-notes.md — see that file
+#    and scripts/scan_protected_records.py for full rationale)
 # ============================================================================
+# CodeRabbit PR#108: intentionally runs BEFORE the publish-branch skip (step 2)
+# below. DZP-v*/release branches are still real commits that dzp-publish
+# produces from real content — the prior ordering let the branch-skip exit
+# before this scan ever ran, so a secret staged on a publish branch was never
+# caught by this gate at all. Everything else in this hook legitimately does
+# not apply to publish branches (dev-state validation, append-only, agent/file
+# guard); the secret scan is the one check that must still apply everywhere.
+# (Kept in parity with scripts/git-hooks/pre-commit, the POSIX equivalent.)
+$secretScan = Join-Path $root 'scripts/scan_protected_records.py'
+if (Test-Path $secretScan) {
+    $pys = (Get-Command python3 -ErrorAction SilentlyContinue) ?? (Get-Command python -ErrorAction SilentlyContinue)
+    if ($pys) {
+        & $pys.Source $secretScan
+        if ($LASTEXITCODE -ne 0) { exit 1 }
+    } else {
+        [Console]::Error.WriteLine('[protected-secret-scan] WARNING: python not found — secret scan SKIPPED')
+    }
+} else {
+    [Console]::Error.WriteLine('[protected-secret-scan] WARNING: scripts/scan_protected_records.py not found — secret scan SKIPPED')
+}
+
+# ============================================================================
+# 2. PUBLISH-BRANCH SKIP
+# ============================================================================
+# The secret scan (step 1, above) already ran and is NOT bypassed by this
+# early exit.
 $currentBranch = (& git symbolic-ref --short HEAD 2>$null)
 if ($currentBranch -match '^DZP-v\d' -or $currentBranch -eq 'release') {
     Write-Host "Publish branch ($currentBranch, distro artifact) — skipping dev-state validation (gated by dzp-publish)."
@@ -25,7 +56,7 @@ if ($currentBranch -match '^DZP-v\d' -or $currentBranch -eq 'release') {
 }
 
 # ============================================================================
-# 2. FEAT-GUARD-001: PROJECT DOCUMENTS append-only enforcement
+# 3. FEAT-GUARD-001: PROJECT DOCUMENTS append-only enforcement
 # ============================================================================
 # dev-notes.md, security-review.md and domain.record.md must only grow.
 # Override a legit rewrite (rotation / authorized restore) with
@@ -42,23 +73,7 @@ if (Test-Path $guard) {
 }
 
 # ============================================================================
-# 2b. SEC-001: PROTECTED-RECORDS SECRET SCAN (compensates the GitHub
-#     secret_scanning.yml file-wide path-ignore on dev-notes.md — see that file
-#     and scripts/scan_protected_records.py for full rationale)
-# ============================================================================
-$secretScan = Join-Path $root 'scripts/scan_protected_records.py'
-if (Test-Path $secretScan) {
-    $pys = (Get-Command python3 -ErrorAction SilentlyContinue) ?? (Get-Command python -ErrorAction SilentlyContinue)
-    if ($pys) {
-        & $pys.Source $secretScan
-        if ($LASTEXITCODE -ne 0) { exit 1 }
-    } else {
-        [Console]::Error.WriteLine('[protected-secret-scan] WARNING: python not found — secret scan SKIPPED')
-    }
-}
-
-# ============================================================================
-# 3. FEAT-REQ-001: AGENT / PROTECTED-FILE GUARD (Cross-Agent Edit Restrictions)
+# 4. FEAT-REQ-001: AGENT / PROTECTED-FILE GUARD (Cross-Agent Edit Restrictions)
 # ============================================================================
 # Check BOTH sides of renames/copies (a rename FROM a protected path must be
 # blocked) and include Deletions. --name-status emits "M<TAB>path", "D<TAB>path",
@@ -131,7 +146,7 @@ except Exception:
 }
 
 # ============================================================================
-# 4. PROTOCOL STATE VALIDATION
+# 5. PROTOCOL STATE VALIDATION
 # ============================================================================
 Write-Host "Running Domain Zero Protocol validation..."
 
@@ -144,7 +159,7 @@ if ($py) {
     # The prior code set $validationExit = 0 (fail-OPEN), allowing commits to
     # bypass protocol validation entirely when no python runtime was installed.
     # Protocol validation is a GATE — missing python must block the commit.
-    # NOTE: the append-only guard (stage 2, above) is intentionally best-effort
+    # NOTE: the append-only guard (stage 3, above) is intentionally best-effort
     # / non-fatal when python is absent (it warns and skips). This stage is a
     # hard gate; the distinction is documented in both hooks for clarity.
     [Console]::Error.WriteLine("COMMIT BLOCKED: Python runtime is required for protocol validation (scripts/validate-protocol.py --check).")

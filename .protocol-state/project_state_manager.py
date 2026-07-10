@@ -20,6 +20,7 @@ Security Features:
 
 import json
 import os
+import sys
 import tempfile
 import platform
 import time
@@ -378,14 +379,38 @@ class ProjectStateManager:
         Never raises: attestation is advisory metadata for drift detection,
         not a correctness requirement of the state write itself (which has
         already completed by the time this runs).
+
+        CodeRabbit PR#108: when `_ATTESTATION_AVAILABLE` is False (module
+        absent), we return SILENTLY -- that's an expected, common
+        deployment shape (attestation.py just isn't present) and not worth
+        warning about on every write. When attestation IS available but a
+        runtime failure occurs during the actual stamp attempt (corrupt
+        ledger, permission error, unexpected exception, etc.), that's a
+        DIFFERENT and more actionable condition -- print a concise stderr
+        warning identifying the target file and the exception so an
+        operator can tell "module absent" (silent, expected) apart from
+        "attestation attempted and failed" (warned, worth investigating).
+        Still fully fail-soft: never re-raises, never blocks the caller.
+
+        SEC-ATTEST-PSM-001 (Megumi, P2, CWE-532): REDACTED -- only the
+        file's basename (never the full `target_file` path) and the
+        exception's TYPE name (never `str(e)`) are printed. For the
+        OSError family in particular, `str(e)` commonly embeds the full
+        absolute path that failed (e.g. `C:\\Users\\<user>\\...`), which
+        would leak the local username/path layout to stderr/CI logs/
+        transcripts. Mirrors the same redaction already applied to
+        `session_monitor.py::_attest_write` (Megumi @approved there).
         """
         if not _ATTESTATION_AVAILABLE:
             return
         try:
             content = target_file.read_bytes()
             _attest_record_write(self.state_dir, target_file.name, content, writer="ProjectStateManager")
-        except Exception:
-            pass
+        except Exception as e:
+            print(
+                f"[WARN] Write attestation failed for {target_file.name} ({type(e).__name__})",
+                file=sys.stderr,
+            )
 
     def load_project_state(self) -> Dict[str, Any]:
         """

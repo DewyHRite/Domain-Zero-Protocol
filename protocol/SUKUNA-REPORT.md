@@ -109,7 +109,35 @@ python scripts/distro/assert_version.py --root .
 # Expected: ASSERT OK: all sources at v9.9.4
 ```
 
-**Rollback**: `git revert` on the cascade commit(s) for the DZP-v9.9.4 branch.
+**Rollback**: `git revert` on the cascade commit(s) for the DZP-v9.9.4 branch. All files touched by
+this patch are ordinary tracked (non-protected-record) files, so a standard revert is sufficient —
+no compensating procedure is required.
+
+- **Rollback steps**:
+  1. `git log --oneline` to identify the commit(s) carrying `PATCH-TOJI-9940-001` on the
+     `Main-v9.9.4` branch.
+  2. `git revert <commit>...` (oldest-first if multiple commits) to restore `protocol/toji.agent.md`
+     to `agent_file_version: 1.2.1`, drop the `edit` tool grant, restore the pre-v1.3.0 §1.3.4/
+     CONSTRAINT_012 text, and move the two migrated reports back under
+     `.protocol-state/toji-reports/`.
+  3. Revert the companion doc edits in the same pass: root/`protocol`/global `CLAUDE.md`, the
+     `~/.claude/agents/toji.md` runtime stub, `AI_INSTRUCTIONS.md`, `.github/copilot-instructions.md`.
+  4. Remove `audits/` and `.protocol-state/toji-reports/README.md` if the revert does not do so
+     automatically (they are additive new paths, not modifications to existing tracked content).
+- **Rollback testing**: run `python scripts/distro/check_version_stamps.py --root .` and
+  `python scripts/distro/assert_version.py --root .` post-revert — both must report the pre-patch
+  baseline (v9.9.3) cleanly, with no orphaned v1.3.0 references left in any of the six touched
+  documents.
+- **Rollback time estimate**: < 5 minutes (pure `git revert` + two verification-script runs; no
+  protected-record interaction, no data migration).
+- **Rollback dependencies**: the `protocol/toji.agent.md` change and the `audits/` folder migration
+  are one logical unit — reverting the agent-file capability grant without also moving the two
+  migrated reports back to `.protocol-state/toji-reports/` leaves dangling `audits/<filename>.md`
+  references inside the reverted §1.3.4 text. Revert them together in the same commit set.
+- **Rollback verification**: confirm `protocol/toji.agent.md` frontmatter reads
+  `agent_file_version: "1.2.1"` with no `edit` tool entry, confirm the two audit reports are back
+  under `.protocol-state/toji-reports/` (not `audits/`), and confirm none of the six touched
+  documents still describe the two-record append-only write model.
 
 **Authorization**: Gojo + User authorized cascade to v9.9.4. Megumi Tier-3 review —
 @remediation-required on the first pass (SEC-TOJI-101 P1 + SEC-TOJI-103 P3; a third finding
@@ -166,7 +194,50 @@ python -m pytest tests/ -k "scan_protected_records or branch_record_isolation" -
 
 **Rollback**: `git revert` on the cascade commit(s) for the DZP-v9.9.4 branch. Note: the protected-
 record reconciliation entries themselves are append-only and cannot be rolled back without violating
-FEAT-GUARD-001 (by design — see `DZP_ALLOW_PROTECTED_REWRITE` for authorized exceptions).
+FEAT-GUARD-001 (by design — see `DZP_ALLOW_PROTECTED_REWRITE` for authorized exceptions). This patch
+has two rollback surfaces that must be handled differently — the tooling (ordinary tracked files) and
+the protected-record reconciliation entries (append-only, direct rollback prohibited).
+
+- **Rollback steps (tooling)**:
+  1. `git revert` the commit(s) touching `scripts/scan_protected_records.py`,
+     `.github/secret_scanning.yml`, `scripts/git-hooks/pre-commit`/`pre-commit.ps1`,
+     `scripts/check_branch_record_isolation.py`, and the associated `tests/`.
+  2. Do this as one atomic revert set — the pre-commit hook wiring references
+     `scan_protected_records.py` by path, so reverting the hook without the script (or vice versa)
+     breaks pre-commit for every subsequent committer.
+- **Rollback steps (protected-record reconciliation — compensating procedure, direct rollback
+  PROHIBITED)**:
+  1. Create a timestamped backup of `.protocol-state/dev-notes.md`,
+     `.protocol-state/security-review.md`, and `.dzp-domain/domain.record.md` before any corrective
+     action (standard pre-edit backup rule, non-negotiable).
+  2. **Preferred**: forward-correction append — append a new signed Record Log Entry to each of the
+     three files stating the `session_20260707_203626` reconciliation is superseded/being reverted,
+     with the reason. This preserves full history and requires no guard override.
+  3. **Only if content must be physically removed** (e.g. the reconciliation itself contained an
+     error that cannot be corrected by a forward append): set
+     `DZP_ALLOW_PROTECTED_REWRITE=1` for that single authorized commit, per the FEAT-GUARD-001
+     override documented in `CLAUDE.md` § Protected-Document Append-Only Enforcement. The bypass is
+     printed to stderr (never silent) and requires explicit User authorization — this is an
+     emergency/rotation-class exception, not a routine option.
+- **Rollback testing**: after the tooling revert, run
+  `python -m pytest tests/ -k "scan_protected_records or branch_record_isolation" -q` and confirm
+  the tests are absent/skipped (not failing) if the tooling was fully removed, or green if only the
+  reconciliation entries were forward-corrected. After any protected-record compensating action, run
+  `scripts/check_protected_append_only.py` (the FEAT-GUARD-001 guard) to confirm the byte-prefix
+  invariant still holds for all three files.
+- **Rollback time estimate**: ~5-10 minutes for the tooling revert; +10-15 minutes for the
+  protected-record compensating procedure (backup + reviewed forward-correction append), or longer
+  if the rarely-used `DZP_ALLOW_PROTECTED_REWRITE` override path is required (mandatory pre-op
+  backup + explicit User sign-off).
+- **Rollback dependencies**: the pre-commit hook change and `scan_protected_records.py` are a single
+  dependency unit (see step 2 above). The protected-record reconciliation entries are NOT a
+  dependency of the tooling revert — they persist independently regardless of whether the tooling is
+  reverted.
+- **Rollback verification**: confirm the pre-commit hook no longer invokes
+  `scan_protected_records.py` (or invokes the pre-patch version), confirm
+  `check_branch_record_isolation.py` is absent/reverted, and — if a compensating forward-correction
+  was used — confirm the new correction entry appears at the tail of each affected protected record
+  with a valid signed stub and that `check_protected_append_only.py` still passes.
 
 **Authorization**: Megumi @approved. Accepted P3: SEC-IMPL-001-RESIDUAL (the branch-isolation
 detector's Layer-2 conflicting-terminal-records check is fail-soft, not fail-closed — documented
@@ -218,7 +289,33 @@ python scripts/distro/dzp_publish_core.py --check   # or equivalent dry-run comp
 
 **Rollback**: `git revert` on the cascade commit(s) for the DZP-v9.9.4 branch. Attestation is
 additive and non-blocking — disabling it (removing the ledger file) fails open to the pre-attestation
-behavior, not closed.
+behavior, not closed. All files touched by this patch are ordinary tracked files; no protected-record
+interaction.
+
+- **Rollback steps**:
+  1. `git revert` the commit(s) touching `.protocol-state/attestation.py`,
+     `scripts/validate-protocol.py` (attestation-ledger read + suppression logic),
+     `scripts/distro/publish-manifest.yaml` (root `dzp.py` entry), `scripts/distro/dzp_publish_core.py`
+     (orchestration-trio completeness gate entry), and the associated `tests/`.
+  2. If only disabling attestation without a full code revert is desired, delete the HMAC ledger file
+     under `.protocol-state/` — this is the designed fail-open path and requires no code change.
+- **Rollback testing**: run `python -m pytest tests/ -k "attestation or manifest_completeness" -q`
+  post-revert and confirm the tests are absent/skipped (full revert) or green (ledger-only removal).
+  Run `python scripts/distro/dzp_publish_core.py --check` and confirm its behavior matches the
+  pre-ISS-084/085 baseline for the `dzp.py` orchestration-trio check.
+- **Rollback time estimate**: < 5 minutes for a full code revert (pure additive code, no data
+  migration); < 1 minute for the ledger-only fail-open disable.
+- **Rollback dependencies**: `scripts/distro/publish-manifest.yaml`'s `dzp.py` entry and
+  `scripts/distro/dzp_publish_core.py`'s orchestration-trio completeness-gate entry (ISS-084/085) MUST
+  be reverted together — reverting only the manifest entry while the completeness gate still expects
+  `dzp.py` present causes `dzp-publish` to fail-closed on a false positive; reverting only the gate is
+  safe but leaves a dead manifest line. `.protocol-state/attestation.py` (ISS-083) is independent of
+  the ISS-084/085 pair and may be reverted separately — it is a non-blocking advisory system by
+  design and fails open regardless.
+- **Rollback verification**: confirm `dzp.py` is absent from `scripts/distro/publish-manifest.yaml`,
+  confirm `dzp_publish_core.py --check` no longer flags `dzp.py` in the required orchestration trio,
+  and confirm the attestation ledger file is removed/absent with `validate-protocol --check` running
+  with no attestation suppression (drift alerts behave exactly as the pre-v9.9.4 baseline).
 
 **Authorization**: Megumi Tier-3 @approved every phase. Accepted P3: the attestation subsystem's
 inherent local-integrity boundary (documented above, not a defect).

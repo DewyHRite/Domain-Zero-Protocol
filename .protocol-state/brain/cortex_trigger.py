@@ -45,7 +45,7 @@ from pathlib import Path
 # Module-level constants
 # ---------------------------------------------------------------------------
 
-_VERSION = "9.9.3"
+_VERSION = "9.9.4"
 
 # cortex_trigger.py lives at .protocol-state/brain/cortex_trigger.py
 # Two dirs up from here is the repo root.

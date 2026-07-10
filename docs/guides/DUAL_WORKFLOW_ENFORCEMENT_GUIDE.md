@@ -1,6 +1,6 @@
 <!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
 # DUAL WORKFLOW ENFORCEMENT GUIDE
-## Domain Zero Protocol v9.9.3 - Mandatory Yuuji-Megumi Collaboration
+## Domain Zero Protocol v9.9.4 - Mandatory Yuuji-Megumi Collaboration
 
 **Version**: 1.0.0
 **Created**: November 8, 2025

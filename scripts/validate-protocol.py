@@ -29,6 +29,7 @@ Usage:
 import argparse
 import gzip
 import hashlib
+import importlib.util
 import json
 import os
 import sys
@@ -66,12 +67,38 @@ VALIDATION_STATE_FILE = STATE_DIR / "validation" / "validation-state.json"
 # ISS-083: local write-attestation (fail-soft; module lives in .protocol-state/,
 # alongside project_state_manager.py / session_monitor.py, the sanctioned
 # writers this check consults). Absence must never break --check.
-if str(STATE_DIR) not in sys.path:
-    sys.path.insert(0, str(STATE_DIR))
+#
+# CodeRabbit PR#108: loaded directly from its known file path via
+# importlib.util (rather than mutating sys.path + `import attestation`).
+# A persistent `sys.path.insert(0, str(STATE_DIR))` puts the WHOLE
+# .protocol-state/ directory on the import path for the rest of the
+# process -- every other top-level module living there (session_monitor,
+# project_state_manager, migrate_state_9x, etc.) becomes importable by bare
+# name too, which is a broader and longer-lived surface than this file
+# needs just to reach one sibling module. Mirrors the existing hyphenated-
+# module load shim used elsewhere in this repo (e.g.
+# .protocol-state/restore-snapshot.py's `create_snapshot` import,
+# tests/test_state_write_attestation.py's `_load_create_snapshot_module`).
+_attestation = None
+_ATTESTATION_AVAILABLE = False
+_ATTESTATION_MODULE_NAME = "dzp_attestation_module"
 try:
-    import attestation as _attestation
-    _ATTESTATION_AVAILABLE = True
-except ImportError:
+    _attestation_spec = importlib.util.spec_from_file_location(
+        _ATTESTATION_MODULE_NAME, STATE_DIR / "attestation.py"
+    )
+    if _attestation_spec is not None and _attestation_spec.loader is not None:
+        _attestation = importlib.util.module_from_spec(_attestation_spec)
+        # Register in sys.modules BEFORE exec: attestation.py's
+        # AttestationCheck @dataclass needs `sys.modules[cls.__module__]` to
+        # resolve during class creation (CPython 3.10+ dataclasses internals
+        # look the defining module up there) -- executing an unregistered
+        # module raises AttributeError on that lookup.
+        sys.modules[_ATTESTATION_MODULE_NAME] = _attestation
+        _attestation_spec.loader.exec_module(_attestation)
+        _ATTESTATION_AVAILABLE = True
+except (ImportError, OSError, SyntaxError):
+    sys.modules.pop(_ATTESTATION_MODULE_NAME, None)
+    _attestation = None
     _ATTESTATION_AVAILABLE = False
 
 

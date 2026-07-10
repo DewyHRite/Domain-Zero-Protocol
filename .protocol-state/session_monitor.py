@@ -589,14 +589,30 @@ class SessionMonitor:
         Never raises: attestation is advisory metadata for drift detection,
         not a correctness requirement of the write itself (which has
         already completed by the time this runs).
+
+        CodeRabbit PR#108: `_ATTESTATION_AVAILABLE` False (module absent) is
+        an expected, common deployment shape and stays SILENT. A runtime
+        failure during the actual stamp attempt is a different, more
+        actionable condition and now emits a concise stderr warning -- but
+        REDACTED: only the file's basename (never the full `target_file`
+        path, which can embed a user's home directory / project layout)
+        and the exception's TYPE name (never `str(e)`, which for OSError-
+        family exceptions commonly embeds the full path that failed, and
+        could in principle echo other incidental detail). No key material
+        or file contents are ever in scope here to begin with -- attestation
+        only ever handles the HMAC key file and ledger internally, never
+        this method's own locals.
         """
         if not _ATTESTATION_AVAILABLE:
             return
         try:
             content = target_file.read_bytes()
             _attest_record_write(target_file.parent, target_file.name, content, writer=writer)
-        except Exception:
-            pass
+        except Exception as e:
+            print(
+                f"[WARN] Write attestation failed for {target_file.name} ({type(e).__name__})",
+                file=sys.stderr,
+            )
 
     def start_session(self, session_id: Optional[str] = None) -> Dict:
         """

@@ -147,7 +147,7 @@ After completing an audit and writing the full report to `audits/` (Section 6.2)
 
 **Standardized stub format** (used by Toji for the two guard-enforced files, and by Gojo for `domain.record.md`):
 
-```
+```text
 > [TOJI AUDIT LOG] YYYY-MM-DD · scope: <scope> · findings: N (C/H/M/L) · full report: audits/<filename>.md · —Toji (Sentinel) v1.3.0
 ```
 

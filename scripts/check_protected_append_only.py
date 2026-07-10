@@ -66,7 +66,7 @@ import os
 import re
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Optional
 
 PROTECTED_DOCS: tuple[str, ...] = (
@@ -303,19 +303,81 @@ def _added_lines(head: Optional[bytes], staged: bytes) -> list[str]:
     return tail.decode("utf-8", errors="replace").splitlines()
 
 
+_AUDITS_DIRNAME = "audits"
+
+
+def _safe_audit_rel_path(repo_root: Path, rel_path: str) -> Optional[str]:
+    """Validate an untrusted 'full report: <path>' reference before any lookup.
+
+    Returns the normalized (POSIX, forward-slash) relative path string if it is
+    safe to use with filesystem/Git lookups, or None if it must be rejected.
+
+    Rejected (fail-CLOSED -> caller treats the reference as not-existing):
+      - absolute paths (POSIX `/...` or Windows `C:\\...`) — `Path.__truediv__`
+        discards the left operand when the right side is absolute, so
+        `repo_root / rel_path` would silently escape repo_root entirely and a
+        forged stub could point at ANY file on disk to fake existence.
+      - parent-directory traversal (any `..` path segment) — could resolve
+        outside repo_root even when the raw string looks relative.
+      - any path whose resolved, normalized form does not stay under
+        `<repo_root>/audits/` — Toji audit reports only ever live there
+        (protocol/toji.agent.md Section 1.3.4); nothing else is a legitimate
+        reference target for this stub.
+    """
+    candidate = rel_path.strip()
+    if not candidate:
+        return None
+    # Normalize to forward slashes so a Windows-style backslash traversal
+    # (e.g. "..\\..\\secrets.txt") is caught by the same "/" segment check.
+    normalized = candidate.replace("\\", "/")
+    if PurePosixPath(normalized).is_absolute():
+        return None
+    # Windows drive-letter absolute paths (e.g. "C:/Windows/...") are not
+    # flagged by PurePosixPath.is_absolute() — check explicitly.
+    if re.match(r"^[A-Za-z]:/", normalized):
+        return None
+    segments = [seg for seg in normalized.split("/") if seg not in ("", ".")]
+    if any(seg == ".." for seg in segments):
+        return None
+    if not segments or segments[0] != _AUDITS_DIRNAME:
+        return None
+
+    try:
+        audits_root = (repo_root / _AUDITS_DIRNAME).resolve()
+        resolved = (repo_root / Path(*segments)).resolve()
+    except (OSError, ValueError):
+        return None
+    try:
+        resolved.relative_to(audits_root)
+    except ValueError:
+        return None
+
+    return "/".join(segments)
+
+
 def _report_ref_exists(repo_root: Path, rel_path: str) -> bool:
-    """True if `rel_path` exists on disk, is staged in the index, or is tracked in HEAD."""
-    rel_path = rel_path.strip()
-    if not rel_path:
+    """True if `rel_path` exists on disk, is staged in the index, or is tracked in HEAD.
+
+    SEC (CodeRabbit PR#108): `rel_path` is parsed from a NEW, untrusted staged
+    line (the "full report: <path>" field of a "[TOJI AUDIT LOG]" stub) before
+    this function ever runs. It is validated via `_safe_audit_rel_path()`
+    first — rejecting absolute paths, `..` traversal, and anything outside
+    `<repo_root>/audits/` — so a forged stub can never reference an arbitrary
+    file elsewhere on disk (or escape the repo) to fake a passing existence
+    check. Any rejected reference returns False, i.e. fails CLOSED — the
+    stub is treated exactly like a reference to a genuinely missing report.
+    """
+    safe_rel_path = _safe_audit_rel_path(repo_root, rel_path)
+    if safe_rel_path is None:
         return False
     try:
-        if (repo_root / rel_path).is_file():
+        if (repo_root / safe_rel_path).is_file():
             return True
     except OSError:
         pass
-    if staged_blob(repo_root, rel_path) is not None:
+    if staged_blob(repo_root, safe_rel_path) is not None:
         return True
-    if head_blob(repo_root, rel_path) is not None:
+    if head_blob(repo_root, safe_rel_path) is not None:
         return True
     return False
 

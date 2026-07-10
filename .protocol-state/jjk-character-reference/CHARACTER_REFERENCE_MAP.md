@@ -146,6 +146,9 @@ When updating character references:
 
 ## Version History
 
+- **Protocol-version sync** (2026-07-09, v9.9.4): Header `Protocol Version` stamp cascades with each
+  DZP release via the version-cascade tooling; character-mapping content itself unchanged since
+  1.1.0 — intermediate patch/minor releases omitted from this log.
 - **1.1.0** (2025-12-01): Added Ryomen Sukuna as System Update Adversary (v8.5.1), protocol version bump
 - **1.0.0** (2025-11-25): Initial creation with all 8 character references from JJK Fandom Wiki
 

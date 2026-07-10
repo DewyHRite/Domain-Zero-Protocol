@@ -1,14 +1,17 @@
 #!/bin/sh
 # Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.4)
-# Combines: publish-branch skip + append-only guard + protected-records secret scan
+# Combines: protected-records secret scan + publish-branch skip + append-only guard
 #           + agent/protected-file guard + validate-protocol.py state validation.
 #
 # Run order:
-#   1. Publish-branch skip  (DZP-v* / release branches bypass all dev-state checks)
-#   2. Append-only guard    (FEAT-GUARD-001: protected docs must only grow)
-#   2b. Secret scan         (SEC-001: protected records always scanned for secrets)
-#   3. Agent/file guard     (FEAT-REQ-001: Cross-Agent Edit Restrictions)
-#   4. Protocol validation  (validate-protocol.py --check)
+#   1. Secret scan           (SEC-001: protected records always scanned for secrets —
+#                              runs BEFORE the publish-branch skip so DZP-v*/release
+#                              branches are scanned too, see step 2's comment)
+#   2. Publish-branch skip   (DZP-v* / release branches bypass the REMAINING dev-state
+#                              checks below, but NOT the secret scan above)
+#   3. Append-only guard     (FEAT-GUARD-001: protected docs must only grow)
+#   4. Agent/file guard      (FEAT-REQ-001: Cross-Agent Edit Restrictions)
+#   5. Protocol validation   (validate-protocol.py --check)
 #
 # Install via: scripts/install-git-hooks.sh  (or .ps1 on Windows/PowerShell)
 # Sanctioned overrides are printed on block.
@@ -17,12 +20,38 @@ set -eu
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 
 # ============================================================================
-# 1. PUBLISH-BRANCH SKIP
+# 1. SEC-001: PROTECTED-RECORDS SECRET SCAN (compensates the GitHub
+#    secret_scanning.yml file-wide path-ignore on dev-notes.md — see that file
+#    and scripts/scan_protected_records.py for full rationale)
+# ============================================================================
+# CodeRabbit PR#108: intentionally runs BEFORE the publish-branch skip (step 2)
+# below. DZP-v*/release branches are still real commits that dzp-publish
+# produces from real content — the prior ordering let the branch-skip exit
+# before this scan ever ran, so a secret staged on a publish branch was never
+# caught by this gate at all. Everything else in this hook legitimately does
+# not apply to publish branches (dev-state validation, append-only, agent/file
+# guard); the secret scan is the one check that must still apply everywhere.
+SECRET_SCAN="$ROOT/scripts/scan_protected_records.py"
+if [ -f "$SECRET_SCAN" ]; then
+    PYS=""
+    if command -v python3 >/dev/null 2>&1; then PYS=python3
+    elif command -v python >/dev/null 2>&1; then PYS=python
+    fi
+    if [ -n "$PYS" ]; then
+        "$PYS" "$SECRET_SCAN" || exit 1
+    else
+        echo "[protected-secret-scan] WARNING: python not found — secret scan SKIPPED" >&2
+    fi
+fi
+
+# ============================================================================
+# 2. PUBLISH-BRANCH SKIP
 # ============================================================================
 # The 'release' / 'DZP-v*' branches are published distribution artifacts built
 # by dzp-publish, NOT dev working trees. They intentionally exclude
 # .protocol-state/ dev state, so the dev-state validator does not apply.
-# dzp-publish already gates them (version + PII + path audits).
+# dzp-publish already gates them (version + PII + path audits). The secret
+# scan (step 1, above) already ran and is NOT bypassed by this early exit.
 CURRENT_BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || true)"
 case "$CURRENT_BRANCH" in
   DZP-v[0-9]*|release)
@@ -32,7 +61,7 @@ case "$CURRENT_BRANCH" in
 esac
 
 # ============================================================================
-# 2. FEAT-GUARD-001: PROJECT DOCUMENTS append-only enforcement
+# 3. FEAT-GUARD-001: PROJECT DOCUMENTS append-only enforcement
 # ============================================================================
 # dev-notes.md, security-review.md and domain.record.md are permanent project
 # memory — the HEAD blob must remain a byte-prefix of the staged blob (pure
@@ -52,25 +81,7 @@ if [ -f "$GUARD" ]; then
 fi
 
 # ============================================================================
-# 2b. SEC-001: PROTECTED-RECORDS SECRET SCAN (compensates the GitHub
-#     secret_scanning.yml file-wide path-ignore on dev-notes.md — see that file
-#     and scripts/scan_protected_records.py for full rationale)
-# ============================================================================
-SECRET_SCAN="$ROOT/scripts/scan_protected_records.py"
-if [ -f "$SECRET_SCAN" ]; then
-    PYS=""
-    if command -v python3 >/dev/null 2>&1; then PYS=python3
-    elif command -v python >/dev/null 2>&1; then PYS=python
-    fi
-    if [ -n "$PYS" ]; then
-        "$PYS" "$SECRET_SCAN" || exit 1
-    else
-        echo "[protected-secret-scan] WARNING: python not found — secret scan SKIPPED" >&2
-    fi
-fi
-
-# ============================================================================
-# 3. FEAT-REQ-001: AGENT / PROTECTED-FILE GUARD (Cross-Agent Edit Restrictions)
+# 4. FEAT-REQ-001: AGENT / PROTECTED-FILE GUARD (Cross-Agent Edit Restrictions)
 # ============================================================================
 # Blocks `git commit` when staged changes touch DZP-protected paths outside a
 # sanctioned agent session. Protected paths are read from protocol.config.yaml
@@ -157,13 +168,13 @@ PYEOF
 fi
 
 # ============================================================================
-# 4. PROTOCOL STATE VALIDATION
+# 5. PROTOCOL STATE VALIDATION
 # ============================================================================
 # M3 (CodeRabbit PR#99): resolve the python interpreter ONCE before calling
 # validate-protocol.py.  The prior pattern suppressed first-pass stderr with
 # 2>/dev/null then fell back via || to `python`, which could replace a genuine
 # validation FAILURE with a "python: not found" error and hide the real cause.
-# NOTE: the append-only guard (stage 2) is intentionally best-effort / non-fatal
+# NOTE: the append-only guard (stage 3) is intentionally best-effort / non-fatal
 # when python is absent (it warns and skips). Protocol validation (this stage)
 # is a GATE — missing python must block the commit (fail-CLOSED).
 echo "Running Domain Zero Protocol validation..."

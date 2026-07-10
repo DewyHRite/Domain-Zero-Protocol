@@ -8,7 +8,7 @@ status: "Production-Ready"
 ---
 
 # Domain Zero Protocol - Mask Mode Specification
-## Version 8.9.0
+## Version 9.9.4
 
 ---
 
