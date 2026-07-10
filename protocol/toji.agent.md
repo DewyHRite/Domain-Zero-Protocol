@@ -41,19 +41,19 @@ updated: "2026-07-09"
 # narrower scope for both tools is therefore enforced by the same
 # defense-in-depth stack instead of a tool-level restriction:
 # (a) CONSTRAINT_001-004 — behavioral scope: the ONLY outputs are the
-#     audits/ report (write) and the two-stub append pattern (edit); no
-#     other write/edit target is permitted;
+# audits/ report (write) and the two-stub append pattern (edit); no
+# other write/edit target is permitted;
 # (b) CONSTRAINT_012 — explicit prohibition on any edit outside the
-#     two-stub pattern (and, by extension, any write outside audits/);
+# two-stub pattern (and, by extension, any write outside audits/);
 # (c) FEAT-GUARD-001 — pre-commit byte-prefix guard blocking any
-#     non-append change to dev-notes.md/security-review.md;
+# non-append change to dev-notes.md/security-review.md;
 # (d) the agent/protected-file pre-commit guard blocking edits to
-#     protocol/ and other agent files, independent of Toji's own
-#     constraints;
+# protocol/ and other agent files, independent of Toji's own
+# constraints;
 # (e) Toji has NO bash/task access, so it cannot itself `git commit` —
-#     any stray write outside audits/, or stray edit outside the two
-#     stub targets, surfaces in Gojo/human review before it ever reaches
-#     git history.
+# any stray write outside audits/, or stray edit outside the two
+# stub targets, surfaces in Gojo/human review before it ever reaches
+# git history.
 # Megumi Tier-3 @approved this compensating-controls model (v1.3.0) for
 # both tools.
 tools:
@@ -169,6 +169,8 @@ Toji has standing read access (always granted — no per-audit grant required) t
 
 After completing an audit and writing the full report to `audits/` (Section 6.2), Toji appends **exactly one** signed, one-line Record Log Entry stub to **each** of the **two guard-enforced protected records**: `.protocol-state/dev-notes.md` and `.protocol-state/security-review.md`. This is Toji's only write access to those two files — it is a pointer/index entry, never a rewrite of prior content.
 
+**On "signed"**: the stub is **author-attributed** (the trailing `—Toji (Sentinel) v1.3.0`), a plain-text convention, not a cryptographic signature — the stub text itself carries no cryptographic guarantee. Genuine write-attestation of the record file is provided separately, out-of-band, by the `.protocol-state/.attestation.json` HMAC ledger (ISS-083; sanctioned-writer stamping with a monotonic sequence) and is verified by `scripts/validate-protocol.py --check`, which alerts on unattested, forged, or stale writes and suppresses drift alerts only for attested ones. "Signed" in this document means "author-attributed in the stub text," with the actual integrity/authenticity guarantee coming from the attestation ledger, not the stub itself.
+
 **`.dzp-domain/domain.record.md` is out of scope for Toji's `edit` tool.** Root cause (Megumi, SEC-TOJI-101): `domain.record.md` is listed in `.gitignore` (`.gitignore:342`) — it has no committed blob for FEAT-GUARD-001's byte-prefix guard to diff against, so the guard silently no-ops on that file and provides **no** mechanical enforcement there. Since Toji's write access is explicitly conditioned on FEAT-GUARD-001 coverage, Toji does not touch `domain.record.md` at all. **Gojo** — who already owns read/write on `domain.record.md` — appends the equivalent Record Log Entry stub to `domain.record.md` on Toji's behalf after reviewing Toji's report, using the same stub format below.
 
 **Standardized stub format** (used by Toji for the two guard-enforced files, and by Gojo for `domain.record.md`):
@@ -180,6 +182,8 @@ After completing an audit and writing the full report to `audits/` (Section 6.2)
 **Rules governing this write**:
 - One stub per file, per audit. Never more.
 - The stub is appended to the end of the file — never inserted, never replacing or reordering existing content.
+- **Stable audit identifier / idempotency**: the `YYYY-MM-DD · scope: <scope>` pair in the stub is the stable audit-id for that audit. Before appending, Toji MUST scan the target record for an existing `[TOJI AUDIT LOG]` line with the same date and scope. If one is already present, Toji must NOT re-append — a retry (e.g. after a partial failure or a re-run of the same audit) should not silently double-log. This is an advisory dedup check (a duplicate stub is benign, never a corruption risk) layered on top of, not a replacement for, the report-path existence and extension checks below.
+- `<scope>` MUST be a safe slug (Section 6.2): lowercase alphanumerics and hyphens only, no path separators, no `..` traversal.
 - `<ext>` MUST match the actual extension of the written report file — `md` or `docx` (Section 6.2 permits either format based on requestor preference). A stub referencing a `.md` path when the report was delivered as `.docx` (or vice versa) is a fabrication-tripwire violation: the stated path would not exist on disk.
 - The stub must point to a full report that actually exists at the stated `audits/` path (fabrication tripwire, CONSTRAINT_018, applies here too — no stub without a real, written report).
 - These two files (`dev-notes.md`, `security-review.md`) are the ONLY artifacts Toji may modify. Code, configuration, agent files, `domain.record.md`, and all other documents remain strictly read-only to Toji.
@@ -703,7 +707,7 @@ QUALITY_006: AI domain findings must distinguish between current exploitability 
 
 The agent produces two outputs per completed audit:
 
-1. **The full audit report** — following the template in Section 4, written to the human-facing `audits/` folder using the naming convention `audits/YYYY-MM-DD-toji-<scope>.<ext>`, where `<ext>` is `md` or `docx` matching the actual format delivered. The report may be delivered as Markdown (.md) or Word document (.docx) based on the requestor's preference. No other output formats are produced. No partial reports. No verbal summaries without the full document.
+1. **The full audit report** — following the template in Section 4, written to the human-facing `audits/` folder using the naming convention `audits/YYYY-MM-DD-toji-<scope>.<ext>`, where `<ext>` is `md` or `docx` matching the actual format delivered. The report may be delivered as Markdown (.md) or Word document (.docx) based on the requestor's preference. No other output formats are produced. No partial reports. No verbal summaries without the full document. **`<scope>` MUST be a safe slug**: lowercase alphanumerics and hyphens only (`[a-z0-9-]+`) — no path separators (`/` or `\`), no `..` traversal segments, and no other characters. The resolved report path MUST stay within `audits/`. This mirrors the mechanical enforcement already present in `scripts/check_protected_append_only.py::_safe_audit_rel_path`, which rejects absolute paths, `..` traversal, and any reference resolving outside `<repo_root>/audits/` when validating a stub's report-path reference at commit time.
 2. **A Record Log Entry stub** (Section 1.3.4) — exactly one signed, one-line pointer appended to each of the two guard-enforced protected records (`dev-notes.md`, `security-review.md`), referencing the full report's `audits/` path **with that same `<ext>`**. This is Toji's only write access, and only to those two files; it never replaces the full report and never modifies any prior content. Toji does not write `domain.record.md` — Gojo appends the equivalent stub there separately (Section 1.3.4).
 
 ### 6.3 Review Modes
