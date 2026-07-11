@@ -81,11 +81,17 @@ unlike check_protected_append_only.py, this check requires TWO refs and is inher
 cross-branch comparison, not a single-commit gate.
 
 Exit codes:
-  0 = clean under BOTH layers, or the merge-base could not be computed (soft-skip; see
-      stderr).
+  0 = clean under BOTH layers -- protected records are pure append-only extensions of
+      merge-base(base_ref, compare_ref) with no conflicting terminal records.
   1 = one or more violations found under EITHER layer (structural rewrite, or a
       same-session-id conflicting terminal record) -- commit/publish/merge should be
       blocked until reconciled.
+  2 = could not run the check at all (missing/invalid CLI args, not a git repository, or
+      the merge-base of the two refs could not be resolved -- e.g. an unknown ref or
+      unrelated histories). F8 (CodeRabbit PR#109, P2): this used to collide with the
+      clean-exit 0 above, making "the check passed" indistinguishable from "the check
+      never ran" to a calling script. CI/publish callers MUST treat BOTH exit code 1 and
+      exit code 2 as blocking -- only exit code 0 is a genuine clean pass.
 """
 
 from __future__ import annotations
@@ -212,9 +218,20 @@ def find_violations(
         for ref in (base_ref, compare_ref):
             ref_blob = blob_at(repo_root, ref, path)
             if ref_blob is None:
-                # Record removed entirely on this ref -- that's the single-branch
-                # append-only guard's concern (check_protected_append_only.py), not a
-                # cross-branch prefix-divergence one. Skip here to avoid double-reporting.
+                # F7 (CodeRabbit PR#109, P2): previously silently `continue`d here,
+                # deferring entirely to the single-branch append-only guard
+                # (check_protected_append_only.py). But that guard only runs on the
+                # branch performing the deletion at ITS OWN commit time -- it has no
+                # visibility into a sibling branch's cross-branch comparison, and a
+                # true `git rm` of a protected record is not append-only by any
+                # definition. Flag it here as its own violation rather than trusting
+                # a guard that never actually inspects this cross-branch relationship.
+                violations.append(
+                    f"{path}: ref '{ref}' has the protected record entirely REMOVED "
+                    f"relative to merge-base({base_ref}, {compare_ref}) -- a cross-branch "
+                    f"deletion is not append-only and is not guaranteed to have been "
+                    f"caught by the single-branch guard"
+                )
                 continue
             if not is_append_only(base_blob, ref_blob):
                 line = _first_divergent_line(base_blob, ref_blob)
@@ -421,17 +438,22 @@ def main(argv: Optional[list[str]] = None, repo_root: Optional[Path] = None) -> 
     if repo_root is None:
         repo_root = _repo_toplevel()
         if repo_root is None:
-            print("[branch-isolation] not a git repository — skipping", file=sys.stderr)
-            return 0
+            # F8 (CodeRabbit PR#109, P2): was `return 0`, colliding with the clean-exit
+            # 0 below. "Could not run" must be distinguishable from "ran and passed".
+            print("[branch-isolation] not a git repository — could not run", file=sys.stderr)
+            return 2
 
     mb = merge_base(repo_root, base_ref, compare_ref)
     if mb is None:
+        # F8 (CodeRabbit PR#109, P2): was `return 0` (see above) -- an unresolvable
+        # merge-base means this check never actually ran, not that it passed clean.
         print(
             f"[branch-isolation] could not compute merge-base of '{base_ref}' and "
-            f"'{compare_ref}' — skipping (check the refs exist and share history)",
+            f"'{compare_ref}' — could not run (check the refs exist and share history); "
+            f"CI/publish callers must treat this as blocking, not a clean pass",
             file=sys.stderr,
         )
-        return 0
+        return 2
 
     structural_violations = find_violations(repo_root, base_ref, compare_ref, _merge_base_sha=mb)
     semantic_violations = find_semantic_conflicts(repo_root, base_ref, compare_ref, _merge_base_sha=mb)

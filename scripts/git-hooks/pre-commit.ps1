@@ -19,6 +19,12 @@
 # The two overrides are independent and composable: DZP_ALLOW_PROTOCOL_EDIT
 # alone does NOT bypass stage 3 (append-only) or stage 5 (validate-protocol).
 #
+# DZP_ALLOW_MISSING_SECRET_SCAN=1 (F9, v9.9.5+): a THIRD, independent,
+# dedicated break-glass override -- for stage 1 ONLY, and ONLY the specific
+# case where scripts/scan_protected_records.py itself cannot be found. Stage
+# 1 used to WARN then allow the commit through in that case; it now fails
+# CLOSED by default. Never conflated with the other two overrides above.
+#
 $ErrorActionPreference = 'Stop'
 
 $root = (& git rev-parse --show-toplevel 2>$null)
@@ -48,7 +54,18 @@ if (Test-Path $secretScan) {
         [Console]::Error.WriteLine('[protected-secret-scan] WARNING: python not found — secret scan SKIPPED')
     }
 } else {
-    [Console]::Error.WriteLine('[protected-secret-scan] WARNING: scripts/scan_protected_records.py not found — secret scan SKIPPED')
+    # F9 (CodeRabbit PR#109, P2): previously WARNED then allowed the commit
+    # through — a missing scanner silently skipped the mandatory SEC-001
+    # secret-scan gate. Now fails CLOSED by default, with a dedicated
+    # break-glass override (DZP_ALLOW_MISSING_SECRET_SCAN).
+    if ($env:DZP_ALLOW_MISSING_SECRET_SCAN -eq '1') {
+        [Console]::Error.WriteLine('[protected-secret-scan] BYPASS: DZP_ALLOW_MISSING_SECRET_SCAN=1 — scanner not found, SEC-001 scan SKIPPED (authorized).')
+    } else {
+        [Console]::Error.WriteLine('[protected-secret-scan] COMMIT BLOCKED: scripts/scan_protected_records.py not found — mandatory SEC-001 secret scan cannot run.')
+        [Console]::Error.WriteLine('  Fix: restore the scanner or reinstall via scripts/install-git-hooks.(sh|ps1).')
+        [Console]::Error.WriteLine('  Authorized exception: DZP_ALLOW_MISSING_SECRET_SCAN=1 git commit ...')
+        exit 1
+    }
 }
 
 # ============================================================================

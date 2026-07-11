@@ -202,10 +202,16 @@ def create_pre_restore_backup() -> Optional[str]:
     """
     try:
         # Import create_snapshot from create-snapshot.py
+        # F4 (CodeRabbit PR#109, P2): this previously pointed at
+        # scripts/create-snapshot.py, which does NOT exist (the real file
+        # lives at .protocol-state/create-snapshot.py). The resulting
+        # ImportError/AttributeError was swallowed by the broad `except
+        # Exception` below, so EVERY restore silently proceeded with NO
+        # backup. Fixed to the correct path.
         import importlib.util
         spec = importlib.util.spec_from_file_location(
             "create_snapshot",
-            PROJECT_ROOT / "scripts" / "create-snapshot.py"
+            PROJECT_ROOT / ".protocol-state" / "create-snapshot.py"
         )
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)

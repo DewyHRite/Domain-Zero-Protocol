@@ -1267,6 +1267,13 @@ custom_agent_security:
       - ".protocol-state/custom-agent-registry.json"
       - ".protocol-state/authorization/"
       - "protocol.config.yaml"
+      # F6(b) (CodeRabbit PR#109, coupled P2): the hook enforcement mechanism
+      # itself (scripts/git-hooks/) was previously UNPROTECTED by this list --
+      # anyone could silently weaken the FEAT-REQ-001/FEAT-GUARD-001 guards by
+      # editing the hook scripts directly. Adding it here means a hook edit
+      # now also requires DZP_ALLOW_PROTOCOL_EDIT=1 (or Gojo/Sukuna
+      # authorization) like any other protocol file.
+      - "scripts/git-hooks/"
 
     # Scoped pre-commit override for the FEAT-REQ-001 guard (Cross-Agent Edit
     # Restrictions, scripts/git-hooks/pre-commit[.ps1] stage 4). Mirrors

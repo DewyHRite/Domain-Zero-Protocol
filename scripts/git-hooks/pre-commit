@@ -24,6 +24,15 @@
 # overrides are independent and composable: setting DZP_ALLOW_PROTOCOL_EDIT
 # alone does NOT bypass stage 3 (append-only) or stage 5 (validate-protocol) —
 # both still run and can still block the commit on their own terms.
+#
+# DZP_ALLOW_MISSING_SECRET_SCAN=1 (F9, v9.9.5+): a THIRD, independent,
+# dedicated break-glass override -- for stage 1 ONLY, and ONLY the specific
+# case where scripts/scan_protected_records.py itself cannot be found (e.g. a
+# distro install published before the SEC-001 manifest fix). Stage 1 used to
+# WARN then allow the commit through in that case, silently skipping a
+# mandatory secret-scan gate. It now fails CLOSED by default; this override
+# exists solely to consciously accept that specific gap and is never reused
+# for, or conflated with, the other two overrides above.
 set -eu
 
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
@@ -52,12 +61,21 @@ if [ -f "$SECRET_SCAN" ]; then
         echo "[protected-secret-scan] WARNING: python not found — secret scan SKIPPED" >&2
     fi
 else
-    # v9.9.5 (Sukuna): this outer branch previously had no else — a missing
-    # scanner (e.g. a distro install published before the v9.9.5 manifest fix)
-    # silently no-op'd the ENTIRE secret-scan gate with zero output, reporting
-    # commit success with the scan never run. Mirrors the python-missing
-    # warning above and matches the .ps1 template, which already had this.
-    echo "[protected-secret-scan] WARNING: scripts/scan_protected_records.py not found — secret scan SKIPPED" >&2
+    # F9 (CodeRabbit PR#109, P2): this branch previously WARNED then allowed
+    # the commit through — a missing scanner (e.g. a distro install published
+    # before the v9.9.5 manifest fix) silently skipped the ENTIRE mandatory
+    # SEC-001 secret-scan gate, reporting commit success with the scan never
+    # run. Now fails CLOSED by default, with a dedicated break-glass override
+    # (DZP_ALLOW_MISSING_SECRET_SCAN, distinct from the other two overrides
+    # in this hook) for an explicitly authorized exception.
+    if [ "${DZP_ALLOW_MISSING_SECRET_SCAN:-}" = "1" ]; then
+        echo "[protected-secret-scan] BYPASS: DZP_ALLOW_MISSING_SECRET_SCAN=1 — scanner not found, SEC-001 scan SKIPPED (authorized)." >&2
+    else
+        echo "[protected-secret-scan] COMMIT BLOCKED: scripts/scan_protected_records.py not found — mandatory SEC-001 secret scan cannot run." >&2
+        echo "  Fix: restore the scanner or reinstall via scripts/install-git-hooks.(sh|ps1)." >&2
+        echo "  Authorized exception: DZP_ALLOW_MISSING_SECRET_SCAN=1 git commit ..." >&2
+        exit 1
+    fi
 fi
 
 # ============================================================================

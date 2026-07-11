@@ -285,6 +285,20 @@ def create_snapshot(
     Returns:
         Snapshot metadata dictionary
     """
+    # F1 (CodeRabbit PR#109, P2): VALID_TRIGGERS was previously enforced ONLY
+    # via argparse `choices=` in main() (the CLI path, see below). Direct
+    # Python callers of create_snapshot() -- e.g. restore-snapshot.py's
+    # create_pre_restore_backup(), which dynamically imports this module and
+    # calls create_snapshot() directly -- bypass argparse entirely and had NO
+    # validation at all. Enforce the same allowlist here, at the function
+    # boundary, so every caller (CLI or direct) is protected.
+    if trigger not in VALID_TRIGGERS:
+        raise ValueError(
+            f"Invalid snapshot trigger {trigger!r}. Must be one of: {', '.join(VALID_TRIGGERS)} "
+            "(mirrors protocol/validation-rules.yaml `reason` enum). Direct Python callers of "
+            "create_snapshot() are not protected by argparse and must pass validation here too."
+        )
+
     snapshot_id = str(uuid.uuid4())
     timestamp = datetime.now(timezone.utc)
     timestamp_str = timestamp.isoformat().replace('+00:00', 'Z')
