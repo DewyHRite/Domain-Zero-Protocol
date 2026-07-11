@@ -25,14 +25,20 @@
 # alone does NOT bypass stage 3 (append-only) or stage 5 (validate-protocol) —
 # both still run and can still block the commit on their own terms.
 #
-# DZP_ALLOW_MISSING_SECRET_SCAN=1 (F9, v9.9.5+): a THIRD, independent,
-# dedicated break-glass override -- for stage 1 ONLY, and ONLY the specific
-# case where scripts/scan_protected_records.py itself cannot be found (e.g. a
-# distro install published before the SEC-001 manifest fix). Stage 1 used to
-# WARN then allow the commit through in that case, silently skipping a
-# mandatory secret-scan gate. It now fails CLOSED by default; this override
-# exists solely to consciously accept that specific gap and is never reused
-# for, or conflated with, the other two overrides above.
+# DZP_ALLOW_MISSING_SECRET_SCAN=1 (F9/F10, v9.9.5+): a THIRD, independent,
+# dedicated break-glass override -- for stage 1 ONLY, covering BOTH ways the
+# mandatory SEC-001 secret scan can fail to run: (F9) scripts/
+# scan_protected_records.py itself cannot be found (e.g. a distro install
+# published before the SEC-001 manifest fix), and (F10) no python3/python
+# runtime is available to RUN that scanner even when the file is present.
+# Both used to WARN then allow the commit through, silently skipping a
+# mandatory secret-scan gate. Stage 1 now fails CLOSED by default in both
+# cases; this ONE override exists solely to consciously accept either gap
+# and is never reused for, or conflated with, the other two overrides above.
+# (Stage 3's append-only guard intentionally remains best-effort/non-fatal
+# when python is absent -- a separate, deliberately-unchanged design
+# decision; stage 5's validate-protocol.py already fails closed on its own,
+# unrelated terms when python is absent and is not affected by this override.)
 set -eu
 
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
@@ -58,7 +64,23 @@ if [ -f "$SECRET_SCAN" ]; then
     if [ -n "$PYS" ]; then
         "$PYS" "$SECRET_SCAN" || exit 1
     else
-        echo "[protected-secret-scan] WARNING: python not found — secret scan SKIPPED" >&2
+        # F10 (CodeRabbit PR#109 round-2, P2): this branch previously WARNED
+        # then allowed the commit through -- a missing Python runtime
+        # silently skipped the mandatory SEC-001 secret scan, the same
+        # fail-open class F9 closed for a missing scanner FILE. Reuses the
+        # SAME DZP_ALLOW_MISSING_SECRET_SCAN override (no new env var --
+        # both are "the mandatory SEC-001 scan cannot run"). Deliberately
+        # scoped to THIS stage only: stage 3's append-only guard stays
+        # best-effort when python is absent (unchanged), and stage 5's
+        # validate-protocol.py already fails closed independently when
+        # python is absent (its own message/remedy, not this override).
+        if [ "${DZP_ALLOW_MISSING_SECRET_SCAN:-}" = "1" ]; then
+            echo "[protected-secret-scan] BYPASS: DZP_ALLOW_MISSING_SECRET_SCAN=1 — Python runtime not found, SEC-001 scan SKIPPED (authorized)." >&2
+        else
+            echo "[protected-secret-scan] COMMIT BLOCKED: no Python runtime — mandatory SEC-001 secret scan cannot run." >&2
+            echo "  Fix: install Python 3, or set DZP_ALLOW_MISSING_SECRET_SCAN=1 git commit ... to bypass (authorized)." >&2
+            exit 1
+        fi
     fi
 else
     # F9 (CodeRabbit PR#109, P2): this branch previously WARNED then allowed

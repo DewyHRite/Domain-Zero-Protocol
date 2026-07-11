@@ -19,11 +19,15 @@
 # The two overrides are independent and composable: DZP_ALLOW_PROTOCOL_EDIT
 # alone does NOT bypass stage 3 (append-only) or stage 5 (validate-protocol).
 #
-# DZP_ALLOW_MISSING_SECRET_SCAN=1 (F9, v9.9.5+): a THIRD, independent,
-# dedicated break-glass override -- for stage 1 ONLY, and ONLY the specific
-# case where scripts/scan_protected_records.py itself cannot be found. Stage
-# 1 used to WARN then allow the commit through in that case; it now fails
-# CLOSED by default. Never conflated with the other two overrides above.
+# DZP_ALLOW_MISSING_SECRET_SCAN=1 (F9/F10, v9.9.5+): a THIRD, independent,
+# dedicated break-glass override -- for stage 1 ONLY, covering BOTH ways the
+# mandatory SEC-001 secret scan can fail to run: (F9) the scanner file
+# cannot be found, and (F10) no python3/python runtime is available to RUN
+# it even when present. Both used to WARN then allow the commit through;
+# stage 1 now fails CLOSED by default in both cases. Never conflated with
+# the other two overrides above (stage 3's append-only guard intentionally
+# stays best-effort when python is absent; stage 5's validate-protocol.py
+# already fails closed independently when python is absent).
 #
 $ErrorActionPreference = 'Stop'
 
@@ -51,7 +55,18 @@ if (Test-Path $secretScan) {
         & $pys.Source $secretScan
         if ($LASTEXITCODE -ne 0) { exit 1 }
     } else {
-        [Console]::Error.WriteLine('[protected-secret-scan] WARNING: python not found — secret scan SKIPPED')
+        # F10 (CodeRabbit PR#109 round-2, P2): previously WARNED then allowed
+        # the commit through -- a missing Python runtime silently skipped the
+        # mandatory SEC-001 secret scan. Reuses the SAME
+        # DZP_ALLOW_MISSING_SECRET_SCAN override as the scanner-missing
+        # branch below (F9) -- no new env var. Scoped to this stage only.
+        if ($env:DZP_ALLOW_MISSING_SECRET_SCAN -eq '1') {
+            [Console]::Error.WriteLine('[protected-secret-scan] BYPASS: DZP_ALLOW_MISSING_SECRET_SCAN=1 — Python runtime not found, SEC-001 scan SKIPPED (authorized).')
+        } else {
+            [Console]::Error.WriteLine('[protected-secret-scan] COMMIT BLOCKED: no Python runtime — mandatory SEC-001 secret scan cannot run.')
+            [Console]::Error.WriteLine('  Fix: install Python 3, or set DZP_ALLOW_MISSING_SECRET_SCAN=1 git commit ... to bypass (authorized).')
+            exit 1
+        }
     }
 } else {
     # F9 (CodeRabbit PR#109, P2): previously WARNED then allowed the commit
