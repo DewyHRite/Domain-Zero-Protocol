@@ -621,11 +621,23 @@ schemas:
                 - tier_change
                 - session-end
                 - session-start
+                - pre-protected-edit
+                - toji-snapshot
+                - pre_restore_backup
               # BUG-SESSION-004 (v9.9.x Track C): added session-end and session-start.
               # snapshot_integration.py emits reason="session-end" on /session end;
               # the lifecycle coordinator can also emit reason="session-start".
               # Neither value was in the original enum, causing 8 validator errors
               # that blocked repo commits during this session.
+              # BUG-SNAPSHOT-NULLFIELDS-001 (MF-1, v9.9.5): added pre-protected-edit and
+              # toji-snapshot -- script_dependencies.yaml wires both straight into
+              # create-snapshot.py --trigger with required:true (pre-protected-edit's
+              # event is fail_soft:false), so the reason-enum gap reproduced the identical
+              # gate-blocking failure mode as BUG-SESSION-004. Also added pre_restore_backup
+              # defensively (restore-snapshot.py calls create_snapshot() directly with this
+              # trigger; that call site is currently dead due to an unrelated wrong-import-path
+              # bug, but the enum is future-proofed so repairing the import won't reintroduce
+              # this failure mode).
               description: "Reason snapshot was created"
             file_path:
               type: string
@@ -679,8 +691,13 @@ schemas:
           - tier_change
           - session-end
           - session-start
+          - pre-protected-edit
+          - toji-snapshot
+          - pre_restore_backup
         # BUG-SESSION-004 (v9.9.x Track C): added session-end and session-start.
-        # Mirrors the snapshot-manifest schema fix above.
+        # BUG-SNAPSHOT-NULLFIELDS-001 (MF-1, v9.9.5): added pre-protected-edit,
+        # toji-snapshot, and pre_restore_backup. Mirrors the snapshot-manifest
+        # schema fix above.
         description: "Reason for snapshot creation"
 
       state_files:

@@ -1,4 +1,4 @@
-﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.4)
+﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.5)
 # PowerShell equivalent of scripts/git-hooks/pre-commit for PowerShell-driven git
 # hook setups.
 #
@@ -11,6 +11,13 @@
 #   3. Append-only guard     (FEAT-GUARD-001: protected docs must only grow)
 #   4. Agent/file guard      (FEAT-REQ-001: Cross-Agent Edit Restrictions)
 #   5. Protocol validation   (validate-protocol.py --check)
+#
+# DZP_ALLOW_PROTOCOL_EDIT=1 (v9.9.5+): scoped override for stage 4 ONLY (the
+# FEAT-REQ-001 protected-path guard). Mirrors DZP_ALLOW_PROTECTED_REWRITE
+# (stage 3's override) so a Gojo/USER-authorized protocol change can commit
+# without `git commit --no-verify`, which dangerously skips EVERY stage.
+# The two overrides are independent and composable: DZP_ALLOW_PROTOCOL_EDIT
+# alone does NOT bypass stage 3 (append-only) or stage 5 (validate-protocol).
 #
 $ErrorActionPreference = 'Stop'
 
@@ -125,22 +132,36 @@ except Exception:
         }
 
         if ($violations.Count -gt 0) {
-            Write-Host ''
-            Write-Host '=================================================================='
-            Write-Host '  DZP PROTECTED-FILE COMMIT BLOCKED (Cross-Agent Edit Restrictions)'
-            Write-Host '=================================================================='
-            Write-Host 'Staged changes modify DZP-protected paths:'
-            Write-Host ''
-            $violations | ForEach-Object { Write-Host $_ }
-            Write-Host ''
-            Write-Host 'These files are protected. Sanctioned ways to proceed:'
-            Write-Host '  1. Invoke Gojo (Mission Control) for an authorized protocol change.'
-            Write-Host '  2. Invoke Sukuna via Gojo for system / protocol updates.'
-            Write-Host '  3. Override intentionally:  git commit --no-verify'
-            Write-Host ''
-            Write-Host 'Reference: protocol/CLAUDE.md  (Cross-Agent Edit Restrictions)'
-            Write-Host ''
-            exit 1
+            if ($env:DZP_ALLOW_PROTOCOL_EDIT -eq '1') {
+                # Scoped bypass for THIS stage only. Loud, unconditional, never
+                # silent. Stage 3 (append-only) and stage 5 (validate-protocol)
+                # below are NOT affected by this variable and still run.
+                [Console]::Error.WriteLine('')
+                [Console]::Error.WriteLine('[protocol-guard] BYPASS: authorized protocol edit (DZP_ALLOW_PROTOCOL_EDIT=1) - FEAT-REQ-001 protected-path check skipped for this commit.')
+                [Console]::Error.WriteLine('Staged changes allowed through by this override:')
+                [Console]::Error.WriteLine('')
+                $violations | ForEach-Object { [Console]::Error.WriteLine($_) }
+                [Console]::Error.WriteLine('Append-only guard (stage 3) and validate-protocol.py (stage 5) remain ACTIVE and unaffected.')
+                [Console]::Error.WriteLine('')
+            } else {
+                Write-Host ''
+                Write-Host '=================================================================='
+                Write-Host '  DZP PROTECTED-FILE COMMIT BLOCKED (Cross-Agent Edit Restrictions)'
+                Write-Host '=================================================================='
+                Write-Host 'Staged changes modify DZP-protected paths:'
+                Write-Host ''
+                $violations | ForEach-Object { Write-Host $_ }
+                Write-Host ''
+                Write-Host 'These files are protected. Sanctioned ways to proceed:'
+                Write-Host '  1. Invoke Gojo (Mission Control) for an authorized protocol change.'
+                Write-Host '  2. Invoke Sukuna via Gojo for system / protocol updates.'
+                Write-Host '  3. Override intentionally:  git commit --no-verify'
+                Write-Host '  4. Override just this stage (keeps append-only + validation active): DZP_ALLOW_PROTOCOL_EDIT=1 git commit'
+                Write-Host ''
+                Write-Host 'Reference: protocol/CLAUDE.md  (Cross-Agent Edit Restrictions)'
+                Write-Host ''
+                exit 1
+            }
         }
     }
 }

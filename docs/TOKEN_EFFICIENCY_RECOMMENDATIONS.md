@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.5 -->
 # Domain Zero Protocol - Token Efficiency Recommendations
 
 > **Classification:** CORE FILE

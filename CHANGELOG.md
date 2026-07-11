@@ -9,6 +9,107 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.9.5] - 2026-07-11
+
+### PATCH — Cortex ingest secret-detector false-positive/observability remediation + scanner reconciliation + publish-manifest gap closure + same-day Toji-audit remediation + RHS snapshot P1 port
+
+#### Fixed
+- **`BUG-CORTEX-INGEST-SECRET-FP-001`** (Cortex ingest secret-detector, ported byte-identical from
+  a Megumi-@approved downstream fix) — **SEC-DZPUP-9.9.4-010** (heuristic drift) CLOSED:
+  `cortex/ingest.py::_is_placeholder_value` gains a bounded, closed-vocabulary exact-match
+  type-annotation recognizer (19 TS/JSON-schema tokens, fullmatch only) instead of widening the
+  substring-matched placeholder-word list, which would have masked any value merely *containing* a
+  type word (e.g. `password: correcthorse_string_x9`). **SEC-DZPUP-9.9.4-012** (all-or-nothing drop)
+  CLOSED: the secret gate in `chunk_file()` is now per-chunk, not whole-file — a single
+  secret-shaped chunk is redacted while sibling chunks in the same document survive (previously a
+  confirmed regression silently reverted an earlier fix and discarded entire legitimate documents
+  over a handful of false-positive lines). **SEC-DZPUP-9.9.4-011** (silent failure) CLOSED:
+  `index()` now returns `files_dropped_secret`/`chunks_dropped_secret` counters and emits an
+  unconditional `[cortex:ingest] REDACT ...` stderr line per dropped chunk. **SEC-DZPUP-9.9.4-013**
+  CLOSED: restored the SEC-CORTEX-006 injection-detection pattern set from a silently-reverted
+  3-pattern list back to the full 6.
+- **Scanner `-005`/`-010` reconciliation** — `scripts/scan_protected_records.py` had independently
+  "fixed" the identical type-annotation false-positive class via an unsafe substring-word approach
+  (SEC-DZPUP-9.9.4-005). Moved onto the same closed-vocabulary exact-match recognizer as
+  `cortex/ingest.py`, plus ported the scanner's own `-006`/`-007`/`-008` value-side hardening
+  (semver recognizer, length-capped ellipsis recognizer, widened trailing-punctuation strip) that
+  had never reached canonical. `SECRET_FORMAT_PATTERNS` and the secret-keyword regex are untouched
+  in both files (value-side fixes only).
+- **Publish-manifest gap** — `scripts/scan_protected_records.py`,
+  `scripts/check_branch_record_isolation.py`, and `.github/secret_scanning.yml` existed in the
+  v9.9.4 canonical working tree and were described in the v9.9.4 changelog, but were never added to
+  `scripts/distro/publish-manifest.yaml` — every published `DZP-v9.9.4` distro branch shipped
+  **without** the SEC-001 protected-records secret scanner. Independently confirmed by two
+  downstream reports. All three files added to the manifest.
+- **`scripts/git-hooks/pre-commit`** (POSIX) hardened with the missing-scanner `else` warning
+  branch that the `.ps1` template already had (a missing scanner previously no-op'd the scan gate
+  silently).
+- **`dzp.py`** — stale "Domain Zero Protocol v9.4.0" banner (2 stamps) corrected.
+
+#### Added
+- **`tests/test_type_annotation_vocab_parity.py`** — structural test guarding the two independent
+  secret-detectors' closed-vocabulary token sets against future drift.
+
+#### Notes
+- Yuuji TDD (41 new Cortex regression/observability/adversarial-bypass tests + 2 cross-detector
+  vocab-parity tests, all green; 20 pre-existing scanner tests + 225 pre-existing brain/cortex tests
+  unaffected). Megumi Tier-3 security-review handoff prepared for the base patch above.
+- Public re-publish to `DZP-v9.9.5` is a separate, later, USER-authorized step — not part of this
+  patch.
+
+### Same-day addendum (2026-07-11) — Toji-audit v9.9.5 remediation + RHS snapshot P1 port
+
+A same-day Toji audit of this v9.9.5 workflow (`audits/2026-07-11-toji-gojo-v9-9-5-workflow.md`; 2
+MEDIUM findings, 0 Critical/High) plus a downstream RHS bug-report port are folded into this same
+patch (no version bump).
+
+#### Fixed
+- **CODE-001** (MED, Code Quality) — `.protocol-state/brain/cortex/ingest.py::index()` telemetry
+  was misleadingly named: `files_dropped_secret` incremented for any file with at least one
+  redacted chunk, even when clean sibling chunks remained indexed. Added accurately-scoped
+  `files_with_secret_redactions` (≥1 chunk redacted) and `files_fully_omitted_secret` (strict
+  subset — zero chunks remain indexed); `files_dropped_secret` retained as a back-compat alias.
+- **SEC-001** (MED, CWE-184) — the SemVer placeholder recognizer added to
+  `scripts/scan_protected_records.py` in the base patch above admitted disguised secret entropy
+  shaped like a version string. Closed across five adversarial review cycles
+  (`SEC-DZPUP-9.9.5-SEMVER-MONOCASE-001`/`-CHAIN-001`/`-DIGITCHAIN-001`/`-DUALCOMPONENT-001`/`-CORE-001`,
+  all CLOSED) to a single unified whole-value entropy budget (19 characters) across
+  core+prerelease+build, with a regex-level 8-digit core cap and a 9-word qualifier allowlist;
+  CalVer-safe. Supersedes the prior accepted `SEC-DZPUP-9.9.5-SEMVER-CAP` residual.
+- **`BUG-SNAPSHOT-NULLFIELDS-001`** (P1, RHS-report port) — `.protocol-state/create-snapshot.py`
+  now emits a `reason` field (retaining legacy `trigger`) and includes `metadata.description` only
+  when a real string is supplied; previously null/missing fields failed the fail-CLOSED
+  commit-gate schema and silently blocked all commits.
+- **MF-1** (P1, Megumi, RHS-report port) — the `reason` enum in
+  `protocol/validation-rules.yaml` (both `snapshot` and `snapshot-manifest` schemas) widened to add
+  `pre-protected-edit`, `toji-snapshot`, `pre_restore_backup`; `create-snapshot.py` gained a
+  `VALID_TRIGGERS` allowlist plus an `argparse choices=` guard. Pre-existing stale live snapshot
+  body hand-repaired to match; `scripts/validate-protocol.py --check` now passes 13/13.
+
+#### Added
+- **FEAT-REQ-002** — `DZP_ALLOW_PROTOCOL_EDIT=1`, a scoped per-invocation env override for the
+  FEAT-REQ-001 Cross-Agent Edit Restrictions protected-path pre-commit stage, mirroring the
+  existing `DZP_ALLOW_PROTECTED_REWRITE` (FEAT-GUARD-001). Lets a Gojo/USER-authorized protocol
+  change commit without `git commit --no-verify`, bypassing ONLY that stage while the SEC-001
+  secret scan, the FEAT-GUARD-001 append-only guard, and `validate-protocol.py --check` all remain
+  active. Loud, unconditional, never-silent stderr warning; non-persistent; exact-match `=1`
+  trigger; POSIX + PowerShell hook parity; documented `override_env` key in
+  `protocol.config.yaml`. Yuuji TDD (6 real-subprocess hook tests); Megumi Tier-3 @approved — a net
+  security improvement over the `--no-verify` it replaces for authorized edits, 0 must-fix.
+
+#### Notes
+- **Accepted P3 residual:** an irreducible ≤19-char sub-cap entropy channel in the SemVer
+  recognizer, pinned by the real committed fixture `1.2.3-1+a1b2c3d.20260315` (exactly 19 chars,
+  zero slack). Two non-blocking usability notes: `v`-prefixed versions and >8-digit numeric cores
+  now fail safe (flagged; resolvable via the existing allowlist).
+- **Flagged follow-up, not fixed:** a dead `pre_restore_backup` call site in `restore-snapshot.py`
+  imports `create_snapshot` via a non-existent module path (silently swallowed by a broad
+  `except`).
+- Yuuji TDD (SemVer hardening: 163 passing on the required suites / 548 broader, zero regressions;
+  snapshot gate-validation: 18/18). Megumi Tier-3 (SemVer) / Tier-2 (snapshot) @approved every
+  phase.
+- Not yet committed at the time of this entry — commit is pending explicit USER authorization.
+
 ## [9.9.4] - 2026-07-09
 
 ### PATCH — Toji external-auditor capability upgrade + Toji-audit-2026-07-09 remediation + Sukuna RHS-report canonical items

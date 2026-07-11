@@ -84,6 +84,24 @@ _PLACEHOLDER_WORDS = {
     "tbd", "todo", "dummy", "none", "null", "xxx", "sample",
 }
 
+# SEC-DZPUP-9.9.4-010 (Megumi-ruled, mirrors SEC-DZPUP-9.9.4-005/-006/-007 in
+# scan_protected_records.py): a BOUNDED, exact/regex recognizer for TypeScript/
+# JSON-schema type-annotation tokens. Value-side ONLY — deliberately NOT added
+# to _PLACEHOLDER_WORDS, which is substring-matched (`word in low`, below) and
+# would therefore mask any value merely CONTAINING one of these tokens (e.g.
+# `password: correcthorse_string_x9`), a real detection weakening. This set is
+# matched via fullmatch only, so it cannot widen the substring-match surface.
+_TYPE_ANNOTATION_TOKENS = {
+    "string", "number", "boolean", "any", "unknown", "void", "object",
+    "undefined", "null", "bigint", "symbol", "never", "date",
+    "array", "record", "map", "set", "buffer",
+    "encryptedstring",
+}
+_TYPE_ANNOTATION_RE = re.compile(
+    r"^(?:" + "|".join(sorted(_TYPE_ANNOTATION_TOKENS, key=len, reverse=True)) + r")(\[\])?$",
+    re.IGNORECASE,
+)
+
 
 def _is_placeholder_value(value: str) -> bool:
     """True when a keyword's value is an obvious placeholder, not a real secret."""
@@ -101,6 +119,8 @@ def _is_placeholder_value(value: str) -> bool:
         return True
     if len(v) < 6:  # too short to be a credible secret
         return True
+    if _TYPE_ANNOTATION_RE.fullmatch(v):
+        return True
     return False
 
 
@@ -111,9 +131,14 @@ def contains_secret(text: str) -> bool:
     return any(not _is_placeholder_value(m.group(1)) for m in _SECRET_KEYWORD_RE.finditer(text))
 
 
+# SEC-DZPUP-9.9.4-013 (Megumi-ruled): restore the SEC-CORTEX-006 injection-pattern
+# set that had been reverted to a smaller 3-pattern list. Full set below.
 INJECTION_PATTERNS = [
     re.compile(r"ignore (all )?(previous|prior) instructions", re.I),
+    re.compile(r"disregard (the )?(above|previous|prior)", re.I),
     re.compile(r"you are now", re.I),
+    re.compile(r"new instructions\s*:", re.I),
+    re.compile(r"reveal (your )?(system )?(prompt|instructions)", re.I),
     re.compile(r"\bsystem\s*:", re.I),
 ]
 
@@ -219,15 +244,33 @@ def _safe_candidate(repo: Path, path: Path, cfg: dict) -> bool:
     return True
 
 
-def chunk_file(repo_root: str | Path, path: str | Path, cfg: dict, install_scope: str = "") -> list[Chunk]:
+def chunk_file(
+    repo_root: str | Path,
+    path: str | Path,
+    cfg: dict,
+    install_scope: str = "",
+    drop_reason: list[str] | None = None,
+) -> list[Chunk]:
+    """Chunk a file for indexing.
+
+    SEC-DZPUP-9.9.4-012 (Megumi-ruled, decisive semantics per Sukuna): secret
+    detection is now PER-CHUNK, not whole-file. A chunk whose text matches
+    contains_secret() is OMITTED from the returned list — the rest of the file
+    is still indexed. This replaces the prior `if contains_secret(text): return []`
+    whole-file drop (Defect B, BUG-CORTEX-INGEST-SECRET-FP-001), which discarded
+    an entire legitimate document (e.g. an 18,237-line typed spec) over a handful
+    of false-positive lines.
+
+    `drop_reason`, if provided, is an out-parameter: each secret-shaped chunk
+    skipped appends a "{rel}:{line_start}" marker to it, letting callers (index())
+    report per-file/per-chunk secret-drop counts (SEC-DZPUP-9.9.4-011).
+    """
     repo = Path(repo_root).resolve()
     p = Path(path).resolve()
     rel = p.relative_to(repo).as_posix()
     # Storage key carries the install scope; classification/trust use the CLEAN rel.
     skey = _storage_key(install_scope, rel)
     text = p.read_text(encoding="utf-8", errors="replace")
-    if contains_secret(text):
-        return []
     lines = text.splitlines()
     max_chars = int((cfg.get("chunk") or {}).get("code_max_chars" if p.suffix == ".py" else "md_max_chars", 1200))
     chunks: list[Chunk] = []
@@ -242,6 +285,20 @@ def chunk_file(repo_root: str | Path, path: str | Path, cfg: dict, install_scope
             end += 1
         body = "\n".join(lines[start:end]).strip()
         if body:
+            # SEC-DZPUP-9.9.4-012: per-chunk secret gate. Only THIS chunk is
+            # dropped; sibling chunks in the same file are unaffected.
+            if contains_secret(body):
+                if drop_reason is not None:
+                    drop_reason.append(f"{rel}:{start + 1}")
+                # SEC-DZPUP-9.9.4-011: loud, unconditional stderr signal — a
+                # knowledge base that silently omits content is unacceptable
+                # (Defect C, BUG-CORTEX-INGEST-SECRET-FP-001).
+                print(
+                    f"[cortex:ingest] REDACT {rel}:{start + 1}: secret-shaped chunk dropped from index.",
+                    file=sys.stderr,
+                )
+                start = end
+                continue
             content_hash = hashlib.sha256(body.encode("utf-8")).hexdigest()
             chunks.append(
                 Chunk(
@@ -261,7 +318,8 @@ def chunk_file(repo_root: str | Path, path: str | Path, cfg: dict, install_scope
     # SEC-002 (v9.3.3): per-file chunk cap. If max_file_chunks > 0 and we exceeded
     # it, drop the entire file and warn. We check AFTER chunking so we get an accurate
     # count; dropping partial chunks would create index drift, so the all-or-nothing
-    # policy is the safe choice.
+    # policy is the safe choice. (Unrelated to the per-chunk secret gate above — this
+    # is a size/volume guard, not a secret-content guard.)
     max_chunks = cfg.get("max_file_chunks", DEFAULT_CONFIG["max_file_chunks"])
     if max_chunks and len(chunks) > max_chunks:
         print(
@@ -284,6 +342,33 @@ def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: 
     upserted = 0
     skipped = 0
     removed = 0
+    # SEC-DZPUP-9.9.4-011: observability counters for the per-chunk secret gate
+    # (SEC-DZPUP-9.9.4-012).
+    #
+    # CODE-001 (Toji audit 2026-07-11, MEDIUM): `files_dropped_secret` was named
+    # as though it counted files whose content vanished from the index, but its
+    # actual semantics were "had >=1 chunk redacted" -- clean sibling chunks from
+    # the SAME file are still indexed (see the per-chunk gate in chunk_file()
+    # above), so a telemetry consumer reading files_dropped_secret > 0 could
+    # wrongly conclude an entire source disappeared. Three fields now report
+    # this precisely:
+    #   files_with_secret_redactions - files with >=1 redacted chunk, REGARDLESS
+    #     of whether clean siblings from that file were still indexed. This is
+    #     the accurately-named successor to the old field.
+    #   files_fully_omitted_secret   - the STRICT SUBSET of the above where the
+    #     file ended up with ZERO indexed chunks (every chunk in it was secret-
+    #     shaped, or the file was otherwise fully dropped) -- i.e. content
+    #     actually vanished from the index, not merely partially redacted.
+    #   files_dropped_secret         - BACK-COMPAT ALIAS, always numerically
+    #     equal to files_with_secret_redactions. Kept so existing consumers/
+    #     tests reading this key are not broken by this rename.
+    # chunks_dropped_secret is the total redacted-chunk count across the run
+    # (unchanged). All four surface in the returned result dict so a knowledge
+    # base can never silently omit content without it showing up in
+    # `brain.sh index` output.
+    files_dropped_secret = 0
+    files_fully_omitted_secret = 0
+    chunks_dropped_secret = 0
     pending: list[Chunk] = []
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     discovered_sources: set[str] = set()
@@ -295,7 +380,16 @@ def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: 
         if not dry_run and not force and store.source_state(skey) == (stat.st_mtime_ns, stat.st_size):
             skipped += 1
             continue
-        file_chunks = chunk_file(repo_root, path, cfg, install_scope=scope)
+        drop_reason: list[str] = []
+        file_chunks = chunk_file(repo_root, path, cfg, install_scope=scope, drop_reason=drop_reason)
+        if drop_reason:
+            # CODE-001: this file had >=1 chunk redacted (files_with_secret_redactions
+            # / files_dropped_secret alias). It is ADDITIONALLY counted as fully
+            # omitted only when it produced zero indexed chunks overall.
+            files_dropped_secret += 1
+            chunks_dropped_secret += len(drop_reason)
+            if not file_chunks:
+                files_fully_omitted_secret += 1
         all_chunks += len(file_chunks)
         if dry_run:
             continue
@@ -311,7 +405,17 @@ def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: 
             pending = []
         store.set_source_state(skey, mtime_ns=stat.st_mtime_ns, size=stat.st_size, indexed_at=now)
     if dry_run:
-        return {"files_scanned": len(files), "files_skipped": 0, "chunks": all_chunks, "upserted": 0, "removed": 0}
+        return {
+            "files_scanned": len(files),
+            "files_skipped": 0,
+            "chunks": all_chunks,
+            "upserted": 0,
+            "removed": 0,
+            "files_dropped_secret": files_dropped_secret,  # back-compat alias (CODE-001)
+            "chunks_dropped_secret": chunks_dropped_secret,
+            "files_with_secret_redactions": files_dropped_secret,
+            "files_fully_omitted_secret": files_fully_omitted_secret,
+        }
     if pending:
         upserted += _flush(pending, store, embedder)
         if progress:
@@ -327,7 +431,17 @@ def index(repo_root: str | Path, cfg: dict, store: Store, embedder, *, dry_run: 
     # Fail-soft: eviction errors log a WARNING but never fail the index run.
     # Budget None (default) = unlimited = skip eviction entirely.
     _run_post_index_eviction(store, cfg)
-    return {"files_scanned": len(files), "files_skipped": skipped, "chunks": all_chunks, "upserted": upserted, "removed": removed}
+    return {
+        "files_scanned": len(files),
+        "files_skipped": skipped,
+        "chunks": all_chunks,
+        "upserted": upserted,
+        "removed": removed,
+        "files_dropped_secret": files_dropped_secret,  # back-compat alias (CODE-001)
+        "chunks_dropped_secret": chunks_dropped_secret,
+        "files_with_secret_redactions": files_dropped_secret,
+        "files_fully_omitted_secret": files_fully_omitted_secret,
+    }
 
 
 def _run_post_index_eviction(store: "Store", cfg: dict) -> None:

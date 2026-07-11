@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 9.9.4
+# Version: 9.9.5
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,8 +8,8 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v9.9.4"
-  release_branch: "DZP-v9.9.4"
+  version: "v9.9.5"
+  release_branch: "DZP-v9.9.5"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -1268,6 +1268,17 @@ custom_agent_security:
       - ".protocol-state/authorization/"
       - "protocol.config.yaml"
 
+    # Scoped pre-commit override for the FEAT-REQ-001 guard (Cross-Agent Edit
+    # Restrictions, scripts/git-hooks/pre-commit[.ps1] stage 4). Mirrors
+    # protected_documents.override_env below (FEAT-GUARD-001, stage 3) — the
+    # two overrides are independent and composable; setting one does NOT
+    # bypass the other. Documented here for discoverability; the hook
+    # currently reads the env-var NAME as a hardcoded constant (not parsed
+    # from this key at runtime) to keep the stage-4 config subshell simple —
+    # it only ever fetches `immutable_paths` today. If this key's value is
+    # ever changed, the hook's hardcoded name must be updated to match.
+    override_env: DZP_ALLOW_PROTOCOL_EDIT
+
     # Block agents from modifying their own definition files
     block_self_modification: true
 
@@ -1451,9 +1462,9 @@ protected_documents:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "9.9.4"
+  protocol_version: "9.9.5"
   config_version: "2.11"
-  last_updated: "2026-07-09"
+  last_updated: "2026-07-11"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

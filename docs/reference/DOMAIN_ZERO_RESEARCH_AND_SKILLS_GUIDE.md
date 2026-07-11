@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.5 -->
 # Domain Zero – Research Mode & Claude Skills Integration Guide
 
 Version: 1.0 (2025-11-22)

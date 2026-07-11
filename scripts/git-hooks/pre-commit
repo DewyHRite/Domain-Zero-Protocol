@@ -1,5 +1,5 @@
 #!/bin/sh
-# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.4)
+# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.5)
 # Combines: protected-records secret scan + publish-branch skip + append-only guard
 #           + agent/protected-file guard + validate-protocol.py state validation.
 #
@@ -15,6 +15,15 @@
 #
 # Install via: scripts/install-git-hooks.sh  (or .ps1 on Windows/PowerShell)
 # Sanctioned overrides are printed on block.
+#
+# DZP_ALLOW_PROTOCOL_EDIT=1 (v9.9.5+): scoped override for stage 4 ONLY (the
+# FEAT-REQ-001 protected-path guard). Mirrors DZP_ALLOW_PROTECTED_REWRITE
+# (stage 3's override) so a Gojo/USER-authorized protocol change can commit
+# without `git commit --no-verify`, which dangerously skips EVERY stage
+# (secret scan, append-only guard, AND validate-protocol.py). The two
+# overrides are independent and composable: setting DZP_ALLOW_PROTOCOL_EDIT
+# alone does NOT bypass stage 3 (append-only) or stage 5 (validate-protocol) —
+# both still run and can still block the commit on their own terms.
 set -eu
 
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
@@ -42,6 +51,13 @@ if [ -f "$SECRET_SCAN" ]; then
     else
         echo "[protected-secret-scan] WARNING: python not found — secret scan SKIPPED" >&2
     fi
+else
+    # v9.9.5 (Sukuna): this outer branch previously had no else — a missing
+    # scanner (e.g. a distro install published before the v9.9.5 manifest fix)
+    # silently no-op'd the ENTIRE secret-scan gate with zero output, reporting
+    # commit success with the scan never run. Mirrors the python-missing
+    # warning above and matches the .ps1 template, which already had this.
+    echo "[protected-secret-scan] WARNING: scripts/scan_protected_records.py not found — secret scan SKIPPED" >&2
 fi
 
 # ============================================================================
@@ -151,18 +167,31 @@ PYEOF
         IFS=$old_ifs
 
         if [ -n "$violations" ]; then
-            printf '\n'
-            printf '==================================================================\n'
-            printf '  DZP PROTECTED-FILE COMMIT BLOCKED (Cross-Agent Edit Restrictions)\n'
-            printf '==================================================================\n'
-            printf 'Staged changes modify DZP-protected paths:\n\n'
-            printf '%s\n' "$violations"
-            printf 'These files are protected. Sanctioned ways to proceed:\n'
-            printf '  1. Invoke Gojo (Mission Control) for an authorized protocol change.\n'
-            printf '  2. Invoke Sukuna via Gojo for system / protocol updates.\n'
-            printf '  3. Override intentionally:  git commit --no-verify\n\n'
-            printf 'Reference: protocol/CLAUDE.md  (Cross-Agent Edit Restrictions)\n\n'
-            exit 1
+            if [ "${DZP_ALLOW_PROTOCOL_EDIT:-}" = "1" ]; then
+                # Scoped bypass for THIS stage only. Loud, unconditional, never
+                # silent. Stage 3 (append-only) and stage 5 (validate-protocol)
+                # below are NOT affected by this variable and still run.
+                printf '\n' >&2
+                printf '[protocol-guard] BYPASS: authorized protocol edit (DZP_ALLOW_PROTOCOL_EDIT=1) - FEAT-REQ-001 protected-path check skipped for this commit.\n' >&2
+                printf 'Staged changes allowed through by this override:\n\n' >&2
+                printf '%s\n' "$violations" >&2
+                printf 'Append-only guard (stage 3) and validate-protocol.py (stage 5) remain ACTIVE and unaffected.\n' >&2
+                printf '\n' >&2
+            else
+                printf '\n'
+                printf '==================================================================\n'
+                printf '  DZP PROTECTED-FILE COMMIT BLOCKED (Cross-Agent Edit Restrictions)\n'
+                printf '==================================================================\n'
+                printf 'Staged changes modify DZP-protected paths:\n\n'
+                printf '%s\n' "$violations"
+                printf 'These files are protected. Sanctioned ways to proceed:\n'
+                printf '  1. Invoke Gojo (Mission Control) for an authorized protocol change.\n'
+                printf '  2. Invoke Sukuna via Gojo for system / protocol updates.\n'
+                printf '  3. Override intentionally:  git commit --no-verify\n'
+                printf '  4. Override just this stage (keeps append-only + validation active): DZP_ALLOW_PROTOCOL_EDIT=1 git commit\n\n'
+                printf 'Reference: protocol/CLAUDE.md  (Cross-Agent Edit Restrictions)\n\n'
+                exit 1
+            fi
         fi
     fi
 fi

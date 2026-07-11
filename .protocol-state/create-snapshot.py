@@ -85,6 +85,44 @@ RETENTION_LIMITS = {
 # Storage warning threshold (200 MB)
 STORAGE_WARNING_BYTES = 200 * 1024 * 1024
 
+# MF-1 (BUG-SNAPSHOT-NULLFIELDS-001 remediation, Megumi Tier-2, v9.9.x):
+# defense-in-depth allowlist for --trigger. This MUST mirror the `reason`
+# enum in protocol/validation-rules.yaml (both the `snapshot` and
+# `snapshot-manifest` schemas) EXACTLY -- an unknown trigger must fail LOUD
+# here (argparse rejects it before any snapshot is written) rather than
+# silently producing a body the commit-gate schema rejects later.
+#
+# Call-site audit (2026-07-11) of every place that passes --trigger to this
+# script or calls create_snapshot() directly -- all 8 values below are drawn
+# from real callers, none invented:
+#   .protocol-state/script_dependencies.yaml:45   --trigger session-end
+#   .protocol-state/script_dependencies.yaml:119  --trigger pre-protected-edit
+#   .protocol-state/script_dependencies.yaml:180  --trigger toji-snapshot
+#   .protocol-state/snapshot_integration.py:177,264  trigger="operation_count" (subprocess --trigger)
+#   .protocol-state/snapshot_integration.py:285      trigger="tier_change"    (subprocess --trigger)
+#   argparse default / any bare `--manual`          trigger defaults to "manual"
+#   protocol/validation-rules.yaml (pre-existing)    "session-start" (schema-reserved;
+#                                                     no live CLI emitter found yet, kept
+#                                                     for schema parity)
+#   .protocol-state/restore-snapshot.py:217          trigger="pre_restore_backup" (direct
+#                                                     create_snapshot() Python call, NOT
+#                                                     via this argparse CLI -- that call site
+#                                                     is currently DEAD/unreachable due to an
+#                                                     unrelated wrong-import-path bug, tracked
+#                                                     separately; included here defensively so
+#                                                     repairing that import will not reintroduce
+#                                                     BUG-SNAPSHOT-NULLFIELDS-001)
+VALID_TRIGGERS = [
+    "manual",
+    "operation_count",
+    "tier_change",
+    "session-end",
+    "session-start",
+    "pre-protected-edit",
+    "toji-snapshot",
+    "pre_restore_backup",
+]
+
 
 # =============================================================================
 # Snapshot Manifest Management
@@ -256,19 +294,30 @@ def create_snapshot(
     state_files_paths = discover_state_files()
 
     # Build snapshot data structure
+    # BUG-SNAPSHOT-NULLFIELDS-001 (v9.9.x): the commit-gate schema
+    # (protocol/validation-rules.yaml::snapshot) REQUIRES a `reason` key at
+    # the body root and types `metadata.description` as `string` (not
+    # nullable). Emit `reason` alongside the legacy `trigger` key (back-compat
+    # for any consumer still reading `trigger`), and build `metadata` without
+    # a `description` key at all when none was supplied -- add it below only
+    # when a real string was provided, mirroring the manifest-entry guard.
+    metadata: Dict[str, Any] = {
+        "total_files": 0,
+        "files_included": [],
+    }
+    if description is not None:
+        metadata["description"] = description
+
     snapshot_data = {
         "snapshot_id": snapshot_id,
         "created_at": timestamp_str,
         "tier": tier,
         "trigger": trigger,
+        "reason": trigger,
         "operation_count": operation_count,
         "protocol_version": "8.8.0",
         "state_files": {},
-        "metadata": {
-            "total_files": 0,
-            "files_included": [],
-            "description": description
-        },
+        "metadata": metadata,
         "checksum": None  # Will be calculated after serialization
     }
 
@@ -541,8 +590,10 @@ Retention Limits:
                         help='Create automatic snapshot (tier-based)')
     parser.add_argument('--tier', type=int, choices=[1, 2, 3], default=2,
                         help='Tier for automatic snapshot (default: 2)')
-    parser.add_argument('--trigger', type=str, default='manual',
-                        help='Trigger reason for snapshot')
+    parser.add_argument('--trigger', type=str, default='manual', choices=VALID_TRIGGERS,
+                        help='Trigger reason for snapshot (must match the protocol/validation-rules.yaml '
+                             '`reason` enum -- an unrecognized value is rejected here, loudly, before any '
+                             'snapshot is written)')
     parser.add_argument('--description', '-d', type=str,
                         help='Optional description for manual snapshot')
     parser.add_argument('--operation-count', type=int,

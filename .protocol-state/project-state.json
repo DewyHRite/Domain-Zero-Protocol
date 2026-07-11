@@ -1,5 +1,5 @@
 {
-  "protocol_version": "9.9.4",
+  "protocol_version": "9.9.5",
   "compaction_recovery": {
     "last_recovery_timestamp": null,
     "recovery_count": 0,
@@ -326,10 +326,10 @@
   "session_tracking": {
     "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.11.0)",
     "current_session": {
-      "session_id": null,
-      "session_active": false,
-      "start_time": null,
-      "last_interaction_time": null,
+      "session_id": "session_20260711_111807",
+      "session_active": true,
+      "start_time": "2026-07-11T11:18:07.332214+00:00",
+      "last_interaction_time": "2026-07-11T11:18:07.332214+00:00",
       "last_alert_time": null,
       "alert_count": 0,
       "escalation_level": 0,
@@ -342,10 +342,10 @@
       "continuous_work_minutes": 0,
       "break_timestamps": [],
       "total_breaks": 0,
-      "alerts_issued": 2,
+      "alerts_issued": 0,
       "alerts_ignored": 0,
       "continues_chosen": 0,
-      "breaks_chosen": 1
+      "breaks_chosen": 0
     },
     "thresholds": {
       "initial_alert_minutes": 240,
@@ -436,10 +436,19 @@
         "total_breaks": 0,
         "alerts_issued": 2,
         "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260711_030502",
+        "start_time": "2026-07-11T03:05:02.094531+00:00",
+        "end_time": "2026-07-11T11:11:57.748741+00:00",
+        "total_duration_minutes": 486,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-07-09T01:07:06.155516",
-    "protocol_version": "9.9.4"
+    "last_updated": "2026-07-11T07:18:07.344841",
+    "protocol_version": "9.9.5"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",
@@ -20786,7 +20795,7 @@
       ],
       "metadata": {
         "created": "2025-12-31T00:00:00Z",
-        "protocol_version": "9.9.4",
+        "protocol_version": "9.9.5",
         "last_updated": "2026-06-17T00:00:00Z",
         "total_sessions_all_time": 1004
       }
@@ -20972,7 +20981,7 @@
         ]
       }
     ],
-    "last_updated": "2026-07-07T13:10:33.410513+00:00",
+    "last_updated": "2026-07-11T11:12:48.624810+00:00",
     "last_event": "session-end",
     "events": [
       {
@@ -21229,6 +21238,39 @@
             "duration_seconds": 3.234
           }
         ]
+      },
+      {
+        "event": "session-end",
+        "finished_at": "2026-07-11T11:12:48.624810+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.765
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.0
+          },
+          {
+            "name": "cortex-high",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 46.891
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 2.453
+          }
+        ]
       }
     ],
     "last_status_by_event": {
@@ -21273,7 +21315,7 @@
       },
       "session-end": {
         "event": "session-end",
-        "finished_at": "2026-07-07T13:10:33.410513+00:00",
+        "finished_at": "2026-07-11T11:12:48.624810+00:00",
         "success": true,
         "status": "success",
         "fail_soft": true,
@@ -21282,25 +21324,25 @@
             "name": "session-end",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.718
+            "duration_seconds": 1.765
           },
           {
             "name": "end-snapshot",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.328
+            "duration_seconds": 1.0
           },
           {
             "name": "cortex-high",
-            "status": "timeout",
-            "exit_code": null,
-            "duration_seconds": 180.032
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 46.891
           },
           {
             "name": "cortex-distill",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 3.234
+            "duration_seconds": 2.453
           }
         ]
       }

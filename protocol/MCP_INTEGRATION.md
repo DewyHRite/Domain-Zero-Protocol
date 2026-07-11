@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.5 -->
 ---
 title: "MCP Integration Guide"
 version: "1.0.0"
-protocol_version: "9.9.4"
+protocol_version: "9.9.5"
 last_updated: "2025-12-22"
 status: "Production-Ready"
 ---
