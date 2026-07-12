@@ -39,11 +39,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `.swp`, `.swo`, `.tmp`, `~`, `.DS_Store`, `Thumbs.db`).
 
 #### Notes
-- Provenance: Sukuna 4-front adversarial bug hunt
-  (`internal-docs/.../DZP-Sukuna-BugHunt-2026-07-11.md`, Toji-audited Rev 2); each fix ships with its
+- Provenance: Sukuna 4-front adversarial bug hunt, externally audited by Toji
+  (`audits/2026-07-11-toji-sukuna-bughunt-report.md`, Rev 2). Each fix ships with its
   repro converted to a committed regression test. New tests: hook self-disarm 14, restore-checksum
-  14, escrow 3 new + 4 de-fabricated suites, distro PII-leak gate 8. Yuuji TDD + Megumi Tier-3
-  @approved.
+  14 (+4 preview-display regression tests, CodeRabbit PR #110), escrow 3 new + 4 de-fabricated
+  suites, distro PII-leak gate 8. Yuuji TDD + Megumi Tier-3 @approved.
 - **Accepted P3 residuals:** `.protocol-state/attestation.py` not yet in `immutable_paths` (bounded,
   non-blocking); content-audit substring boundary vs binary/compressed blobs (moot — no binary
   assets ship).

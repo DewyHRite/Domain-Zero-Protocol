@@ -279,15 +279,31 @@ def preview_snapshot(snapshot_id: str) -> None:
     Args:
         snapshot_id: Snapshot ID to preview
     """
-    snapshot_data, error, _verification = load_snapshot(snapshot_id)
+    # Preview is a READ-ONLY inspection that never touches state, so it loads
+    # with force_unverified=True: a legacy (pre-checksum) or checksum-mismatched
+    # snapshot must still be *displayable* so the user can inspect it before
+    # deciding whether to restore. The integrity verdict is surfaced below
+    # instead of blocking the view. (restore_snapshot() remains fail-closed.)
+    snapshot_data, error, verification = load_snapshot(snapshot_id, force_unverified=True)
 
     if error:
+        # Only genuinely unreadable snapshots (missing/corrupt file) reach here;
+        # integrity failures no longer abort the preview.
         print(f"ERROR: {error}", file=sys.stderr)
         sys.exit(1)
 
     print("\n" + "=" * 80)
     print(f"Snapshot Preview: {snapshot_data['snapshot_id']}")
     print("=" * 80)
+
+    # Surface the integrity status so a preview of a legacy/tampered snapshot is
+    # never silently presented as trustworthy.
+    if not verification.get("performed"):
+        print("\n⚠️  Integrity: NO stored checksum (cannot verify — legacy snapshot)")
+    elif verification.get("matched"):
+        print("\n✅ Integrity: checksum VERIFIED")
+    else:
+        print("\n⚠️  Integrity: checksum MISMATCH (possible tampering/corruption)")
 
     print(f"\nCreated: {snapshot_data['created_at']}")
     print(f"Tier: {snapshot_data['tier']}")

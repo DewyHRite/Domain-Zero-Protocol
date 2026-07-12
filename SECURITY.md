@@ -31,12 +31,12 @@ We provide security updates for the following versions:
 
 | Version | Supported          | Status |
 | ------- | ------------------ | ------ |
-| 9.8.x   | :white_check_mark: | Current stable release (security + bug fixes) |
-| < 9.8.0 | :x:                | End of life (EOL) — upgrade to the latest 9.8.x release |
+| 9.9.x   | :white_check_mark: | Current stable release (security + bug fixes) |
+| < 9.9.0 | :x:                | End of life (EOL) — upgrade to the latest 9.9.x release |
 
-**Support Policy**: Only the **latest minor release line (currently 9.8.x)** receives security updates. All earlier versions are end-of-life.
+**Support Policy**: Only the **latest minor release line (currently 9.9.x)** receives security updates. All earlier versions are end-of-life.
 
-**Upgrade Recommendation**: Users on any version below the current 9.8.x line should upgrade to the latest release immediately. See `VERSION.md` for the current version.
+**Upgrade Recommendation**: Users on any version below the current 9.9.x line should upgrade to the latest release immediately. See `VERSION.md` for the current version.
 
 ---
 
