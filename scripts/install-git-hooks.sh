@@ -1,5 +1,5 @@
 #!/bin/sh
-# Domain Zero Protocol - Git Hook Installer (FEAT-GUARD-001, v9.9.5)
+# Domain Zero Protocol - Git Hook Installer (FEAT-GUARD-001, v9.9.6)
 #
 # Installs the DZP unified pre-commit hook (publish-branch skip + append-only
 # guard + agent/protected-file guard + protocol validation). Git cannot

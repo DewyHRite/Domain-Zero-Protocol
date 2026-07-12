@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 9.9.5
+# Version: 9.9.6
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,8 +8,8 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v9.9.5"
-  release_branch: "DZP-v9.9.5"
+  version: "v9.9.6"
+  release_branch: "DZP-v9.9.6"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -1274,6 +1274,36 @@ custom_agent_security:
       # now also requires DZP_ALLOW_PROTOCOL_EDIT=1 (or Gojo/Sukuna
       # authorization) like any other protocol file.
       - "scripts/git-hooks/"
+      # BUG-HOOK-SELF-DISARM-001 (Sukuna Bug Hunt 2026-07-11, P1, gap 1): F6(b)
+      # above protected the hook *wrappers* (scripts/git-hooks/) but NOT the
+      # standalone ENGINE scripts those wrappers shell out to -- an agent
+      # could silently neuter e.g. scan_protected_records.py::main() to
+      # `return 0` and stage 4 (this very guard) would never flag the edit,
+      # because none of these engines lived under a protected prefix. Adding
+      # the whole `scripts/` directory was considered and REJECTED: scripts/
+      # also holds routine, non-security tooling (dzp-publish, verify-*,
+      # install-git-hooks, scripts/distro/* helpers) that legitimately needs
+      # frequent unauthorized edits -- blanket-protecting it would force
+      # DZP_ALLOW_PROTOCOL_EDIT=1 on every ordinary script change, training
+      # agents/users to reach for the override reflexively (the same
+      # alert-fatigue failure mode this whole guard exists to prevent).
+      # Instead, list the security-critical engines EXPLICITLY:
+      #   - scan_protected_records.py         SEC-001 mandatory secret scan (stage 1)
+      #   - check_protected_append_only.py    FEAT-GUARD-001 append-only guard (stage 3)
+      #   - validate-protocol.py              protocol state validation gate (stage 5)
+      #   - check_branch_record_isolation.py  IMPL-001 branch/record-isolation detector
+      #   - distro/assert_version.py          release version-consistency gate
+      #   - distro/check_version_stamps.py    release version-stamp drift linter
+      # Deleting or rewriting any of these now also requires
+      # DZP_ALLOW_PROTOCOL_EDIT=1 (or Gojo/Sukuna authorization), closing the
+      # exact bypass class the 2026-07-11 repro confirmed (Scenario A: engine
+      # neutered, stage 4 silent; Scenario B: guard deleted, stage 4 silent).
+      - "scripts/scan_protected_records.py"
+      - "scripts/check_protected_append_only.py"
+      - "scripts/validate-protocol.py"
+      - "scripts/check_branch_record_isolation.py"
+      - "scripts/distro/assert_version.py"
+      - "scripts/distro/check_version_stamps.py"
 
     # Scoped pre-commit override for the FEAT-REQ-001 guard (Cross-Agent Edit
     # Restrictions, scripts/git-hooks/pre-commit[.ps1] stage 4). Mirrors
@@ -1469,7 +1499,7 @@ protected_documents:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "9.9.5"
+  protocol_version: "9.9.6"
   config_version: "2.11"
   last_updated: "2026-07-11"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"

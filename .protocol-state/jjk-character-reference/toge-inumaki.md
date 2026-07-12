@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.5 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
 
 # Toge Inumaki - JJK Character Reference
 **Source**: Jujutsu Kaisen Fandom Wiki
 **URL**: <https://jujutsu-kaisen.fandom.com/wiki/Toge_Inumaki>
 **Downloaded**: 2025-11-25
-**Protocol Version**: v9.9.5
+**Protocol Version**: v9.9.6
 
 ---
 

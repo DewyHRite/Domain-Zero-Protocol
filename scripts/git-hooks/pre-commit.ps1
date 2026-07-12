@@ -1,4 +1,4 @@
-﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.5)
+﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.6)
 # PowerShell equivalent of scripts/git-hooks/pre-commit for PowerShell-driven git
 # hook setups.
 #
@@ -28,6 +28,19 @@
 # the other two overrides above (stage 3's append-only guard intentionally
 # stays best-effort when python is absent; stage 5's validate-protocol.py
 # already fails closed independently when python is absent).
+#
+# DZP_ALLOW_MISSING_APPEND_GUARD=1 (BUG-HOOK-SELF-DISARM-001, v9.9.6+): a
+# FOURTH, independent, dedicated break-glass override -- for stage 3 ONLY,
+# covering the guard FILE (scripts/check_protected_append_only.py) being
+# absent (e.g. deleted, or a distro install missing it). Previously an
+# absent guard file silently WARNED-then-passed with no block -- the entire
+# FEAT-GUARD-001 append-only check (and the SEC-TOJI-102 stub tripwire it
+# also performs) vanished with zero warning, unlike stage 1's F9/F10.
+# Stage 3 now fails CLOSED by default when the guard file cannot be found.
+# Never reused for, or conflated with, DZP_ALLOW_PROTECTED_REWRITE (a
+# legitimate rewrite when the guard IS present and running),
+# DZP_ALLOW_PROTOCOL_EDIT (stage 4), or DZP_ALLOW_MISSING_SECRET_SCAN
+# (stage 1) -- this is "the append-only guard file itself cannot be found."
 #
 $ErrorActionPreference = 'Stop'
 
@@ -109,6 +122,23 @@ if (Test-Path $guard) {
     } else {
         [Console]::Error.WriteLine('[protected-guard] WARNING: python not found — append-only guard SKIPPED')
     }
+} else {
+    # BUG-HOOK-SELF-DISARM-001 (Sukuna Bug Hunt 2026-07-11, P1, gap 2): this
+    # branch previously did not exist -- a missing guard file silently
+    # skipped the ENTIRE FEAT-GUARD-001 append-only check (and the
+    # SEC-TOJI-102 stub tripwire), with no warning and no block. Mirrors
+    # stage 1's F9 fail-closed structure exactly, with its OWN dedicated
+    # break-glass override (see header comment for why this is not
+    # DZP_ALLOW_PROTECTED_REWRITE / DZP_ALLOW_PROTOCOL_EDIT /
+    # DZP_ALLOW_MISSING_SECRET_SCAN).
+    if ($env:DZP_ALLOW_MISSING_APPEND_GUARD -eq '1') {
+        [Console]::Error.WriteLine('[protected-guard] BYPASS: DZP_ALLOW_MISSING_APPEND_GUARD=1 — guard not found, FEAT-GUARD-001 append-only check SKIPPED (authorized).')
+    } else {
+        [Console]::Error.WriteLine('[protected-guard] COMMIT BLOCKED: scripts/check_protected_append_only.py not found — mandatory FEAT-GUARD-001 append-only guard cannot run.')
+        [Console]::Error.WriteLine('  Fix: restore the guard or reinstall via scripts/install-git-hooks.(sh|ps1).')
+        [Console]::Error.WriteLine('  Authorized exception: DZP_ALLOW_MISSING_APPEND_GUARD=1 git commit ...')
+        exit 1
+    }
 }
 
 # ============================================================================
@@ -126,10 +156,22 @@ if ($status) {
     }
 
     if ($staged) {
+        # BUG-HOOK-SELF-DISARM-001 residual (P3 fold-in): this fallback must
+        # never be a WEAKER list than the config-driven path below -- it now
+        # mirrors the same security-critical engine scripts added to
+        # protocol.config.yaml immutable_paths, so a degraded (python/yaml
+        # unavailable) run of this hook still protects them.
         $defaultPaths = @(
             'protocol/', '.claude/agents/',
             '.protocol-state/custom-agent-registry.json',
-            '.protocol-state/authorization/', 'protocol.config.yaml'
+            '.protocol-state/authorization/', 'protocol.config.yaml',
+            'scripts/git-hooks/',
+            'scripts/scan_protected_records.py',
+            'scripts/check_protected_append_only.py',
+            'scripts/validate-protocol.py',
+            'scripts/check_branch_record_isolation.py',
+            'scripts/distro/assert_version.py',
+            'scripts/distro/check_version_stamps.py'
         )
 
         function Get-ProtectedPaths {

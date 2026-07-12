@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.5 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
 # Agent Binding Oath
-## Domain Zero Protocol v9.9.5
+## Domain Zero Protocol v9.9.6
 
 > **Module Type:** Shared Protocol Behavior
 > **Referenced By:** All 9 agents

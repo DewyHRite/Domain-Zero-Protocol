@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.5 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
 # Skill Builder - Domain Zero Protocol
 ## Create New Skills Quickly and Consistently
 

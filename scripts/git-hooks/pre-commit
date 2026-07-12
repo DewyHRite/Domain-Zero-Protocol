@@ -1,5 +1,5 @@
 #!/bin/sh
-# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.5)
+# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.6)
 # Combines: protected-records secret scan + publish-branch skip + append-only guard
 #           + agent/protected-file guard + validate-protocol.py state validation.
 #
@@ -39,6 +39,22 @@
 # when python is absent -- a separate, deliberately-unchanged design
 # decision; stage 5's validate-protocol.py already fails closed on its own,
 # unrelated terms when python is absent and is not affected by this override.)
+#
+# DZP_ALLOW_MISSING_APPEND_GUARD=1 (BUG-HOOK-SELF-DISARM-001, v9.9.6+): a
+# FOURTH, independent, dedicated break-glass override -- for stage 3 ONLY,
+# covering the guard FILE (scripts/check_protected_append_only.py) being
+# absent (e.g. deleted via `git rm`, or a distro install missing it).
+# Previously an absent guard file silently WARNED-then-passed (the `if [ -f
+# "$GUARD" ]` branch had no `else`) -- the entire FEAT-GUARD-001 append-only
+# check AND the SEC-TOJI-102 stub-existence tripwire vanished with zero
+# warning or block, unlike stage 1 which F9/F10 already hardened to fail
+# closed. Stage 3 now fails CLOSED by default when the guard file cannot be
+# found. Deliberately its OWN override, never reused for, or conflated with,
+# DZP_ALLOW_PROTECTED_REWRITE (which authorizes a legitimate REWRITE when the
+# guard IS present and running) or DZP_ALLOW_PROTOCOL_EDIT (stage 4's
+# protected-path override) or DZP_ALLOW_MISSING_SECRET_SCAN (stage 1's
+# missing-dependency override) -- this is "the append-only guard file itself
+# cannot be found," a distinct concern from all three.
 set -eu
 
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
@@ -134,6 +150,26 @@ if [ -f "$GUARD" ]; then
     else
         echo "[protected-guard] WARNING: python not found — append-only guard SKIPPED" >&2
     fi
+else
+    # BUG-HOOK-SELF-DISARM-001 (Sukuna Bug Hunt 2026-07-11, P1, gap 2): this
+    # branch previously did not exist -- a missing guard file (e.g. `git rm
+    # scripts/check_protected_append_only.py` staged in the SAME commit as a
+    # protected-doc rewrite) silently skipped the ENTIRE FEAT-GUARD-001
+    # append-only check (and the SEC-TOJI-102 stub tripwire it also
+    # performs), with no warning and no block -- repro-confirmed: a 538-line
+    # non-append rewrite of dev-notes.md landed with `git commit` exit 0.
+    # Mirrors stage 1's F9 fail-closed structure exactly, with its OWN
+    # dedicated break-glass override (see header comment for why this is not
+    # DZP_ALLOW_PROTECTED_REWRITE/DZP_ALLOW_PROTOCOL_EDIT/
+    # DZP_ALLOW_MISSING_SECRET_SCAN).
+    if [ "${DZP_ALLOW_MISSING_APPEND_GUARD:-}" = "1" ]; then
+        echo "[protected-guard] BYPASS: DZP_ALLOW_MISSING_APPEND_GUARD=1 — guard not found, FEAT-GUARD-001 append-only check SKIPPED (authorized)." >&2
+    else
+        echo "[protected-guard] COMMIT BLOCKED: scripts/check_protected_append_only.py not found — mandatory FEAT-GUARD-001 append-only guard cannot run." >&2
+        echo "  Fix: restore the guard or reinstall via scripts/install-git-hooks.(sh|ps1)." >&2
+        echo "  Authorized exception: DZP_ALLOW_MISSING_APPEND_GUARD=1 git commit ..." >&2
+        exit 1
+    fi
 fi
 
 # ============================================================================
@@ -158,11 +194,23 @@ if [ -n "$status" ]; then
 
     if [ -n "$staged" ]; then
         # Fail-safe default protected list (used if python/yaml or config unavailable).
+        # BUG-HOOK-SELF-DISARM-001 residual (P3 fold-in): this fallback must
+        # never be a WEAKER list than the config-driven path above -- it now
+        # mirrors the same security-critical engine scripts added to
+        # protocol.config.yaml immutable_paths, so a degraded (python/yaml
+        # unavailable) run of this hook still protects them.
         DEFAULT_PATHS="protocol/
 .claude/agents/
 .protocol-state/custom-agent-registry.json
 .protocol-state/authorization/
-protocol.config.yaml"
+protocol.config.yaml
+scripts/git-hooks/
+scripts/scan_protected_records.py
+scripts/check_protected_append_only.py
+scripts/validate-protocol.py
+scripts/check_branch_record_isolation.py
+scripts/distro/assert_version.py
+scripts/distro/check_version_stamps.py"
 
         get_protected_paths() {
             PY=""

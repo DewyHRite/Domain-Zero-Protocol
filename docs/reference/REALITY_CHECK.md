@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.5 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
 # Domain Zero Protocol - The Brutal Reality Check
 
 ## How to Use This Framework for Best Results
@@ -674,6 +674,6 @@ Customize it. Question it. Measure your results. Discard what doesn't work for y
 
 ---
 
-**Domain Zero Protocol v9.9.5** - A Structured Approach to AI-Assisted Development
+**Domain Zero Protocol v9.9.6** - A Structured Approach to AI-Assisted Development
 
 *Now you know what you're actually getting into.*

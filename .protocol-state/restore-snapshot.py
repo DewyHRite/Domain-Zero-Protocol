@@ -24,6 +24,7 @@ Usage:
 """
 
 import argparse
+import copy
 import gzip
 import hashlib
 import json
@@ -95,15 +96,95 @@ def load_manifest() -> Dict[str, Any]:
 # Snapshot Loading
 # =============================================================================
 
-def load_snapshot(snapshot_id: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+# BUG-RESTORE-CHECKSUM-NOOP-001 (P1): create-snapshot.py's create_snapshot()
+# (see .protocol-state/create-snapshot.py ~lines 380-386) computes the stored
+# checksum over the snapshot dict with `checksum` set to None, serialized via
+# `json.dumps(snapshot_data, indent=2)` -- BEFORE `metadata` is later mutated
+# (lines 396-399) to add `compressed_size_bytes` / `uncompressed_size_bytes` /
+# `compression_ratio`. In the CURRENT on-disk format those three keys never
+# actually reach the persisted file at all (the compressed bytes that get
+# written to disk are produced from the pre-mutation serialization -- verified
+# against a real, freshly-created snapshot: its persisted `metadata` contains
+# only `total_files`/`files_included`). They are stripped here defensively
+# anyway (a no-op when absent) so this recompute stays correct even against a
+# snapshot where they *are* present in `metadata` for any reason.
+_POST_CHECKSUM_METADATA_KEYS = (
+    "compressed_size_bytes",
+    "uncompressed_size_bytes",
+    "compression_ratio",
+)
+
+
+def _calculate_snapshot_checksum(snapshot_data: Dict[str, Any]) -> str:
     """
-    Load and decompress snapshot by ID
+    Recompute the SHA-256 checksum over the EXACT pre-image bytes that
+    create-snapshot.py hashed when the snapshot was created: the full
+    snapshot dict with `checksum` forced to None, serialized via
+    `json.dumps(..., indent=2)`.
+
+    Args:
+        snapshot_data: Decoded snapshot dict (as loaded from the gzip file)
+
+    Returns:
+        Hex-encoded SHA-256 digest of the pre-image
+    """
+    data_copy = copy.deepcopy(snapshot_data)
+    data_copy["checksum"] = None
+
+    metadata = data_copy.get("metadata")
+    if isinstance(metadata, dict):
+        for key in _POST_CHECKSUM_METADATA_KEYS:
+            metadata.pop(key, None)
+
+    calculated_bytes = json.dumps(data_copy, indent=2).encode('utf-8')
+    return hashlib.sha256(calculated_bytes).hexdigest()
+
+
+def _empty_verification() -> Dict[str, Any]:
+    return {
+        "performed": False,
+        "matched": None,
+        "override_used": False,
+        "stored_checksum": None,
+        "calculated_checksum": None,
+    }
+
+
+def load_snapshot(
+    snapshot_id: str,
+    force_unverified: bool = False,
+) -> Tuple[Optional[Dict[str, Any]], Optional[str], Dict[str, Any]]:
+    """
+    Load and decompress snapshot by ID, verifying its SHA-256 integrity
+    checksum before returning it.
+
+    BUG-RESTORE-CHECKSUM-NOOP-001 (P1) fix: this function previously computed
+    `calculated_checksum` but NEVER compared it to `stored_checksum` -- it
+    only printed the stored value and unconditionally returned the (possibly
+    tampered) snapshot_data with error=None. A tampered/corrupted snapshot
+    body with a stale stored checksum was silently accepted. This now fails
+    CLOSED: a checksum mismatch (or a missing checksum) returns
+    (None, error, verification) UNLESS the caller explicitly passes
+    force_unverified=True (the --force-unverified break-glass, mirroring
+    `brain restore`'s verify-by-default + --force-unverified design,
+    SEC-002/v9.9.2), in which case a loud stderr warning is printed and the
+    snapshot is returned anyway.
 
     Args:
         snapshot_id: Snapshot ID to load
+        force_unverified: Break-glass override -- proceed even if the
+            checksum is missing or does not match (always prints a loud
+            warning either way)
 
     Returns:
-        Tuple of (snapshot_data, error_message)
+        Tuple of (snapshot_data, error_message, verification_info) where
+        verification_info = {
+            "performed": bool,             # a stored checksum was present and compared
+            "matched": Optional[bool],     # True/False if performed, else None
+            "override_used": bool,         # force_unverified was needed to bypass a failure
+            "stored_checksum": Optional[str],
+            "calculated_checksum": Optional[str],
+        }
     """
     manifest = load_manifest()
 
@@ -115,12 +196,12 @@ def load_snapshot(snapshot_id: str) -> Tuple[Optional[Dict[str, Any]], Optional[
             break
 
     if not snapshot_meta:
-        return None, f"Snapshot not found: {snapshot_id}"
+        return None, f"Snapshot not found: {snapshot_id}", _empty_verification()
 
     snapshot_path = SNAPSHOTS_DIR / snapshot_meta["file_path"]
 
     if not snapshot_path.exists():
-        return None, f"Snapshot file not found: {snapshot_path}"
+        return None, f"Snapshot file not found: {snapshot_path}", _empty_verification()
 
     # Decompress snapshot
     try:
@@ -129,23 +210,62 @@ def load_snapshot(snapshot_id: str) -> Tuple[Optional[Dict[str, Any]], Optional[
 
         snapshot_data = json.loads(json_data)
 
-        # Verify checksum
-        stored_checksum = snapshot_data.get("checksum")
-        if stored_checksum:
-            # Recalculate checksum (excluding checksum field)
-            data_copy = snapshot_data.copy()
-            data_copy["checksum"] = None
-            calculated_bytes = json.dumps(data_copy, indent=2).encode('utf-8')
-            calculated_checksum = hashlib.sha256(calculated_bytes).hexdigest()
-
-            # Note: This checksum verification is simplified
-            # In production, we'd verify the exact same serialization
-            print(f"   Checksum: {stored_checksum[:16]}... (stored)")
-
-        return snapshot_data, None
-
     except Exception as e:
-        return None, f"Failed to load snapshot: {e}"
+        return None, f"Failed to load snapshot: {e}", _empty_verification()
+
+    # Verify checksum -- fail-closed BEFORE any backup or state-file write
+    # happens (both of those occur later, in restore_snapshot()).
+    stored_checksum = snapshot_data.get("checksum")
+    calculated_checksum = _calculate_snapshot_checksum(snapshot_data)
+
+    verification: Dict[str, Any] = {
+        "performed": bool(stored_checksum),
+        "matched": None,
+        "override_used": False,
+        "stored_checksum": stored_checksum,
+        "calculated_checksum": calculated_checksum,
+    }
+
+    if not stored_checksum:
+        if force_unverified:
+            verification["override_used"] = True
+            print(
+                f"   ⚠️  WARNING: Snapshot {snapshot_id} has NO stored checksum -- "
+                f"integrity CANNOT be verified. Proceeding ONLY because "
+                f"--force-unverified was passed.",
+                file=sys.stderr,
+            )
+        else:
+            return None, (
+                f"Snapshot {snapshot_id} has no stored checksum -- refusing to "
+                f"restore unverified content. Pass --force-unverified to override "
+                f"(not recommended)."
+            ), verification
+    else:
+        print(f"   Checksum: {stored_checksum[:16]}... (stored)")
+        print(f"   Checksum: {calculated_checksum[:16]}... (calculated)")
+
+        verification["matched"] = (calculated_checksum == stored_checksum)
+
+        if not verification["matched"]:
+            if force_unverified:
+                verification["override_used"] = True
+                print(
+                    f"   ⚠️  WARNING: CHECKSUM MISMATCH for snapshot {snapshot_id} -- "
+                    f"this snapshot's content does NOT match its stored integrity "
+                    f"checksum (possible tampering or corruption). Proceeding ONLY "
+                    f"because --force-unverified was passed.",
+                    file=sys.stderr,
+                )
+            else:
+                return None, (
+                    f"Checksum MISMATCH for snapshot {snapshot_id} -- stored="
+                    f"{stored_checksum[:16]}... calculated={calculated_checksum[:16]}... "
+                    f"Refusing to restore possibly-tampered/corrupted content. "
+                    f"Pass --force-unverified to override (not recommended)."
+                ), verification
+
+    return snapshot_data, None, verification
 
 
 # =============================================================================
@@ -159,7 +279,7 @@ def preview_snapshot(snapshot_id: str) -> None:
     Args:
         snapshot_id: Snapshot ID to preview
     """
-    snapshot_data, error = load_snapshot(snapshot_id)
+    snapshot_data, error, _verification = load_snapshot(snapshot_id)
 
     if error:
         print(f"ERROR: {error}", file=sys.stderr)
@@ -242,13 +362,22 @@ def create_pre_restore_backup() -> Optional[str]:
 # Restore
 # =============================================================================
 
-def restore_snapshot(snapshot_id: str, skip_backup: bool = False) -> bool:
+def restore_snapshot(
+    snapshot_id: str,
+    skip_backup: bool = False,
+    force_unverified: bool = False,
+) -> bool:
     """
     Restore DZP state from snapshot
 
     Args:
         snapshot_id: Snapshot ID to restore
         skip_backup: If True, skip pre-restore backup
+        force_unverified: DANGEROUS break-glass -- restore even if the
+            snapshot's checksum is missing or does not match (possible
+            tampering/corruption). Always prints a loud warning. Verification
+            still runs first (Step 1, below) -- this only controls whether a
+            failed verification aborts the restore or is overridden.
 
     Returns:
         True if restore succeeded, False otherwise
@@ -260,8 +389,16 @@ def restore_snapshot(snapshot_id: str, skip_backup: bool = False) -> bool:
     print(f"{'=' * 80}\n")
 
     # Step 1: Load snapshot
+    # BUG-RESTORE-CHECKSUM-NOOP-001 (P1) fix: load_snapshot() now actually
+    # verifies the stored checksum against a recomputed one and, on mismatch
+    # (or a missing checksum), returns an error here -- BEFORE the pre-restore
+    # backup (Step 2) is created and BEFORE any state file is touched (Step
+    # 4). This is the fail-closed ordering: a tampered/corrupted snapshot
+    # never reaches the write path unless force_unverified=True was passed.
     print("[1/6] Loading snapshot...")
-    snapshot_data, error = load_snapshot(snapshot_id)
+    snapshot_data, error, verification = load_snapshot(
+        snapshot_id, force_unverified=force_unverified
+    )
 
     if error:
         print(f"ERROR: {error}", file=sys.stderr)
@@ -278,9 +415,24 @@ def restore_snapshot(snapshot_id: str, skip_backup: bool = False) -> bool:
     else:
         print("\n[2/6] Skipping backup (as requested)...")
 
-    # Step 3: Verify checksum
+    # Step 3: Report checksum verification result
+    # Verification was ALREADY performed in Step 1 (before the backup above
+    # and before any state file below is touched). This used to print a
+    # hardcoded "Checksum verified" banner with zero computation -- it now
+    # reports the REAL outcome captured during load_snapshot().
     print("\n[3/6] Verifying checksum...")
-    print("   ✅ Checksum verified")
+    if verification["performed"] and verification["matched"]:
+        print(f"   ✅ Checksum verified ({verification['stored_checksum'][:16]}... matches)")
+    elif verification["override_used"]:
+        print(
+            "   ⚠️  Restoring UNVERIFIED content (--force-unverified) -- checksum "
+            "was missing or did not match. See warning above.",
+            file=sys.stderr,
+        )
+    else:
+        # Unreachable in practice: any real verification failure without
+        # force_unverified already returned False at Step 1, above.
+        print("   ⚠️  Checksum verification state unknown", file=sys.stderr)
 
     # Step 4: Restore state files
     print("\n[4/6] Restoring state files...")
@@ -504,12 +656,13 @@ Examples:
   %(prog)s --preview abc123                     Preview snapshot contents
   %(prog)s --restore abc123                     Restore snapshot
   %(prog)s --restore abc123 --skip-backup       Restore without backup
+  %(prog)s --restore abc123 --force-unverified  DANGEROUS: restore even if checksum fails
   %(prog)s --rollback                           Rollback to pre-restore backup
 
 Performance:
   Target restore time: <30 seconds
   Automatic backup before restore
-  Checksum verification
+  Checksum verification (fail-closed by default; see --force-unverified)
   Rollback capability
         """
     )
@@ -522,6 +675,12 @@ Performance:
                         help='Restore snapshot by ID')
     parser.add_argument('--skip-backup', action='store_true',
                         help='Skip pre-restore backup (dangerous)')
+    parser.add_argument('--force-unverified', action='store_true',
+                        help='DANGEROUS break-glass: restore even if the snapshot '
+                             'checksum is missing or does not match (possible '
+                             'tampering/corruption). Always prints a loud warning. '
+                             'Default behavior (no flag) is fail-closed: a checksum '
+                             'mismatch aborts the restore before any state file is written.')
     parser.add_argument('--rollback', action='store_true',
                         help='Rollback to pre-restore backup')
     parser.add_argument('--debug', action='store_true',
@@ -539,7 +698,11 @@ Performance:
             sys.exit(0)
 
         if args.restore:
-            success = restore_snapshot(args.restore, skip_backup=args.skip_backup)
+            success = restore_snapshot(
+                args.restore,
+                skip_backup=args.skip_backup,
+                force_unverified=args.force_unverified,
+            )
             sys.exit(0 if success else 1)
 
         if args.rollback:

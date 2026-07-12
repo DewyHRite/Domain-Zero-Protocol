@@ -3,8 +3,31 @@ Wrapped under the ESCROW passphrase (NOT the DB key) so it survives total DB-key
 
 Owner-only write on every export artifact. Retention controlled by prune_exports
 (keep newest N, default 3). No plaintext memory ever lands on disk.
+
+BUG-CORTEX-ESCROW-HOLLOW-001 / BUG-CORTEX-ESCROW-RAISE-002 (P1, Sukuna bug hunt
+2026-07-11, repro-CONFIRMED against a real v4 brain): this module previously read a
+`cortex_memories` table and a `cortex_entities.source` column -- NEITHER of which has
+ever existed in any real Cortex schema (v1 legacy `chunks`, or v2/v3/v4
+content-addressed `content`/`content_refs`/`content_vectors`; see store.py
+_create_v2_schema/_create_v3_schema). `cortex_memories` was fabricated only by test
+fixtures, which is why the defect shipped green through v9.9.0-v9.9.5 while being
+completely non-functional against a real brain:
+  - HOLLOW-001: `SELECT * FROM cortex_memories` always hit "no such table" ->
+    `_safe_rows` returned ([], False) -> the escrow silently captured 0 of N facts.
+  - RAISE-002: `SELECT * FROM cortex_entities WHERE source='memory'` always hit
+    "no such column: source" (cortex_entities has no `source` column) -> `_safe_rows`
+    correctly re-raised (CODE-001 contract) -> export_memories hard-crashed before
+    ever reaching HOLLOW-001's silent-empty behavior.
+Ground truth (memory.py::remember(), ~line 71-86): a remembered fact is written as a
+content-addressed Chunk with source_type="memory", source_path=f"memory:{mem_id}" --
+landing in `content_refs` (the occurrence row) joined to `content` (the text) on
+content_hash. serialize_memories()/restore_memories() now read/write that real
+location. The "cortex_entities.source='memory'" predicate is DROPPED entirely --
+"memory-sourced entities" was a fictional concept that never had a corresponding
+column; nothing downstream ever populated or read it as a real feature.
 """
 from __future__ import annotations
+import hashlib
 import json
 import logging
 import sqlite3
@@ -13,6 +36,18 @@ from pathlib import Path
 from . import crypto, recovery
 
 _log = logging.getLogger(__name__)
+
+# Ground truth from memory.py::remember(): Chunk(source_type="memory",
+# source_path=f"memory:{mem_id}", ...). Kept as a local literal (not imported) to
+# avoid a hard import-time dependency on memory.py for the read-only export path.
+_MEMORY_SOURCE_TYPE = "memory"
+_MEMORY_STORAGE_PREFIX = "memory:"
+
+# Format version bumped 1 -> 2: the v1 envelope's "cortex_memories"/"cortex_entities"
+# keys were tied to the fictional schema above and never carried real data from a
+# production brain. v2 sources memories from content_refs/content (source_type=
+# 'memory') and drops the entities concept entirely.
+_FORMAT_VERSION = "dzp-memory-export/2"
 
 
 def _safe_rows(conn, sql) -> "tuple[list, bool]":
@@ -39,28 +74,68 @@ def _safe_rows(conn, sql) -> "tuple[list, bool]":
 
 
 def serialize_memories(conn) -> bytes:
-    """Serialize cortex_memories (+ memory-sourced cortex_entities) to JSON bytes.
-    Format: dzp-memory-export/1 — tables absent -> empty lists (portable across schemas).
+    """Serialize remembered facts to JSON bytes.
+    Format: dzp-memory-export/2 -- content-addressed source of truth.
 
-    CODE-001: per-table presence + row-count diagnostics are embedded under the
-    private `_table_meta` key (not consumed by restore_memories/verify_memory_export,
-    which only read `cortex_memories`/`cortex_entities`) so callers such as
+    HOLLOW-001/RAISE-002 fix: reads content_refs (WHERE source_type='memory')
+    JOINed to content (on content_hash) for the fact text -- the real location
+    memory.py::remember() writes to. The old `cortex_entities.source='memory'`
+    query is gone; entities are not memories and no such column ever existed.
+
+    CODE-001 (retained): per-table presence + row-count diagnostics are embedded
+    under the private `_table_meta` key (not consumed by restore_memories/
+    verify_memory_export, which only read `memories`) so callers such as
     export_memories() can record them in the sidecar manifest without a second
     DB round-trip. Any query failure OTHER than "no such table" propagates from
     `_safe_rows` above, so a corrupt/locked DB FAILS this function outright
-    instead of silently producing a hollow-but-valid artifact.
+    instead of silently producing a hollow-but-valid artifact. A genuinely
+    schema-gated brain (no content_refs table -- e.g. a v1 legacy brain that
+    never migrated) legitimately yields an empty, present=False result.
     """
-    memories_rows, memories_present = _safe_rows(conn, "SELECT * FROM cortex_memories")
-    entities_rows, entities_present = _safe_rows(
-        conn, "SELECT * FROM cortex_entities WHERE source='memory'"
+    memory_rows, memories_present = _safe_rows(
+        conn,
+        """
+        SELECT cr.storage_key    AS storage_key,
+               cr.mem_type       AS mem_type,
+               cr.agent          AS agent,
+               cr.recorded_date  AS recorded_date,
+               cr.refs           AS refs,
+               cr.trust          AS trust,
+               cr.suspect        AS suspect,
+               cr.content_hash   AS content_hash,
+               c.text            AS text
+        FROM content_refs cr
+        JOIN content c ON cr.content_hash = c.content_hash
+        WHERE cr.source_type = 'memory'
+        ORDER BY cr.recorded_date ASC
+        """,
     )
+    memories = []
+    for row in memory_rows:
+        storage_key = row.get("storage_key") or ""
+        mem_id = (
+            storage_key[len(_MEMORY_STORAGE_PREFIX):]
+            if storage_key.startswith(_MEMORY_STORAGE_PREFIX)
+            else storage_key
+        )
+        memories.append(
+            {
+                "mem_id": mem_id,
+                "text": row.get("text"),
+                "mem_type": row.get("mem_type"),
+                "agent": row.get("agent"),
+                "recorded_date": row.get("recorded_date"),
+                "refs": row.get("refs") or "[]",
+                "trust": row.get("trust"),
+                "suspect": bool(row.get("suspect")),
+                "content_hash": row.get("content_hash"),
+            }
+        )
     doc = {
-        "format": "dzp-memory-export/1",
-        "cortex_memories": memories_rows,
-        "cortex_entities": entities_rows,
+        "format": _FORMAT_VERSION,
+        "memories": memories,
         "_table_meta": {
-            "cortex_memories": {"present": memories_present, "rows": len(memories_rows)},
-            "cortex_entities": {"present": entities_present, "rows": len(entities_rows)},
+            "memories": {"present": memories_present, "rows": len(memories)},
         },
     }
     return json.dumps(doc, separators=(",", ":")).encode("utf-8")
@@ -121,86 +196,90 @@ def export_memories(
 
 def verify_memory_export(path, passphrase: str) -> dict:
     """Unwrap and parse a memory-export artifact. Returns a summary dict.
-    Raises CortexKeyUnavailableError on wrong passphrase or tampered artifact."""
+    Raises CortexKeyUnavailableError on wrong passphrase or tampered artifact.
+
+    `entities` is retained in the returned dict for backward-compatible shape but
+    is now always 0 -- the "memory-sourced cortex_entities" concept HOLLOW-001/
+    RAISE-002 removed was fictional (no such column ever existed); this key is not
+    a functional regression, it never carried real data."""
     data, meta = crypto.unwrap_payload(Path(path).read_bytes(), passphrase)
     doc = json.loads(data.decode("utf-8"))
     return {
-        "memories": len(doc.get("cortex_memories", [])),
+        "memories": len(doc.get("memories", [])),
         "entities": len(doc.get("cortex_entities", [])),
-        "ok": doc.get("format") == "dzp-memory-export/1",
+        "ok": doc.get("format") == _FORMAT_VERSION,
         "meta": meta,
     }
 
 
-def restore_memories(conn, path, passphrase: str) -> int:
-    """Re-seed cortex_memories (and memory-sourced cortex_entities) from an export
-    artifact into a fresh (empty) DB.  Returns the number of cortex_memories rows
-    inserted. Commits atomically.
+def restore_memories(store, path, passphrase: str, *, embedder) -> int:
+    """Re-seed remembered facts from a memory-export artifact into `store` via the
+    SAME insertion path memory.py::remember() uses (Chunk -> Store.upsert), i.e.
+    the real content-addressed storage. Returns the number of memories inserted.
 
-    SEC-B3-001: column names are validated against the target DB's live schema via
-    PRAGMA table_info before any INSERT is constructed.  Unknown/malicious keys from
-    the deserialized artifact are silently dropped; only known columns are inserted.
-    Rows where zero valid columns remain are skipped entirely.
+    HOLLOW-001/RAISE-002 fix: the prior implementation issued a raw
+    `INSERT INTO cortex_memories(...)` -- a table that has never existed in any
+    real Cortex schema (v1 legacy or v2+ content-addressed) -- so it could never
+    have successfully restored a single real memory. Content-addressed storage
+    requires a vector row (content_vectors) alongside content/content_refs; there
+    is no way to "just INSERT a row" without an embedding, so restoration goes
+    through Store.upsert() (the same call memory.remember() makes), not a bespoke
+    INSERT.
 
-    F4 (CodeRabbit PR#104): serialize_memories captures memory-sourced cortex_entities
-    but the original restore_memories only re-inserted cortex_memories rows, silently
-    dropping the entities on F8 re-seed.  We now restore them too using the same
-    schema-validated column allow-set pattern.  If the target DB has no cortex_entities
-    table (minimal brain / schema-gated), entity restore is skipped silently.
+    `store` is a `cortex.store.Store` already constructed with the destination
+    brain's db_path/dim/vector_backend/install_id. `embedder` re-embeds each
+    restored fact's text (same contract as memory.remember()'s `embedder` param)
+    so semantic recall works on the restored brain, not just plaintext storage.
+
+    Idempotent: Store.upsert() keys content_refs on (storage_key, line_start) with
+    ON CONFLICT DO UPDATE (see store.py _upsert_v2), and reuses the existing
+    content/vector row when content_hash already exists -- re-running restore
+    against the same target brain does not duplicate rows.
+
+    Malformed rows (missing mem_id or text) are silently skipped -- same
+    defensive posture as the pre-fix SEC-B3-001 column allow-set behavior (never
+    let a corrupt/foreign artifact raise mid-restore).
     """
+    from .store import Chunk  # local import: keep memory_export import-light for read paths
+
     data, _ = crypto.unwrap_payload(Path(path).read_bytes(), passphrase)
     doc = json.loads(data.decode("utf-8"))
-    rows = doc.get("cortex_memories", [])
+    rows = doc.get("memories", [])
 
-    # Build allow-set from the real DB schema — names come from a trusted source.
-    allowed = {
-        row[1]
-        for row in conn.execute("PRAGMA table_info(cortex_memories)").fetchall()
-    }
-
-    n = 0
+    items: list[tuple[Chunk, list[float]]] = []
     for r in rows:
-        # Keep only keys present in the DB schema; discard anything else.
-        valid = {k: v for k, v in r.items() if k in allowed}
-        if not valid:
-            continue  # no recognized columns — skip this row
-        col_list = list(valid.keys())
-        cols = ",".join(col_list)
-        ph = ",".join("?" for _ in col_list)
-        conn.execute(
-            f"INSERT INTO cortex_memories({cols}) VALUES ({ph})",
-            tuple(valid[k] for k in col_list),
-        )
-        n += 1
-
-    # F4: restore memory-sourced entities (captured by serialize_memories).
-    # Fail-soft if cortex_entities table is absent (schema-gated / minimal brain).
-    entity_rows = doc.get("cortex_entities", [])
-    if entity_rows:
+        mem_id = r.get("mem_id")
+        text = r.get("text")
+        if not mem_id or not text:
+            continue  # malformed/incomplete row -- skip rather than crash the restore
+        content_hash = r.get("content_hash") or hashlib.sha256(text.encode("utf-8")).hexdigest()
         try:
-            entity_allowed = {
-                row[1]
-                for row in conn.execute("PRAGMA table_info(cortex_entities)").fetchall()
-            }
-            if entity_allowed:  # table exists in target DB
-                for er in entity_rows:
-                    valid_e = {k: v for k, v in er.items() if k in entity_allowed}
-                    if not valid_e:
-                        continue
-                    col_list_e = list(valid_e.keys())
-                    cols_e = ",".join(col_list_e)
-                    ph_e = ",".join("?" for _ in col_list_e)
-                    conn.execute(
-                        f"INSERT OR IGNORE INTO cortex_entities({cols_e}) VALUES ({ph_e})",
-                        tuple(valid_e[k] for k in col_list_e),
-                    )
-        except Exception as exc:
-            # fail-soft: entity restore is best-effort (memories are committed below);
-            # log for visibility so a silent schema/insert failure is not invisible.
-            _log.warning("memory-export entity restore skipped (best-effort): %s", exc)
+            refs = json.loads(r.get("refs") or "[]")
+            if not isinstance(refs, list):
+                refs = []
+        except (TypeError, ValueError):
+            refs = []
+        chunk = Chunk(
+            id=f"{_MEMORY_STORAGE_PREFIX}{mem_id}",
+            source_path=f"{_MEMORY_STORAGE_PREFIX}{mem_id}",
+            source_type=_MEMORY_SOURCE_TYPE,
+            line_start=1,
+            line_end=1,
+            content_hash=content_hash,
+            recorded_date=r.get("recorded_date") or _now_iso(),
+            text=text,
+            trust=r.get("trust") or "untrusted",
+            suspect=bool(r.get("suspect")),
+            mem_type=r.get("mem_type"),
+            agent=r.get("agent"),
+            refs=refs,
+        )
+        items.append((chunk, embedder.embed(text)))
 
-    conn.commit()
-    return n
+    if not items:
+        return 0
+    store.upsert(items)
+    return len(items)
 
 
 def prune_exports(export_dir, *, keep: int = 3) -> list:

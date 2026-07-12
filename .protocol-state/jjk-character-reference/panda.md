@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.5 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
 
 # Panda - JJK Character Reference
 **Source**: Jujutsu Kaisen Fandom Wiki
 **URL**: <https://jujutsu-kaisen.fandom.com/wiki/Panda>
 **Downloaded**: 2025-11-25
-**Protocol Version**: v9.9.5
+**Protocol Version**: v9.9.6
 
 ---
 

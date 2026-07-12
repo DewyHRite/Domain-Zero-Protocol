@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.5 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
-**Version**: 9.9.5
+**Version**: 9.9.6
 **Last Updated**: 2026-07-11
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
 

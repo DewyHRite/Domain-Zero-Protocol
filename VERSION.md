@@ -1,9 +1,53 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.5 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.9.5
+**Version:** 9.9.6
 **Release Date:** 2026-07-11
-**Release Type:** PATCH Release (Cortex ingest secret-detector false-positive/observability remediation + scanner -005/-010 reconciliation + publish-manifest gap closure + same-day Toji-audit-2026-07-11 remediation + RHS snapshot-tooling P1 port)
+**Release Type:** PATCH Release (Sukuna adversarial bug-hunt remediation — 5 P1s closed: hook self-disarm, restore-snapshot checksum no-op, Cortex key-recovery escrow hollow-capture, distro publish PII-leak gate)
+
+---
+
+## Release Summary — v9.9.6 (PATCH)
+
+v9.9.6 closes 5 P1 defects found by a Sukuna-led 4-front adversarial bug hunt across the security-gate
+engine, the snapshot restore path, the Cortex key-recovery escrow, and the distro publish PII gate —
+each with a committed regression test converted directly from its repro. Provenance:
+`internal-docs/.../DZP-Sukuna-BugHunt-2026-07-11.md` (Toji-audited Rev 2).
+
+- **BUG-HOOK-SELF-DISARM-001** (P1) CLOSED — the security-gate ENGINE scripts
+  (`scan_protected_records.py`, `check_protected_append_only.py`, `validate-protocol.py`,
+  `check_branch_record_isolation.py`, `distro/assert_version.py`, `distro/check_version_stamps.py`)
+  are now themselves listed in `immutable_paths` — the prior hardening (F6) protected only the hook
+  wrapper scripts, leaving the on-disk scanner engines themselves free for an unprivileged commit to
+  neuter or `git rm`. The stage-3 append-only guard now FAILS CLOSED when a guard file is missing,
+  with a new break-glass `DZP_ALLOW_MISSING_APPEND_GUARD` override (the guard's 4th override, always
+  printed loud on use); the `DEFAULT_PATHS` fallback was brought to the same parity. Closes a
+  self-disarm path that could have let a secret ship or protected history be silently rewritten.
+- **BUG-RESTORE-CHECKSUM-NOOP-001** (P1) CLOSED — `restore-snapshot.py` now ACTUALLY compares the
+  snapshot checksum against a recompute of the pre-image (it previously computed the checksum but
+  never compared it, always printing a hardcoded "✅ verified" banner regardless of match).
+  Verify-before-write ordering is fail-closed; `--force-unverified` remains as an explicit break-glass.
+- **BUG-CORTEX-ESCROW-HOLLOW-001** + **-RAISE-002** (P1 ×2) CLOSED —
+  `.protocol-state/brain/cortex/memory_export.py`'s key-recovery escrow capture is now re-pointed at
+  the REAL content-addressed store (`content_refs ⋈ content WHERE source_type='memory'`); the phantom
+  `cortex_memories` table and `cortex_entities.source` column it previously queried do not exist on any
+  real `Store` brain, so escrow silently captured 0 memories (or hard-raised) on every genuine
+  installation since introduction in v9.9.0. Restore now uses the production upsert path. The masking
+  test fixtures that fabricated the phantom table — hiding this defect for 6 releases — were
+  de-fabricated onto real `Store`-backed brains so the regression suite can no longer mask a recurrence.
+- **BUG-DISTRO-PII-LEAK-001** (P1) CLOSED — the publish `content_audit` PII scan now scans EVERY
+  staged file regardless of extension (was extension-gated, silently skipping unlisted types), decodes
+  with a known-encoding chain falling back to `latin-1` (UTF-16 content was previously skipped
+  entirely rather than scanned), and matches `IGNORECASE`. `_IGNORE_COPY` extended to editor/merge
+  junk (`.orig`, `.rej`, `.swp`, `.swo`, `.tmp`, `~`, `.DS_Store`, `Thumbs.db`) so such files can no
+  longer accidentally ship to the public distro carrying unaudited owner PII.
+- Yuuji TDD throughout; Megumi Tier-3 @approved. New tests: hook self-disarm 14, restore-checksum 14,
+  escrow 3 new + 4 de-fabricated suites re-pointed at real `Store` brains, distro PII-leak gate 8.
+- **Accepted P3 residuals:** `.protocol-state/attestation.py` not yet added to `immutable_paths`
+  (bounded — unattested drift is non-blocking, alert-only); content-audit substring boundary vs
+  binary/compressed blobs (moot for this repo — no binary assets ship).
+- **Deferred (not in this release):** 6 P2 + ~12 P3 findings from the same bug-hunt report remain open
+  for a follow-on patch.
 
 ---
 

@@ -9,6 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.9.6] - 2026-07-11
+
+### PATCH — Sukuna adversarial bug-hunt remediation (5 P1s closed)
+
+#### Fixed
+- **`BUG-HOOK-SELF-DISARM-001`** (P1) — the security-gate ENGINE scripts
+  (`scan_protected_records.py`, `check_protected_append_only.py`, `validate-protocol.py`,
+  `check_branch_record_isolation.py`, `distro/assert_version.py`, `distro/check_version_stamps.py`)
+  are now themselves listed in `immutable_paths` (a prior hardening pass protected only the hook
+  wrapper scripts, leaving the on-disk scanner engines free for an unprivileged commit to neuter or
+  `git rm`). The stage-3 append-only guard now fails CLOSED on a missing guard file, with a new
+  break-glass `DZP_ALLOW_MISSING_APPEND_GUARD` override (always printed loud); the `DEFAULT_PATHS`
+  fallback brought to parity.
+- **`BUG-RESTORE-CHECKSUM-NOOP-001`** (P1) — `restore-snapshot.py` now actually compares the
+  snapshot checksum against a recompute of the pre-image (previously computed but never compared,
+  with a hardcoded "verified" banner regardless of match). Verify-before-write is fail-closed;
+  `--force-unverified` remains as an explicit break-glass.
+- **`BUG-CORTEX-ESCROW-HOLLOW-001`** + **`-RAISE-002`** (P1 ×2) — `cortex/memory_export.py`'s
+  key-recovery escrow capture re-pointed at the real content-addressed store
+  (`content_refs ⋈ content WHERE source_type='memory'`); the phantom `cortex_memories` table and
+  `cortex_entities.source` column it previously queried never existed on a real `Store` brain, so
+  escrow silently captured 0 memories (or hard-raised) on every genuine installation since v9.9.0.
+  Restore uses the production upsert path. The masking test fixtures that fabricated the phantom
+  table were de-fabricated onto real `Store` brains.
+- **`BUG-DISTRO-PII-LEAK-001`** (P1) — publish `content_audit` now scans every staged file
+  regardless of extension, with a known-encoding→`latin-1` fallback (UTF-16 was previously skipped
+  entirely) and `IGNORECASE` matching; `_IGNORE_COPY` extended to editor/merge junk (`.orig`, `.rej`,
+  `.swp`, `.swo`, `.tmp`, `~`, `.DS_Store`, `Thumbs.db`).
+
+#### Notes
+- Provenance: Sukuna 4-front adversarial bug hunt
+  (`internal-docs/.../DZP-Sukuna-BugHunt-2026-07-11.md`, Toji-audited Rev 2); each fix ships with its
+  repro converted to a committed regression test. New tests: hook self-disarm 14, restore-checksum
+  14, escrow 3 new + 4 de-fabricated suites, distro PII-leak gate 8. Yuuji TDD + Megumi Tier-3
+  @approved.
+- **Accepted P3 residuals:** `.protocol-state/attestation.py` not yet in `immutable_paths` (bounded,
+  non-blocking); content-audit substring boundary vs binary/compressed blobs (moot — no binary
+  assets ship).
+- **Deferred:** 6 P2 + ~12 P3 findings from the same bug-hunt report are not part of this release.
+
 ## [9.9.5] - 2026-07-11
 
 ### PATCH — Cortex ingest secret-detector false-positive/observability remediation + scanner reconciliation + publish-manifest gap closure + same-day Toji-audit remediation + RHS snapshot P1 port
