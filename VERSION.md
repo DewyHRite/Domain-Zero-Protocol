@@ -1,9 +1,47 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.9.6
-**Release Date:** 2026-07-11
-**Release Type:** PATCH Release (Sukuna adversarial bug-hunt remediation — 5 P1s closed: hook self-disarm, restore-snapshot checksum no-op, Cortex key-recovery escrow hollow-capture, distro publish PII-leak gate)
+**Version:** 9.9.7
+**Release Date:** 2026-07-13
+**Release Type:** PATCH Release (BUG-CORTEX-008 R3 durable session-end fix — full Cortex rebuild moved off the critical path — plus the BUG-DISTRO-DIRTY-SOURCE-001 dirty-source publish guard)
+
+---
+
+## Release Summary — v9.9.7 (PATCH)
+
+v9.9.7 delivers the durable fix for the chronic Cortex session-end timeout (BUG-CORTEX-008), superseding
+the v9.9.6-era R1 stopgap, plus a maintainer-side dirty-source publish guard that closes a silent-leak
+path in `dzp-publish`.
+
+- **BUG-CORTEX-008 R3** (durable fix) CLOSED — root cause was the SYNCHRONOUS full `--level high`
+  re-embed + `export --snapshot` landing on top of the session's largest embedding-delta cost, not
+  corpus size as R1 assumed. `session-end` now runs `cortex-medium` (`--level medium`, incremental, no
+  export, 90s) instead of `cortex-high`, keeping the critical path fast and fail-soft. A new manual event
+  `cortex-rebuild-full` (`python dzp.py event cortex-rebuild-full`) carries the full `--level high` + export
+  off the critical path for periodic/manual invocation (no daemon — DZP remains no-daemon by design).
+  The other 4 `cortex-high` steps (`pre-release`, `pre-publish`, `post-migration`, `post-rotation`) are
+  unchanged and remain real gates at R1's 300s timeout. `cortex_trigger.py` unaffected — it already
+  supported medium+export. Docs updated: `protocol/skills/session.md` (incl. a `toji-snapshot` event
+  pointer, closes SEC-CORTEX-R3-001), `protocol/skills/session-check.md`'s session-end.md counterpart,
+  `README.md`, `docs/guides/DZP_CORTEX.md`, `AI_INSTRUCTIONS.md`.
+- **BUG-CORTEX-008 R1** (stopgap, folded in) — raised `timeout_seconds` 180→300 on all 5 `cortex-high`
+  orchestration steps; the other 4 non-session-end steps keep this 300s timeout under R3.
+- **BUG-DISTRO-DIRTY-SOURCE-001** (maintainer tooling) CLOSED — `dzp-publish` staged `distro/` by
+  copying the dev source tree from disk, never from git, so a dirty working tree could silently ship
+  uncommitted content publicly. Adds a fail-closed `dev_source_dirty_offenders()` guard (`git status
+  --porcelain=v1 -z`, scoped to the same manifest-staged paths: `include_*` + `exclude_subpaths` +
+  `distro_gitignore_source`) that aborts the publish on any genuinely dirty manifest-shippable path.
+  `DZP_ALLOW_DIRTY_SOURCE=1` is a loud, non-silent override for confirmed-clean intentional dirt (rc==1
+  only); a git-execution failure (rc==2, git missing/non-repo) hard-fails and is NOT overridable. POSIX +
+  PowerShell parity; `docs/guides/DISTRO_RELEASE_WORKFLOW.md` §4a documents it. Closes SEC-DISTRO-DIRTY-001
+  (P2, gitignore-source scope gap), -002 (P3, `-z` path parsing), -003 (P3, override-vs-execution-failure
+  separation).
+- Yuuji TDD throughout (Cortex R3 doc/config regression coverage; 17 dirty-source guard + 125 distro
+  suite tests green); Megumi Tier-2/Tier-3 @approved both items; Sukuna-implemented and Gojo-verified.
+- **Same-session governance note:** a Sukuna SEC-ID governance self-review was conducted this session
+  (`audits/2026-07-13-sukuna-secid-governance-review.md`); its formal issue-tracker remediation is
+  scheduled for v9.9.8 and is NOT part of this release's code changes.
+- **Not in this release:** the v9.9.5 same-day Toji-audit addendum's CODE-001/SEC-001/BUG-SNAPSHOT-NULLFIELDS-001/MF-1/FEAT-REQ-002 items remain as documented under v9.9.5 below (unchanged carry-forward, already committed).
 
 ---
 

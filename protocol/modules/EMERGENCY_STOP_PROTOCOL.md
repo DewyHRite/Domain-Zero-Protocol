@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
 # Emergency Stop Protocol (Kill Switch)
-## Domain Zero Protocol v9.9.6
+## Domain Zero Protocol v9.9.7
 
 > **Module Type:** Shared Protocol Behavior
 > **Referenced By:** All 9 agents

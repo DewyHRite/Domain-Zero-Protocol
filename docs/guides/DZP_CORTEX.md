@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
 # DZP Cortex — Complete Guide
 
-**Version**: 9.9.6
+**Version**: 9.9.7
 **Last Updated**: 2026-07-11
 **Status**: Production-Ready
 **Audience**: DZP operators and resident agents
@@ -235,10 +235,16 @@ Use the root wrappers (`scripts/brain.ps1` on Windows, `scripts/brain.sh` on POS
 - **`/session update`** runs an incremental re-index (`brain index --incremental`) as the final step
   of every full project-document sync (fail-soft; skipped if Cortex is unavailable).
   `update --time-only` skips the full sync.
-- **`/session end`** triggers a full rebuild (`brain index`) + an export snapshot.
+- **`/session end`** runs an **incremental** re-index (`--level medium`, no export). Per
+  BUG-CORTEX-008 R3 (2026-07-13), this used to be a full `--level high` rebuild + export, but that
+  is embedding-delta-bound (cost scales with how much NEW content was just embedded, not with total
+  corpus size) and session-end fires immediately after the session's own largest content delta —
+  the worst possible moment to run it synchronously, causing chronic timeouts on large corpora. The
+  full rebuild + export now lives in a standalone event: `python dzp.py event cortex-rebuild-full`,
+  invoked manually or periodically (DZP is no-daemon; there is no automated scheduler).
 - Lifecycle events (`pre-protected-edit`, `pre-release`, `session-end`, `post-migration`,
-  `pre-publish`, `post-rotation`, …) are routed through `dzp.py event` and may fire advisory Cortex
-  recall. Advisory steps are always fail-soft and never block the workflow.
+  `pre-publish`, `post-rotation`, `cortex-rebuild-full`, …) are routed through `dzp.py event` and
+  may fire advisory Cortex recall. Advisory steps are always fail-soft and never block the workflow.
 
 ---
 

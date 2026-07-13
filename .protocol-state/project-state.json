@@ -1,5 +1,5 @@
 {
-  "protocol_version": "9.9.6",
+  "protocol_version": "9.9.7",
   "compaction_recovery": {
     "last_recovery_timestamp": null,
     "recovery_count": 0,
@@ -326,10 +326,10 @@
   "session_tracking": {
     "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.11.0)",
     "current_session": {
-      "session_id": "session_20260711_111807",
+      "session_id": "session_20260713_121437",
       "session_active": true,
-      "start_time": "2026-07-11T11:18:07.332214+00:00",
-      "last_interaction_time": "2026-07-11T11:18:07.332214+00:00",
+      "start_time": "2026-07-13T12:14:37.125919+00:00",
+      "last_interaction_time": "2026-07-13T12:14:37.125919+00:00",
       "last_alert_time": null,
       "alert_count": 0,
       "escalation_level": 0,
@@ -445,10 +445,19 @@
         "total_breaks": 0,
         "alerts_issued": 0,
         "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260711_111807",
+        "start_time": "2026-07-11T11:18:07.332214+00:00",
+        "end_time": "2026-07-13T12:14:37.125919+00:00",
+        "total_duration_minutes": 2936,
+        "total_breaks": 0,
+        "alerts_issued": 1,
+        "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-07-11T07:18:07.344841",
-    "protocol_version": "9.9.6"
+    "last_updated": "2026-07-13T08:14:37.139371",
+    "protocol_version": "9.9.7"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",
@@ -20795,7 +20804,7 @@
       ],
       "metadata": {
         "created": "2025-12-31T00:00:00Z",
-        "protocol_version": "9.9.6",
+        "protocol_version": "9.9.7",
         "last_updated": "2026-06-17T00:00:00Z",
         "total_sessions_all_time": 1004
       }

@@ -1,7 +1,7 @@
 # Domain Zero Protocol
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
 
-**Version**: 9.9.6 | **Last Updated**: 2026-07-11
+**Version**: 9.9.7 | **Last Updated**: 2026-07-13
 
 A nine-agent AI development system plus one external auditor inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
 
@@ -280,7 +280,7 @@ scripts/brain.ps1 status         # expect: Cortex status: ok
 ```bash
 cp .claude/settings.template.json .claude/settings.json   # .claude/settings.json is gitignored
 ```
-The template pre-wires a `hooks.SessionEnd` index refresh and allow-lists the `brain` commands. **POSIX hosts:** change the hook command to `bash scripts/brain-index-hook.sh`. The hook is fail-soft, lock-guarded, and times out at 30s, so it never blocks session end. Mid-session, `/session update` automatically keeps Cortex in sync — it runs `brain index --incremental` as the final step of the full project-document sync (fail-soft; skipped if Cortex is unavailable). `/session end` triggers a full rebuild plus an export snapshot. Use `update --time-only` to skip the sync and re-index when only a quick timestamp update is needed.
+The template pre-wires a `hooks.SessionEnd` index refresh and allow-lists the `brain` commands. **POSIX hosts:** change the hook command to `bash scripts/brain-index-hook.sh`. The hook is fail-soft, lock-guarded, and times out at 30s, so it never blocks session end. Mid-session, `/session update` automatically keeps Cortex in sync — it runs `brain index --incremental` as the final step of the full project-document sync (fail-soft; skipped if Cortex is unavailable). `/session end` runs the same **incremental** re-index (BUG-CORTEX-008 R3 — the previous full rebuild + export was moved off session-end because it collided with the session's own largest embedding delta and chronically timed out). For a full rebuild + export snapshot, run `python dzp.py event cortex-rebuild-full` manually or periodically (e.g. weekly, or before a Toji audit). Use `update --time-only` to skip the sync and re-index when only a quick timestamp update is needed.
 
 > **Note:** Cortex stores all runtime data (DB, memories, model cache) in an external dir (`%LOCALAPPDATA%/dzp-cortex/` on Windows; XDG equivalent on macOS/Linux), never inside the repo. The data dir refuses cloud-synced locations (OneDrive/Dropbox) and network shares.
 
@@ -445,6 +445,6 @@ Contributions welcome! Please read the contribution guidelines and submit pull r
 
 ---
 
-**Domain Zero Protocol v9.9.6**
+**Domain Zero Protocol v9.9.7**
 **AI-Assisted Development Done Right**
 

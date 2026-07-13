@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
 # Session Management Skill
 ## Unified Interface for Work Session Tracking
 
@@ -143,13 +143,13 @@ The coordinator chains: `session_monitor.py sync` (DZP_AGENT=gojo) → `cortex-m
 - **Fail-soft**: Cortex error never blocks the overall sync
 - **Never writes protected docs**: Cortex is a derived index, never canonical
 
-Reindex scope per invocation:
+Reindex scope per invocation (BUG-CORTEX-008 R3, 2026-07-13):
 - `/session update` → **incremental** (only changed/new chunks, via cortex_trigger.py --level medium)
-- `/session end` → **full rebuild** (see /session end)
+- `/session end` → **incremental** (`--level medium`, no export — see /session end). The full rebuild + export no longer runs at session-end; it moved to the manual/periodic `cortex-rebuild-full` event to avoid the embedding-delta-bound timeout that used to fire chronically right after a session's largest content delta.
 
 Reindex scope per invocation:
 - `/session update` → **incremental** (only changed/new chunks)
-- `/session end` → **full rebuild** (see /session end)
+- `/session end` → **incremental** (see /session end); full rebuild is now a separate manual/periodic step (`python dzp.py event cortex-rebuild-full`)
 
 **Secret Patterns Detected**:
 - API Keys (32+ characters)
@@ -228,15 +228,27 @@ python .protocol-state/session_monitor.py continue
 
 ### /session end
 
-**Action**: End current session, archive state, full Cortex rebuild + export
+**Action**: End current session, archive state, incremental Cortex re-index
 
 **Implementation**:
 ```bash
 # End session — v9.5.0+ routes through coordinator (WI-29)
 # Coordinator chains: session_monitor.py end (DZP_AGENT=gojo)
-#                     + end-snapshot + cortex-high --export (full rebuild)
+#                     + end-snapshot + cortex-medium (incremental re-index, no export)
 python dzp.py event session-end
 ```
+
+**BUG-CORTEX-008 R3 (2026-07-13)**: `/session end`'s Cortex step is **incremental**
+(`--level medium`, no `--export`), not a full rebuild. The full `--level high` rebuild +
+export snapshot moved to a separate, manually/periodically invoked event —
+`python dzp.py event cortex-rebuild-full` — to keep session-end off a chronic
+embedding-delta-bound timeout (the full rebuild's cost scales with how much NEW
+content was just embedded, and session-end fires immediately after the session's
+own largest content delta — the worst possible moment to run it synchronously).
+See `internal-docs/Patch Report/Bug Report/BUG-CORTEX-008-sessionend-high-rebuild-timeout-2026-07-13.md`
+§8/§10 for the full root-cause analysis and design. Run `cortex-rebuild-full`
+weekly, or whenever a fresh exported snapshot matters (e.g. before a Toji audit),
+or when `brain status` shows notable index drift.
 
 **State Files Updated** (PATCH-SESSION-005 - Extensions 2 & 3, PATCH-STATE-001):
 1. **project-state.json::session_tracking** - Archives session to history, resets current session (consolidated)
@@ -250,18 +262,20 @@ python dzp.py event session-end
 
 **Note**: `DZP_AGENT=gojo` environment variable grants temporary Gojo permission for domain.record.md updates. All other state files are updated regardless of this variable.
 
-**Cortex Full Rebuild + Export (v9.5.0 / WI-29) — ROUTED THROUGH COORDINATOR, FAIL-SOFT**:
+**Cortex Incremental Re-Index (v9.5.0 / WI-29, revised by BUG-CORTEX-008 R3 2026-07-13) — ROUTED THROUGH COORDINATOR, FAIL-SOFT**:
 
-Per Phase 5b (WI-29), `/session end` now routes its Cortex step through the coordinator:
+Per Phase 5b (WI-29), `/session end` routes its Cortex step through the coordinator:
 
 ```bash
-# v9.5.0+ — end session via coordinator (full rebuild + export via coordinator)
+# v9.5.0+ — end session via coordinator (incremental re-index, R3)
 python dzp.py event session-end
 ```
 
-The coordinator chains: `session_monitor.py end` (DZP_AGENT=gojo, required) → `end-snapshot` (fail-soft) → `cortex-high --export` (fail-soft, full rebuild + export snapshot).
+The coordinator chains: `session_monitor.py end` (DZP_AGENT=gojo, required) → `end-snapshot` (fail-soft) → `cortex-medium` (fail-soft, **incremental** re-index, no export — BUG-CORTEX-008 R3).
 
-**PARITY NOTE**: Session-tracking / wellbeing logging / domain.record.md write are NOT lost — the coordinator `session-end` step runs `session_monitor.py end` with `DZP_AGENT=gojo`. The routing also RESTORES the previously-missing end-of-session Cortex rebuild + export (regression from 2026-06-17).
+**PARITY NOTE**: Session-tracking / wellbeing logging / domain.record.md write are NOT lost — the coordinator `session-end` step runs `session_monitor.py end` with `DZP_AGENT=gojo`.
+
+**R3 NOTE (2026-07-13)**: `/session end` previously ran a full `--level high --export` rebuild here (WI-29, restoring a 2026-06-17 regression). That full rebuild is now a **separate** event — `python dzp.py event cortex-rebuild-full` — invoked manually or periodically, because running it synchronously at session-end collided with the session's own largest embedding delta and chronically timed out. See BUG-CORTEX-008 §8/§10 for the analysis. The exported snapshot is no longer refreshed automatically every session-end; run `cortex-rebuild-full` (or `scripts/brain.ps1 export --snapshot` after a manual `brain index`) to refresh it.
 
 To store a distilled session-outcome fact before ending, run manually before the coordinator:
 ```bash
@@ -271,7 +285,7 @@ scripts/brain.ps1 remember "<session outcome: what shipped / decided>" --type de
 
 Best-effort: on any Cortex error, log and continue — session end is never blocked. Cortex never writes the protected docs.
 
-**Toji snapshot** (`export --snapshot`) is automatically generated by the coordinator's `cortex-high --export` step. To produce an additional manual snapshot for Toji audits: `scripts/brain.ps1 export --snapshot`.
+**Toji snapshot** (`export --snapshot`) is **no longer** generated automatically at session-end (R3). To produce a fresh snapshot for Toji audits, **prefer** the lighter-weight `python dzp.py event toji-snapshot` (does `--level medium --export` — faster, sufficient for routine snapshot refresh); use the heavier `python dzp.py event cortex-rebuild-full` (full rebuild + export) or `scripts/brain.ps1 export --snapshot` directly (export only, against whatever is currently indexed) only when a full re-embed is actually needed.
 
 ---
 
@@ -450,6 +464,11 @@ args: "start"
 ---
 
 ## Changelog
+
+### 2.2.0 (2026-07-13)
+- BUG-CORTEX-008 R3 (durable fix): `/session end`'s Cortex step changed from a synchronous full `--level high --export` rebuild to an **incremental** `--level medium` re-index (no export) — removes the chronic embedding-delta-bound timeout that fired right after a session's own largest content delta
+- Added the manual/periodic `cortex-rebuild-full` event (`python dzp.py event cortex-rebuild-full`) carrying the full rebuild + export that used to run at session-end; DZP remains no-daemon — this is a user-invoked maintenance step, not an automated scheduler
+- Updated all "full rebuild" references in this doc to reflect the new incremental behavior and the export-freshness trade-off (snapshot no longer auto-refreshes every session-end)
 
 ### 2.1.0 (2026-06-14)
 - `/session update` promoted to CORE FULL-SYNC orchestrator (v9.1.0)

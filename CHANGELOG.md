@@ -9,6 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.9.7] - 2026-07-13
+
+### PATCH — BUG-CORTEX-008 R3 durable session-end fix (supersedes R1) + dirty-source publish guard
+
+#### Fixed
+- **`BUG-CORTEX-008` R3** (durable fix) — root-caused the chronic Cortex session-end timeout to the
+  SYNCHRONOUS full `--level high` re-embed + `export --snapshot` landing on top of the session's
+  largest embedding-delta cost (content-addressed storage cost is delta-bound, not corpus-size-bound,
+  correcting R1's assumption). `session-end` now runs `cortex-medium` (`--level medium`, incremental,
+  no export, 90s) instead of `cortex-high` — fast and stays fail-soft. New manual/periodic event
+  `cortex-rebuild-full` (`python dzp.py event cortex-rebuild-full`) carries the full `--level high` +
+  export off the critical path (no daemon — DZP remains no-daemon by design). The other 4 `cortex-high`
+  steps (`pre-release`, `pre-publish`, `post-migration`, `post-rotation`) are unchanged and remain real
+  gates. `cortex_trigger.py` unaffected (medium+export already supported). Docs updated:
+  `protocol/skills/session.md` (incl. a `toji-snapshot` event pointer, closes SEC-CORTEX-R3-001),
+  session-end docs, `README.md`, `docs/guides/DZP_CORTEX.md`, `AI_INSTRUCTIONS.md`.
+- **`BUG-CORTEX-008` R1** (stopgap, folded in) — raised `timeout_seconds` 180→300 on all 5
+  `cortex-high` orchestration steps; the other 4 non-session-end steps keep this 300s under R3.
+- **`BUG-DISTRO-DIRTY-SOURCE-001`** (maintainer tooling) — `dzp-publish` staged `distro/` by copying
+  the dev source tree from disk, never from git, so a dirty working tree could silently ship
+  uncommitted content publicly. Adds a fail-closed `dev_source_dirty_offenders()` guard
+  (`git status --porcelain=v1 -z`, scoped to the same manifest-staged paths) that aborts the publish
+  on any genuinely dirty manifest-shippable path. `DZP_ALLOW_DIRTY_SOURCE=1` is a loud, non-silent
+  override (confirmed-clean-dirt only, rc==1); a git-execution failure (rc==2) hard-fails and is NOT
+  overridable. POSIX + PowerShell parity; `docs/guides/DISTRO_RELEASE_WORKFLOW.md` §4a documents it.
+  Closes SEC-DISTRO-DIRTY-001 (P2, gitignore-source scope gap), -002 (P3, `-z` path parsing), -003
+  (P3, override-vs-execution-failure separation).
+
+#### Notes
+- Yuuji TDD throughout (Cortex R3 doc/config regression coverage; 17 dirty-source guard + 125 distro
+  suite tests green); Megumi Tier-2/Tier-3 @approved both items; Sukuna-implemented, Gojo-verified.
+- **Same-session governance note:** a Sukuna SEC-ID governance self-review was conducted this session
+  (`audits/2026-07-13-sukuna-secid-governance-review.md`, report-only); its formal issue-tracker
+  remediation is scheduled for **v9.9.8** and is explicitly NOT part of this release's code changes.
+
 ## [9.9.6] - 2026-07-11
 
 ### PATCH — Sukuna adversarial bug-hunt remediation (5 P1s closed)

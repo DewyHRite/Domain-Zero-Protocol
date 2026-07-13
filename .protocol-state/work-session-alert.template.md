@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.6 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
 ---
 
 # Work Session Alert: Save Progress & Take a Break - Must be followed verbatim!!!
