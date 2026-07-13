@@ -2,7 +2,7 @@
 # DZP Cortex — Complete Guide
 
 **Version**: 9.9.7
-**Last Updated**: 2026-07-11
+**Last Updated**: 2026-07-13
 **Status**: Production-Ready
 **Audience**: DZP operators and resident agents
 
@@ -235,7 +235,8 @@ Use the root wrappers (`scripts/brain.ps1` on Windows, `scripts/brain.sh` on POS
 - **`/session update`** runs an incremental re-index (`brain index --incremental`) as the final step
   of every full project-document sync (fail-soft; skipped if Cortex is unavailable).
   `update --time-only` skips the full sync.
-- **`/session end`** runs an **incremental** re-index (`--level medium`, no export). Per
+- **`/session end`** runs an **incremental** re-index (`--level medium`, no export, **90-second
+  timeout**). Per
   BUG-CORTEX-008 R3 (2026-07-13), this used to be a full `--level high` rebuild + export, but that
   is embedding-delta-bound (cost scales with how much NEW content was just embedded, not with total
   corpus size) and session-end fires immediately after the session's own largest content delta —
@@ -298,4 +299,4 @@ short-lived and rarely conflict with OneDrive sync.
 [`.protocol-state/brain/README.md`](../../.protocol-state/brain/README.md) (engine README) ·
 [`VERSION.md`](../../VERSION.md) / [`CHANGELOG.md`](../../CHANGELOG.md) (release history).
 
-**Domain Zero Protocol v9.7.2 — DZP Cortex**
+**Domain Zero Protocol v9.9.7 — DZP Cortex**

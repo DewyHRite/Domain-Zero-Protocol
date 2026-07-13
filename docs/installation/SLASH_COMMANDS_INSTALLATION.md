@@ -4,7 +4,7 @@
 > **Protocol Version**: v9.9.7
 > **Purpose**: Set up `.claude/commands/` for quick agent invocation
 > **Target Environment**: Claude Code CLI
-> **Last Updated**: 2025-11-26
+> **Last Updated**: 2026-07-13
 
 ---
 

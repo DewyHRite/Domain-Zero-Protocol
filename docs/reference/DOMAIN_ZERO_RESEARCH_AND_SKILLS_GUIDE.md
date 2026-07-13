@@ -3,6 +3,12 @@
 
 Version: 1.0 (2025-11-22)
 
+> **Historical note**: The alignment review in Section 2 below is a point-in-time snapshot
+> captured against protocol v8.5.1 and is retained for historical reference. It does not
+> describe the current protocol version (see the `[CORE FILE]` banner above and `CLAUDE.md`
+> for the canonical current state). The Research Mode mechanics described in Section 1
+> remain current.
+
 Purpose: Implement a practical path to (a) activate and use Research Mode directories, (b) confirm agent-protocol alignment, (c) ensure reusability with other AI coding agents, and (d) integrate Claude Skills as a canonical capability layer. This guide consolidates findings and defines a clear action plan.
 
 ---

@@ -2,7 +2,7 @@
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
 **Version:** v9.9.7
-**Last Updated:** 2026-07-11
+**Last Updated:** 2026-07-13
 
 ---
 
@@ -130,7 +130,7 @@ Domain Zero works with any AI assistant that can read files:
 
 **Quick Decision Tree:**
 
-```
+```text
 Is this production code?
 ├─ No → Tier 1 (Rapid)
 └─ Yes → Does it handle sensitive data, auth, or payments?
@@ -221,12 +221,12 @@ Is this production code?
 ### How do I invoke a specific agent?
 
 **Standard Invocation:**
-```
+```text
 Read protocol/YUUJI.md
 ```
 
 **With Context:**
-```
+```text
 Read protocol/MEGUMI.md - review the authentication changes in auth.py
 ```
 
@@ -259,7 +259,7 @@ Read protocol/MEGUMI.md - review the authentication changes in auth.py
 - **Stress-tests changes**: Before protocol modifications are applied
 
 **Invocation (via Gojo only):**
-```
+```text
 Read protocol/gojo.agent.md and engage Sukuna for [update task]
 ```
 
@@ -391,7 +391,7 @@ project:
 - Privacy-first by default
 
 **How to Access:**
-```
+```text
 Read protocol/GOJO.md - Trigger 19
 ```
 
@@ -685,6 +685,6 @@ python scripts/domain-record-rotate.py --rotate
 
 ---
 
-**Last Updated:** December 25, 2025
-**Protocol Version:** v8.10.0
+**Last Updated:** July 13, 2026
+**Protocol Version:** v9.9.7
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol

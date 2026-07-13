@@ -24,9 +24,9 @@ python dzp.py event session-end
 The `session-end` coordinator event chains:
 1. `session_monitor.py end` (DZP_AGENT=gojo, required: true) — archives session, logs to dev-notes.md + domain.record.md
 2. `end-snapshot` (fail-soft) — creates auto-snapshot before teardown
-3. `cortex-medium` (fail-soft) — **incremental** Cortex re-index (`--level medium`, no `--export`)
+3. `cortex-medium` (fail-soft) — **incremental** Cortex re-index (`--level medium`, no `--export`, **90-second timeout**)
 
-**BUG-CORTEX-008 R3 (2026-07-13)**: The Cortex step used to be a full `--level high --export` rebuild here; it is now incremental. The full rebuild + export moved to a separate, manually/periodically invoked event: `python dzp.py event cortex-rebuild-full`. This removes the chronic embedding-delta-bound timeout that used to fire right after a session's largest content delta (see `internal-docs/Patch Report/Bug Report/BUG-CORTEX-008-sessionend-high-rebuild-timeout-2026-07-13.md` §8/§10). Snapshot export freshness now depends on `cortex-rebuild-full` being run (suggested: weekly, or before a Toji audit) — it no longer refreshes automatically every session-end.
+**BUG-CORTEX-008 R3 (2026-07-13)**: The Cortex step used to be a full `--level high --export` rebuild here; it is now incremental with a 90-second timeout (the other 4 `cortex-high` lifecycle steps remain at 300s). The full rebuild + export moved to a separate, manually/periodically invoked event: `python dzp.py event cortex-rebuild-full`. This removes the chronic embedding-delta-bound timeout that used to fire right after a session's largest content delta (see `internal-docs/Patch Report/Bug Report/BUG-CORTEX-008-sessionend-high-rebuild-timeout-2026-07-13.md` §8/§10). Snapshot export freshness now depends on `cortex-rebuild-full` being run (suggested: weekly, or before a Toji audit) — it no longer refreshes automatically every session-end.
 
 **PARITY NOTE (WI-29)**: The coordinator `session-end` event already contains `session_monitor.py end` with `DZP_AGENT=gojo`, so session-tracking / wellbeing logging / domain.record.md write are NOT lost.
 

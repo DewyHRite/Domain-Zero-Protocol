@@ -6,7 +6,7 @@
 **Authority Level:** MAXIMUM (Tier 3)
 **Enforcement:** All agents MUST acknowledge this oath
 **Version:** 1.0
-**Last Updated:** November 7, 2025
+**Last Updated:** July 13, 2026
 
 ---
 

@@ -239,7 +239,7 @@ python dzp.py event session-end
 ```
 
 **BUG-CORTEX-008 R3 (2026-07-13)**: `/session end`'s Cortex step is **incremental**
-(`--level medium`, no `--export`), not a full rebuild. The full `--level high` rebuild +
+(`--level medium`, no `--export`, **90-second timeout**), not a full rebuild. The full `--level high` rebuild +
 export snapshot moved to a separate, manually/periodically invoked event —
 `python dzp.py event cortex-rebuild-full` — to keep session-end off a chronic
 embedding-delta-bound timeout (the full rebuild's cost scales with how much NEW
@@ -271,7 +271,7 @@ Per Phase 5b (WI-29), `/session end` routes its Cortex step through the coordina
 python dzp.py event session-end
 ```
 
-The coordinator chains: `session_monitor.py end` (DZP_AGENT=gojo, required) → `end-snapshot` (fail-soft) → `cortex-medium` (fail-soft, **incremental** re-index, no export — BUG-CORTEX-008 R3).
+The coordinator chains: `session_monitor.py end` (DZP_AGENT=gojo, required) → `end-snapshot` (fail-soft) → `cortex-medium` (fail-soft, **incremental** re-index, no export, **90-second timeout** — BUG-CORTEX-008 R3).
 
 **PARITY NOTE**: Session-tracking / wellbeing logging / domain.record.md write are NOT lost — the coordinator `session-end` step runs `session_monitor.py end` with `DZP_AGENT=gojo`.
 
@@ -285,7 +285,7 @@ scripts/brain.ps1 remember "<session outcome: what shipped / decided>" --type de
 
 Best-effort: on any Cortex error, log and continue — session end is never blocked. Cortex never writes the protected docs.
 
-**Toji snapshot** (`export --snapshot`) is **no longer** generated automatically at session-end (R3). To produce a fresh snapshot for Toji audits, **prefer** the lighter-weight `python dzp.py event toji-snapshot` (does `--level medium --export` — faster, sufficient for routine snapshot refresh); use the heavier `python dzp.py event cortex-rebuild-full` (full rebuild + export) or `scripts/brain.ps1 export --snapshot` directly (export only, against whatever is currently indexed) only when a full re-embed is actually needed.
+**Toji snapshot** (`export --snapshot`) is **no longer** generated automatically at session-end (R3). To produce a fresh snapshot for Toji audits, **prefer** the lighter-weight `python dzp.py event toji-snapshot` (does `--level medium --export` — faster, sufficient for routine snapshot refresh); use the heavier `python dzp.py event cortex-rebuild-full` (full rebuild + export) or `scripts/brain.ps1 export --snapshot` / `scripts/brain.sh export --snapshot` directly (export only, against whatever is currently indexed) only when a full re-embed is actually needed.
 
 ---
 

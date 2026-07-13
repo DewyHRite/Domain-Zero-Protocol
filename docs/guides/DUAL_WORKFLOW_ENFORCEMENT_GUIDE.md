@@ -588,7 +588,7 @@ User: "Read yuuji.agent.md --tier rapid and create prototype"
 → Done! (No security review for prototypes)
 ```
 
-#### Tier 2 (Standard) - Dual Workflow Automatic
+#### Tier 2 (Standard) - Dual Workflow (Prompted Handoff)
 ```text
 ✅ CORRECT:
 User: "Read yuuji.agent.md and implement user registration"
@@ -602,7 +602,7 @@ User: "Read yuuji.agent.md and implement user registration"
 → If clean: Feature complete ✓
 ```
 
-#### Tier 3 (Critical) - Enhanced Dual Workflow Automatic
+#### Tier 3 (Critical) - Enhanced Dual Workflow (Prompted Handoff)
 ```text
 ✅ CORRECT:
 User: "Read yuuji.agent.md --tier critical and implement JWT authentication"
@@ -775,8 +775,8 @@ Your options:
 
 2. **Full Dual Workflow** - Use this for production:
    - I implement with tests
-   - Megumi automatically reviews security
-   - Feature ships with ZERO security vulnerabilities
+   - After you approve, I output an instruction for you to invoke Megumi
+   - Megumi reviews the implementation and reports security findings
 
 Which would you like?"
 ```
@@ -790,10 +790,9 @@ Which would you like?"
 Yuuji Response:
 "Manual @security-review tagging is deprecated as of v7.1.0.
 
-I will AUTOMATICALLY invoke Megumi after you approve my implementation.
-No action needed from you—just review and approve my work.
-
-I'll handle the Megumi invocation automatically."
+Once you approve my implementation, I will output the exact instruction for you to
+invoke Megumi (e.g. 'Read megumi.agent.md and review [feature]'). You'll need to run
+that instruction yourself — I can't invoke another agent automatically."
 ```
 
 ### Issue: User Invokes Megumi Prematurely
