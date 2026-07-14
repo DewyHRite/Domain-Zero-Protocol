@@ -30,7 +30,7 @@ Configuration check:
   - Per-agent dirs: `.protocol-state/research/{agent}`
   - Filenames: `{timestamp}.summary.md` (tracked), `{timestamp}.raw.log` (gitignored)
 
-Conclusion: The folder structure is correctly scaffolded by the protocol, but no agent research sessions have been run yet in v8.5.1. Hence, the per-agent directories are empty. This is expected until you invoke Research Mode.
+Conclusion: The folder structure is correctly scaffolded by the protocol, but no agent research sessions have been run yet. Hence, the per-agent directories are empty. This is expected until you invoke Research Mode.
 
 How to use (examples):
 
