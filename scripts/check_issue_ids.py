@@ -1133,8 +1133,39 @@ def main(
         if repo_root is None:
             repo_root = _repo_toplevel()
             if repo_root is None:
-                print("[idgov-gate] not a git repository — skipping", file=sys.stderr)
-                return 0
+                # Finding 10 (CodeRabbit PR#112, P2): `git rev-parse
+                # --show-toplevel` returning a NONZERO exit code (a corrupt
+                # worktree, or a genuinely-outside-any-repo invocation) used
+                # to be treated as an intentional, benign skip -- exit 0,
+                # gate silently disabled. (A MISSING git executable is a
+                # DIFFERENT failure mode: subprocess.run raises
+                # FileNotFoundError there, which already propagates to the
+                # except below and fails closed -- unaffected by this
+                # change.) But this gate's only two real call sites (a
+                # pre-commit hook, or CI on a checked-out repo) are BOTH
+                # always inside a real git repository by construction, so a
+                # resolution failure there is an anomaly, not a legitimate
+                # skip. Fail CLOSED by default; OVERRIDE_ENV is the SAME
+                # override already documented for authorized exceptions to
+                # this gate (settings aren't loaded yet at this point, so
+                # the module-level default is read directly rather than
+                # settings.override_env).
+                if os.environ.get(OVERRIDE_ENV) == "1":
+                    print(
+                        f"[idgov-gate] BYPASS: {OVERRIDE_ENV}=1 - could not resolve a git "
+                        "repository toplevel, but the override is set - skipping the "
+                        "issue-registry gate for this invocation.",
+                        file=sys.stderr,
+                    )
+                    return 0
+                print(
+                    "[idgov-gate] BLOCKED (fail-closed): could not resolve a git repository "
+                    "toplevel ('git rev-parse --show-toplevel' failed) -- refusing to "
+                    f"silently disable the issue-registry gate. Set {OVERRIDE_ENV}=1 for a "
+                    "genuine non-repository invocation.",
+                    file=sys.stderr,
+                )
+                return 1
 
         settings = load_issue_governance_settings(repo_root, config_path)
     except Exception as e:  # noqa: BLE001 -- fail-CLOSED: never warn-then-pass

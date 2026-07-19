@@ -76,50 +76,121 @@ def _extract_family(literal: str):
     return m.group(1) if m else None
 
 
-def scan(corpus_paths) -> list:
+class CorpusScanError(Exception):
+    """Finding 6 (CodeRabbit PR#112, P2): raised when scan() could not read
+    or decode one or more corpus files/directories, UNLESS the caller opted
+    into a partial scan via allow_partial=True. Carries the list of
+    (path, reason) offenders so the caller can report them."""
+    def __init__(self, offenders):
+        self.offenders = offenders
+        super().__init__(
+            "corpus scan encountered unreadable/undecodable path(s): "
+            + ", ".join(f"{p!r} ({why})" for p, why in offenders)
+        )
+
+
+def scan(corpus_paths, *, allow_partial: bool = False) -> list:
     """Walk each path in corpus_paths and return a list of occurrence dicts:
-    {"file": <label>, "line": <1-based lineno>, "literal": <id-shaped token>}.
+    {"file": <label>, "line": <1-based lineno>, "literal": <id-shaped token>,
+    "ordinal": <0-based index of this occurrence among duplicates of the
+    same (file, line, literal) tuple, in scan order>}.
 
     A directory is walked recursively for *.md files (sorted, deterministic
     order). A file is scanned directly, using the path AS GIVEN as its label
     (so callers/tests get predictable, caller-controlled file labels). A
-    nonexistent path is skipped silently (fail-soft scanning -- mirrors the
-    corpus-path handling style elsewhere in idgov tooling; the caller decides
-    whether an empty/partial scan is acceptable).
+    NONEXISTENT path is still skipped silently (not an error -- a corpus
+    entry that legitimately doesn't exist yet, e.g. an optional directory,
+    is not the same class of problem as a path that exists but could not be
+    READ).
+
+    Finding 6 (CodeRabbit PR#112, P2): a path that DOES exist but is
+    unreadable (permission denied) or undecodable (not valid UTF-8) used to
+    be silently folded into "zero occurrences", and the caller (run_backfill)
+    reported success regardless -- a corpus scan that silently skipped part
+    of its input is indistinguishable from one that genuinely found nothing
+    to backfill. Such a path is now COLLECTED as an offender; by default
+    (allow_partial=False) scan() raises CorpusScanError instead of returning
+    a partial result. Pass allow_partial=True for an explicit, caller-chosen
+    partial migration.
 
     Multiple literals on one line, and the same literal appearing on multiple
-    lines/files, each produce their own distinct occurrence.
+    lines/files, each produce their own distinct occurrence (finding 7: two
+    identical literals on the SAME line are no longer collapsed -- see the
+    per-line `ordinal` counter below and occurrence_key()'s handling of it).
     """
     occurrences = []
+    offenders = []
     for cp in corpus_paths:
         p = pathlib.Path(cp)
         if p.is_dir():
             for f in sorted(p.rglob("*.md")):
-                occurrences.extend(_scan_file(f, str(f)))
+                occ, err = _scan_file(f, str(f))
+                occurrences.extend(occ)
+                if err:
+                    offenders.append((str(f), err))
         elif p.is_file():
-            occurrences.extend(_scan_file(p, str(cp)))
-        # else: nonexistent path -- skip silently (fail-soft)
+            occ, err = _scan_file(p, str(cp))
+            occurrences.extend(occ)
+            if err:
+                offenders.append((str(cp), err))
+        # else: nonexistent path -- skip silently (legitimately absent corpus
+        # entry, not a read failure)
+    if offenders and not allow_partial:
+        raise CorpusScanError(offenders)
     return occurrences
 
 
-def _scan_file(path: pathlib.Path, label: str) -> list:
+def _scan_file(path: pathlib.Path, label: str):
+    """Returns (occurrences, error_reason). error_reason is None on success,
+    else a short string describing why the file could not be scanned
+    (finding 6) -- occurrences is always [] when error_reason is set."""
     try:
         text = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
-        return []
+    except OSError as e:
+        return [], f"OSError: {e}"
+    except UnicodeDecodeError as e:
+        return [], f"UnicodeDecodeError: {e}"
     out = []
+    # Finding 7: an occurrence_key ordinal, scoped per (label, line, literal)
+    # within THIS file scan, so a SECOND identical literal on the same line
+    # gets a distinguishable identity instead of silently colliding with the
+    # first's key and being skipped as "already seen".
+    dup_counts: dict = {}
     for lineno, line in enumerate(text.splitlines(), 1):
         for m in grammar.ID_SHAPED_RE.finditer(line):
             literal = _TRAILING_PUNCT_RE.sub("", m.group(0))
             if literal:
-                out.append({"file": label, "line": lineno, "literal": literal})
-    return out
+                dup_key = (label, lineno, literal)
+                ordinal = dup_counts.get(dup_key, 0)
+                dup_counts[dup_key] = ordinal + 1
+                out.append({"file": label, "line": lineno, "literal": literal,
+                             "ordinal": ordinal})
+    return out, None
 
 
-def occurrence_key(file, line, literal) -> str:
-    """Deterministic short hash of (file, line, literal) -- the identity of a
-    single scanned occurrence, used for idempotent re-runs."""
-    h = hashlib.sha1(f"{file}::{line}::{literal}".encode("utf-8"))
+def occurrence_key(file, line, literal, ordinal: int = 0) -> str:
+    """Deterministic short hash of (file, line, literal[, ordinal]) -- the
+    identity of a single scanned occurrence, used for idempotent re-runs.
+
+    Finding 7 (CodeRabbit PR#112, P2, back-compat-preserving fix): the FIRST
+    occurrence of a given (file, line, literal) tuple (ordinal=0, the
+    overwhelmingly common case and the ONLY shape that has ever existed in
+    the already-backfilled 1229-row registry) keeps generating the EXACT
+    SAME key as before this fix -- the hash input is byte-identical to the
+    pre-fix scheme when ordinal==0. Only a SECOND+ duplicate literal on the
+    same line (ordinal>=1, which the pre-fix scheme silently collapsed into
+    occurrence #1 and therefore never actually produced a registry row for)
+    gets a NEW, distinguishing key shape. This is purely additive: no
+    existing legacy row's occurrence_key can be invalidated by this change,
+    and a re-run remains idempotent (the same ordinal on a re-scan always
+    re-derives the same key).
+    """
+    if ordinal:
+        h = hashlib.sha1(f"{file}::{line}::{literal}::{ordinal}".encode("utf-8"),
+                          usedforsecurity=False)
+    else:
+        h = hashlib.sha1(f"{file}::{line}::{literal}".encode("utf-8"),
+                          usedforsecurity=False)
     return h.hexdigest()[:10]
 
 
@@ -132,7 +203,7 @@ def to_legacy_row(occ: dict, collision_group: str, *, date=None,
     field, occurrence_key, used for idempotent dedupe (see module docstring).
     """
     literal = occ["literal"]
-    key = occurrence_key(occ["file"], occ["line"], literal)
+    key = occurrence_key(occ["file"], occ["line"], literal, occ.get("ordinal", 0))
     d = date or _today()
     new_id = f"{literal}-LEGACY-{d}-{key}"
     return {
@@ -193,7 +264,8 @@ def _registry_corpus_collisions(registry_path, corpus_paths) -> list:
 
 
 def run_backfill(registry_path, corpus_paths, *, protocol_version=None,
-                  origin=None, date=None) -> dict:
+                  origin=None, date=None, allow_partial: bool = False,
+                  dry_run: bool = False) -> dict:
     """Scan corpus_paths, append one legacy row per NEW occurrence (skipping
     occurrences whose occurrence_key already has a legacy row in the
     registry), and return a summary dict. Never touches the corpus files.
@@ -202,9 +274,24 @@ def run_backfill(registry_path, corpus_paths, *, protocol_version=None,
     gate INSIDE this function (mirrors how idgov.engine.mint() enforces writer
     identity inside itself, not just in the CLI wrapper) -- a direct
     import/call of run_backfill() bypassing main()'s own early check is
-    refused too, never silently writes. Loud on stderr either way.
+    refused too, never silently writes. Loud on stderr either way. This
+    override is NOT required when dry_run=True (finding 9): a dry run makes
+    no writes at all, so gating it behind the same break-glass as the real
+    write path would defeat its own purpose (checking BEFORE deciding to
+    invoke the override).
+
+    Finding 8 (CodeRabbit PR#112, P2): the read -> dedupe -> append sequence
+    below now runs under ONE held registry.Lock spanning the WHOLE batch
+    (plus one pre-batch backup), instead of each row's registry.append()
+    independently acquiring/releasing its own lock -- closes the window
+    where two concurrent backfill runs could both read the same
+    existing_keys snapshot and each append a duplicate legacy row for the
+    same occurrence. registry.append()'s OWN internal Lock(reg_path) call is
+    safely REENTRANT here (same pid/ppid token), matching the existing
+    documented reentrancy contract (registry.Lock, tests/test_issue_id_
+    registry.py::test_append_within_held_lock).
     """
-    if os.environ.get(OVERRIDE_ENV) != "1":
+    if not dry_run and os.environ.get(OVERRIDE_ENV) != "1":
         print(f"[backfill] REFUSED: {OVERRIDE_ENV}=1 is required to run the legacy-id "
               f"backfill (backfill/migration operations only). No rows written.",
               file=sys.stderr)
@@ -233,21 +320,45 @@ def run_backfill(registry_path, corpus_paths, *, protocol_version=None,
             f"registry path collides with corpus target(s): {collisions}"
         )
 
-    events = registry.read_events(registry_path)
-    existing_keys = _existing_occurrence_keys(events)
-    occurrences = scan(corpus_paths)
+    occurrences = scan(corpus_paths, allow_partial=allow_partial)
+
+    if dry_run:
+        # Write-free: read for a preview only, take no lock, touch nothing.
+        events = registry.read_events(registry_path)
+        existing_keys = _existing_occurrence_keys(events)
+        groups = set()
+        would_write = 0
+        for occ in occurrences:
+            groups.add(occ["literal"])
+            key = occurrence_key(occ["file"], occ["line"], occ["literal"], occ.get("ordinal", 0))
+            if key in existing_keys:
+                continue
+            existing_keys.add(key)
+            would_write += 1
+        return {
+            "occurrences": len(occurrences),
+            "new_rows": would_write,
+            "collision_groups": len(groups),
+            "dry_run": True,
+        }
+
+    reg_path_obj = pathlib.Path(registry_path)
     groups = set()
     new_rows = 0
-    for occ in occurrences:
-        groups.add(occ["literal"])
-        key = occurrence_key(occ["file"], occ["line"], occ["literal"])
-        if key in existing_keys:
-            continue
-        row = to_legacy_row(occ, occ["literal"], date=date,
-                             protocol_version=protocol_version, origin=origin)
-        registry.append(registry_path, row)
-        existing_keys.add(key)
-        new_rows += 1
+    with registry.Lock(reg_path_obj):
+        registry._backup_before_append(reg_path_obj)
+        events = registry.read_events(registry_path)
+        existing_keys = _existing_occurrence_keys(events)
+        for occ in occurrences:
+            groups.add(occ["literal"])
+            key = occurrence_key(occ["file"], occ["line"], occ["literal"], occ.get("ordinal", 0))
+            if key in existing_keys:
+                continue
+            row = to_legacy_row(occ, occ["literal"], date=date,
+                                 protocol_version=protocol_version, origin=origin)
+            registry.append(registry_path, row)
+            existing_keys.add(key)
+            new_rows += 1
     return {
         "occurrences": len(occurrences),
         "new_rows": new_rows,
@@ -264,12 +375,42 @@ def _build_parser() -> argparse.ArgumentParser:
                          help="corpus file or directory to scan (repeatable)")
     parser.add_argument("--protocol-version", default=None)
     parser.add_argument("--origin", default="backfill")
+    # Finding 9 (CodeRabbit PR#112, P2): a write-free preview, documented in
+    # AI_INSTRUCTIONS.md / PROTOCOL_QUICKSTART.md's activation flow but never
+    # actually implemented -- this closes that gap. Does NOT require
+    # OVERRIDE_ENV (no writes happen); clearly reports the override that WILL
+    # be required for the real run.
+    parser.add_argument("--dry-run", action="store_true",
+                         help="scan and report what WOULD be backfilled, without writing "
+                              "anything or requiring the override")
+    # Finding 6 (CodeRabbit PR#112, P2): scan() now refuses (CorpusScanError)
+    # on any unreadable/undecodable corpus path by default; this is the
+    # explicit, scoped opt-in for a genuinely-intended partial migration.
+    parser.add_argument("--allow-partial", action="store_true",
+                         help="proceed even if some corpus paths could not be read/decoded "
+                              "(default: refuse on any such path)")
     return parser
 
 
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     args = _build_parser().parse_args(argv)
+
+    if args.dry_run:
+        print(f"[backfill] --dry-run: scanning only, nothing will be written. The real run "
+              f"additionally requires {OVERRIDE_ENV}=1.", file=sys.stderr)
+        try:
+            summary = run_backfill(args.registry, args.corpus,
+                                    protocol_version=args.protocol_version, origin=args.origin,
+                                    allow_partial=args.allow_partial, dry_run=True)
+        except CorpusScanError as e:
+            print(f"[backfill] REFUSED: {e}. Pass --allow-partial to scan anyway.",
+                  file=sys.stderr)
+            return 2
+        print(f"[backfill] DRY RUN occurrences={summary['occurrences']} "
+              f"would_write_new_legacy_rows={summary['new_rows']} "
+              f"collision_groups={summary['collision_groups']}")
+        return 0
 
     if os.environ.get(OVERRIDE_ENV) != "1":
         print(f"[backfill] REFUSED: {OVERRIDE_ENV}=1 is required to run the legacy-id "
@@ -280,8 +421,14 @@ def main(argv=None) -> int:
     print(f"[backfill] {OVERRIDE_ENV}=1 override ACTIVE -- legacy backfill running "
           f"(non-destructive, append-only).", file=sys.stderr)
 
-    summary = run_backfill(args.registry, args.corpus,
-                            protocol_version=args.protocol_version, origin=args.origin)
+    try:
+        summary = run_backfill(args.registry, args.corpus,
+                                protocol_version=args.protocol_version, origin=args.origin,
+                                allow_partial=args.allow_partial)
+    except CorpusScanError as e:
+        print(f"[backfill] REFUSED: {e}. Pass --allow-partial to include a partial scan "
+              f"anyway. No rows written.", file=sys.stderr)
+        return 2
     print(f"[backfill] occurrences={summary['occurrences']} "
           f"new_legacy_rows={summary['new_rows']} "
           f"collision_groups={summary['collision_groups']}")

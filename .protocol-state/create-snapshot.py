@@ -73,19 +73,38 @@ _VERSION_RE = re.compile(r"\*\*Version:\*\*\s*v?(\d+\.\d+\.\d+)")
 
 
 def _protocol_version() -> str:
-    """Best-effort current protocol_version, read from VERSION.md (same source
+    """Current protocol_version, read from VERSION.md (same source
     scripts/distro/assert_version.py treats as authoritative; mirrors the
     scripts/issue_id.py::_protocol_version() pattern). Never hardcoded here so
     every snapshot's embedded stamp doesn't drift stale across version bumps
     (BUG-SNAPSHOT-STALE-VERSION-001 cousin of BUG-SNAPSHOT-NULLFIELDS-001 —
     the literal "8.8.0" here was frozen at the script's v8.8.0 introduction
-    and never updated on any subsequent release)."""
+    and never updated on any subsequent release).
+
+    Finding 15 (CodeRabbit PR#112, P2): a version-source read/parse failure
+    used to silently embed the placeholder "0.0.0-unknown" into every
+    snapshot body. Now raises instead, so create_snapshot() aborts rather
+    than persisting an unknown-version artifact; callers (main()'s broad
+    except, and restore-snapshot.py's create_pre_restore_backup()'s own
+    broad except) already turn this into a clean, loud failure -- see both
+    call sites' docstrings/comments for how each one degrades."""
+    version_md = PROJECT_ROOT / "VERSION.md"
     try:
-        text = (PROJECT_ROOT / "VERSION.md").read_text(encoding="utf-8")
-    except OSError:
-        return "0.0.0-unknown"
+        text = version_md.read_text(encoding="utf-8")
+    except OSError as e:
+        raise RuntimeError(
+            f"could not read {version_md} to determine the authoritative "
+            f"protocol_version ({e}); refusing to create a snapshot with unknown "
+            "version metadata baked in permanently"
+        ) from e
     m = _VERSION_RE.search(text)
-    return m.group(1) if m else "0.0.0-unknown"
+    if not m:
+        raise RuntimeError(
+            f"{version_md} did not contain a recognizable '**Version:** vX.Y.Z' stamp; "
+            "refusing to create a snapshot with unknown version metadata baked in "
+            "permanently"
+        )
+    return m.group(1)
 MEMORIES_DIR = PROJECT_ROOT / "memories"
 
 # PATCH-STATE-001: Initialize ProjectStateManager

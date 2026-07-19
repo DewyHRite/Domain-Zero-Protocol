@@ -5,7 +5,11 @@
 **Category:** Security / Issue-ID Governance
 **Introduced:** v9.10.0 (FEAT-IDGOV-001)
 **Risk Level:** Medium (executes local Python via a signed wrapper; append-only ledger writes)
-**Agent:** Megumi (primary). Other residents use `scripts/issue_id.py` via their own signed path.
+**Agent:** Megumi SPECIFIES the exact invocation (mediated execution, D9 — see below); a bash-capable
+resident (Gojo primary; Yuuji, since implementation already routes through him) EXECUTES it on her
+behalf. Megumi never runs `secid` herself. Other residents authorized for a given family (Yuuji, Sukuna,
+Gojo) sign and invoke `scripts/issue_id.py` directly via their own process, never through this wrapper
+(this wrapper stamps `attested_writer: megumi` unconditionally — see "Writer authority" below).
 **Toji:** READ-only `check`/`list` to author collision-free ids; **Toji writes nothing** (proxy-mint, §Toji below).
 
 ---
@@ -21,16 +25,24 @@ silently reused to mean five different things.
 `scripts/idgov/engine.py`. The wrapper carries Megumi's per-wrapper secret and is the **only** path that
 stamps `attested_writer: megumi` on a registry row.
 
-> **Scoped-execution note:** Megumi's runtime tool grant for `secid` is authorized separately in
-> **Phase H** (a governed `megumi.agent.md` change, Sukuna-adversarial + Gojo-verified, no self-review —
-> spec §7.1, Sukuna F4). This skill documents the tool surface; it does not itself grant execution.
+> **Mediated-execution note (D9, ratified):** Megumi has **no Bash access and this skill grants none**.
+> Sukuna-adversarial + Gojo-verified review (spec §7.1, Sukuna F4) considered a direct runtime tool grant
+> for `secid` and **ratified mediated execution instead** — Megumi specifies the exact invocation in her
+> finding/verdict; a bash-capable resident (Gojo primary, or Yuuji) executes it verbatim. This is a
+> permanent workflow decision, not an interim state pending a future grant: `scripts/secid.sh` signs
+> every mint/transition as `attested_writer: megumi` regardless of *which process* actually runs it, so
+> mediated and direct execution produce an **identical registry row** — mediation costs nothing in
+> registry fidelity and keeps a second reviewer's eyes on every command before it lands in an
+> append-only ledger. See `protocol/megumi.agent.md` § Issue-ID Governance for the full rationale and
+> Megumi's tool-list boundary (unchanged: read/write/grep/glob/todowrite/task/webfetch/websearch/
+> askuserquestion only — zero Bash, zero Edit).
 
 ---
 
 ## Commands
 
-Always invoke through the wrapper, never `issue_id.py` directly (direct calls have no signature and are
-refused for `new`/`state`):
+These are the exact invocations Megumi specifies for her mediator to run verbatim — always through the
+wrapper, never `issue_id.py` directly (direct calls have no signature and are refused for `new`/`state`):
 
 ```powershell
 scripts/secid.ps1 check SEC-CORTEX-025

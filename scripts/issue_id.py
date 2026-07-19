@@ -32,15 +32,34 @@ _VERSION_RE = re.compile(r"\*\*Version:\*\*\s*v?(\d+\.\d+\.\d+)")
 
 
 def _protocol_version() -> str:
-    """Best-effort current protocol_version, read from VERSION.md (same source
+    """Current protocol_version, read from VERSION.md (same source
     scripts/distro/assert_version.py treats as authoritative). Never hardcoded
-    here so the CLI doesn't drift stale across version bumps."""
+    here so the CLI doesn't drift stale across version bumps.
+
+    Finding 15 (CodeRabbit PR#112, P2): a version-source read/parse failure
+    used to silently embed the placeholder "0.0.0-unknown" into a newly
+    minted registry event -- a row in an APPEND-ONLY ledger, so that wrong
+    metadata would be PERMANENT (the exact IMPL-001 mis-stamp class this
+    project has already hit once). Now raises instead, so the caller aborts
+    the mint rather than baking in unknown version metadata forever.
+    """
+    version_md = REPO_ROOT / "VERSION.md"
     try:
-        text = (REPO_ROOT / "VERSION.md").read_text(encoding="utf-8")
-    except OSError:
-        return "0.0.0-unknown"
+        text = version_md.read_text(encoding="utf-8")
+    except OSError as e:
+        raise RuntimeError(
+            f"could not read {version_md} to determine the authoritative "
+            f"protocol_version ({e}); refusing to mint/transition a registry event with "
+            "unknown version metadata baked in permanently"
+        ) from e
     m = _VERSION_RE.search(text)
-    return m.group(1) if m else "0.0.0-unknown"
+    if not m:
+        raise RuntimeError(
+            f"{version_md} did not contain a recognizable '**Version:** vX.Y.Z' stamp; "
+            "refusing to mint/transition a registry event with unknown version metadata "
+            "baked in permanently"
+        )
+    return m.group(1)
 
 
 def _require_signature():
@@ -195,7 +214,10 @@ def main(argv=None) -> int:
     # collides with the "1 = domain-negative result" contract (see _cmd_check/_cmd_validate)
     # that Phase E's gate branches on. PermissionError/TimeoutError kept explicit for
     # readability even though both are already OSError subclasses on this Python.
-    except (ValueError, OSError, PermissionError, TimeoutError) as e:
+    # RuntimeError added for finding 15 (CodeRabbit PR#112, P2):
+    # _protocol_version() now raises RuntimeError on an unreadable/
+    # unparseable VERSION.md instead of embedding a placeholder.
+    except (ValueError, OSError, PermissionError, TimeoutError, RuntimeError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
 

@@ -1821,10 +1821,16 @@ With the gate disabled, `scripts/check_issue_ids.py` no-ops with a loud stderr n
 exits 0.
 
 **Opt-in activation flow** (only after you understand the registry model):
-1. Run `python scripts/backfill_issue_registry.py` to non-destructively backfill registry rows from
-   your project's existing history (dry-run first; see the script's `--help`).
+1. Preview first, write nothing: `python scripts/backfill_issue_registry.py --dry-run --corpus
+   <path>` (repeat `--corpus` for each file/directory to scan; see `--help` for all flags). Then
+   re-run the SAME command WITHOUT `--dry-run` and with `DZP_ALLOW_ISSUE_ID_OVERRIDE=1` set to
+   actually, non-destructively backfill registry rows from your project's existing history. Add
+   `--allow-partial` only if you intend a genuinely partial scan — by default the tool refuses if
+   any corpus path could not be read/decoded, rather than silently treating it as empty.
 2. Mint your first live record via the signed wrapper — `scripts/secid.sh` (POSIX) /
-   `scripts/secid.ps1` (PowerShell) — or `python scripts/issue_id.py`.
+   `scripts/secid.ps1` (PowerShell). **Never invoke `python scripts/issue_id.py` directly**: `new`/
+   `state` require a signature (`IDGOV_SIG`/`IDGOV_NONCE`) that only the signed wrapper produces,
+   and the CLI refuses without it — there is no supported way to mint via mediated bypass.
 3. Flip `issue_governance.enabled: true` in your **local, uncommitted** `protocol.config.yaml`.
 4. Reinstall git hooks: `scripts/install-git-hooks.sh` / `scripts\install-git-hooks.ps1` — the
    pre-commit hook must be regenerated to actually invoke the gate.

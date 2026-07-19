@@ -11,6 +11,9 @@ TOKENS_DIR = pathlib.Path(__file__).resolve().parents[2] / ".protocol-state" / "
 def _token_file(writer):
     return TOKENS_DIR / f"{writer}.token"
 
+_HARDEN_OVERRIDE_ENV = "DZP_ALLOW_UNHARDENED_IDGOV_TOKEN"
+
+
 def provision(writer: str) -> str:
     TOKENS_DIR.mkdir(parents=True, exist_ok=True)
     try:
@@ -27,7 +30,35 @@ def provision(writer: str) -> str:
             os.fsync(fd)
         finally:
             os.close(fd)
-        _harden_owner_only(tf)  # Windows ACL (best-effort, now warns on failure)
+    # Finding 12 (CodeRabbit PR#112, P2): re-assert owner-only hardening on
+    # EVERY provision() call -- new AND pre-existing tokens (a token that
+    # already existed on disk previously skipped this entirely, so a
+    # first-run hardening failure would stick forever, silently, since
+    # tf.exists() would be True on every later call). This token file is the
+    # HMAC signing secret behind writer authority (a materially different
+    # risk than attestation.py's advisory-only, already-accepted ISS-083 P3
+    # boundary), so a hardening failure now fails CLOSED by default instead
+    # of warning-then-continuing with a possibly world-readable secret. A
+    # named, loud, opt-in override exists for the SAME genuine non-NTFS/
+    # no-icacls platform gap attestation.py documents, so a real platform
+    # constraint doesn't hard-brick minting -- it just requires an explicit,
+    # visible acknowledgement instead of a silent continue.
+    if not _harden_owner_only(tf):
+        if os.environ.get(_HARDEN_OVERRIDE_ENV) == "1":
+            import sys
+            print(
+                f"[idgov:identity] {_HARDEN_OVERRIDE_ENV}=1 override ACTIVE -- "
+                f"continuing with an unhardened token at {tf} (writer-authority "
+                "signing key may be readable beyond the intended OS user).",
+                file=sys.stderr,
+            )
+        else:
+            raise PermissionError(
+                f"could not secure {tf} to owner-only access; refusing to use it as "
+                f"a writer-authority signing key. Set {_HARDEN_OVERRIDE_ENV}=1 to "
+                "proceed anyway (loud, non-default -- e.g. for a documented "
+                "non-NTFS/no-icacls platform gap)."
+            )
     return f"{writer}-wrapper-v1"
 
 def sign(writer_token_id: str, nonce: str) -> str:
@@ -46,7 +77,9 @@ def derive_writer(signature: str, nonce: str):
             return writer, f"{writer}-wrapper-v1"
     return None
 
-def _harden_owner_only(path):
+def _harden_owner_only(path) -> bool:
+    """Returns True on success, False on failure (still prints the WARNING
+    either way -- callers decide whether a failure is fatal)."""
     try:
         if os.name == "nt":
             import subprocess, getpass
@@ -54,7 +87,9 @@ def _harden_owner_only(path):
                             f"{getpass.getuser()}:F"], check=True, capture_output=True)
         else:
             os.chmod(path, 0o600)
+        return True
     except Exception as e:
         import sys
         print(f"[idgov:identity] WARNING: could not harden {path} owner-only perms: {e}",
               file=sys.stderr)
+        return False

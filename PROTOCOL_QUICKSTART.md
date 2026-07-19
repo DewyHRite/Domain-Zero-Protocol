@@ -489,8 +489,13 @@ protected records. **It ships disabled** — a fresh install has no backfilled r
 live gate would fail-close your very first protected-record commit.
 
 **To enable it**:
-1. `python scripts/backfill_issue_registry.py` — non-destructively backfill from existing history (dry-run first).
-2. `scripts/secid.sh` / `scripts/secid.ps1` (or `python scripts/issue_id.py`) — mint your first record.
+1. `python scripts/backfill_issue_registry.py --dry-run --corpus <path>` (repeat `--corpus` for
+   each file/directory to scan) to preview, then re-run the same command WITHOUT `--dry-run` and
+   with `DZP_ALLOW_ISSUE_ID_OVERRIDE=1` set to actually backfill from existing history
+   (non-destructive — see the script's `--help`).
+2. `scripts/secid.sh` / `scripts/secid.ps1` — mint your first record. **Do not invoke
+   `python scripts/issue_id.py` directly**: it requires a signature (`IDGOV_SIG`/`IDGOV_NONCE`)
+   that only the signed wrapper can produce and refuses `new`/`state` otherwise.
 3. Set `issue_governance.enabled: true` in your **local** `protocol.config.yaml`.
 4. Re-run `scripts/install-git-hooks.sh` / `scripts\install-git-hooks.ps1` to wire the gate into pre-commit.
 

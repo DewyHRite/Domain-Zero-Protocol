@@ -283,6 +283,51 @@ TOJI_STUB_OVERRIDE_ENV = "DZP_ALLOW_TOJI_STUB_UNVERIFIED"
 #   ... · full report: audits/2026-07-09-toji-full-se-qa.md · —Toji ...
 _TOJI_REPORT_RE = re.compile(r"full report:\s*(\S+)")
 
+# Toji AI-001 (2026-07-18, promoted from the v9.10.1 queue -- USER-reported
+# recurring operational pain): _TOJI_REPORT_RE's \S+ capture has no concept
+# of markdown/prose formatting, so a report path wrapped in backticks (the
+# standard style for a path reference in a stub, e.g.
+# "full report: `audits/2026-07-18-toji-v9.10.0-idgov-full-audit.md`")
+# captures the surrounding backticks AS PART OF the path, which then never
+# matches a real file and fails the existence check even though the report
+# genuinely exists -- forcing DZP_ALLOW_TOJI_STUB_UNVERIFIED every time.
+# This is a SCOPED fix (strip common wrapping/trailing punctuation before
+# the existence check); full stub-grammar validation is deferred to
+# v9.10.1 per AI-001's own recommendation. Order matters: strip matched
+# wrapping characters FIRST (a trailing ')' that pairs with a leading '('
+# is wrapping, not sentence punctuation), then strip trailing sentence
+# punctuation that can follow a bare or already-unwrapped path.
+_TOJI_PATH_WRAP_CHARS = "`'\"()[]<>"
+_TOJI_PATH_TRAILING_PUNCT_RE = re.compile(r"[.,;:]+$")
+
+
+def _normalize_toji_report_ref(raw: str) -> str:
+    """Strip surrounding backticks/quotes/brackets and trailing sentence
+    punctuation from a captured 'full report: <path>' reference before the
+    existence check. Never widens what is ACCEPTED as a path (no traversal/
+    absolute-path handling here -- that stays _safe_audit_rel_path()'s job);
+    this only removes formatting characters a human/Toji would never intend
+    as part of the filename itself.
+
+    Applied as a small fixed-point loop (bounded, each pass strictly
+    shrinks or leaves the string unchanged, so this always terminates): a
+    single wrap-strip-then-punct-strip pass leaves a dangling closer behind
+    for a combined case like "`path`." (backtick-wrapped, sentence-final
+    period right after the closing backtick) -- wrap-strip only removes the
+    OPENING backtick there (the trailing char is '.', not in the wrap set,
+    so the closing backtick is untouched on that pass), then punct-strip
+    removes the trailing '.', leaving a lone trailing backtick. A second
+    pass cleans that up.
+    """
+    normalized = raw
+    for _ in range(6):
+        stripped = normalized.strip(_TOJI_PATH_WRAP_CHARS)
+        stripped = _TOJI_PATH_TRAILING_PUNCT_RE.sub("", stripped)
+        if stripped == normalized:
+            break
+        normalized = stripped
+    return normalized
+
 
 def _added_lines(head: Optional[bytes], staged: bytes) -> list[str]:
     """Return the lines newly present in `staged` that are not part of `head`.
@@ -408,11 +453,17 @@ def find_toji_stub_violations(
             if not match:
                 # Fail-soft: looks stub-like but unparseable — do not block on ambiguity.
                 continue
-            report_ref = match.group(1)
+            report_ref_raw = match.group(1)
+            # Toji AI-001 (scoped fix): strip formatting characters (backticks,
+            # quotes, brackets, trailing sentence punctuation) that \S+ swept up
+            # as part of the path before checking existence -- see
+            # _normalize_toji_report_ref()'s docstring for the recurring
+            # false-positive this closes.
+            report_ref = _normalize_toji_report_ref(report_ref_raw)
             if not _report_ref_exists(repo_root, report_ref):
                 violations.append(
                     f"{path}: [TOJI AUDIT LOG] stub references a report that does not "
-                    f"exist: '{report_ref}' (offending line: {line.strip()!r})"
+                    f"exist: '{report_ref_raw}' (offending line: {line.strip()!r})"
                 )
     return violations
 

@@ -138,7 +138,25 @@ def validate(reg_path) -> list:
             # integrity -- unique id (duplicate-assign, just below) and
             # rev-continuity (checked earlier, for ALL events) -- still applies to
             # legacy rows unconditionally, as before.
+            # CRITICAL (CodeRabbit PR#112 finding 11, CWE-863): the id string
+            # itself is the ONLY tamper-evident carrier of family/subsystem/
+            # version/tag/seq once a row is appended -- the sibling fields
+            # (`family`, etc.) are just self-reported JSON and were
+            # previously trusted as-is for the writer-authority check below.
+            # A row with id "SEC-XX-001" but family:"BUG" + attested_writer:
+            # "yuuji" (BUG-authorized, NOT SEC-authorized) passed validate()
+            # cleanly: `is_authorized(writer, family)` consulted the
+            # SELF-REPORTED family ("BUG"), never the id-DERIVED one ("SEC").
+            # Fix: for a non-legacy, grammar-wellformed id, parse the id and
+            # require every derivable field to match the row's self-reported
+            # value (hard violation on any mismatch); then bind the
+            # authority check to the id-DERIVED family so authority can never
+            # be satisfied by a merely-consistent-with-itself but
+            # id-mismatched pair. (legacy rows are unaffected: they're
+            # already bound to a non-citable LEGACY id shape + the single
+            # sentinel writer by the F-001/F-002 checks above/below.)
             is_legacy = bool(ev.get("legacy"))
+            id_derived_family = None
             if is_legacy:
                 # SEC-IDGOV-F-001 (P0): the id MUST match the canonical
                 # backfill.to_legacy_row() shape AND MUST NOT be grammar-wellformed
@@ -152,6 +170,18 @@ def validate(reg_path) -> list:
             else:
                 if not grammar.is_wellformed(eid):
                     violations.append(f"line {i}: malformed id {eid!r} (grammar violation)")
+                else:
+                    # id<->field binding (finding 11): parse is safe here --
+                    # is_wellformed() already confirmed ISSUE_ID_RE matches,
+                    # and parse_id() uses the exact same production.
+                    parsed = grammar.parse_id(eid)
+                    id_derived_family = parsed["family"]
+                    for f in ("family", "subsystem", "version", "tag", "seq"):
+                        if ev.get(f) != parsed[f]:
+                            violations.append(
+                                f"line {i}: {eid} self-reported {f}={ev.get(f)!r} does not "
+                                f"match id-derived {f}={parsed[f]!r}"
+                            )
             if eid in seen_assign:
                 violations.append(f"line {i}: duplicate assign for {eid}")
             seen_assign[eid] = True
@@ -163,8 +193,15 @@ def validate(reg_path) -> list:
                 if ev.get("seq") != expected:
                     violations.append(f"line {i}: {eid} seq {ev.get('seq')} != expected {expected} for {key}")
                 seq_by_key[key] = ev.get("seq")
-            # §4.1 writer-authority check
-            writer, family = ev.get("attested_writer"), ev.get("family")
+            # §4.1 writer-authority check. Bound to the id-DERIVED family
+            # (id_derived_family), not the self-reported ev["family"] --
+            # finding 11: authority must be structurally anchored to the id
+            # string itself, never to a merely-self-consistent JSON field
+            # that could disagree with it (the mismatch is ALSO flagged
+            # above, but authority additionally never trusts the disagreeing
+            # self-reported value even if that check were somehow bypassed).
+            writer = ev.get("attested_writer")
+            family = id_derived_family if id_derived_family is not None else ev.get("family")
             if is_legacy:
                 # SEC-IDGOV-F-002 (P1): legacy attested_writer MUST equal the
                 # single-source sentinel, not an arbitrary unauthenticated value.
@@ -183,7 +220,9 @@ def validate(reg_path) -> list:
             if state not in ("open", "reserved"):
                 violations.append(f"line {i}: {eid} illegal initial assign state {state!r}")
             running_state[eid] = ev.get("state")
-            family_of[eid] = ev.get("family")
+            # family_of feeds the `transition` branch's authority check below
+            # -- must be the id-DERIVED family too, for the same reason.
+            family_of[eid] = id_derived_family if id_derived_family is not None else ev.get("family")
         elif etype == "transition":
             if eid not in running_state:
                 violations.append(f"line {i}: transition before assign for {eid}")
