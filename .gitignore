@@ -25,3 +25,16 @@ __pycache__/
 dzp.py
 .protocol-state/script_coordinator.py
 .protocol-state/script_dependencies.yaml
+
+# FEAT-IDGOV-001 (v9.10.0, Phase G4/G5): per-wrapper signing secrets and the
+# registry lockfile are LOCAL, per-install runtime artifacts, never committed
+# by a consumer install either. The real issue-registry.jsonl itself is NOT
+# ignored here -- once a consumer activates issue governance it becomes their
+# own append-only committed audit ledger, same as the two protected records.
+.protocol-state/.idgov-tokens/
+*.jsonl.lock
+
+# BUG-CORTEX-008 R5 (v9.10.0, Megumi Tier-3 P2-2): detached Cortex step
+# output (script_coordinator.py `detach: true` mode) writes a rolling
+# diagnostic log here; local runtime artifact, never committed.
+.protocol-state/logs/

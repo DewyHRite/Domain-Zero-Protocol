@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.0 -->
 # Creating Claude Agents - Domain Zero Guide
 
-**Domain Zero Protocol v9.9.7**
+**Domain Zero Protocol v9.10.0**
 
 Learn to create custom Claude agents using the **`/agents` command** in Claude Code, inspired by the Domain Zero four-agent system: Yuuji (Implementation), Megumi (Security), Nobara (Creative Strategy), and Gojo (Mission Control).
 
@@ -1695,8 +1695,8 @@ Use Domain Zero agents as templates when creating new agents via `/agents`.
 ---
 
 **Version**: 3.2.0 (Comprehensive Tool Support)
-**Protocol Version**: 9.9.7
-**Last Updated**: 2026-07-07
+**Protocol Version**: 9.10.0
+**Last Updated**: 2026-07-18
 
 **Changelog v3.2.0** (MINOR):
 - ✅ **Added comprehensive tool support to all agents**

@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.0 -->
 # Gojo Operational Procedures - Detailed Reference
 
 **Version**: 8.10.0

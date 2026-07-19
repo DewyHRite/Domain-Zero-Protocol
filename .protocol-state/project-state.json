@@ -1,5 +1,5 @@
 {
-  "protocol_version": "9.9.7",
+  "protocol_version": "9.10.0",
   "compaction_recovery": {
     "last_recovery_timestamp": null,
     "recovery_count": 0,
@@ -81,7 +81,7 @@
     "name": "YOUR_PROJECT_NAME",
     "description": "Your project description",
     "created": "2025-12-25T00:00:00Z",
-    "last_updated": "2026-06-24T22:03:23.588664+00:00"
+    "last_updated": "2026-07-14T05:36:01.447658+00:00"
   },
   "mission_status": {
     "yuuji_briefed": false,
@@ -183,7 +183,7 @@
     "default_tier": 2,
     "bypass_tracking": {
       "enabled": true,
-      "current_month": "2026-06",
+      "current_month": "2026-07",
       "bypass_count": 0,
       "last_bypass": "2025-12-06T05:26:43.246457Z"
     }
@@ -326,10 +326,10 @@
   "session_tracking": {
     "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.11.0)",
     "current_session": {
-      "session_id": "session_20260713_121437",
-      "session_active": true,
-      "start_time": "2026-07-13T12:14:37.125919+00:00",
-      "last_interaction_time": "2026-07-13T12:14:37.125919+00:00",
+      "session_id": null,
+      "session_active": false,
+      "start_time": null,
+      "last_interaction_time": null,
       "last_alert_time": null,
       "alert_count": 0,
       "escalation_level": 0,
@@ -454,10 +454,37 @@
         "total_breaks": 0,
         "alerts_issued": 1,
         "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260713_121437",
+        "start_time": "2026-07-13T12:14:37.125919+00:00",
+        "end_time": "2026-07-14T03:02:46.982828+00:00",
+        "total_duration_minutes": 888,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260714_053601",
+        "start_time": "2026-07-14T05:36:01.373169+00:00",
+        "end_time": "2026-07-14T13:00:06.448056+00:00",
+        "total_duration_minutes": 444,
+        "total_breaks": 0,
+        "alerts_issued": 3,
+        "continues_chosen": 1
+      },
+      {
+        "session_id": "session_20260718_001743",
+        "start_time": "2026-07-18T00:17:43.644261+00:00",
+        "end_time": "2026-07-18T20:26:13.821803+00:00",
+        "total_duration_minutes": 1208,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-07-13T08:14:37.139371",
-    "protocol_version": "9.9.7"
+    "last_updated": "2026-07-18T16:26:13.990864",
+    "protocol_version": "9.10.0"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",
@@ -20804,7 +20831,7 @@
       ],
       "metadata": {
         "created": "2025-12-31T00:00:00Z",
-        "protocol_version": "9.9.7",
+        "protocol_version": "9.10.0",
         "last_updated": "2026-06-17T00:00:00Z",
         "total_sessions_all_time": 1004
       }
@@ -20990,7 +21017,7 @@
         ]
       }
     ],
-    "last_updated": "2026-07-11T11:12:48.624810+00:00",
+    "last_updated": "2026-07-18T20:26:33.461059+00:00",
     "last_event": "session-end",
     "events": [
       {
@@ -21280,51 +21307,10 @@
             "duration_seconds": 2.453
           }
         ]
-      }
-    ],
-    "last_status_by_event": {
-      "session-update": {
-        "event": "session-update",
-        "finished_at": "2026-06-24T00:09:51.360798+00:00",
-        "success": true,
-        "status": "success",
-        "fail_soft": true,
-        "steps": [
-          {
-            "name": "session-update",
-            "status": "success",
-            "exit_code": 0,
-            "duration_seconds": 0.875
-          },
-          {
-            "name": "cortex-medium",
-            "status": "success",
-            "exit_code": 0,
-            "duration_seconds": 15.437
-          },
-          {
-            "name": "custom-agent-list",
-            "status": "success",
-            "exit_code": 0,
-            "duration_seconds": 0.25
-          },
-          {
-            "name": "tier-status",
-            "status": "success",
-            "exit_code": 0,
-            "duration_seconds": 0.313
-          },
-          {
-            "name": "tier-statistics",
-            "status": "success",
-            "exit_code": 0,
-            "duration_seconds": 0.312
-          }
-        ]
       },
-      "session-end": {
+      {
         "event": "session-end",
-        "finished_at": "2026-07-11T11:12:48.624810+00:00",
+        "finished_at": "2026-07-14T03:03:01.348664+00:00",
         "success": true,
         "status": "success",
         "fail_soft": true,
@@ -21333,25 +21319,204 @@
             "name": "session-end",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 1.765
+            "duration_seconds": 0.625
           },
           {
             "name": "end-snapshot",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 1.0
+            "duration_seconds": 0.297
           },
           {
-            "name": "cortex-high",
+            "name": "cortex-medium",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 46.891
+            "duration_seconds": 13.313
           },
           {
             "name": "cortex-distill",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 2.453
+            "duration_seconds": 0.64
+          }
+        ]
+      },
+      {
+        "event": "session-update",
+        "finished_at": "2026-07-14T05:36:24.703083+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.75
+          },
+          {
+            "name": "cortex-medium",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 15.172
+          },
+          {
+            "name": "custom-agent-list",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.734
+          },
+          {
+            "name": "tier-status",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 2.891
+          },
+          {
+            "name": "tier-statistics",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 3.344
+          }
+        ]
+      },
+      {
+        "event": "session-end",
+        "finished_at": "2026-07-14T13:00:20.973883+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.64
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.266
+          },
+          {
+            "name": "cortex-medium",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 13.453
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.672
+          }
+        ]
+      },
+      {
+        "event": "session-end",
+        "finished_at": "2026-07-18T20:26:33.461059+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.328
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.61
+          },
+          {
+            "name": "cortex-medium",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 17.453
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.203
+          }
+        ]
+      }
+    ],
+    "last_status_by_event": {
+      "session-update": {
+        "event": "session-update",
+        "finished_at": "2026-07-14T05:36:24.703083+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.75
+          },
+          {
+            "name": "cortex-medium",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 15.172
+          },
+          {
+            "name": "custom-agent-list",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.734
+          },
+          {
+            "name": "tier-status",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 2.891
+          },
+          {
+            "name": "tier-statistics",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 3.344
+          }
+        ]
+      },
+      "session-end": {
+        "event": "session-end",
+        "finished_at": "2026-07-18T20:26:33.461059+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.328
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.61
+          },
+          {
+            "name": "cortex-medium",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 17.453
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.203
           }
         ]
       }

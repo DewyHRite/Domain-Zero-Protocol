@@ -9,6 +9,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.10.0] - 2026-07-18
+
+### MINOR — FEAT-IDGOV-001 Issue-ID Governance System + IMPL-001 version-cascade closure + BUGREPORT-009 stamp-linter coverage
+
+#### Added
+- **`FEAT-IDGOV-001`** (Issue-ID Governance System) — all-families append-only JSONL registry
+  (`.protocol-state/issue-registry.jsonl`) + shared minting/validation engine (`scripts/idgov/`) +
+  fail-closed full-mediation pre-commit/CI gate (`scripts/check_issue_ids.py`: mint-before-cite,
+  malformed-id hard block, documented prose escapes, E5 digit-gate). Megumi `secid` tool
+  (`protocol/skills/megumi-secid.md`, mediated signed-wrapper execution per the Phase D9
+  Sukuna-adversarial review). Non-destructive 1,229-row historical backfill
+  (`scripts/backfill_issue_registry.py`; 266 collision groups; `SEC-001` alone reused 76×). Cortex
+  fail-soft registry advisory. Gate ACTIVE with a 6th independent override,
+  `DZP_ALLOW_MISSING_ISSUE_ID_GATE`. Yuuji TDD + Megumi Tier-3 @approved every phase (P0
+  `SEC-IDGOV-F-001` legacy mint-and-cite bypass caught + structurally closed); Sukuna-led adversarial
+  Phase H; Toji full audit 2026-07-18 (13 findings; remediation scheduled, not part of this release).
+  Provenance: `audits/2026-07-13-sukuna-secid-governance-review.md`.
+- **`BUGREPORT-009`** — `scripts/distro/check_version_stamps.py` Type 8 check for the root `dzp.py`
+  module-docstring `Domain Zero Protocol vX.Y.Z` stamp (previously had zero linter coverage; had
+  already drifted silently once, corrected in v9.9.5). Yuuji TDD (positive + negative regression).
+
+#### Fixed
+- **`IMPL-001`** — closed the un-cascaded v9.9.7 version drift (flagged in the Toji audit trail as
+  permanently mis-stamping append-only registry rows). Full repo-wide stamp cascade to v9.10.0 across
+  protocol files, docs, agent frontmatter, hooks, `AI_INSTRUCTIONS.md`, `dzp.py`, and state; historical/
+  changelog references deliberately preserved. `.protocol-state/create-snapshot.py`'s hardcoded
+  `protocol_version: "8.8.0"` snapshot-body literal (frozen since the script's v8.8.0 introduction, never
+  updated on any subsequent release) is now read dynamically from `VERSION.md`, mirroring the reviewed
+  `scripts/issue_id.py::_protocol_version()` pattern.
+
+#### Notes
+- Sukuna-implemented (System Update Adversary), Gojo-coordinated, USER-approved. Full verification
+  suite green: `assert_version.py`, `check_version_stamps.py` (1 pre-existing, out-of-scope, report-only
+  residual — see the version-cascade-trap lesson below), `validate-protocol.py --check`.
+- **Adversarial observation (report-only, not fixed this release)**: `check_version_stamps.py` does not
+  exclude `audits/**` the way it excludes the 3 FEAT-GUARD-001 protected records, so
+  `audits/2026-07-13-sukuna-secid-governance-review.md`'s live-looking `[CORE FILE]` header will
+  re-flag as stale on every future cascade. Recommend adding `audits/` to the linter's exclusion list
+  in a follow-up change, since that document is a historical, append-only artifact and must not be
+  rewritten to chase the current version.
+
 ## [9.9.7] - 2026-07-13
 
 ### PATCH — BUG-CORTEX-008 R3 durable session-end fix (supersedes R1) + dirty-source publish guard

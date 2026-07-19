@@ -1,9 +1,52 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.9.7
-**Release Date:** 2026-07-13
-**Release Type:** PATCH Release (BUG-CORTEX-008 R3 durable session-end fix — full Cortex rebuild moved off the critical path — plus the BUG-DISTRO-DIRTY-SOURCE-001 dirty-source publish guard)
+**Version:** 9.10.0
+**Release Date:** 2026-07-18
+**Release Type:** MINOR Release (FEAT-IDGOV-001 Issue-ID Governance System — all-families append-only registry, mint-before-cite fail-closed gate, Megumi `secid` tool, non-destructive historical backfill; plus the IMPL-001 version-cascade closure and the BUGREPORT-009 stamp-linter coverage extension for `dzp.py`)
+
+---
+
+## Release Summary — v9.10.0 (MINOR)
+
+v9.10.0 ships the Issue-ID Governance System (FEAT-IDGOV-001) built and adversarially reviewed across
+Phases A-H, plus a targeted version-cascade closure (IMPL-001) and a stamp-linter coverage extension
+(BUGREPORT-009).
+
+- **FEAT-IDGOV-001** (Issue-ID Governance System) — an all-families append-only JSONL registry
+  (`.protocol-state/issue-registry.jsonl`) plus a shared minting/validation engine (`scripts/idgov/`)
+  enforced by a fail-closed, full-mediation pre-commit/CI gate (`scripts/check_issue_ids.py`): mint-before-
+  cite semantics, hard-block on malformed IDs, documented prose escapes, and an E5 digit-gate against
+  accidental term collisions. Ships a mediated Megumi `secid` tool (`protocol/skills/megumi-secid.md`,
+  signed-wrapper execution per the Phase D9 Sukuna-adversarial review) and a non-destructive historical
+  backfill (`scripts/backfill_issue_registry.py`) that reconciled 1,229 legacy rows into 266 collision
+  groups — including the discovery that `SEC-001` alone had been independently reused 76 times across the
+  corpus with no registry ever having existed to prevent it. DZP Cortex gains a fail-soft registry-aware
+  advisory. The gate is ACTIVE with a sixth, independent break-glass override,
+  `DZP_ALLOW_MISSING_ISSUE_ID_GATE`. Yuuji TDD throughout; Megumi Tier-3 @approved every phase — including
+  catching and structurally closing a P0 (SEC-IDGOV-F-001, a legacy mint-and-cite bypass in the backfill
+  path). Sukuna led an adversarial Phase H pass over the whole subsystem; Toji delivered a full external
+  audit 2026-07-18 (`audits/2026-07-18-toji-v9.10.0-idgov-full-audit.md`, 13 findings, remediation
+  in-progress and explicitly NOT part of this release's code). Provenance:
+  `audits/2026-07-13-sukuna-secid-governance-review.md` (the original Sukuna design self-review that
+  first identified SEC-001's 5-meanings collision and staffed this mission).
+- **IMPL-001** (version-cascade closure, IMPL-001-tagged in the Toji audit trail) — the un-cascaded
+  v9.9.7→v9.9.8 stamp drift flagged as permanently mis-stamping registry rows is closed: every live
+  version stamp across the repo (protocol files, docs, agent frontmatter, hooks, `AI_INSTRUCTIONS.md`,
+  `dzp.py`, state) is cascaded to v9.10.0 in this release; historical/changelog references are
+  deliberately left untouched. A pre-existing linter gap was also surfaced (not fixed in this release,
+  report-only): `audits/2026-07-13-sukuna-secid-governance-review.md` carries a live-looking
+  `[CORE FILE]` header despite being a historical, append-only audit artifact — `check_version_stamps.py`
+  does not yet exclude `audits/**` the way it excludes `dev-notes.md`/`security-review.md`/
+  `domain.record.md`, so this one stamp will re-flag as stale on every future cascade until that scope
+  gap is closed.
+- **BUGREPORT-009** (stamp-linter coverage) — `scripts/distro/check_version_stamps.py` gains a new Type 8
+  check scoped tightly to the root `dzp.py` module-docstring line (`Domain Zero Protocol vX.Y.Z`), which
+  previously had no linter coverage at all and had already drifted silently once (corrected in v9.9.5).
+  TDD-verified: a stale stamp now fails the linter, a current stamp passes.
+- Sukuna-implemented (System Update Adversary, Gojo-coordinated, USER-approved); Yuuji TDD for the Type 8
+  linter addition; full verification suite green (`assert_version.py`, `check_version_stamps.py`,
+  `validate-protocol.py --check`).
 
 ---
 

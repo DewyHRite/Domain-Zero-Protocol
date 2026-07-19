@@ -1,7 +1,7 @@
 # Domain Zero Protocol
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.0 -->
 
-**Version**: 9.9.7 | **Last Updated**: 2026-07-13
+**Version**: 9.10.0 | **Last Updated**: 2026-07-18
 
 A nine-agent AI development system plus one external auditor inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
 
@@ -445,6 +445,6 @@ Contributions welcome! Please read the contribution guidelines and submit pull r
 
 ---
 
-**Domain Zero Protocol v9.9.7**
+**Domain Zero Protocol v9.10.0**
 **AI-Assisted Development Done Right**
 

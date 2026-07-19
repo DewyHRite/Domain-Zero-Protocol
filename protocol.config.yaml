@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 9.9.7
+# Version: 9.10.0
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,8 +8,8 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v9.9.7"
-  release_branch: "DZP-v9.9.7"
+  version: "v9.10.0"
+  release_branch: "DZP-v9.10.0"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -1304,6 +1304,41 @@ custom_agent_security:
       - "scripts/check_branch_record_isolation.py"
       - "scripts/distro/assert_version.py"
       - "scripts/distro/check_version_stamps.py"
+      # FEAT-IDGOV-001 (E-006, Phase G prereq, v9.10.0): the issue-id
+      # governance engine + its fail-closed gate/backfill/CLI scripts are the
+      # same security-critical class as the entries above -- an unprivileged
+      # commit must not be able to silently neuter check_issue_ids.py (the
+      # gate stage 6 will shell out to) or the idgov engine it reuses via
+      # DRY (mint/validate/writer-authority), the same BUG-HOOK-SELF-DISARM-001
+      # bypass class F6(b)/gap-1 closed for the other engines above.
+      - "scripts/check_issue_ids.py"
+      - "scripts/backfill_issue_registry.py"
+      - "scripts/issue_id.py"
+      - "scripts/idgov/grammar.py"
+      - "scripts/idgov/registry.py"
+      - "scripts/idgov/identity.py"
+      - "scripts/idgov/engine.py"
+      - "scripts/idgov/__init__.py"
+      # SEC-IDGOV-G-002 (Megumi Phase G review, P2): the above idgov list
+      # omitted scripts/secid.sh / scripts/secid.ps1 -- the ONLY sanctioned
+      # wrapper path that stamps attested_writer=megumi. Left mutable, an
+      # unprivileged commit could alter the wrappers' signing/provisioning
+      # behavior with this very guard never flagging it -- the same
+      # BUG-HOOK-SELF-DISARM-001 bypass class closed for the engines above.
+      - "scripts/secid.sh"
+      - "scripts/secid.ps1"
+      # Megumi Tier-3 review P2-1 (v9.10.0 UX-001/R5 remediation batch,
+      # 2026-07-18): the script-orchestration ENGINE and its command registry
+      # were absent from this list -- the same BUG-HOOK-SELF-DISARM-001 class
+      # as the engines above. script_dependencies.yaml defines every command
+      # the coordinator will subprocess.run/Popen, and the new BUG-CORTEX-008
+      # R5 `detach: true` step mode raises the stakes: a detached command runs
+      # with no timeout, uncaptured output (rolling log only), survives the
+      # coordinator's exit, and can never register as a step failure. An
+      # unprivileged commit must not be able to add or rewrite an executed
+      # command (or the engine that spawns it) without tripping FEAT-REQ-001.
+      - ".protocol-state/script_coordinator.py"
+      - ".protocol-state/script_dependencies.yaml"
 
     # Scoped pre-commit override for the FEAT-REQ-001 guard (Cross-Agent Edit
     # Restrictions, scripts/git-hooks/pre-commit[.ps1] stage 4). Mirrors
@@ -1493,15 +1528,130 @@ protected_documents:
     - .protocol-state/dev-notes.md
     - .protocol-state/security-review.md
     - .dzp-domain/domain.record.md
+    # FEAT-IDGOV-001 (E7): defense-in-depth. The issue-registry has its own
+    # dedicated LINE-WISE append-only + content-invariant gate
+    # (scripts/check_issue_ids.py), but adding it here too means the
+    # byte-prefix guard below also refuses a mid-file rewrite of the
+    # registry, independent of that gate.
+    - .protocol-state/issue-registry.jsonl
   override_env: DZP_ALLOW_PROTECTED_REWRITE
+
+# ============================================================================
+# ISSUE-ID GOVERNANCE (FEAT-IDGOV-001, v9.10.0)
+# ============================================================================
+# Configures scripts/check_issue_ids.py, the fail-closed enforcement gate for
+# the append-only issue-id registry (.protocol-state/issue-registry.jsonl).
+#
+# enabled:               false = gate is a no-op (exit 0). A loud skip
+#                         message is always printed to stderr. Default: true.
+# registry_path:          repo-root-relative path to the JSONL registry.
+# families:               the recognized issue-id family enum. Documentation
+#                         + a startup drift assertion ONLY -- id recognition
+#                         is always governed by the engine
+#                         (scripts/idgov/grammar.py FAMILIES), never by this
+#                         config value; a mismatch here only produces a
+#                         stderr warning, it never changes gate behavior.
+# corpus_paths:           prose files scanned for id citations (mint-before-
+#                         cite / malformed-id checks, E4/E5).
+# escape_path_excludes:   corpus paths exempted from citation scanning
+#                         entirely (glob or literal match).
+# id_term_allowlist:      exact-match (case-insensitive) id-shaped tokens to
+#                         exempt from the malformed-id block (E5 only), e.g.
+#                         rare WITH-digit generic terms the E5 digit-gate
+#                         (a token must contain a digit to be flagged
+#                         malformed -- see check_issue_ids.py::_has_seq_digit)
+#                         wouldn't catch on its own. Default: [] (empty --
+#                         the digit-gate is the workhorse fix; this is an
+#                         escape hatch for exceptions found in practice).
+# override_env:           environment variable name that allows an
+#                         authorized exception when set to "1" (backfill /
+#                         migration / restore). Default: DZP_ALLOW_ISSUE_ID_OVERRIDE.
+#
+# If this block is absent, malformed, or yaml is unavailable, the gate falls
+# back to the hardcoded module constants in check_issue_ids.py -- fail-SAFE,
+# never fail-open (a config problem NEVER silently disables enforcement; only
+# an explicit, readable `enabled: false` does).
+
+issue_governance:
+  # CURRENT LIFECYCLE STATEMENT (Toji CODE-001 remediation, 2026-07-18 --
+  # supersedes the two contradictory "inert pending go-live" / "activated"
+  # comments this replaced; that superseded text is preserved below purely as
+  # historical release-note context, NOT as an instruction).
+  #
+  # DEV POSTURE (this file, as committed to the dev tree): enabled: true.
+  # Activated 2026-07-18 -- real corpus backfilled (1229 legacy rows),
+  # FEAT-IDGOV-001 minted as the first live record, gate wired into the
+  # reinstalled pre-commit hook. Enforcement is live on every dev-repo commit.
+  # When false, scripts/check_issue_ids.py no-ops with a loud stderr notice and
+  # exits 0 on every invocation (hook stage 6 and the CI job both call it
+  # unconditionally; this flag is what actually gates behavior, not the
+  # callers).
+  #
+  # DISTRIBUTION POSTURE (the copy shipped to consumers): FORCED to false by
+  # the fail-closed issue_governance_scrub_file neutralizer
+  # (scrub_issue_governance() in scripts/distro/dzp_publish_core.py, wired via
+  # scripts/distro/publish-manifest.yaml), regardless of this file's dev-tree
+  # value. This closes Toji UX-001 (2026-07-18): a fresh consumer install ships
+  # no backfilled registry and no .idgov-tokens/ signing secrets, so shipping
+  # enabled: true here would trip the fail-closed gate on the very first
+  # protected-record/audit commit a consumer makes. Consumers explicitly opt in
+  # via the documented activation flow -- see AI_INSTRUCTIONS.md /
+  # PROTOCOL_QUICKSTART.md "Issue-ID Governance" sections.
+  #
+  # HISTORICAL (superseded -- kept only for release-note continuity, describes
+  # the pre-2026-07-18 Phase G "installed but inert" design where this file's
+  # OWN value, not a publish-time scrub, was the only enforcement toggle):
+  # "INERT pending a separate, deliberate, USER-gated go-live (Phase G is
+  # 'installed but inert' by design: hook stage + CI job + manifest are wired
+  # up, but enforcement itself stays off until explicitly flipped). Flip to
+  # true only as its own reviewed, deliberate change."
+  enabled: false
+  registry_path: .protocol-state/issue-registry.jsonl
+  # P7 (USER 2026-07-18): design-domain findings (e.g. Toji UI/UX + System
+  # Design audit categories) map to the EXISTING CODE (design-quality) /
+  # IMPL (impl-integrity) families rather than adding a new DESIGN family --
+  # deferred until volume actually justifies an additive grammar change.
+  # This list MUST equal sorted(scripts/idgov/grammar.py FAMILIES); the
+  # engine, not this config, is authoritative -- see the drift-warning note
+  # above.
+  families: [SEC, BUG, FEAT, IMPL, CODE, ISS, TEST, MF]
+  corpus_paths:
+    - .protocol-state/dev-notes.md
+    - .protocol-state/security-review.md
+    - .dzp-domain/domain.record.md
+    # SEC-IDGOV-E-002 (USER decision 2026-07-17): Toji audit reports are a
+    # citation surface too. Glob entries (matched with fnmatch against the
+    # CHANGED files in the diff range, not enumerated on disk) are supported
+    # alongside exact paths -- see check_issue_ids._resolve_corpus_targets().
+    # Sequencing note: this gate does not become part of the commit/CI path
+    # until Phase G1 wires it into the pre-commit hook + CI, which per plan
+    # runs AFTER Phase F's non-destructive backfill populates the registry
+    # from history -- so by the time audits/** enforcement is actually LIVE,
+    # historical audit citations already have legacy registry rows. It is
+    # therefore safe to list audits/** here now, ahead of Phase G1, even
+    # while the registry itself is still sparse.
+    - audits/**
+  escape_path_excludes:
+    - docs/superpowers/specs/**
+    - docs/superpowers/plans/**
+    - CLAUDE.md
+    - protocol/CLAUDE.md
+  # Go-live prep (real-corpus dry-run finding, 2026-07-18): E5's digit-gate
+  # (check_issue_ids.py::_has_seq_digit -- a token must contain a digit to be
+  # flagged malformed) already exempts digitless generic terms like SEC-ID/
+  # SEC-NNN/SEC-GRAPH on its own. This allowlist is empty by default; use it
+  # only for a rare WITH-digit generic term (e.g. a severity notation like
+  # SEC-P0) the digit-gate itself would not catch.
+  id_term_allowlist: []
+  override_env: DZP_ALLOW_ISSUE_ID_OVERRIDE
 
 # ============================================================================
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "9.9.7"
+  protocol_version: "9.10.0"
   config_version: "2.11"
-  last_updated: "2026-07-13"
+  last_updated: "2026-07-18"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

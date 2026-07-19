@@ -1,4 +1,4 @@
-﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.9.7)
+﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.10.0)
 # PowerShell equivalent of scripts/git-hooks/pre-commit for PowerShell-driven git
 # hook setups.
 #
@@ -11,6 +11,11 @@
 #   3. Append-only guard     (FEAT-GUARD-001: protected docs must only grow)
 #   4. Agent/file guard      (FEAT-REQ-001: Cross-Agent Edit Restrictions)
 #   5. Protocol validation   (validate-protocol.py --check)
+#   6. Issue-id registry gate (FEAT-IDGOV-001: check_issue_ids.py — early
+#                              feedback only; INERT while protocol.config.yaml
+#                              issue_governance.enabled=false, see that gate's
+#                              own docstring; the AUTHORITATIVE tier is CI --
+#                              .github/workflows/idgov-gate.yml, Phase G2)
 #
 # DZP_ALLOW_PROTOCOL_EDIT=1 (v9.9.5+): scoped override for stage 4 ONLY (the
 # FEAT-REQ-001 protected-path guard). Mirrors DZP_ALLOW_PROTECTED_REWRITE
@@ -41,6 +46,34 @@
 # legitimate rewrite when the guard IS present and running),
 # DZP_ALLOW_PROTOCOL_EDIT (stage 4), or DZP_ALLOW_MISSING_SECRET_SCAN
 # (stage 1) -- this is "the append-only guard file itself cannot be found."
+#
+# DZP_ALLOW_ISSUE_ID_OVERRIDE=1 (FEAT-IDGOV-001, v9.10.0+): a FIFTH,
+# independent, dedicated break-glass override -- for stage 6's GENUINE
+# REGISTRY VIOLATION path ONLY (the issue-id registry gate,
+# scripts/check_issue_ids.py returning non-zero because it found a real
+# append-only/E1-E6 violation). Same override name check_issue_ids.py itself
+# already documents and implements internally for a genuine registry
+# violation (backfill / migration / authorized exception) -- this hook stage
+# does not reimplement that bypass logic, it only runs the script and
+# propagates its exit code. Never conflated with DZP_ALLOW_PROTECTED_REWRITE,
+# DZP_ALLOW_PROTOCOL_EDIT, DZP_ALLOW_MISSING_SECRET_SCAN, or
+# DZP_ALLOW_MISSING_APPEND_GUARD.
+#
+# DZP_ALLOW_MISSING_ISSUE_ID_GATE=1 (SEC-IDGOV-G-001, Megumi Phase G review,
+# v9.10.0+): a SIXTH, independent, dedicated break-glass override -- for
+# stage 6's DEPENDENCY-GAP path ONLY, covering the gate SCRIPT
+# (scripts/check_issue_ids.py) being absent OR no python3/python runtime
+# being available to run it. Earlier drafts reused DZP_ALLOW_ISSUE_ID_OVERRIDE
+# for BOTH the genuine-violation path above AND this missing-gate fallback --
+# Megumi's Phase G review flagged that as the same conflation class
+# BUG-HOOK-SELF-DISARM-001 closed for stage 3: an operator setting
+# DZP_ALLOW_ISSUE_ID_OVERRIDE=1 to authorize a legitimate content override
+# (e.g. a backfill) would unknowingly ALSO mask a broken/missing gate, since
+# one flag covered two unrelated risk decisions. This dedicated override
+# mirrors DZP_ALLOW_MISSING_APPEND_GUARD's split from
+# DZP_ALLOW_PROTECTED_REWRITE exactly. Setting DZP_ALLOW_ISSUE_ID_OVERRIDE
+# alone no longer bypasses the missing-gate branches -- only this override
+# does. Never conflated with any of the other five overrides above.
 #
 $ErrorActionPreference = 'Stop'
 
@@ -171,7 +204,19 @@ if ($status) {
             'scripts/validate-protocol.py',
             'scripts/check_branch_record_isolation.py',
             'scripts/distro/assert_version.py',
-            'scripts/distro/check_version_stamps.py'
+            'scripts/distro/check_version_stamps.py',
+            'scripts/check_issue_ids.py',
+            'scripts/backfill_issue_registry.py',
+            'scripts/issue_id.py',
+            'scripts/idgov/grammar.py',
+            'scripts/idgov/registry.py',
+            'scripts/idgov/identity.py',
+            'scripts/idgov/engine.py',
+            'scripts/idgov/__init__.py',
+            'scripts/secid.sh',
+            'scripts/secid.ps1',
+            '.protocol-state/script_coordinator.py',
+            '.protocol-state/script_dependencies.yaml'
         )
 
         function Get-ProtectedPaths {
@@ -277,5 +322,57 @@ if ($validationExit -ne 0) {
 Write-Host ""
 Write-Host "Protocol validation passed - proceeding with commit"
 Write-Host ""
+
+# ============================================================================
+# 6. FEAT-IDGOV-001: ISSUE-ID REGISTRY GATE (Phase G1)
+# ============================================================================
+# check_issue_ids.py enforces the append-only issue-id registry invariants.
+# EARLY FEEDBACK ONLY -- the authoritative tier is CI
+# (.github/workflows/idgov-gate.yml, Phase G2), which diffs the full push/PR
+# range, not just the staged index.
+#
+# INERT BY DESIGN: protocol.config.yaml issue_governance.enabled governs
+# whether the gate actually checks anything -- when false (the shipped
+# default while FEAT-IDGOV-001 is pending its own separate, deliberate,
+# USER-gated go-live), check_issue_ids.py itself prints a loud
+# "[idgov-gate] DISABLED via config" notice to stderr and exits 0. This stage
+# does not duplicate that logic -- it always invokes the script and trusts
+# its own config-driven no-op. A genuine registry violation's bypass
+# (DZP_ALLOW_ISSUE_ID_OVERRIDE=1) is handled entirely INSIDE
+# check_issue_ids.py; this stage just runs the script (inheriting the
+# caller's environment) and propagates the result.
+$idgovGate = Join-Path $root 'scripts/check_issue_ids.py'
+if (Test-Path $idgovGate) {
+    $pyi = (Get-Command python3 -ErrorAction SilentlyContinue) ?? (Get-Command python -ErrorAction SilentlyContinue)
+    if ($pyi) {
+        & $pyi.Source $idgovGate
+        if ($LASTEXITCODE -ne 0) { exit 1 }
+    } else {
+        # SEC-IDGOV-G-001 (Megumi Phase G review, P2): "python runtime not
+        # found" dependency-gap case -- distinct from a genuine registry
+        # violation. Uses the dedicated DZP_ALLOW_MISSING_ISSUE_ID_GATE
+        # override (NOT DZP_ALLOW_ISSUE_ID_OVERRIDE -- see header note).
+        if ($env:DZP_ALLOW_MISSING_ISSUE_ID_GATE -eq '1') {
+            [Console]::Error.WriteLine('[idgov-gate] BYPASS: DZP_ALLOW_MISSING_ISSUE_ID_GATE=1 — Python runtime not found, issue-id registry gate SKIPPED (authorized).')
+        } else {
+            [Console]::Error.WriteLine('[idgov-gate] COMMIT BLOCKED: no Python runtime — issue-id registry gate cannot run.')
+            [Console]::Error.WriteLine('  Fix: install Python 3, or set DZP_ALLOW_MISSING_ISSUE_ID_GATE=1 git commit ... to bypass (authorized).')
+            exit 1
+        }
+    }
+} else {
+    # SEC-IDGOV-G-001: the gate SCRIPT itself cannot be found. Same dedicated
+    # override as the missing-python branch above; DZP_ALLOW_ISSUE_ID_OVERRIDE
+    # (the genuine-violation override check_issue_ids.py implements
+    # internally) intentionally does NOT gate this branch anymore.
+    if ($env:DZP_ALLOW_MISSING_ISSUE_ID_GATE -eq '1') {
+        [Console]::Error.WriteLine('[idgov-gate] BYPASS: DZP_ALLOW_MISSING_ISSUE_ID_GATE=1 — scripts/check_issue_ids.py not found, issue-id registry gate SKIPPED (authorized).')
+    } else {
+        [Console]::Error.WriteLine('[idgov-gate] COMMIT BLOCKED: scripts/check_issue_ids.py not found — mandatory issue-id registry gate cannot run.')
+        [Console]::Error.WriteLine('  Fix: restore the gate or reinstall via scripts/install-git-hooks.(sh|ps1).')
+        [Console]::Error.WriteLine('  Authorized exception: DZP_ALLOW_MISSING_ISSUE_ID_GATE=1 git commit ...')
+        exit 1
+    }
+}
 
 exit 0

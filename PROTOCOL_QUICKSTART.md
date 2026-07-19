@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.0 -->
 # Domain Zero Protocol - Quick Start Guide
 
 ## Get Up and Running with Domain Zero in 2 Minutes
@@ -481,6 +481,25 @@ A controlled collaboration space where agents operate under absolute protocol au
 
 ---
 
+## Issue-ID Governance (Optional, Ships Disabled)
+
+Domain Zero ships an optional append-only issue-ID registry + fail-closed commit gate
+(`FEAT-IDGOV-001`) that mints and validates tracker IDs (e.g. `SEC-001`, `BUG-042`) cited in your
+protected records. **It ships disabled** — a fresh install has no backfilled registry history, so a
+live gate would fail-close your very first protected-record commit.
+
+**To enable it**:
+1. `python scripts/backfill_issue_registry.py` — non-destructively backfill from existing history (dry-run first).
+2. `scripts/secid.sh` / `scripts/secid.ps1` (or `python scripts/issue_id.py`) — mint your first record.
+3. Set `issue_governance.enabled: true` in your **local** `protocol.config.yaml`.
+4. Re-run `scripts/install-git-hooks.sh` / `scripts\install-git-hooks.ps1` to wire the gate into pre-commit.
+
+**Overrides** (loud, never silent): `DZP_ALLOW_ISSUE_ID_OVERRIDE=1` for authorized exceptions
+(backfill/migration/restore); `DZP_ALLOW_MISSING_ISSUE_ID_GATE=1` if the gate script itself is
+unexpectedly missing. See `AI_INSTRUCTIONS.md` § Issue-ID Governance for the full contract.
+
+---
+
 ## Success Criteria
 
 You'll know Domain Zero is working when:
@@ -515,6 +534,6 @@ You'll know Domain Zero is working when:
 
 ---
 
-**Domain Zero Protocol v9.9.7** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v9.10.0** - Perfect Code Through Infinite Collaboration
 
 *The weight is real. The protocol is absolute. Domain Zero is active.*

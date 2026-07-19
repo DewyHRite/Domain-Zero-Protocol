@@ -26,6 +26,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import re
 import sys
 import uuid
 from datetime import datetime, timezone
@@ -67,6 +68,24 @@ PROJECT_ROOT = Path(__file__).parent.parent
 STATE_DIR = PROJECT_ROOT / ".protocol-state"
 SNAPSHOTS_DIR = STATE_DIR / "snapshots"
 MANIFEST_FILE = SNAPSHOTS_DIR / "snapshot-manifest.json"
+
+_VERSION_RE = re.compile(r"\*\*Version:\*\*\s*v?(\d+\.\d+\.\d+)")
+
+
+def _protocol_version() -> str:
+    """Best-effort current protocol_version, read from VERSION.md (same source
+    scripts/distro/assert_version.py treats as authoritative; mirrors the
+    scripts/issue_id.py::_protocol_version() pattern). Never hardcoded here so
+    every snapshot's embedded stamp doesn't drift stale across version bumps
+    (BUG-SNAPSHOT-STALE-VERSION-001 cousin of BUG-SNAPSHOT-NULLFIELDS-001 —
+    the literal "8.8.0" here was frozen at the script's v8.8.0 introduction
+    and never updated on any subsequent release)."""
+    try:
+        text = (PROJECT_ROOT / "VERSION.md").read_text(encoding="utf-8")
+    except OSError:
+        return "0.0.0-unknown"
+    m = _VERSION_RE.search(text)
+    return m.group(1) if m else "0.0.0-unknown"
 MEMORIES_DIR = PROJECT_ROOT / "memories"
 
 # PATCH-STATE-001: Initialize ProjectStateManager
@@ -329,7 +348,7 @@ def create_snapshot(
         "trigger": trigger,
         "reason": trigger,
         "operation_count": operation_count,
-        "protocol_version": "8.8.0",
+        "protocol_version": _protocol_version(),
         "state_files": {},
         "metadata": metadata,
         "checksum": None  # Will be calculated after serialization

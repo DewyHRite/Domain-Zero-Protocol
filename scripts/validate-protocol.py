@@ -64,6 +64,11 @@ SCHEMA_FILE = PROJECT_ROOT / "protocol" / "validation-rules.yaml"
 STATE_DIR = PROJECT_ROOT / ".protocol-state"
 VALIDATION_STATE_FILE = STATE_DIR / "validation" / "validation-state.json"
 
+# FEAT-IDGOV-001 Phase G3: issue-id registry JSONL (module constant, mirrors
+# VALIDATION_STATE_FILE's shape so tests can monkeypatch it the same way --
+# see tests/test_validate_protocol_issue_registry.py).
+ISSUE_REGISTRY_FILE = STATE_DIR / "issue-registry.jsonl"
+
 # ISS-083: local write-attestation (fail-soft; module lives in .protocol-state/,
 # alongside project_state_manager.py / session_monitor.py, the sanctioned
 # writers this check consults). Absence must never break --check.
@@ -911,6 +916,101 @@ def validate_domain_record() -> bool:
 
 
 # =============================================================================
+# Issue-ID Registry Schema Check (FEAT-IDGOV-001 Phase G3, v9.10.0+)
+# =============================================================================
+
+def validate_issue_registry(registry_path: Path = ISSUE_REGISTRY_FILE) -> bool:
+    """ADDITIVE per-line JSONL schema check for the issue-id registry
+    (.protocol-state/issue-registry.jsonl).
+
+    Deliberately LIGHT-WEIGHT: full semantic/content invariants (uniqueness
+    of assign ids, grammar, monotonic seq, rev-continuity, transition-
+    legality, writer-authority) are already fully owned by
+    scripts/check_issue_ids.py (which reuses idgov.engine.validate() -- DRY,
+    single source of truth) and are NOT duplicated here. This check only
+    confirms each non-blank line is well-formed JSON with the minimal
+    required event-shape keys, catching a corrupted/truncated/hand-edited
+    line early, in the same --check pass as every other DZP state file --
+    without adding a second, competing content validator.
+
+    A MISSING or EMPTY registry is NOT an error: the registry does not exist
+    until FEAT-IDGOV-001 goes live (backfill + Phase G1 hook/CI activation),
+    and this must never block `validate-protocol.py --check` in the
+    meantime (mirrors idgov.registry.read_events()'s own missing-file =
+    empty-list behavior).
+
+    Args:
+        registry_path: overridable for tests (mirrors VALIDATION_STATE_FILE's
+            monkeypatch pattern used elsewhere in this module).
+
+    Returns:
+        True if the registry is absent, empty, or every row is well-formed;
+        False if any row fails the structural check (never raises).
+    """
+    if not registry_path.exists():
+        print(f"[OK] {registry_path.name} not present (FEAT-IDGOV-001 not yet activated) - skipping")
+        return True
+
+    try:
+        raw = registry_path.read_text(encoding="utf-8")
+    except (IOError, OSError) as e:
+        print(f"[WARN] Could not read {registry_path.name}: {e}")
+        return False
+
+    lines = raw.splitlines()
+    non_blank = [line for line in lines if line.strip()]
+    if not non_blank:
+        print(f"[OK] {registry_path.name} is empty - skipping")
+        return True
+
+    errors = []
+    for i, line in enumerate(lines, start=1):
+        stripped = line.strip()
+        if not stripped:
+            continue
+
+        try:
+            row = json.loads(stripped)
+        except json.JSONDecodeError as e:
+            errors.append(f"line {i}: invalid JSON ({e})")
+            continue
+
+        if not isinstance(row, dict):
+            errors.append(f"line {i}: row is not a JSON object")
+            continue
+
+        for key in ("schema", "event", "id", "rev"):
+            if key not in row:
+                errors.append(f"line {i}: missing required key '{key}'")
+
+        event = row.get("event")
+        if event not in ("assign", "transition"):
+            errors.append(f"line {i}: unknown/missing event type '{event}'")
+        elif event == "assign":
+            for key in ("family", "subsystem", "seq", "state"):
+                if key not in row:
+                    errors.append(f"line {i}: assign event missing '{key}'")
+        elif event == "transition":
+            for key in ("state", "prev_state"):
+                if key not in row:
+                    errors.append(f"line {i}: transition event missing '{key}'")
+
+    if errors:
+        print(f"[ERROR] {registry_path.name} schema check found {len(errors)} issue(s):")
+        for e in errors[:10]:
+            print(f"  - {e}")
+        if len(errors) > 10:
+            print(f"  - ... and {len(errors) - 10} more")
+        print("  Note: full content-invariant validation is scripts/check_issue_ids.py's job")
+        print("  (uniqueness/grammar/seq/rev-continuity/transition-legality/writer-authority).")
+        print("  This is only a structural per-line JSONL shape check.")
+        return False
+
+    print(f"[OK] {registry_path.name} schema OK ({len(non_blank)} row(s))")
+    return True
+
+
+# =============================================================================
 # CLI Interface
 # =============================================================================
 
@@ -1072,6 +1172,13 @@ Exit Codes:
             domain_record_ok = validate_domain_record()
             if not domain_record_ok and report.exit_code == ExitCode.SUCCESS:
                 # Downgrade to warnings if domain record needs rotation
+                report.exit_code = ExitCode.WARNINGS
+
+            # FEAT-IDGOV-001 Phase G3: additive, non-fatal-unless-malformed
+            # per-line JSONL schema check for the issue-id registry.
+            print("\nValidating issue-id registry (FEAT-IDGOV-001)...")
+            issue_registry_ok = validate_issue_registry()
+            if not issue_registry_ok and report.exit_code == ExitCode.SUCCESS:
                 report.exit_code = ExitCode.WARNINGS
 
         # Output report

@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.7 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.0 -->
 # DZP Cortex — Complete Guide
 
-**Version**: 9.9.7
+**Version**: 9.10.0
 **Last Updated**: 2026-07-13
 **Status**: Production-Ready
 **Audience**: DZP operators and resident agents
@@ -299,4 +299,4 @@ short-lived and rarely conflict with OneDrive sync.
 [`.protocol-state/brain/README.md`](../../.protocol-state/brain/README.md) (engine README) ·
 [`VERSION.md`](../../VERSION.md) / [`CHANGELOG.md`](../../CHANGELOG.md) (release history).
 
-**Domain Zero Protocol v9.9.7 — DZP Cortex**
+**Domain Zero Protocol v9.10.0 — DZP Cortex**

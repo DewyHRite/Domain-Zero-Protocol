@@ -28,10 +28,20 @@ SEC-GRAPH-008 (P2): Default patterns are bounded to prevent catastrophic
 Import constraints:
   - Must NOT import from memory.py (avoid circular imports)
   - May import from store.py, graph.py, errors.py
+
+FEAT-IDGOV-001 Phase I (advisory only): registry_advisories() below reads the
+  idgov issue-registry JSONL FILE DIRECTLY (json + pathlib stdlib only). It does
+  NOT import the scripts/idgov/ package — that subsystem is not guaranteed to be
+  on the Cortex runtime sys.path, and is a separate subsystem from this module's
+  documented import boundary above. The advisory is data, not instructions:
+  non-blocking, side-effect-free, and a total no-op (including when the registry
+  file does not exist yet, e.g. before FEAT-IDGOV-001 go-live).
 """
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -178,6 +188,93 @@ def run_extraction_for_chunk(
         conn.execute("COMMIT")
 
     return len(entities)
+
+
+# ---------------------------------------------------------------------------
+# FEAT-IDGOV-001 Phase I — optional, non-blocking registry advisory
+# ---------------------------------------------------------------------------
+
+# repo root = parents[3] of this file (.protocol-state/brain/cortex/extractor.py)
+_DEFAULT_REGISTRY_PATH = Path(__file__).resolve().parents[3] / ".protocol-state" / "issue-registry.jsonl"
+
+
+def registry_advisories(
+    entities: list[dict],
+    registry_path: str | Path | None = None,
+) -> list[dict]:
+    """Cross-check extracted SEC-ID entities against the idgov issue registry.
+
+    ADVISORY ONLY — data, not instructions. Never raises, never mutates
+    `entities`, never affects extraction or upsert. Reads the registry as a
+    plain JSONL file (does NOT import the scripts/idgov/ package — see the
+    module docstring's import-boundary note).
+
+    Returns a list of advisory dicts, one per SEC-ID entity whose entity_id is
+    not found among the registry's known ids (either the current `id` or a
+    preserved `legacy_id`). Returns [] when the registry file is missing,
+    empty, unreadable, or when every cited SEC-ID is already known — this
+    includes the pre-go-live state where the registry does not exist yet.
+    """
+    try:
+        sec_id_entities = [e for e in entities if e.get("entity_type") == "SEC-ID"]
+        if not sec_id_entities:
+            return []
+
+        known_ids = _known_registry_ids(registry_path)
+        if not known_ids:
+            return []
+
+        advisories: list[dict] = []
+        seen: set[str] = set()
+        for entity in sec_id_entities:
+            eid = entity.get("entity_id")
+            if not eid or eid in seen or eid in known_ids:
+                continue
+            seen.add(eid)
+            advisories.append({
+                "kind": "unregistered-sec-id",
+                "entity_id": eid,
+                "note": "cited SEC-ID not found in issue registry (advisory only)",
+            })
+        return advisories
+    except Exception:
+        # Fail-soft, total: any error in the advisory path degrades to "no
+        # advisory" and must never propagate into extraction/ingest.
+        return []
+
+
+def _known_registry_ids(registry_path: str | Path | None) -> set[str]:
+    """Read the idgov issue-registry JSONL file and return the set of known
+    ids (both `id` and, where present, `legacy_id`).
+
+    Fail-soft: missing file -> empty set; malformed line -> skipped (other
+    valid lines still consulted); any other error -> empty set.
+    """
+    path = Path(registry_path) if registry_path is not None else _DEFAULT_REGISTRY_PATH
+    known: set[str] = set()
+    try:
+        if not path.exists():
+            return known
+        with path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except (json.JSONDecodeError, ValueError):
+                    continue
+                if not isinstance(row, dict):
+                    continue
+                rid = row.get("id")
+                if isinstance(rid, str) and rid:
+                    known.add(rid)
+                legacy_id = row.get("legacy_id")
+                if isinstance(legacy_id, str) and legacy_id:
+                    known.add(legacy_id)
+    except Exception:
+        return set()
+    return known
 
 
 # ---------------------------------------------------------------------------
