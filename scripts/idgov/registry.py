@@ -76,6 +76,21 @@ def _pid_alive(pid) -> bool:
             PROCESS_QUERY_LIMITED_INFORMATION, False, pid
         )
         if not handle:
+            # CodeRabbit PR#112 Round 2 (#1): OpenProcess can fail with
+            # ERROR_ACCESS_DENIED for a LIVE process owned by another
+            # account/token (a dead/nonexistent pid never produces
+            # ACCESS_DENIED -- it produces ERROR_INVALID_PARAMETER). Treating
+            # every OpenProcess failure as "dead" misclassified a live
+            # foreign-account holder as dead and reaped its lock, violating
+            # this class's own "a live recorded owner is NEVER reaped"
+            # invariant (finding 13). ACCESS_DENIED is proof of EXISTENCE
+            # (the OS found a process to deny us), so treat it as
+            # alive/indeterminate and err on the side of NOT reaping. Any
+            # other failure (e.g. ERROR_INVALID_PARAMETER=87 -- no such pid)
+            # means the process genuinely does not exist.
+            ERROR_ACCESS_DENIED = 5
+            if ctypes.GetLastError() == ERROR_ACCESS_DENIED:
+                return True
             return False
         try:
             # A terminated process's handle can remain openable as long as
@@ -133,19 +148,34 @@ class Lock:
     # content); and the reap itself is one atomic os.replace() (no unlink
     # step at all), with a post-replace re-read to detect -- and yield to --
     # a concurrent reaper that won the same race.
-    def __init__(self, target, ttl=120, max_attempts=50):
+    # CodeRabbit PR#112 Round 2 (#3): the retry budget is now DERIVED from
+    # ttl (sleep_interval-scaled) instead of a fixed 50-attempts/~5s
+    # constant that was decoupled from ttl -- a batch operation (e.g.
+    # backfill's run_backfill, which holds this Lock across a whole
+    # multi-file scan+append) can legitimately run for up to `ttl` seconds
+    # (or longer, while remaining alive and correctly un-reaped per finding
+    # 13's liveness gate) without a concurrent Lock attempt spuriously
+    # giving up. An explicit max_attempts always wins outright (e.g. tests
+    # wanting a fast, deterministic TimeoutError against a still-alive
+    # holder should pass an explicit small value, not rely on ttl).
+    _RETRY_SLEEP_S = 0.1
+    _MIN_ATTEMPTS_FLOOR = 50  # sane floor for a very small/zero ttl
+
+    def __init__(self, target, ttl=120, max_attempts=None):
         self.path = pathlib.Path(str(target) + ".lock")
         self.ttl = ttl
-        self.max_attempts = max_attempts
+        if max_attempts is not None:
+            self.max_attempts = max_attempts
+        else:
+            self.max_attempts = max(
+                self._MIN_ATTEMPTS_FLOOR, int(ttl / self._RETRY_SLEEP_S) + 1
+            )
         self.token = f"{os.getpid()}-{os.getppid()}"
         self._owned = False  # did THIS context create the lock file?
     def __enter__(self):
         for _ in range(self.max_attempts):
             try:
                 fd = os.open(str(self.path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-                os.write(fd, f"owner={self.token}\n".encode()); os.close(fd)
-                self._owned = True
-                return self
             except FileExistsError:
                 try:
                     holder = self.path.read_text(encoding="utf-8").strip()
@@ -166,7 +196,7 @@ class Lock:
                     except FileNotFoundError:
                         continue
                 if not is_stale:
-                    time.sleep(0.1)
+                    time.sleep(self._RETRY_SLEEP_S)
                     continue
                 # Atomic reap: write our claim to a temp file, then
                 # os.replace() it over the stale lock in ONE syscall -- no
@@ -190,6 +220,32 @@ class Lock:
                     self._owned = True
                     return self
                 continue  # lost the race; retry from the top
+            else:
+                # CodeRabbit PR#112 Round 2 (#2): os.open() succeeded (we own
+                # a freshly-created, empty lock file) but the write/close
+                # itself previously had no try/finally -- an OSError from
+                # os.write (e.g. disk full) would leak `fd` AND leave a
+                # partially-written, UNOWNED lock file behind that only
+                # self-healed via the age-based TTL fallback (irrelevant now
+                # that reaping is PID-liveness-gated -- an unparseable/empty
+                # holder falls back to age, but that could still be a long
+                # wait). Close is now guaranteed via try/finally, and on a
+                # write failure the just-created lock is best-effort unlinked
+                # before the error propagates, so a disk-full mid-acquire
+                # doesn't leave a lingering phantom lock at all.
+                try:
+                    try:
+                        os.write(fd, f"owner={self.token}\n".encode())
+                    finally:
+                        os.close(fd)
+                except OSError:
+                    try:
+                        self.path.unlink()
+                    except FileNotFoundError:
+                        pass
+                    raise
+                self._owned = True
+                return self
         raise TimeoutError(f"could not acquire {self.path}")
     def __exit__(self, *a):
         if self._owned:  # only the creator removes it
