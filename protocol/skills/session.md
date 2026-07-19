@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.1 -->
 # Session Management Skill
 ## Unified Interface for Work Session Tracking
 

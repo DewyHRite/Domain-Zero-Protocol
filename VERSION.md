@@ -1,9 +1,58 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.1 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.10.0
-**Release Date:** 2026-07-18
-**Release Type:** MINOR Release (FEAT-IDGOV-001 Issue-ID Governance System — all-families append-only registry, mint-before-cite fail-closed gate, Megumi `secid` tool, non-destructive historical backfill; plus the IMPL-001 version-cascade closure and the BUGREPORT-009 stamp-linter coverage extension for `dzp.py`)
+**Version:** 9.10.1
+**Release Date:** 2026-07-19
+**Release Type:** PATCH Release (bundled remediation — distro-integrity manifest-tracking gate closing `BUG-DISTRO-ORCH-TRIO-001`; idgov polish closing all 4 Toji-deferred `DESIGN-001`/`IMPL-001`/`AI-001` findings plus the retro-mint exclusion audit; idgov registry lock hardening (two-reaper race + PID-recycle backstop); `brain reset --yes` escrow no-prompt product fix; `SEC-GUARD-007` stub-marker splice-bypass fix; plus reconciliation of all 4 findings from the v9.10.1 Toji pre-audit)
+
+---
+
+## Release Summary — v9.10.1 (PATCH)
+
+v9.10.1 is a bundled remediation release closing the full 9-item queue deferred from the v9.10.0
+Toji release-gate audit hold, plus a same-session Megumi Tier-3 bundle review (1 P1 + 4 P2, all
+closed) and its own pre-audit reconciliation.
+
+- **Block A (distro integrity)** — new fail-closed, NO-override `manifest_tracking_offenders()` gate
+  in `scripts/distro/dzp_publish_core.py` verifies every manifest-shippable file staged under
+  `distro/` is actually `git`-tracked after `git add -A`, closing `BUG-DISTRO-ORCH-TRIO-001`: a
+  stale v9.2.0 "DEV-ONLY" ignore block in `scripts/distro/distro.gitignore` had silently caused every
+  published `DZP-vX.Y.Z` branch to drop the orchestration trio (`dzp.py`,
+  `.protocol-state/script_coordinator.py`, `.protocol-state/script_dependencies.yaml`) even though
+  the manifest-text and on-disk staging gates both reported green. USER ruling: the trio now SHIPS
+  (fulfills `ISS-084`/`ISS-085`).
+- **Block B (idgov polish)** — closes all 4 findings Toji deferred from the v9.10.0 audit:
+  `DESIGN-001` (sanctioned `residentid-{sukuna,gojo,yuuji}.{sh,ps1}` resident-mint wrappers for every
+  non-Megumi authority family, full manifest/immutable-path/completeness-gate/test-suite coverage),
+  the original `IMPL-001` + `AI-001` (new `scripts/check_toji_report_contract.py` mechanizing Toji's
+  own report-contract requirements), and a report-only retro-mint exclusion audit trail
+  (`audits/2026-07-19-retromint-b1-exclusions.md`).
+- **Block C (idgov registry lock hardening)** — `scripts/idgov/registry.py`'s `Lock` gains a fresh
+  in-lock re-validation before every append (`_validate_fresh_before_write()` + retryable
+  `ConflictError`, closing a two-reaper race window, C1/P2) and a PID-recycle starvation backstop
+  (10x-ttl hard age ceiling + human `Lock.force_break()` break-glass, C2/P3); `engine.mint()` gains a
+  bounded 3-attempt retry loop with typed `DuplicateIdConflictError` fail-fast classification.
+- **Block D (`brain.py` reset UX)** — `BUG-TEST-RESET-HANG-001`'s product-side fix: `brain reset
+  --yes`'s preserving-snapshot path now calls `_escrow_passphrase(allow_prompt=False)`
+  unconditionally, so it can never block on a `getpass` prompt regardless of TTY detection;
+  complements the v9.10.0 test-harness-only fix as the genuine Part 2.
+- **`SEC-GUARD-007`** (P1, CWE-345) — closes a stub-marker splice bypass in
+  `scripts/check_protected_append_only.py`'s Toji-stub tripwire (a `[TOJI AUDIT LOG]` marker split
+  across two no-trailing-newline commits could evade validation with zero warning); fixed via a
+  full-staged-content rescan with exact-line HEAD-identity exemption.
+- Megumi Tier-3 @approved twice (full bundle, 2 rounds — 1 P1 + 4 P2 → @approved; plus a focused
+  standalone verification of the report-contract validator, @approved). Toji's pre-audit
+  (`audits/2026-07-19-toji-v9-10-1-bundle-preaudit.md`) independently re-verified all 4 v9.10.0-deferred
+  findings RESOLVED and raised 4 new findings against the bundle itself (3 MEDIUM, 1 LOW) — all 4
+  closed in this release: a dedicated `security-review.md` entry now records the `SEC-GUARD-007`
+  review directly (its own-namespace `SEC-001`); the `BUG-TEST-RESET-HANG-001` two-part attribution
+  is reconciled between `domain.record.md` and `brain.py` (its own-namespace `IMPL-002`); and the
+  report-contract validator's unrecognized-field-label check is now implemented (its own-namespace
+  `IMPL-001`/`CODE-001`). Overall verdict: bundle READY for the release ceremony.
+- Test evidence: 198/198 across the targeted remediation suites (0 regressions against the
+  pre-session 187/187 baseline), `tests/test_check_toji_report_contract.py` 28/28, full repo sweep
+  **2,376 passed / 4 skipped / 0 failed**.
+- Sukuna-implemented (System Update Adversary, Gojo-coordinated, USER-approved).
 
 ---
 

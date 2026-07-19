@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.1 -->
 # DZP Cortex — Complete Guide
 
 **Version**: 9.10.0

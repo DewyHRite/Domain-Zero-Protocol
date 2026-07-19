@@ -21,10 +21,18 @@ __pycache__/
 .protocol-state/brain/index.log
 .protocol-state/brain/index.lock
 
-# v9.2.0 Script Orchestration — DEV-ONLY (USER decision: must NOT ship to distro)
-dzp.py
-.protocol-state/script_coordinator.py
-.protocol-state/script_dependencies.yaml
+# v9.2.0 Script Orchestration — the "DEV-ONLY" ignore block that used to live here
+# (dzp.py / script_coordinator.py / script_dependencies.yaml) was REVERSED by USER
+# ruling 2026-07-19: this orchestration trio now SHIPS (fulfills ISS-084/ISS-085,
+# which already added it to publish-manifest.yaml's include_files/include_state and
+# to manifest_completeness_offenders() Scope 5 in dzp_publish_core.py). This
+# distro.gitignore block was the actual root cause of BUG-DISTRO-ORCH-TRIO-001: it
+# silently caused every published DZP-vX.Y.Z branch's `git add -A` (run against the
+# distro/.gitignore this file becomes) to SKIP the three files even though the
+# manifest correctly staged them to disk and both completeness gates reported green
+# (they only ever checked manifest TEXT / the staged FILESYSTEM, never actual git
+# tracking) — see scripts/distro/dzp_publish_core.py::manifest_tracking_offenders()
+# for the new fail-closed gate that closes this blind spot going forward.
 
 # FEAT-IDGOV-001 (v9.10.0, Phase G4/G5): per-wrapper signing secrets and the
 # registry lockfile are LOCAL, per-install runtime artifacts, never committed

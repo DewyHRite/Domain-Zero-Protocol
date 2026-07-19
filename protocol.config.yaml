@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 9.10.0
+# Version: 9.10.1
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,8 +8,8 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v9.10.0"
-  release_branch: "DZP-v9.10.0"
+  version: "v9.10.1"
+  release_branch: "DZP-v9.10.1"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -1327,6 +1327,17 @@ custom_agent_security:
       # BUG-HOOK-SELF-DISARM-001 bypass class closed for the engines above.
       - "scripts/secid.sh"
       - "scripts/secid.ps1"
+      # Toji DESIGN-001 remediation (Sukuna Block B2, v9.10.1): the resident
+      # (non-Megumi) parity wrappers for Sukuna/Gojo/Yuuji are the ONLY
+      # sanctioned paths that stamp attested_writer=sukuna/gojo/yuuji on a
+      # mint/state transition -- the same SEC-IDGOV-G-002 bypass class closed
+      # for scripts/secid.{sh,ps1} above applies to these three pairs too.
+      - "scripts/residentid-sukuna.sh"
+      - "scripts/residentid-sukuna.ps1"
+      - "scripts/residentid-gojo.sh"
+      - "scripts/residentid-gojo.ps1"
+      - "scripts/residentid-yuuji.sh"
+      - "scripts/residentid-yuuji.ps1"
       # Megumi Tier-3 review P2-1 (v9.10.0 UX-001/R5 remediation batch,
       # 2026-07-18): the script-orchestration ENGINE and its command registry
       # were absent from this list -- the same BUG-HOOK-SELF-DISARM-001 class
@@ -1649,9 +1660,9 @@ issue_governance:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "9.10.0"
+  protocol_version: "9.10.1"
   config_version: "2.11"
-  last_updated: "2026-07-18"
+  last_updated: "2026-07-19"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

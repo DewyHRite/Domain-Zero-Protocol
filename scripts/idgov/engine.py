@@ -36,6 +36,11 @@ def is_authorized(writer, family) -> bool:
 def _now() -> str:
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+# D2 (v9.10.1 Block D): retry budget for registry.ConflictError (Block C's
+# _validate_fresh_before_write() freshness check). 3 TOTAL attempts (1 initial
+# + 2 retries), each against a freshly re-read ledger.
+_MAX_APPEND_ATTEMPTS = 3
+
 def mint(reg_path, family, subsystem, title, *, version=None, tag=None, reserved=False,
          reported_by=None, signature, nonce, protocol_version, origin, **audit) -> str:
     if family not in grammar.FAMILIES:
@@ -46,25 +51,64 @@ def mint(reg_path, family, subsystem, title, *, version=None, tag=None, reserved
     attested_writer, writer_token_id = who
     if not is_authorized(attested_writer, family):
         raise PermissionError(f"{attested_writer} not authorized for family {family}")
-    with registry.Lock(reg_path):
-        events = registry.read_events(reg_path)
-        seq = registry.max_seq(events, (family, subsystem, version, tag)) + 1
-        new_id = grammar.format_id(family, subsystem, seq, version=version, tag=tag)
-        if new_id in registry.all_ids(events):
-            raise ValueError(f"collision: {new_id} already exists")
-        ev = {
-            "schema": registry.SCHEMA_VERSION, "event": "assign", "id": new_id, "rev": 1,
-            "family": family, "subsystem": subsystem, "version": version, "tag": tag, "seq": seq,
-            "attested_writer": attested_writer, "writer_token_id": writer_token_id,
-            "reported_by": reported_by, "assigned_at": _now(),
-            "protocol_version": protocol_version, "origin": origin, "title": title,
-            "state": "reserved" if reserved else "open", "prev_state": None,
-            "cwe": audit.get("cwe"), "owasp": audit.get("owasp"), "location": audit.get("location"),
-            "supersedes": None, "superseded_by": None, "review_ref": audit.get("review_ref"),
-            "legacy": False, "legacy_id": None, "collision_group": None,
-        }
-        registry.append(reg_path, ev)
-    return new_id
+    # D2: authority is checked once above -- it depends only on (attested_writer,
+    # family), never on ledger contents, so it needs no re-check across retries.
+    # seq/new_id DO depend on ledger state and must be recomputed from a FRESH
+    # read on every attempt (that is the whole point of retrying).
+    last_exc: "registry.ConflictError | None" = None
+    for _attempt in range(1, _MAX_APPEND_ATTEMPTS + 1):
+        with registry.Lock(reg_path):
+            events = registry.read_events(reg_path)
+            seq = registry.max_seq(events, (family, subsystem, version, tag)) + 1
+            new_id = grammar.format_id(family, subsystem, seq, version=version, tag=tag)
+            if new_id in registry.all_ids(events):
+                raise ValueError(f"collision: {new_id} already exists")
+            ev = {
+                "schema": registry.SCHEMA_VERSION, "event": "assign", "id": new_id, "rev": 1,
+                "family": family, "subsystem": subsystem, "version": version, "tag": tag, "seq": seq,
+                "attested_writer": attested_writer, "writer_token_id": writer_token_id,
+                "reported_by": reported_by, "assigned_at": _now(),
+                "protocol_version": protocol_version, "origin": origin, "title": title,
+                "state": "reserved" if reserved else "open", "prev_state": None,
+                "cwe": audit.get("cwe"), "owasp": audit.get("owasp"), "location": audit.get("location"),
+                "supersedes": None, "superseded_by": None, "review_ref": audit.get("review_ref"),
+                "legacy": False, "legacy_id": None, "collision_group": None,
+            }
+            try:
+                registry.append(reg_path, ev)
+                return new_id
+            except registry.ConflictError as exc:
+                last_exc = exc
+                # P2-a (Megumi Tier-3 bundle review, v9.10.1): classify by
+                # TYPE (isinstance), never by parsing the exception message.
+                # The prior `"already assigned" in str(exc)` string-match was
+                # brittle -- any rewording of registry.py's message text,
+                # even a purely cosmetic one, would have silently
+                # misclassified a genuine duplicate-id conflict as
+                # retryable. registry.DuplicateIdConflictError is a
+                # dedicated ConflictError subclass raised ONLY for this
+                # exact case; a reworded message on that same exception type
+                # still classifies correctly.
+                if isinstance(exc, registry.DuplicateIdConflictError):
+                    # Duplicate-id conflict: another writer landed the EXACT id
+                    # string we just tried to assign. Treated as a distinct,
+                    # NON-retryable failure mode -- fail fast with a clearly
+                    # distinguishable message instead of burning the retry
+                    # budget on a case the design ruling says cannot be
+                    # resolved by retrying.
+                    raise RuntimeError(
+                        f"mint conflict (duplicate-id): {new_id} was concurrently "
+                        f"assigned by another writer; this cannot be resolved by "
+                        f"retrying -- original conflict: {exc}"
+                    ) from exc
+                # Stale-seq conflict: another writer minted in this counter key
+                # concurrently. Retryable -- loop back and recompute seq/new_id
+                # from a fresh read on the next attempt.
+                continue
+    raise RuntimeError(
+        f"mint failed after {_MAX_APPEND_ATTEMPTS} attempts due to repeated concurrent "
+        f"writer conflicts for {family}/{subsystem} (last conflict: {last_exc})"
+    ) from last_exc
 
 def check(reg_path, id_):
     return registry.project_latest(registry.read_events(reg_path)).get(id_)
@@ -85,24 +129,43 @@ def transition(reg_path, id_, new_state, *, signature, nonce, note=None) -> None
     if who is None:
         raise PermissionError("unattested writer")
     attested_writer, writer_token_id = who
-    with registry.Lock(reg_path):
-        events = registry.read_events(reg_path)
-        latest = registry.project_latest(events).get(id_)
-        if latest is None:
-            raise ValueError(f"unknown id {id_}")
-        family = latest.get("family")
-        if family is None:
-            raise ValueError(f"{id_}: cannot determine family (record missing 'family')")
-        if not is_authorized(attested_writer, family):
-            raise PermissionError(f"{attested_writer} not authorized for family {family}")
-        cur_state = latest.get("state")
-        if not is_legal_transition(cur_state, new_state):
-            raise ValueError(f"illegal transition {cur_state} -> {new_state} for {id_}")
-        ev = {"schema": registry.SCHEMA_VERSION, "event": "transition", "id": id_,
-              "rev": int(latest.get("rev", 0)) + 1, "attested_writer": attested_writer,
-              "writer_token_id": writer_token_id, "state": new_state, "prev_state": cur_state,
-              "assigned_at": _now(), "note": note}
-        registry.append(reg_path, ev)
+    # D2: unlike mint()'s authority check (invariant across retries), transition's
+    # authority AND legality checks both depend on the id's CURRENT ledger state
+    # (family/cur_state from `latest`) -- both must be re-run against a fresh read
+    # on every attempt, never skipped/reused from a stale prior attempt.
+    last_exc: "registry.ConflictError | None" = None
+    for _attempt in range(1, _MAX_APPEND_ATTEMPTS + 1):
+        with registry.Lock(reg_path):
+            events = registry.read_events(reg_path)
+            latest = registry.project_latest(events).get(id_)
+            if latest is None:
+                raise ValueError(f"unknown id {id_}")
+            family = latest.get("family")
+            if family is None:
+                raise ValueError(f"{id_}: cannot determine family (record missing 'family')")
+            if not is_authorized(attested_writer, family):
+                raise PermissionError(f"{attested_writer} not authorized for family {family}")
+            cur_state = latest.get("state")
+            if not is_legal_transition(cur_state, new_state):
+                raise ValueError(f"illegal transition {cur_state} -> {new_state} for {id_}")
+            ev = {"schema": registry.SCHEMA_VERSION, "event": "transition", "id": id_,
+                  "rev": int(latest.get("rev", 0)) + 1, "attested_writer": attested_writer,
+                  "writer_token_id": writer_token_id, "state": new_state, "prev_state": cur_state,
+                  "assigned_at": _now(), "note": note}
+            try:
+                registry.append(reg_path, ev)
+                return
+            except registry.ConflictError as exc:
+                last_exc = exc
+                # append()'s freshness check has no "duplicate assign" case for
+                # `transition` events (only stale-rev) -- always retryable: loop
+                # back and re-derive rev + re-run authority/legality above
+                # against the fresh `latest` on the next attempt.
+                continue
+    raise RuntimeError(
+        f"transition failed after {_MAX_APPEND_ATTEMPTS} attempts due to repeated "
+        f"concurrent writer conflicts for {id_} (last conflict: {last_exc})"
+    ) from last_exc
 
 def validate(reg_path) -> list:
     events = registry.read_events(reg_path)

@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.1 -->
 
 # Yuji Itadori - JJK Character Reference
 **Source**: Jujutsu Kaisen Fandom Wiki
 **URL**: <https://jujutsu-kaisen.fandom.com/wiki/Yuji_Itadori>
 **Downloaded**: 2025-11-25
-**Protocol Version**: v9.10.0
+**Protocol Version**: v9.10.1
 
 ---
 

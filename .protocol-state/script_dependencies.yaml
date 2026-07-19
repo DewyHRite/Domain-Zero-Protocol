@@ -1,0 +1,335 @@
+version: 1
+defaults:
+  timeout_seconds: 30
+  fail_soft: true
+
+events:
+  session-update:
+    description: Refresh session, Cortex, custom-agent, and tier status after work.
+    fail_soft: true
+    steps:
+      - name: session-update
+        command: ["python", ".protocol-state/session_monitor.py", "update"]
+        env:
+          DZP_AGENT: "gojo"
+        timeout_seconds: 60
+        required: true
+      - name: cortex-medium
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "medium", "--reason", "session-update", "--repo", "."]
+        # BUG-CORTEX-008 R5 (2026-07-18, Sukuna, canonical port of the RHS-verified
+        # durable fix): detach: true launches this step fully off the coordinator's
+        # critical path (fire-and-forget via ScriptCoordinator._spawn_detached) so
+        # it returns "launched" immediately instead of blocking on a timeout. Root
+        # cause (see internal-docs/Patch Report/Bug Report/
+        # BUG-CORTEX-008-sessionend-high-rebuild-timeout-2026-07-13.md §11):
+        # Cortex re-index cost is embedding-DELTA-bound, not corpus-size-bound, so
+        # the one run immediately after a heavy session's largest content delta
+        # chronically starved even a raised timeout, independent of --level (R3's
+        # premise -- that switching to --level medium alone would fix it -- was
+        # disproven by this same class of timeout recurring on medium). Detaching
+        # removes the step from the critical path entirely rather than racing a
+        # bigger budget. Single-flight safety is unchanged: Cortex's own
+        # index.lock already serializes concurrent index runs. timeout_seconds
+        # below is now a detach-DISABLED FALLBACK ONLY -- consulted solely if
+        # `detach` is ever removed/set false; it is not exercised while detach
+        # is active.
+        detach: true
+        timeout_seconds: 90
+        required: false
+      - name: custom-agent-list
+        command: ["python", ".protocol-state/custom_agent_monitor.py", "--list"]
+        timeout_seconds: 30
+        required: false
+      - name: tier-status
+        command: ["python", ".protocol-state/tier-enforcement.py", "--status"]
+        timeout_seconds: 30
+        required: false
+      - name: tier-statistics
+        command: ["python", ".protocol-state/tier-statistics.py", "--view"]
+        timeout_seconds: 30
+        required: false
+
+  session-end:
+    description: Flush session state, snapshot, and export Cortex memory.
+    fail_soft: true
+    steps:
+      - name: session-end
+        command: ["python", ".protocol-state/session_monitor.py", "end"]
+        env:
+          DZP_AGENT: "gojo"
+        timeout_seconds: 60
+        required: true
+      - name: end-snapshot
+        command: ["python", ".protocol-state/create-snapshot.py", "--auto", "--tier", "2", "--trigger", "session-end"]
+        timeout_seconds: 120
+        required: false
+      - name: cortex-medium
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "medium", "--reason", "session-end", "--repo", "."]
+        # BUG-CORTEX-008 R3 (2026-07-13, durable fix, supersedes the R1 180->300s
+        # stopgap): session-end now runs an INCREMENTAL (--level medium) re-index
+        # instead of a synchronous full (--level high --export) rebuild. Root cause
+        # (see internal-docs/Patch Report/Bug Report/
+        # BUG-CORTEX-008-sessionend-high-rebuild-timeout-2026-07-13.md §8): the full
+        # rebuild's cost is embedding-DELTA-bound, not corpus-size-bound, and
+        # session-end fires it immediately after the session's own largest content
+        # delta — the single worst moment to run it synchronously. Moving the full
+        # rebuild off this critical path removes the race entirely rather than just
+        # buying headroom. 90s matches the timeout used for --level medium elsewhere
+        # in this file (session-update, ts-complete).
+        # The full --level high + --export rebuild now lives in the standalone
+        # 'cortex-rebuild-full' event below — run manually/periodically via
+        # `python dzp.py event cortex-rebuild-full` (DZP is no-daemon; no automated
+        # scheduler exists or is proposed). See report §10 for the full design +
+        # accepted trade-off (export snapshot freshness now depends on that event
+        # being run, not on session-end).
+        #
+        # BUG-CORTEX-008 R5 (2026-07-18, Sukuna, canonical port of the RHS-verified
+        # durable fix — supersedes R3's premise, does NOT replace R3's rename):
+        # R3's rename to --level medium alone was later disproven as a full fix —
+        # the RHS install's `session-update.cortex-medium` (same --level medium)
+        # ALSO timed out at its 90s cap, showing the defect is a fixed timeout on
+        # a variable-length embed, independent of level (see report §11.1).
+        # detach: true now launches this step fully off the coordinator's critical
+        # path (fire-and-forget via ScriptCoordinator._spawn_detached), returning
+        # "launched" immediately. Single-flight safety is unchanged: Cortex's own
+        # index.lock already serializes concurrent index runs. timeout_seconds
+        # below is now a detach-DISABLED FALLBACK ONLY — consulted solely if
+        # `detach` is ever removed/set false.
+        detach: true
+        timeout_seconds: 90
+        required: false
+      - name: cortex-distill
+        # WI-19 (v9.6.0): Advisory memory distillation step at session end.
+        # Proposes 3-5 typed memories from recent activity (8h window).
+        # NEVER auto-writes — user must run 'brain remember' to persist any proposal.
+        # Runs after cortex-high and end-snapshot so it sees the latest indexed state.
+        command: ["python", ".protocol-state/brain/brain.py", "distill", "--window", "8", "--max", "5"]
+        timeout_seconds: 60
+        required: false
+
+  ts-start:
+    description: Pre-troubleshooting context checks.
+    fail_soft: true
+    steps:
+      - name: session-status
+        command: ["python", ".protocol-state/session_monitor.py", "status"]
+        timeout_seconds: 30
+        required: false
+      - name: dependency-scan
+        command: ["python", "scripts/dependency-scanner.py", "--scan"]
+        timeout_seconds: 60
+        required: false
+      - name: cortex-low
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "low", "--reason", "ts-start", "--repo", "."]
+        timeout_seconds: 30
+        required: false
+
+  ts-complete:
+    description: Post-troubleshooting refresh for Cortex and tier statistics.
+    fail_soft: true
+    steps:
+      - name: cortex-medium
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "medium", "--reason", "ts-complete", "--repo", "."]
+        timeout_seconds: 90
+        required: false
+      - name: tier-statistics
+        command: ["python", ".protocol-state/tier-statistics.py", "--view"]
+        timeout_seconds: 30
+        required: false
+      - name: validation-check
+        command: ["python", "scripts/validate-protocol.py", "--check", "--ci-mode"]
+        timeout_seconds: 60
+        required: false
+
+  pre-protected-edit:
+    description: Fail-closed gate before protected document edits.
+    fail_soft: false
+    steps:
+      - name: cortex-recall
+        # WI-17 (v9.6.0): Proactive recall — surface relevant prior decisions/sec findings
+        # before editing a protected document. Advisory step (S-RISK-001/G-RISK-004 ruling).
+        # timeout_seconds: 30 is appropriate for cached recall; first model download may need 120s.
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--recall", "--context", "protected document edit context", "--trust", "trusted,semi", "--repo", "."]
+        timeout_seconds: 30
+        required: false
+      - name: cortex-pre-edit
+        # S-RISK-001 USER DECISION 2026-06-16: required: false (fail-soft advisory).
+        # No --strict flag. Cortex failure does NOT block the protected edit.
+        # Promotion to required: true deferred until Cortex reliability is confirmed
+        # in the 4-install shared-brain environment.
+        # HIGH level includes rotation-check advisory step — warns if docs are near threshold.
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "high", "--reason", "pre-protected-edit", "--repo", "."]
+        timeout_seconds: 120
+        required: false
+      - name: protected-edit-snapshot
+        command: ["python", ".protocol-state/create-snapshot.py", "--auto", "--tier", "3", "--trigger", "pre-protected-edit"]
+        timeout_seconds: 120
+        required: true
+      - name: dependency-impact
+        command: ["python", "scripts/dependency-scanner.py", "--analyze", ".protocol-state/project-state.json"]
+        timeout_seconds: 60
+        required: true
+      - name: protocol-preview
+        command: ["python", "scripts/validate-protocol.py", "--fix", "--preview", "--ci-mode"]
+        timeout_seconds: 60
+        required: true
+
+  pre-release:
+    description: Fail-closed release preflight across validation, agents, version, and Cortex.
+    fail_soft: false
+    steps:
+      - name: validate-protocol
+        command: ["python", "scripts/validate-protocol.py", "--check", "--ci-mode"]
+        timeout_seconds: 90
+        required: true
+      - name: verify-auto-invoked
+        command: ["python", "scripts/verify-auto-invoked.py"]
+        timeout_seconds: 60
+        required: true
+      - name: validate-custom-agents
+        command: ["python", "scripts/validate-custom-agents.py", "--validate-all"]
+        timeout_seconds: 60
+        required: true
+      - name: assert-version
+        command: ["python", "scripts/distro/assert_version.py", "--root", "."]
+        timeout_seconds: 60
+        required: true
+      - name: check-version-stamps
+        # v9.7.2: full-repo stamp linter — catches CORE FILE headers, bold footers, and
+        # protocol_version frontmatter that assert_version (20-file gate) cannot see.
+        # This is the durable fix for the large stamp-drift found at v9.7.2.
+        command: ["python", "scripts/distro/check_version_stamps.py", "--root", "."]
+        timeout_seconds: 120
+        required: true
+      - name: cortex-high
+        # HIGH-002: full high trigger, fail-CLOSED (--strict). Cortex health is a release gate.
+        # BUG-CORTEX-008 (2026-07-13, Sukuna R1 stopgap): timeout raised 180->300s.
+        # Cause is embedding-DELTA-bound, not corpus-size-bound — see the
+        # cortex-rebuild-full event below for the full rationale (R3, the durable
+        # fix that moved the equivalent full-rebuild step off the session-end
+        # critical path) and internal-docs/Patch Report/Bug Report/
+        # BUG-CORTEX-008-...-2026-07-13.md §8/§10.
+        # required: true here means this step is fail-CLOSED, unlike session-end/
+        # cortex-rebuild-full; a starved timeout blocks the release preflight, so
+        # headroom matters more — this event is infrequent and synchronous-by-design.
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "high", "--reason", "pre-release", "--strict", "--repo", "."]
+        timeout_seconds: 300
+        required: true
+      - name: tier-statistics
+        command: ["python", ".protocol-state/tier-statistics.py", "--view"]
+        timeout_seconds: 30
+        required: true
+      - name: gnogo-check
+        # WI-18 (v9.6.0): Advisory go/no-go entity-graph check before release.
+        # required: false initially — advisory until the entity graph is populated with
+        # real WI/SEC entities. Promotes to required: true in a follow-on patch.
+        command: ["python", ".protocol-state/brain/brain.py", "gnogo", "--release", "pre-release", "--trust", "trusted,semi"]
+        timeout_seconds: 60
+        required: false
+
+  toji-snapshot:
+    description: Snapshot-only Toji audit event; no interactive CLI execution.
+    fail_soft: true
+    steps:
+      - name: toji-snapshot
+        command: ["python", ".protocol-state/create-snapshot.py", "--auto", "--tier", "2", "--trigger", "toji-snapshot"]
+        timeout_seconds: 120
+        required: true
+      - name: cortex-export-for-toji
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "medium", "--reason", "toji-snapshot", "--export", "--repo", "."]
+        timeout_seconds: 90
+        required: false
+
+  pre-publish:
+    description: Fail-closed gate before DZP distro publish. Runs cortex-high (--strict) + assert_version (--root . resolves to the repo root, the coordinator's cwd) [SEC-C1-002] + check_version_stamps (full-repo stamp linter, v9.7.2). Agent-file/protocol validation is intentionally NOT duplicated here [SEC-C1-003] — it is handled by the dzp-publish scrub/audit pipeline; this is the designed difference vs pre-release.
+    fail_soft: false
+    steps:
+      - name: cortex-high
+        # BUG-CORTEX-008 (2026-07-13, Sukuna R1 stopgap): timeout raised 180->300s.
+        # Embedding-DELTA-bound, not corpus-size-bound; see the cortex-rebuild-full
+        # event below (R3 durable fix) + internal-docs/Patch Report/Bug Report/
+        # BUG-CORTEX-008-...-2026-07-13.md §8/§10.
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "high", "--reason", "pre-publish", "--strict", "--repo", "."]
+        timeout_seconds: 300
+        required: true
+      - name: assert-version
+        command: ["python", "scripts/distro/assert_version.py", "--root", "."]
+        timeout_seconds: 60
+        required: true
+      - name: check-version-stamps
+        # v9.7.2: full-repo stamp linter — catches all 3 stamp types across the whole repo.
+        # Keeps drifted stamps from shipping in the public distro.
+        command: ["python", "scripts/distro/check_version_stamps.py", "--root", "."]
+        timeout_seconds: 120
+        required: true
+
+  post-migration:
+    description: Post-migration Cortex refresh (fail-soft).
+    fail_soft: true
+    steps:
+      - name: cortex-high
+        # BUG-CORTEX-008 (2026-07-13, Sukuna R1 stopgap): timeout raised 180->300s.
+        # Embedding-DELTA-bound, not corpus-size-bound; see the cortex-rebuild-full
+        # event below (R3 durable fix) + internal-docs/Patch Report/Bug Report/
+        # BUG-CORTEX-008-...-2026-07-13.md §8/§10.
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "high", "--reason", "post-migration", "--export", "--repo", "."]
+        timeout_seconds: 300
+        required: false
+
+  post-rotation:
+    description: Post-rotation Cortex re-index — fires after any protected doc has been archived and reset by a rotation script. Fail-soft; index must not run before archive succeeds. Covers domain-record-rotate.py (domain.record.md) and file-rotate.py (dev-notes.md, security-review.md). Caller contract [SEC-C1-001] — fire ONLY after a rotation script's --rotate exits 0. If --rotate fails, do NOT fire post-rotation (the live file is unchanged, so there is nothing to re-index).
+    fail_soft: true
+    steps:
+      - name: cortex-high
+        # BUG-CORTEX-008 (2026-07-13, Sukuna R1 stopgap): timeout raised 180->300s.
+        # Embedding-DELTA-bound, not corpus-size-bound; see the cortex-rebuild-full
+        # event below (R3 durable fix) + internal-docs/Patch Report/Bug Report/
+        # BUG-CORTEX-008-...-2026-07-13.md §8/§10.
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "high", "--reason", "post-rotation", "--export", "--repo", "."]
+        timeout_seconds: 300
+        required: false
+
+  cortex-compact:
+    # WI-S3-9 (Stage 3 Phase 2, v9.7.0): Advisory compaction — sweep orphaned content
+    # rows and VACUUM. Always fail-soft (advisory). Caller contract: fire ONLY when
+    # compaction_recommended=True from brain status --json (or at periodic maintenance
+    # intervals). NEVER fires automatically during ingest — operator-invoked or scheduled.
+    # S3-RISK-003: compact aborts gracefully (exit 0) if index.lock is held.
+    # SEC-UNIFIED-004: VACUUM OperationalError is caught and logged (fail-soft).
+    description: Advisory Cortex compaction — sweep orphaned content rows and VACUUM to reclaim space (WI-S3-9, v9.7.0).
+    fail_soft: true
+    steps:
+      - name: compact
+        command: ["python", ".protocol-state/brain/brain.py", "compact", "--repo", "."]
+        timeout_seconds: 120
+        required: false
+
+  cortex-rebuild-full:
+    # BUG-CORTEX-008 R3 (2026-07-13, durable fix): the full --level high + --export
+    # Cortex rebuild used to run synchronously at session-end, where it collided
+    # with the session's own largest embedding delta and chronically timed out
+    # (root cause: embedding-DELTA-bound cost, not corpus-size-bound — see
+    # internal-docs/Patch Report/Bug Report/
+    # BUG-CORTEX-008-sessionend-high-rebuild-timeout-2026-07-13.md §8/§10).
+    # session-end now runs a fast incremental (--level medium, no --export) step
+    # instead; this event carries the full rebuild+export off that critical path.
+    #
+    # INVOCATION (manual/periodic — DZP is no-daemon, there is no scheduler):
+    #   python dzp.py event cortex-rebuild-full
+    # Suggested cadence: weekly, or whenever `brain status` / the session-end
+    # cortex-medium step reports notable drift, or before a Toji audit / release
+    # where a fresh exported snapshot matters. Equivalent manual path (no
+    # coordinator): `scripts/brain.ps1 index` (or `brain.sh index`) followed by
+    # `scripts/brain.ps1 export --snapshot`.
+    #
+    # Fail-soft/advisory by design (required: false, no --strict) — this is a
+    # maintenance convenience, not a gate; a timeout here only means the export
+    # snapshot stays stale until the next run, exactly like the old session-end
+    # behavior did when it hit its timeout.
+    description: Manual/periodic full Cortex rebuild (--level high) + export snapshot, off the session-end critical path (BUG-CORTEX-008 R3). Invoke via 'python dzp.py event cortex-rebuild-full'.
+    fail_soft: true
+    steps:
+      - name: cortex-high
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "high", "--reason", "cortex-rebuild-full", "--export", "--repo", "."]
+        timeout_seconds: 300
+        required: false

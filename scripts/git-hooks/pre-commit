@@ -1,5 +1,5 @@
 #!/bin/sh
-# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.10.0)
+# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.10.1)
 # Combines: protected-records secret scan + publish-branch skip + append-only guard
 #           + agent/protected-file guard + validate-protocol.py state validation
 #           + issue-id registry gate (FEAT-IDGOV-001, Phase G1, INERT by default).
@@ -255,6 +255,12 @@ scripts/idgov/engine.py
 scripts/idgov/__init__.py
 scripts/secid.sh
 scripts/secid.ps1
+scripts/residentid-sukuna.sh
+scripts/residentid-sukuna.ps1
+scripts/residentid-gojo.sh
+scripts/residentid-gojo.ps1
+scripts/residentid-yuuji.sh
+scripts/residentid-yuuji.ps1
 .protocol-state/script_coordinator.py
 .protocol-state/script_dependencies.yaml"
 

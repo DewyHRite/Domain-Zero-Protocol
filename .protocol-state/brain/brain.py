@@ -1912,10 +1912,20 @@ def _reset(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
             # before ANY destructive action. Abort if snapshot cannot be made/verified.
             # R1-004: prompt ONCE for passphrase, reuse for both export + verify — no double
             # getpass, no false-negative abort from a second-prompt typo.
+            # BUG-TEST-RESET-HANG-001 (D1, v9.10.1 Block D): this branch is only ever
+            # reached with args.yes already True — `_reset()` requires --yes to proceed
+            # past its very first guard, above. --yes is explicit non-interactive intent,
+            # so this call must NEVER getpass-prompt (allow_prompt=False unconditionally),
+            # even when stdin looks like a live TTY (console-attached automation). With no
+            # env passphrase available, this now deterministically fails CLOSED via the
+            # RuntimeError below instead of blocking forever on an interactive prompt.
             try:
-                pw = _escrow_passphrase(allow_prompt=True)
+                pw = _escrow_passphrase(allow_prompt=False)
                 if not pw:
-                    raise RuntimeError("no escrow passphrase available to wrap the memory snapshot")
+                    raise RuntimeError(
+                        "no escrow passphrase available to wrap the memory snapshot "
+                        "(set DZP_CORTEX_ESCROW_PASSPHRASE or run interactively without --yes)"
+                    )
                 out = _do_memory_export(repo, cfg, data_dir_split, None, allow_prompt=False, passphrase=pw)
                 if out is None:
                     raise RuntimeError("memory snapshot export produced no artifact")

@@ -1,4 +1,4 @@
-﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.10.0)
+﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.10.1)
 # PowerShell equivalent of scripts/git-hooks/pre-commit for PowerShell-driven git
 # hook setups.
 #
@@ -215,6 +215,12 @@ if ($status) {
             'scripts/idgov/__init__.py',
             'scripts/secid.sh',
             'scripts/secid.ps1',
+            'scripts/residentid-sukuna.sh',
+            'scripts/residentid-sukuna.ps1',
+            'scripts/residentid-gojo.sh',
+            'scripts/residentid-gojo.ps1',
+            'scripts/residentid-yuuji.sh',
+            'scripts/residentid-yuuji.ps1',
             '.protocol-state/script_coordinator.py',
             '.protocol-state/script_dependencies.yaml'
         )

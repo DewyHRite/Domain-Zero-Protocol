@@ -9,6 +9,118 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.10.1] - 2026-07-19
+
+### PATCH — Bundled remediation: distro-integrity (orchestration-trio) + idgov polish (retro-mint, resident wrappers, report-contract validator) + registry lock hardening + brain reset UX fix + `SEC-GUARD-007`
+
+#### Added
+- **Block A (distro integrity)** — new fail-closed, NO-override `manifest_tracking_offenders()` /
+  `manifest_tracking_guard_cli()` gate in `scripts/distro/dzp_publish_core.py`: verifies every
+  manifest-shippable file staged on disk under `distro/` is also `git`-tracked after `git add -A`.
+  Closes **`BUG-DISTRO-ORCH-TRIO-001`** — a stale v9.2.0 "DEV-ONLY" ignore block in
+  `scripts/distro/distro.gitignore` silently caused every published `DZP-vX.Y.Z` branch's
+  `git add -A` to skip the orchestration trio (`dzp.py`, `.protocol-state/script_coordinator.py`,
+  `.protocol-state/script_dependencies.yaml`) even though `manifest_completeness_offenders()` and
+  the on-disk `content_audit` both reported green — neither had ever checked actual git-tracked
+  reality. USER ruling: the orchestration trio now SHIPS (supersedes the prior v9.2.x dev-only
+  decision; fulfills `ISS-084`/`ISS-085`); the stale ignore block removed; wired into both
+  `scripts/dzp-publish.sh` and `.ps1`.
+- **Block B (idgov polish)** — closes all 4 findings Toji deferred from the v9.10.0 release-gate
+  audit (`audits/2026-07-18-toji-dzp-9-10-0-audit.md`):
+  - **`DESIGN-001`** RESOLVED — sanctioned resident-mint tooling for every non-Megumi
+    `AUTHORITY`-table family: `scripts/residentid-{sukuna,gojo,yuuji}.{sh,ps1}` (6 wrappers) +
+    `protocol/skills/resident-mint.md`, mirroring `scripts/secid.{sh,ps1}`'s design (per-wrapper
+    hardcoded identity, fresh nonce per call, unsigned read-only subcommands). Covered across all 4
+    protection layers: `immutable_paths`, the publish allowlist, `manifest_completeness_offenders()`,
+    and a new 10-test parity suite `tests/test_residentid_wrapper.py`.
+  - **`IMPL-001`** (original, i.e. report-contract violation) + **`AI-001`** RESOLVED — new
+    `scripts/check_toji_report_contract.py` mechanizes Toji's own report-contract requirements
+    (severity vocabulary, one-finding-per-ID, required field sequence with no unrecognized
+    interleaved label, direct reference URLs, severity-totals arithmetic, exhaustive Appendix A),
+    backed by `tests/test_check_toji_report_contract.py`.
+  - Retro-mint audit trail (P2-d, report-only): `audits/2026-07-19-retromint-b1-exclusions.md` —
+    non-destructively reconstructs the 75-id Block-B1 retro-mint batch's exclusion set (41
+    currently-excluded well-formed ids: 38 seq-gap, 2 illustrative-example literals, 1
+    foreign-origin; the 41-vs-recalled-38 discrepancy is disclosed, not forced to match).
+- **Block C (idgov registry lock hardening, `scripts/idgov/registry.py`)** — **C1 (P2)** closes a
+  two-reaper race window (the stale-lock reap is two separate syscalls, not an atomic
+  compare-and-swap, so a second racing reaper's `os.replace()` can land after a first reaper's
+  replace+re-read already returned "owned"): a fresh, in-lock re-validation of the event's
+  structural invariants immediately before the write (`_validate_fresh_before_write()`), raising a
+  new retryable `ConflictError` on mismatch; `engine.mint()` gains a bounded 3-attempt retry loop
+  that recomputes `seq`/`new_id` from a fresh read each attempt, classifying the one non-retryable
+  case (`DuplicateIdConflictError`, a typed `ConflictError` subclass — see `SEC-GUARD-007`'s sibling
+  P2-a below) as fail-fast. **C2 (P3)** — PID-recycle reap-starvation backstop:
+  `_STARVATION_TTL_MULTIPLIER` (10x ttl) hard age ceiling overrides even a "confirmed alive"
+  liveness claim once a lock has been held far longer than any legitimate registry operation ever
+  runs; plus an explicit human break-glass, `Lock.force_break()`, printed directly in the
+  `TimeoutError` message alongside who currently holds the lock and since when. A full
+  ppid-mismatch cross-check (the alternative PID-recycle fix) is an accepted, documented residual.
+- **Block D (`brain.py` reset UX)** — **`BUG-TEST-RESET-HANG-001`** (D1) product-side fix:
+  `_reset()`'s preserving-snapshot path now calls `_escrow_passphrase(allow_prompt=False)`
+  unconditionally (was `allow_prompt=True`), so `brain reset --yes` can never block on a `getpass`
+  prompt even when stdin looks like a live console TTY; with no env passphrase available it now
+  fails closed deterministically with an actionable `RuntimeError` instead of hanging indefinitely.
+  Complements the v9.10.0 test-harness-only Part 1 fix (pipe-EOF stdin + test escrow passphrase);
+  this is the PRODUCT-side Part 2. New regression coverage in `tests/brain/test_reset_split.py`.
+- **`SEC-GUARD-007`** (P1, CWE-345, minted via mediated `secid` execution per the Phase D9
+  Sukuna-adversarial review) — closes a stub-marker splice bypass in
+  `scripts/check_protected_append_only.py`'s Toji-stub tripwire: the newly-added-line detector used
+  a byte-offset tail slice, so a `[TOJI AUDIT LOG]` marker split across two no-trailing-newline
+  commits could evade both the SEC-TOJI-102 existence check and the AI-001 grammar validation with
+  zero warning. Fix: `find_toji_stub_violations()` now scans the FULL staged content every time and
+  exempts a line from re-validation only when its exact normalized text already exists, byte-for-byte,
+  as a line in HEAD (new `_existing_stub_line_identifiers()`); the old `_added_lines()` is retained
+  (now unused) for history/compat. Two-commit splice repro (red→green); both real,
+  permanently-malformed historical stubs (`.protocol-state/dev-notes.md:3608`,
+  `.protocol-state/security-review.md:2949`) proven to still never re-flag.
+
+#### Fixed
+- **P2-a** — `ConflictError` typed subclass (`DuplicateIdConflictError`) replaces the brittle
+  `"already assigned" in str(exc)` substring classification in `engine.mint()`; survives any
+  rewording of the underlying exception message.
+- **P2-b** — `.protocol-state/script_coordinator.py`: a missing `.py` step target under
+  `scripts/distro/**` now fails with a clear "maintainer-only tooling not present in this install"
+  diagnostic instead of a raw Python traceback; fail-closed semantics unchanged.
+- **P2-c** — `dzp.py` docstring's stale "dzp.py is DEV-ONLY, must not ship" claim corrected now that
+  the orchestration trio ships (Block A); `pre-publish` documented alongside
+  `pre-release`/`pre-protected-edit` as a fail-closed gate.
+- **Toji pre-audit `SEC-001`** (MEDIUM) — the bundle's `SEC-GUARD-007` P1 fix now has its own
+  dedicated Megumi Tier-3 review recorded directly in `security-review.md` (two rounds:
+  @remediation-required → @approved), not merely a secondhand paraphrase in `dev-notes.md`.
+- **Toji pre-audit `IMPL-002`** (MEDIUM) — reconciled the conflicting `BUG-TEST-RESET-HANG-001`
+  release attribution between `domain.record.md` (had listed it as fully shipped in v9.10.0) and
+  `brain.py`'s inline comment (labeled v9.10.1 Block D): documented as a genuine two-part fix — Part
+  1 (v9.10.0, test-harness stdin/escrow only) and Part 2 (this release, the product-side
+  `allow_prompt=False` fix, Block D above).
+- **Toji pre-audit `IMPL-001`/`CODE-001`** (this report's own local finding namespace, distinct from
+  the already-resolved `IMPL-001` in Block B above) —
+  `scripts/check_toji_report_contract.py`'s documented-but-unimplemented "unrecognized field label"
+  check (Check 3) is now implemented: `_LABEL_SHAPE_RE` flags an interleaved unrecognized ALL-CAPS
+  label between a finding's 11 required fields, populating the previously-dead
+  `_Finding.unrecognized_labels` attribute; 6 new tests in `TestUnrecognizedFieldLabel`.
+
+#### Notes
+- Megumi Tier-3 @approved twice this release: the full bundle (Blocks A-D + `SEC-GUARD-007`, 2
+  rounds — 1 P1 + 4 P2 → @approved) and a focused standalone verification of the report-contract
+  validator's `IMPL-001`/`CODE-001` closure (@approved; 3 accepted P3 residuals — digit/underscore
+  label evasion, ASCII-only homoglyph evasion, ALL-CAPS-emphasis-prose false positive — all
+  advisory-linter threat-model boundaries, not trust boundaries).
+- Toji pre-audit (`audits/2026-07-19-toji-v9-10-1-bundle-preaudit.md`) independently re-verified all
+  4 findings deferred from the v9.10.0 release-gate audit (`SEC-001`, `DESIGN-001`, `IMPL-001`,
+  `AI-001`) as RESOLVED, and raised 4 new findings against the remediation bundle itself (3 MEDIUM, 1
+  LOW: its own-namespace `SEC-001` missing security-review record, `IMPL-001` unimplemented label
+  check, `IMPL-002` attribution conflict, `CODE-001` dead code) — all 4 closed in this same working
+  tree per the Fixed section above. Overall verdict: bundle READY for the release ceremony.
+- Test evidence: `tests/test_protected_append_only.py` 79/79, `tests/test_issue_id_engine.py` +
+  `tests/test_issue_id_registry.py` 80/80 combined, `tests/test_bug_hook_self_disarm_001.py` 23/23,
+  `tests/test_script_coordinator.py` 16/16 — 198/198 across the targeted remediation suites, zero
+  regressions against the pre-session 187/187 baseline; `tests/test_check_toji_report_contract.py`
+  28/28. Full repo sweep: **2,376 passed / 4 skipped / 0 failed**.
+- Sukuna-implemented (System Update Adversary, Gojo-coordinated, USER-approved). Provenance:
+  `.dzp-domain/domain.record.md` 2026-07-19 mission-open + pre-flight-complete records;
+  `audits/2026-07-19-toji-v9-10-1-bundle-preaudit.md`; `audits/2026-07-19-retromint-b1-exclusions.md`.
+
 ## [9.10.0] - 2026-07-18
 
 ### MINOR — FEAT-IDGOV-001 Issue-ID Governance System + IMPL-001 version-cascade closure + BUGREPORT-009 stamp-linter coverage

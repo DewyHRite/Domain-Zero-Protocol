@@ -1,5 +1,5 @@
 {
-  "protocol_version": "9.10.0",
+  "protocol_version": "9.10.1",
   "compaction_recovery": {
     "last_recovery_timestamp": null,
     "recovery_count": 0,
@@ -326,10 +326,10 @@
   "session_tracking": {
     "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.11.0)",
     "current_session": {
-      "session_id": null,
-      "session_active": false,
-      "start_time": null,
-      "last_interaction_time": null,
+      "session_id": "session_20260719_155109",
+      "session_active": true,
+      "start_time": "2026-07-19T15:51:09.193791+00:00",
+      "last_interaction_time": "2026-07-19T15:51:09.193791+00:00",
       "last_alert_time": null,
       "alert_count": 0,
       "escalation_level": 0,
@@ -483,8 +483,8 @@
         "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-07-18T16:26:13.990864",
-    "protocol_version": "9.10.0"
+    "last_updated": "2026-07-19T11:51:09.202799",
+    "protocol_version": "9.10.1"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",
@@ -20831,7 +20831,7 @@
       ],
       "metadata": {
         "created": "2025-12-31T00:00:00Z",
-        "protocol_version": "9.10.0",
+        "protocol_version": "9.10.1",
         "last_updated": "2026-06-17T00:00:00Z",
         "total_sessions_all_time": 1004
       }
@@ -21017,7 +21017,7 @@
         ]
       }
     ],
-    "last_updated": "2026-07-18T20:26:33.461059+00:00",
+    "last_updated": "2026-07-19T15:50:57.387713+00:00",
     "last_event": "session-end",
     "events": [
       {
@@ -21445,6 +21445,39 @@
             "duration_seconds": 1.203
           }
         ]
+      },
+      {
+        "event": "session-end",
+        "finished_at": "2026-07-19T15:50:57.387713+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.625
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.297
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.015
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.907
+          }
+        ]
       }
     ],
     "last_status_by_event": {
@@ -21489,7 +21522,7 @@
       },
       "session-end": {
         "event": "session-end",
-        "finished_at": "2026-07-18T20:26:33.461059+00:00",
+        "finished_at": "2026-07-19T15:50:57.387713+00:00",
         "success": true,
         "status": "success",
         "fail_soft": true,
@@ -21498,25 +21531,25 @@
             "name": "session-end",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 1.328
+            "duration_seconds": 0.625
           },
           {
             "name": "end-snapshot",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.61
+            "duration_seconds": 0.297
           },
           {
             "name": "cortex-medium",
-            "status": "success",
-            "exit_code": 0,
-            "duration_seconds": 17.453
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.015
           },
           {
             "name": "cortex-distill",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 1.203
+            "duration_seconds": 0.907
           }
         ]
       }

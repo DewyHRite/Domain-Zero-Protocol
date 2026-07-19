@@ -57,11 +57,91 @@ SEC-TOJI-102 (mechanical fabrication tripwire for the Toji audit-log stub):
   *existence*, not the append-only byte-prefix invariant. The bypass is
   always printed to stderr — never silent.
 
+Toji AI-001 (full stub grammar validation, Sukuna Block B5, v9.10.1):
+  SEC-TOJI-102 above (and the AI-001 scoped fix that normalizes a backticked
+  report path) only ever validated the "full report: <path>" field's
+  EXISTENCE. Toji's own AI-001 finding (`audits/2026-07-18-toji-dzp-9-10-0-
+  audit.md`) observed that the guard "does not validate the scope, counts,
+  signature suffix, duplicate audit identifier, extension agreement, or full
+  stub grammar" -- demonstrated by the two REAL committed stubs whose
+  `scope:` value ("v9.10.0-idgov-full-audit (design+impl+review+go-live)")
+  contains dots, spaces, parentheses, and a plus sign despite the mandatory
+  `[a-z0-9-]+` safe-slug rule (protocol/toji.agent.md Section 1.3.4).
+
+  This guard now validates every NEWLY-ADDED "[TOJI AUDIT LOG]" line against
+  the FULL standardized grammar:
+
+    > [TOJI AUDIT LOG] YYYY-MM-DD · scope: <safe-slug> · findings: N (C/H/M/L)
+      · full report: <path> · —Toji (Sentinel) vX.Y.Z
+
+  A line containing the TOJI_STUB_MARKER that does NOT match this grammar is
+  now a MALFORMED STUB and BLOCKS the commit outright (fail-closed) -- this
+  supersedes the prior "fails soft on parse ambiguity" behavior for a
+  stub-like-but-unparseable line (AI-001's explicit recommendation: "Reject
+  malformed marker lines instead of failing soft on parse ambiguity").
+  A grammar-conforming stub is then further checked for:
+    - a real calendar date (not just YYYY-MM-DD shape -- e.g. month 13 fails)
+    - findings arithmetic: N must equal C+H+M+L
+    - report path extension in _TOJI_STUB_ALLOWED_EXTENSIONS (.md/.docx, per
+      Section 1.3.4: "<ext> MUST match the actual extension... md or docx")
+    - report path existence (reusing the existing SEC-TOJI-102 check)
+    - per-file (date, scope) uniqueness against every stub ALREADY PRESENT IN
+      HEAD for that same protected file (a duplicate committed audit
+      identifier is a violation), plus against other newly-added stubs in
+      the SAME commit
+
+  CRITICAL SCOPING (unchanged from SEC-TOJI-102): only NEWLY-ADDED staged
+  content is ever validated -- a pre-existing, already-committed stub
+  (including the two real 2026-07-18 stubs whose scope violates the
+  safe-slug rule) is NEVER retroactively re-validated or re-blocked by a
+  later, unrelated commit; it is permanent history. As of the P1 fix below,
+  "newly-added" is now determined by an exact per-line text comparison
+  against HEAD (see _existing_stub_line_identifiers), not by the
+  byte-offset tail slice _added_lines() used to compute.
+
+P1 (Megumi Tier-3 bundle review, v9.10.1): stub-marker splice bypass, FIXED.
+  _added_lines() (still defined below, no longer called by
+  find_toji_stub_violations) computed the newly-staged tail as a byte-OFFSET
+  slice of the staged content (staged_norm[len(head_norm):]). When HEAD does
+  NOT end with a trailing newline, a two-commit sequence could SPLICE a
+  forged stub across the commit boundary: commit 1 appends a PARTIAL marker
+  with no trailing newline (e.g. "> [TOJI AUDIT LO", not yet a complete
+  "[TOJI AUDIT LOG]" substring -- nothing is flagged, commit passes clean);
+  commit 2's staged bytes then complete that SAME physical line (e.g.
+  "G] ... full report: <missing> ..."). The byte-offset tail computed for
+  commit 2 starts MID-LINE at "G]" and never contains the literal marker
+  text -- so the stub scan skipped it entirely, and a complete, well-formed-
+  looking forged stub (referencing a report that does not exist) landed
+  with ZERO warning.
+
+  Fix (Megumi option (a)): find_toji_stub_violations now scans the FULL
+  staged content (every line split from the whole normalized staged text,
+  not just the byte-offset tail) for TOJI_STUB_MARKER lines, and exempts a
+  line from re-validation ONLY when its exact (normalized) text was already
+  present, byte-for-byte, as a line in HEAD -- i.e. genuinely unchanged
+  history. _existing_stub_line_identifiers() is the identity function
+  backing this exemption: "identity" is simply the full normalized line
+  text, which works uniformly for well-formed AND malformed historical
+  lines alike (no (date, scope) parsing required, so it is inherently
+  robust for a malformed line that has no parseable scope field -- it
+  "falls back" to the full line trivially, by construction). This is
+  deliberately a DIFFERENT, coarser identity than _existing_stub_identifiers
+  (date, scope) below, which remains dedicated to the semantic
+  duplicate-audit-identifier check -- a NEW stub whose (date, scope) merely
+  MATCHES an old one (but whose full line text differs, e.g. a different
+  referenced report) is correctly NOT exempted by the per-line check and
+  still surfaces as a "duplicates an existing audit identifier" violation.
+
+  Same override: DZP_ALLOW_TOJI_STUB_UNVERIFIED=1 remains the single
+  break-glass for this whole stub-guard family (existence, grammar, AND
+  the splice bypass above).
+
 Exit codes: 0 = clean (or overridden / disabled), 1 = violation(s) blocking commit.
 """
 
 from __future__ import annotations
 
+import datetime
 import os
 import re
 import subprocess
@@ -332,6 +412,18 @@ def _normalize_toji_report_ref(raw: str) -> str:
 def _added_lines(head: Optional[bytes], staged: bytes) -> list[str]:
     """Return the lines newly present in `staged` that are not part of `head`.
 
+    SUPERSEDED (P1, v9.10.1): find_toji_stub_violations() no longer calls this
+    function. Its byte-OFFSET tail-slice approach is exactly what enabled the
+    stub-marker splice bypass (see the module docstring's "P1" section) — when
+    `head` does not end with a trailing newline, a two-commit sequence can
+    complete a partial marker line across the commit boundary, and the
+    resulting tail slice starts mid-line, never containing the full marker
+    text. find_toji_stub_violations() now scans the FULL staged content and
+    exempts already-committed lines by exact per-line text comparison
+    (_existing_stub_line_identifiers) instead. Kept defined (unused) for
+    historical/API-compatibility reasons only — do not reintroduce it as the
+    basis for the stub scan.
+
     Normalizes CRLF (consistent with is_append_only) before diffing. When the
     normalized `head` is a prefix of normalized `staged` (the expected,
     append-only case), this returns exactly the appended tail. If it is NOT a
@@ -346,6 +438,104 @@ def _added_lines(head: Optional[bytes], staged: bytes) -> list[str]:
     else:
         tail = staged_norm
     return tail.decode("utf-8", errors="replace").splitlines()
+
+
+# ---------------------------------------------------------------------------
+# Toji AI-001: full "[TOJI AUDIT LOG]" stub grammar validation
+# ---------------------------------------------------------------------------
+
+# protocol/toji.agent.md Section 1.3.4: "<ext> MUST match the actual
+# extension of the written report file -- md or docx (Section 6.2 permits
+# either format based on requestor preference)".
+_TOJI_STUB_ALLOWED_EXTENSIONS = (".md", ".docx")
+
+# Full standardized stub grammar:
+#   > [TOJI AUDIT LOG] YYYY-MM-DD · scope: <safe-slug> · findings: N (C/H/M/L)
+#     · full report: <path> · —Toji (Sentinel) vX.Y.Z
+# The report-path group accepts an OPTIONAL surrounding backtick pair --
+# Toji's natural markdown-path-reference style (see _normalize_toji_report_ref
+# above; both committed real stubs use one convention or the other) -- in
+# addition to a bare path, both are legitimate.
+_TOJI_STUB_FULL_RE = re.compile(
+    r"^\s*>\s*\[TOJI AUDIT LOG\]\s*"
+    r"(?P<date>\d{4}-\d{2}-\d{2})\s*·\s*"
+    r"scope:\s*(?P<scope>[a-z0-9-]+)\s*·\s*"
+    r"findings:\s*(?P<total>\d+)\s*\(\s*(?P<c>\d+)/(?P<h>\d+)/(?P<m>\d+)/(?P<l>\d+)\s*\)\s*·\s*"
+    r"full report:\s*(?P<report>`[^`]+`|\S+)\s*·\s*"
+    r"—Toji \(Sentinel\)\s*v(?P<ver>\d+\.\d+\.\d+)\s*$"
+)
+
+# LOOSE (date, scope) extraction used ONLY for the per-file uniqueness dedup
+# check against committed HEAD content. Deliberately looser than
+# _TOJI_STUB_FULL_RE (which requires a safe [a-z0-9-]+ scope) so a
+# pre-standardization / already-malformed HISTORICAL stub's raw scope text
+# (e.g. "v9.10.0-idgov-full-audit (design+impl+review+go-live)") still
+# registers as an existing identifier for dedup purposes -- a NEW stub must
+# not be allowed to collide with an old malformed one's (date, scope) pair
+# either, even though the old one would itself fail _TOJI_STUB_FULL_RE.
+_TOJI_LOOSE_DATE_SCOPE_RE = re.compile(
+    r"\[TOJI AUDIT LOG\]\s*(?P<date>\S+)\s*·\s*scope:\s*(?P<scope>[^·]+?)\s*·"
+)
+
+
+def _is_valid_calendar_date(date_str: str) -> bool:
+    """True if `date_str` (already YYYY-MM-DD shaped by the regex) is also a
+    REAL calendar date (e.g. rejects 2026-13-40)."""
+    try:
+        datetime.date.fromisoformat(date_str)
+        return True
+    except ValueError:
+        return False
+
+
+def _existing_stub_identifiers(head: Optional[bytes]) -> set[tuple[str, str]]:
+    """Return the set of (date, scope) identifiers for every "[TOJI AUDIT
+    LOG]" line already present in the COMMITTED (HEAD) content of a protected
+    doc -- used only for the new-stub duplicate-identifier check. Uses the
+    LOOSE extractor (see _TOJI_LOOSE_DATE_SCOPE_RE) so even a pre-existing
+    malformed historical stub still counts."""
+    ids: set[tuple[str, str]] = set()
+    if head is None:
+        return ids
+    text = _normalize(head).decode("utf-8", errors="replace")
+    for line in text.splitlines():
+        if TOJI_STUB_MARKER not in line:
+            continue
+        m = _TOJI_LOOSE_DATE_SCOPE_RE.search(line)
+        if m:
+            ids.add((m.group("date").strip(), m.group("scope").strip()))
+    return ids
+
+
+def _existing_stub_line_identifiers(head: Optional[bytes]) -> set[str]:
+    """Return the set of exact (normalized, stripped) "[TOJI AUDIT LOG]"
+    line-texts already committed in HEAD for a protected doc.
+
+    P1 fix (v9.10.1, Megumi Tier-3 bundle review): this is the identity
+    function backing find_toji_stub_violations()'s full-content-scan
+    exemption -- a candidate staged line is treated as genuinely unchanged
+    history (and skipped, never re-validated) ONLY when its exact text is a
+    member of this set. Using the full line text (rather than a parsed
+    (date, scope) pair, as _existing_stub_identifiers above uses for the
+    separate semantic duplicate-check) is deliberate and load-bearing:
+
+      - It is trivially robust for a MALFORMED historical line (no scope:
+        field to parse at all) -- there is no separate "parse failure"
+        branch to get wrong; the full line text IS the identity, always.
+      - It does NOT over-exempt a genuinely NEW line that merely shares a
+        (date, scope) with an old one but differs in content (e.g. a
+        different referenced report) -- that case must still surface as a
+        "duplicates an existing audit identifier" violation via
+        _existing_stub_identifiers, which this function does not replace.
+    """
+    ids: set[str] = set()
+    if head is None:
+        return ids
+    text = _normalize(head).decode("utf-8", errors="replace")
+    for line in text.splitlines():
+        if TOJI_STUB_MARKER in line:
+            ids.add(line.strip())
+    return ids
 
 
 _AUDITS_DIRNAME = "audits"
@@ -431,14 +621,29 @@ def find_toji_stub_violations(
     repo_root: Path,
     paths: tuple[str, ...] = TOJI_STUB_SCOPE,
 ) -> list[str]:
-    """Return violation messages for newly-staged "[TOJI AUDIT LOG]" stubs whose
-    referenced report does not exist.
+    """Return violation messages for newly-staged "[TOJI AUDIT LOG]" stubs.
 
-    Only NEWLY-ADDED staged lines are inspected (see _added_lines) — pre-existing
-    committed content, including old free-form Toji entries predating the
-    standardized stub format, is never flagged. Fails soft (skips) on a stub-like
-    line it cannot parse a report path from; fails CLOSED (reports a violation)
-    when a report path is parsed but does not resolve to a real file.
+    Only NEWLY-ADDED staged content is inspected — pre-existing committed
+    content, including old free-form Toji entries predating the standardized
+    stub format AND already-committed stubs that do not conform to the
+    safe-slug scope rule, is NEVER retroactively flagged; only new additions
+    are validated. As of the P1 fix (v9.10.1), "newly-added" is determined by
+    scanning the FULL staged content and exempting any line whose exact
+    (normalized) text already exists as a line in HEAD (see
+    _existing_stub_line_identifiers) — NOT by the byte-offset tail slice
+    _added_lines() used to compute, which enabled a two-commit splice bypass
+    (see the module docstring's "P1" section for the full mechanism).
+
+    Toji AI-001 (full grammar validation, Sukuna Block B5, v9.10.1): a
+    newly-added line containing TOJI_STUB_MARKER is now REQUIRED to match the
+    full standardized stub grammar (_TOJI_STUB_FULL_RE) — a line that merely
+    LOOKS stub-like but does not conform is now a MALFORMED-STUB violation
+    (fail-CLOSED), superseding the prior fail-soft-on-parse-ambiguity
+    behavior. A grammar-conforming stub is further checked for: a real
+    calendar date, findings-count arithmetic (N == C+H+M+L), an allowed
+    report-file extension, report existence (the original SEC-TOJI-102
+    check), and per-file (date, scope) uniqueness against every stub already
+    committed in HEAD (plus other newly-added stubs in the same commit).
     """
     violations: list[str] = []
     for path in paths:
@@ -446,25 +651,85 @@ def find_toji_stub_violations(
         if staged is None:
             continue  # nothing staged for this file
         head = head_blob(repo_root, path)
-        for line in _added_lines(head, staged):
+        existing_ids = _existing_stub_identifiers(head)
+        existing_line_ids = _existing_stub_line_identifiers(head)
+        seen_this_commit: set[tuple[str, str]] = set()
+        # P1 fix: scan the FULL staged content (every line), not the
+        # byte-offset tail — see _existing_stub_line_identifiers' docstring.
+        staged_text = _normalize(staged).decode("utf-8", errors="replace")
+        for line in staged_text.splitlines():
             if TOJI_STUB_MARKER not in line:
                 continue
-            match = _TOJI_REPORT_RE.search(line)
-            if not match:
-                # Fail-soft: looks stub-like but unparseable — do not block on ambiguity.
+            if line.strip() in existing_line_ids:
+                # Byte-identical to a line already committed in HEAD — this
+                # is permanent, already-validated history. Exempt from
+                # re-validation regardless of well-formed/malformed shape.
                 continue
-            report_ref_raw = match.group(1)
-            # Toji AI-001 (scoped fix): strip formatting characters (backticks,
-            # quotes, brackets, trailing sentence punctuation) that \S+ swept up
-            # as part of the path before checking existence -- see
-            # _normalize_toji_report_ref()'s docstring for the recurring
-            # false-positive this closes.
+
+            full_match = _TOJI_STUB_FULL_RE.match(line)
+            if not full_match:
+                violations.append(
+                    f"{path}: malformed [TOJI AUDIT LOG] stub — does not match the "
+                    "standardized grammar '> [TOJI AUDIT LOG] YYYY-MM-DD · scope: "
+                    "<safe-slug> · findings: N (C/H/M/L) · full report: <path> · "
+                    "—Toji (Sentinel) vX.Y.Z' (protocol/toji.agent.md Section 1.3.4) "
+                    f"(offending line: {line.strip()!r})"
+                )
+                continue
+
+            date = full_match.group("date")
+            scope = full_match.group("scope")
+            total = int(full_match.group("total"))
+            c, h, m_, l = (int(full_match.group(g)) for g in ("c", "h", "m", "l"))
+            report_ref_raw = full_match.group("report")
+            # Toji AI-001 (scoped fix, retained): strip formatting characters
+            # (backticks, quotes, brackets, trailing sentence punctuation)
+            # before checking existence/extension — see
+            # _normalize_toji_report_ref()'s docstring.
             report_ref = _normalize_toji_report_ref(report_ref_raw)
+
+            if not _is_valid_calendar_date(date):
+                violations.append(
+                    f"{path}: [TOJI AUDIT LOG] stub date {date!r} is not a valid "
+                    f"calendar date (offending line: {line.strip()!r})"
+                )
+                continue
+
+            if total != c + h + m_ + l:
+                violations.append(
+                    f"{path}: [TOJI AUDIT LOG] stub findings count {total} != sum "
+                    f"of severities {c}/{h}/{m_}/{l} = {c + h + m_ + l} "
+                    f"(offending line: {line.strip()!r})"
+                )
+                continue
+
+            report_ext = Path(report_ref).suffix.lower()
+            if report_ext not in _TOJI_STUB_ALLOWED_EXTENSIONS:
+                violations.append(
+                    f"{path}: [TOJI AUDIT LOG] stub report path {report_ref!r} has an "
+                    f"unrecognized extension {report_ext!r} (allowed: "
+                    f"{', '.join(_TOJI_STUB_ALLOWED_EXTENSIONS)}) "
+                    f"(offending line: {line.strip()!r})"
+                )
+                continue
+
             if not _report_ref_exists(repo_root, report_ref):
                 violations.append(
                     f"{path}: [TOJI AUDIT LOG] stub references a report that does not "
                     f"exist: '{report_ref_raw}' (offending line: {line.strip()!r})"
                 )
+                continue
+
+            identifier = (date, scope)
+            if identifier in existing_ids or identifier in seen_this_commit:
+                violations.append(
+                    f"{path}: [TOJI AUDIT LOG] stub duplicates an existing audit "
+                    f"identifier (date={date}, scope={scope!r}) — the stable "
+                    "audit-id (date, scope) pair must be unique per file "
+                    f"(offending line: {line.strip()!r})"
+                )
+                continue
+            seen_this_commit.add(identifier)
     return violations
 
 
