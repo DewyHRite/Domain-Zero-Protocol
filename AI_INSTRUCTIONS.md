@@ -1897,5 +1897,5 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**Domain Zero Protocol v9.10.0 - Complete Installation Guide**
-**Updated**: 2026-07-18
+**Domain Zero Protocol v9.10.1 - Complete Installation Guide**
+**Updated**: 2026-07-19

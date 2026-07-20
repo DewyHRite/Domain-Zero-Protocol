@@ -680,7 +680,7 @@ def find_toji_stub_violations(
             date = full_match.group("date")
             scope = full_match.group("scope")
             total = int(full_match.group("total"))
-            c, h, m_, l = (int(full_match.group(g)) for g in ("c", "h", "m", "l"))
+            c, h, m_, l_ = (int(full_match.group(g)) for g in ("c", "h", "m", "l"))
             report_ref_raw = full_match.group("report")
             # Toji AI-001 (scoped fix, retained): strip formatting characters
             # (backticks, quotes, brackets, trailing sentence punctuation)
@@ -695,10 +695,10 @@ def find_toji_stub_violations(
                 )
                 continue
 
-            if total != c + h + m_ + l:
+            if total != c + h + m_ + l_:
                 violations.append(
                     f"{path}: [TOJI AUDIT LOG] stub findings count {total} != sum "
-                    f"of severities {c}/{h}/{m_}/{l} = {c + h + m_ + l} "
+                    f"of severities {c}/{h}/{m_}/{l_} = {c + h + m_ + l_} "
                     f"(offending line: {line.strip()!r})"
                 )
                 continue
