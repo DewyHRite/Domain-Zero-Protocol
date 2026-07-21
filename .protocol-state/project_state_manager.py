@@ -24,7 +24,7 @@ import sys
 import tempfile
 import platform
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, Optional
 from contextlib import contextmanager
@@ -212,7 +212,7 @@ class ProjectStateManager:
                         )
 
             # Write PID to lock file for debugging
-            lock_file.write(f"{os.getpid()}\n{datetime.now().isoformat()}\n")
+            lock_file.write(f"{os.getpid()}\n{datetime.now(timezone.utc).isoformat()}\n")
             lock_file.flush()
 
             yield
@@ -289,7 +289,7 @@ class ProjectStateManager:
                         )
 
             # Write migration info
-            lock_file.write(f"Migration started: {datetime.now().isoformat()}\n")
+            lock_file.write(f"Migration started: {datetime.now(timezone.utc).isoformat()}\n")
             lock_file.write(f"PID: {os.getpid()}\n")
             lock_file.flush()
 
@@ -525,7 +525,7 @@ class ProjectStateManager:
         with self._exclusive_lock():
             state = self._load_project_state_internal()
             state["session_tracking"] = session_data
-            state["session_tracking"]["last_updated"] = datetime.now().isoformat()
+            state["session_tracking"]["last_updated"] = datetime.now(timezone.utc).isoformat()
             self._atomic_write(state, self.project_state_file)
 
     def get_agent_invocation_tracking(self) -> Dict[str, Any]:
@@ -566,7 +566,7 @@ class ProjectStateManager:
         with self._exclusive_lock():
             state = self._load_project_state_internal()
             state["agent_invocation_tracking"] = invocation_data
-            state["agent_invocation_tracking"]["_last_updated"] = datetime.now().isoformat()
+            state["agent_invocation_tracking"]["_last_updated"] = datetime.now(timezone.utc).isoformat()
             self._atomic_write(state, self.project_state_file)
 
     def get_troubleshooting(self) -> Dict[str, Any]:
@@ -622,7 +622,7 @@ class ProjectStateManager:
             state = self._load_project_state_internal()
             state["troubleshooting"] = troubleshooting_data
             if "statistics" in troubleshooting_data:
-                state["troubleshooting"]["statistics"]["last_updated"] = datetime.now().isoformat()
+                state["troubleshooting"]["statistics"]["last_updated"] = datetime.now(timezone.utc).isoformat()
             self._atomic_write(state, self.project_state_file)
 
     def get_tier_tracking(self) -> Dict[str, Any]:
@@ -663,7 +663,7 @@ class ProjectStateManager:
         with self._exclusive_lock():
             state = self._load_project_state_internal()
             state["tier_tracking"] = tier_data
-            state["tier_tracking"]["last_updated"] = datetime.now().isoformat()
+            state["tier_tracking"]["last_updated"] = datetime.now(timezone.utc).isoformat()
             self._atomic_write(state, self.project_state_file)
 
     # =========================================================================
@@ -745,7 +745,7 @@ class ProjectStateManager:
         """Return default tier tracking structure."""
         return {
             "_comment": "Unified tier statistics - replaces tier_usage_statistics and tier_statistics",
-            "last_updated": datetime.now().isoformat(),
+            "last_updated": datetime.now(timezone.utc).isoformat(),
             "total_features": 0,
             "tier_distribution": {
                 "tier_1": 0,
