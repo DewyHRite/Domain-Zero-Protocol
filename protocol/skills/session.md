@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
 # Session Management Skill
 ## Unified Interface for Work Session Tracking
 
@@ -235,6 +235,7 @@ python .protocol-state/session_monitor.py continue
 # End session — v9.5.0+ routes through coordinator (WI-29)
 # Coordinator chains: session_monitor.py end (DZP_AGENT=gojo)
 #                     + end-snapshot + cortex-medium (incremental re-index, no export)
+#                     + cortex-distill (propose-only) + validation-refresh (ledger refresh, v9.10.2)
 python dzp.py event session-end
 ```
 
@@ -271,7 +272,7 @@ Per Phase 5b (WI-29), `/session end` routes its Cortex step through the coordina
 python dzp.py event session-end
 ```
 
-The coordinator chains: `session_monitor.py end` (DZP_AGENT=gojo, required) → `end-snapshot` (fail-soft) → `cortex-medium` (fail-soft, **incremental** re-index, no export, **90-second timeout** — BUG-CORTEX-008 R3).
+The coordinator chains: `session_monitor.py end` (DZP_AGENT=gojo, required) → `end-snapshot` (fail-soft) → `cortex-medium` (fail-soft, **incremental** re-index, no export, **90-second timeout** — BUG-CORTEX-008 R3) → `cortex-distill` (fail-soft, propose-only) → `validation-refresh` (fail-soft, `scripts/validate-protocol.py --check --ci-mode`, 60s timeout — added v9.10.2, Toji finding `IMPL-001`: refreshes `validation-state.json` AFTER session-end's own state mutations so the validation ledger describes the terminal state instead of a stale pre-session-end `passed`; a failing or absent validator degrades to a warning and never fails the event).
 
 **PARITY NOTE**: Session-tracking / wellbeing logging / domain.record.md write are NOT lost — the coordinator `session-end` step runs `session_monitor.py end` with `DZP_AGENT=gojo`.
 

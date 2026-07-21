@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
 
 # Maki Zenin - JJK Character Reference
 **Source**: Jujutsu Kaisen Fandom Wiki
 **URL**: <https://jujutsu-kaisen.fandom.com/wiki/Maki_Zenin>
 **Downloaded**: 2025-11-25
-**Protocol Version**: v9.10.1
+**Protocol Version**: v9.10.2
 
 ---
 

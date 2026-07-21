@@ -9,22 +9,52 @@ reviews:
   # "Request changes" so an unaddressed review surfaces as a blocking state.
   # Combine with a branch-protection rule on DZP-v* to hard-block merge.
   request_changes_workflow: true
-  # Path filters (USER-authorized 2026-07-19): exclude static/no-logic content
-  # so release PRs stay under the reviewer's file limit. Every version cascade
-  # bumps a stamp line in these files, inflating release-PR file counts past
-  # the plan cap (v9.10.1 PR #113: 105 files, 83 pure stamp churn, review
-  # auto-skipped). Excluded classes carry NO executable logic: JJK character
-  # lore, output templates, slash-command registry stubs, and protocol module
-  # docs whose only per-release delta is the stamp header. All engine code,
-  # guards, wrappers, skills, agent files, and user docs remain in scope.
+  # Path filters (USER-authorized 2026-07-19; narrowed 2026-07-20 per Toji
+  # AI-001, audits/2026-07-20-toji-recent-work-audit.md): exclude ONLY
+  # genuinely non-executable, no-logic content on THIS (dev/Main) branch's
+  # config, so ordinary PRs stay under the reviewer's file limit without ever
+  # skipping review of an AI control surface.
+  #
+  # Each surviving entry is pure prose/lore/formatting with NO procedural
+  # logic and NO effect on agent tool routing, permissions, or behavior:
+  #   - .protocol-state/jjk-character-reference/**  — character/personality
+  #     lore only (flavor text read for tone; grants no capability).
+  #   - .protocol-state/gojo-templates/**            — static CLI output
+  #     templates (display formatting only, e.g. OUTPUT_TEMPLATES.md).
+  #   - .protocol-state/sukuna-templates/**          — same, Sukuna's output
+  #     templates.
+  #
+  # REMOVED 2026-07-20 (Toji AI-001, HIGH): protocol/modules/**,
+  # protocol/gojo-procedures/**, .claude/commands/**, and slash-commands/**
+  # used to be excluded here too. Those four trees are executable AI
+  # instruction / control surfaces — protocol/modules/** carries the
+  # emergency-stop, safety, mask-mode, and mission-control-isolation
+  # behavioral modules; protocol/gojo-procedures/** carries custom-agent
+  # SECURITY enforcement + session-monitoring procedures; .claude/commands/**
+  # and slash-commands/** directly invoke coordinator/session-lifecycle/
+  # Cortex calls (confirmed by dev-notes.md 2026-06-17 entries). A
+  # content-agnostic exclusion here meant a normal PR could change agent
+  # behavior, safety gating, or tool routing with ZERO mandatory review. They
+  # are NEVER excluded on this branch again. All 4 stay in full CodeRabbit
+  # review scope on every dev/Main/feature PR.
+  #
+  # Release-only relief for those 4 (stamp-cascade noise, NOT reduced
+  # scrutiny) lives EXCLUSIVELY on the dedicated, provenance-tracked
+  # DZP-vX.Y.Z-crbase helper-base branches — see docs/guides/
+  # DISTRO_RELEASE_WORKFLOW.md §5b. Those branches are never dev/Main/feature
+  # PR bases, so ordinary review coverage here is unaffected.
+  #
+  # NOTE: CodeRabbit reads this file from the PR BASE branch ("Repository
+  # YAML (base)") — release PRs that need the extra relief use a base that
+  # carries it (helper branch DZP-vX.Y.Z-crbase pattern; the frozen
+  # DZP-vX.Y.Z artifact itself is never modified).
   path_filters:
     - "!**/.protocol-state/jjk-character-reference/**"
     - "!**/.protocol-state/gojo-templates/**"
     - "!**/.protocol-state/sukuna-templates/**"
-    - "!**/protocol/modules/**"
-    - "!**/protocol/gojo-procedures/**"
-    - "!**/.claude/commands/**"
-    - "!**/slash-commands/**"
+    - "!.protocol-state/jjk-character-reference/**"
+    - "!.protocol-state/gojo-templates/**"
+    - "!.protocol-state/sukuna-templates/**"
   high_level_summary: true
   review_status: true
   poem: false

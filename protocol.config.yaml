@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 9.10.1
+# Version: 9.10.2
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,8 +8,8 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v9.10.1"
-  release_branch: "DZP-v9.10.1"
+  version: "v9.10.2"
+  release_branch: "DZP-v9.10.2"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -1577,6 +1577,21 @@ protected_documents:
 # override_env:           environment variable name that allows an
 #                         authorized exception when set to "1" (backfill /
 #                         migration / restore). Default: DZP_ALLOW_ISSUE_ID_OVERRIDE.
+# toji_self_reference_exemption: (ISS-IDGOV-9.10.1-001, v9.10.2) E5-only
+#                         kill-switch for the audits/** per-file,
+#                         per-declaration self-reference exemption -- a bare
+#                         id-shaped token (e.g. SEC-001) is exempt from the
+#                         malformed-id block ONLY if that SAME audits/** file
+#                         independently declares it in a structurally-complete
+#                         Toji SECTION B finding block (reuses
+#                         check_toji_report_contract.py's real per-finding
+#                         validation; SEC-IDGOV-D-001). Case-insensitive
+#                         match; strictly per-file (a bare id declared only in
+#                         report A still blocks when cited bare in report B).
+#                         Never touches E4 (mint-before-cite) or
+#                         grammar.is_wellformed()'s classification of real
+#                         ids. Default: true. Set to false to revert E5 to
+#                         its pre-v9.10.2 behavior exactly (no exemption).
 #
 # If this block is absent, malformed, or yaml is unavailable, the gate falls
 # back to the hardcoded module constants in check_issue_ids.py -- fail-SAFE,
@@ -1655,14 +1670,20 @@ issue_governance:
   # SEC-P0) the digit-gate itself would not catch.
   id_term_allowlist: []
   override_env: DZP_ALLOW_ISSUE_ID_OVERRIDE
+  # ISS-IDGOV-9.10.1-001 (v9.10.2, SEC-IDGOV-D-001..D-005, Sukuna Rev 2
+  # design audits/2026-07-20-sukuna-iss-idgov-9-10-1-001-design.md, Megumi
+  # Tier-3 @approved twice): USER-ruled default ENABLED. Set to `false` for
+  # an instant, no-code-revert rollback to pre-v9.10.2 E5 behavior (no
+  # audits/** self-reference exemption at all).
+  toji_self_reference_exemption: true
 
 # ============================================================================
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "9.10.1"
+  protocol_version: "9.10.2"
   config_version: "2.11"
-  last_updated: "2026-07-19"
+  last_updated: "2026-07-20"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

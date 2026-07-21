@@ -1,7 +1,7 @@
 # Domain Zero Protocol
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
 
-**Version**: 9.10.1 | **Last Updated**: 2026-07-19
+**Version**: 9.10.2 | **Last Updated**: 2026-07-20
 
 A nine-agent AI development system plus one external auditor inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
 
@@ -132,6 +132,21 @@ Read ./CLAUDE.md
 
 **In-Place Upgrade**:
 See [IMPLEMENTATION_GUIDE.md](docs/installation/IMPLEMENTATION_GUIDE.md) for upgrade procedures.
+
+**Fresh Install — Verified Release Payload (recommended, v9.10.2+)**:
+Every release also publishes a signed-provenance installable zip as a GitHub Release asset.
+Verify it BEFORE installing (stdlib-only, no dependencies required):
+```bash
+# Download dzp-payload-vX.Y.Z.zip + its .manifest.json from the release's Assets, then:
+python scripts/verify-payload.py dzp-payload-vX.Y.Z.zip --extract-to ./Domain-Zero-Protocol
+```
+This checks the zip's own integrity, that its bundled files match the release manifest, and that
+the release's recorded commit is genuinely reachable on this project's canonical GitHub repo
+before extracting anything. See
+[IMPLEMENTATION_GUIDE.md](docs/installation/IMPLEMENTATION_GUIDE.md) for the full verification
+model, trust boundaries, and complete install flow (`docs/installation/IMPLEMENTATION_GUIDE.md`
+ships with every release; the maintainer-only release-publishing process that produces the payload
+does not).
 
 ### 2. Invoke Your First Agent
 
@@ -280,7 +295,7 @@ scripts/brain.ps1 status         # expect: Cortex status: ok
 ```bash
 cp .claude/settings.template.json .claude/settings.json   # .claude/settings.json is gitignored
 ```
-The template pre-wires a `hooks.SessionEnd` index refresh and allow-lists the `brain` commands. **POSIX hosts:** change the hook command to `bash scripts/brain-index-hook.sh`. The hook is fail-soft, lock-guarded, and times out at 30s, so it never blocks session end. Mid-session, `/session update` automatically keeps Cortex in sync — it runs `brain index --incremental` as the final step of the full project-document sync (fail-soft; skipped if Cortex is unavailable). `/session end` runs the same **incremental** re-index (BUG-CORTEX-008 R3 — the previous full rebuild + export was moved off session-end because it collided with the session's own largest embedding delta and chronically timed out). For a full rebuild + export snapshot, run `python dzp.py event cortex-rebuild-full` manually or periodically (e.g. weekly, or before a Toji audit). Use `update --time-only` to skip the sync and re-index when only a quick timestamp update is needed.
+The template pre-wires a `hooks.SessionEnd` index refresh and allow-lists the `brain` commands. **POSIX hosts:** change the hook command to `bash scripts/brain-index-hook.sh`. The hook is fail-soft, lock-guarded, and times out at 30s, so it never blocks session end. Mid-session, `/session update` automatically keeps Cortex in sync — it runs `brain index --incremental` as the final step of the full project-document sync (fail-soft; skipped if Cortex is unavailable). `/session end` runs the same **incremental** re-index (BUG-CORTEX-008 R3 — the previous full rebuild + export was moved off session-end because it collided with the session's own largest embedding delta and chronically timed out). For a full rebuild + export snapshot, run `python dzp.py event cortex-rebuild-full` manually or periodically (e.g. weekly, or before a Toji audit). Use `update --time-only` to skip the sync and re-index when only a quick timestamp update is needed. As of v9.10.2, `/session end` also finishes with a fail-soft validation-ledger refresh (`validate-protocol.py --check`) so `validation-state.json` always describes the terminal post-session state — it degrades to a warning and never blocks session end.
 
 > **Note:** Cortex stores all runtime data (DB, memories, model cache) in an external dir (`%LOCALAPPDATA%/dzp-cortex/` on Windows; XDG equivalent on macOS/Linux), never inside the repo. The data dir refuses cloud-synced locations (OneDrive/Dropbox) and network shares.
 
@@ -445,6 +460,5 @@ Contributions welcome! Please read the contribution guidelines and submit pull r
 
 ---
 
-**Domain Zero Protocol v9.10.1**
+**Domain Zero Protocol v9.10.2**
 **AI-Assisted Development Done Right**
-

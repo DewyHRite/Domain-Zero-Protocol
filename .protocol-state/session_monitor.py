@@ -647,11 +647,16 @@ class SessionMonitor:
 
         # Check if there's an active session from < 30 minutes ago
         if state['current_session']['session_active']:
-            try:
-                last_time = datetime.fromisoformat(state['current_session']['last_interaction_time'])
+            # v9.10.2 item-5 carried note: normalize via _parse_utc (BUG-SESSION-001
+            # precedent) instead of a bare datetime.fromisoformat(). A naive legacy
+            # timestamp (no UTC offset) used to raise TypeError here, caught by the
+            # except below and treated as an EXPIRED session -- silently discarding
+            # a still-continuing legacy session instead of continuing it.
+            last_time = _parse_utc(state['current_session']['last_interaction_time'])
+            if last_time is not None:
                 gap_minutes = (now - last_time).total_seconds() / 60
-            except (ValueError, TypeError):
-                # Invalid timestamp format - treat as expired session
+            else:
+                # Missing/unparseable timestamp - treat as expired session
                 print(f"[!] Invalid timestamp in session state. Starting new session.")
                 gap_minutes = float('inf')
 
@@ -732,29 +737,34 @@ class SessionMonitor:
             except Exception as e:
                 raise RuntimeError(f"Failed to reset session (missing start_time): {e}")
 
-        try:
-            start = datetime.fromisoformat(start_time)
-        except (ValueError, TypeError):
+        # v9.10.2 item-5 carried note: use the shared _parse_utc() normalizer
+        # (BUG-SESSION-001 precedent) instead of a bare datetime.fromisoformat()
+        # plus a hand-rolled, naive-only tzinfo guard (PATCH-SESSION-006). The
+        # old guard covered naive timestamps but not the 'Z'-suffix / aware-
+        # non-UTC normalization _parse_utc already handles centrally.
+        start = _parse_utc(start_time)
+        if start is None:
             print("[!] Invalid session start_time format. Resetting session.")
             try:
                 return self.update_interaction(_retry_count=_retry_count + 1, _max_retries=_max_retries)
             except Exception as e:
                 raise RuntimeError(f"Failed to reset session (invalid start_time format): {e}")
 
-        # BUG FIX: Ensure timezone awareness (PATCH-SESSION-006)
-        if start.tzinfo is None:
-            start = start.replace(tzinfo=timezone.utc)
-
         duration_minutes = (now - start).total_seconds() / 60
         state['session_metrics']['total_duration_minutes'] = int(duration_minutes)
 
         # Update continuous work time (time since last break)
+        # v9.10.2 item-5 carried note: this branch previously had NO try/except
+        # at all -- a naive or malformed break timestamp raised ValueError/
+        # TypeError uncaught, crashing update_interaction() (called on every
+        # interaction). _parse_utc() normalizes naive->UTC and returns None on
+        # anything unparseable, so we fail soft to duration_minutes instead.
         if state['session_metrics']['break_timestamps']:
-            last_break = datetime.fromisoformat(state['session_metrics']['break_timestamps'][-1])
-            # BUG FIX: Ensure timezone awareness (PATCH-SESSION-006)
-            if last_break.tzinfo is None:
-                last_break = last_break.replace(tzinfo=timezone.utc)
-            continuous_minutes = (now - last_break).total_seconds() / 60
+            last_break = _parse_utc(state['session_metrics']['break_timestamps'][-1])
+            if last_break is None:
+                continuous_minutes = duration_minutes
+            else:
+                continuous_minutes = (now - last_break).total_seconds() / 60
         else:
             continuous_minutes = duration_minutes
 
@@ -1146,10 +1156,14 @@ Template file not found at: {self.template_file}
         if not start_time:
             return "[!] Session state corrupted: start_time missing"
 
-        try:
-            start_formatted = datetime.fromisoformat(start_time).strftime('%Y-%m-%d %H:%M')
-        except (ValueError, TypeError):
-            start_formatted = "Invalid timestamp"
+        # v9.10.2 item-5 carried note: use _parse_utc for consistency with the
+        # rest of this module (also picks up 'Z'-suffix normalization); display
+        # only, so no arithmetic risk either way, but keeping every timestamp
+        # parse on the same centralized helper avoids future drift.
+        start_dt = _parse_utc(start_time)
+        start_formatted = (
+            start_dt.strftime('%Y-%m-%d %H:%M') if start_dt is not None else "Invalid timestamp"
+        )
 
         # Calculate live duration (BUG FIX: PATCH-SESSION-005 - SESSION-001)
         # Fixes bug where status command showed 0 minutes for long-running sessions
@@ -1178,11 +1192,15 @@ Template file not found at: {self.template_file}
         if state['current_session']['session_active']:
             # Calculate final duration from start to end (BUG FIX: PATCH-SESSION-005 - SESSION-002)
             # Fixes bug where archived sessions showed 0 minutes duration
-            try:
-                start = datetime.fromisoformat(state['current_session']['start_time'])
+            # v9.10.2 item-5 carried note: use _parse_utc (BUG-SESSION-001
+            # precedent) so a naive legacy start_time computes the real elapsed
+            # duration instead of silently falling back to the (possibly stale)
+            # stored total_duration_minutes metric.
+            start = _parse_utc(state['current_session']['start_time'])
+            if start is not None:
                 end = datetime.now(timezone.utc)
                 actual_duration = int((end - start).total_seconds() / 60)
-            except (ValueError, TypeError):
+            else:
                 # Fallback to stored value if timestamp invalid (shouldn't happen)
                 actual_duration = state['session_metrics']['total_duration_minutes']
 
@@ -1235,12 +1253,17 @@ Template file not found at: {self.template_file}
         if not start_time:
             return 0
 
-        try:
-            start = datetime.fromisoformat(start_time)
-            now = datetime.now(timezone.utc)
-            return int((now - start).total_seconds() / 60)
-        except (ValueError, TypeError):
-            return 0  # Fallback on error
+        # v9.10.2 item-5 carried note: use _parse_utc (BUG-SESSION-001 precedent).
+        # The prior bare datetime.fromisoformat() + broad except silently
+        # returned 0 minutes for any naive legacy start_time -- a session that
+        # had genuinely run for hours would report "0 minutes" instead of
+        # crashing, which is a worse failure mode (silently wrong, not visibly
+        # broken) than the crash BUG-SESSION-001 fixed elsewhere.
+        start = _parse_utc(start_time)
+        if start is None:
+            return 0  # Fallback on unparseable/missing timestamp
+        now = datetime.now(timezone.utc)
+        return int((now - start).total_seconds() / 60)
 
     def _calculate_current_continuous_work(self, state: Dict) -> int:
         """
@@ -1258,15 +1281,17 @@ Template file not found at: {self.template_file}
         if not state['current_session']['session_active']:
             return 0
 
+        # v9.10.2 item-5 carried note: use _parse_utc (BUG-SESSION-001
+        # precedent) so a naive legacy break timestamp is correctly normalized
+        # instead of silently falling back to _calculate_current_duration()
+        # (which reports a DIFFERENT, larger quantity -- total session
+        # duration, not time-since-last-break).
         if state['session_metrics']['break_timestamps']:
-            try:
-                last_break = datetime.fromisoformat(
-                    state['session_metrics']['break_timestamps'][-1]
-                )
+            last_break = _parse_utc(state['session_metrics']['break_timestamps'][-1])
+            if last_break is not None:
                 now = datetime.now(timezone.utc)
                 return int((now - last_break).total_seconds() / 60)
-            except (ValueError, TypeError, IndexError):
-                return self._calculate_current_duration(state)
+            return self._calculate_current_duration(state)
         else:
             return self._calculate_current_duration(state)
 
@@ -1400,8 +1425,13 @@ Template file not found at: {self.template_file}
             if session_state.get('current_session', {}).get('session_active'):
                 start_time_str = session_state['current_session'].get('start_time')
                 if start_time_str:
-                    try:
-                        start_time = datetime.fromisoformat(start_time_str)
+                    # v9.10.2 item-5 carried note: use _parse_utc (BUG-SESSION-001
+                    # precedent). The prior bare datetime.fromisoformat() + broad
+                    # except silently SKIPPED bypass detection entirely for any
+                    # naive legacy start_time -- a security-relevant detection
+                    # going blind on legacy state is itself a defect.
+                    start_time = _parse_utc(start_time_str)
+                    if start_time is not None:
                         duration_minutes = int((datetime.now(timezone.utc) - start_time).total_seconds() / 60)
 
                         # Detect bypass if session is long-running (>= threshold)
@@ -1414,8 +1444,6 @@ Template file not found at: {self.template_file}
                                 "message": f"Direct {agent_name_lower} invocation during {duration_minutes}-minute session (bypasses Gojo monitoring)"
                             }
                             tracker['bypass_detection']['bypass_alerts'].append(bypass_alert)
-                    except (ValueError, TypeError):
-                        pass  # Invalid timestamp, skip bypass detection
 
         # PATCH-STATE-001: Save updated tracker using ProjectStateManager
         if self.state_manager:

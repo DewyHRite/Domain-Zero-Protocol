@@ -72,6 +72,40 @@ CRITICAL_FILES = [
     "protocol.config.yaml"
 ]
 
+# BUG-TEST-9.10.1-001: directory names, under .protocol-state specifically,
+# to exclude from every project-wide scan. `.protocol-state/backups/`
+# accumulates one full timestamped snapshot per implementation/rotation/
+# publish event (363 snapshot dirs measured 2026-07-20); each snapshot is a
+# near-complete copy of the Cortex/brain engine, so scanning it re-parses
+# thousands of duplicate HISTORICAL files on every --scan/--analyze/
+# --export/--check-cycles/--agent-matrix invocation (5,927 duplicate .py
+# files out of 5,985 total under .protocol-state -- only 55 are real,
+# non-backup files). This alone: (a) blew the 60s timeout on the
+# `dependency-impact` lifecycle step (script_dependencies.yaml; standalone
+# --analyze measured >90s, did not even complete), and (b) added 90s+ PER
+# INVOCATION with no subprocess timeout to 2 tests in test_sec_hardening.py
+# (one measured at 97.17s alone), a confirmed, quantified contributor to an
+# apparent ~1h full-repo pytest sweep duration. `.protocol-state/
+# rotated-files/` (the FEAT-SESSION-file-rotation archive target) is the
+# same class of historical-archive directory and is excluded for the same
+# reason, even though it has not been observed to contain .py files to date.
+#
+# P3 (Megumi Tier-2 review, 2026-07-20): the ORIGINAL fix matched these
+# names ANYWHERE in a path's components (`any(part in NAMES for part in
+# file_path.parts)`), which would also silently skip an unrelated,
+# legitimately-named "backups/" directory anywhere else in the tree (e.g. a
+# vendored dependency shipping its own backups/ folder) from a scanner that
+# feeds the dependency-impact gate -- a false-exclusion risk with no upside.
+# Tightened to be PATH-ANCHORED: only `<project_root>/.protocol-state/
+# backups/` and `<project_root>/.protocol-state/rotated-files/` (and
+# anything nested under them) are excluded; see
+# DependencyScanner._is_excluded_from_scan() below, which anchors on the
+# scanning instance's OWN project_root (never the module-level
+# PROJECT_ROOT/STATE_DIR constants) via a pure relative-parts comparison
+# (no filesystem I/O), so disposable test trees built at
+# <tmp>/.protocol-state/backups/ are excluded identically to the real repo.
+EXCLUDED_SCAN_DIR_NAMES = {"backups", "rotated-files"}
+
 
 # =============================================================================
 # Dependency Graph
@@ -400,10 +434,48 @@ class DependencyScanner:
         return set()
 
     def scan_directory(self, directory: Path, pattern: str = "**/*") -> None:
-        """Scan all files in a directory matching pattern."""
+        """Scan all files in a directory matching pattern.
+
+        BUG-TEST-9.10.1-001 (P3-tightened, 2026-07-20): skips any file under
+        this instance's <project_root>/.protocol-state/backups/ or
+        <project_root>/.protocol-state/rotated-files/ so historical archive
+        snapshots are never re-walked/re-parsed. Path-anchored, not a bare
+        directory-name match -- see _is_excluded_from_scan().
+        """
         for file_path in directory.glob(pattern):
-            if file_path.is_file():
+            if file_path.is_file() and not self._is_excluded_from_scan(file_path):
                 self.scan_and_add(file_path)
+
+    def _is_excluded_from_scan(self, file_path: Path) -> bool:
+        """True if file_path lives under THIS instance's <project_root>/
+        .protocol-state/backups/ or <project_root>/.protocol-state/
+        rotated-files/. PATH-ANCHORED, not a name-anywhere-in-parts match --
+        a directory named "backups" or "rotated-files" that is NOT nested
+        directly under THIS project's .protocol-state/ (e.g. a vendored
+        dependency's own backups/ folder, or Sukuna's separate
+        .protocol-state/system-update-framework/backups/ cascade archive)
+        is never excluded by this check.
+
+        Deliberately LEXICAL (Path.relative_to()/.parts on the already-
+        in-hand file_path -- no filesystem I/O, in particular no
+        Path.resolve()). scan_directory() calls this once per file BEFORE
+        exclusion filters anything out (~6,000 files under .protocol-state
+        pre-exclusion in the real repo), so a resolve()-based version here
+        (an earlier draft of this fix did exactly that, computing the
+        excluded-dirs set fresh AND resolve()-ing every file_path on every
+        single call) reintroduced 2 blocking filesystem round-trips per
+        file -- ~12,000 total -- and measurably regressed real-scan
+        duration back up to ~70-80s on this OneDrive-synced repo, nearly
+        the original ~90-97s broken-state cost this bug fix exists to
+        eliminate. A pure relative-parts comparison is exclusion-equivalent
+        for every case this repo's real directory layout and the test suite
+        below exercise, and costs no I/O at all.
+        """
+        try:
+            rel_parts = file_path.relative_to(self.project_root).parts
+        except ValueError:
+            return False
+        return len(rel_parts) >= 2 and rel_parts[0] == ".protocol-state" and rel_parts[1] in EXCLUDED_SCAN_DIR_NAMES
 
     def scan_and_add(self, file_path: Path) -> None:
         """Scan a file and add its dependencies to the graph."""

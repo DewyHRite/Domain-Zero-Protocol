@@ -1,9 +1,43 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.10.1
-**Release Date:** 2026-07-19
-**Release Type:** PATCH Release (bundled remediation — distro-integrity manifest-tracking gate closing `BUG-DISTRO-ORCH-TRIO-001`; idgov polish closing all 4 Toji-deferred `DESIGN-001`/`IMPL-001`/`AI-001` findings plus the retro-mint exclusion audit; idgov registry lock hardening (two-reaper race + PID-recycle backstop); `brain reset --yes` escrow no-prompt product fix; `SEC-GUARD-007` stub-marker splice-bypass fix; plus reconciliation of all 4 findings from the v9.10.1 Toji pre-audit)
+**Version:** 9.10.2
+**Release Date:** 2026-07-20
+**Release Type:** PATCH Release (Toji recent-work audit closure — `AI-001`/`IMPL-001`/`IMPL-002` — plus the CLAUDE.md changelog-retention policy, v9.10.2 item-5 carried notes (4 fixes), and the new `FEAT-PAYLOAD-9.10.2-001` release payload subsystem with its full `SEC-PAYLOAD-9.10.2-001..005` remediation loop; see the versioning note below on the PATCH-vs-MINOR call)
+
+---
+
+## Release Summary — v9.10.2 (PATCH)
+
+**Versioning note (Sukuna adversarial ruling)**: this release ships a genuinely new capability
+(`FEAT-PAYLOAD-9.10.2-001`) alongside a majority of remediation/closure work. Strict SemVer would
+normally call a net-new feature a MINOR bump. The version number was fixed at v9.10.2 PATCH before
+this cascade began — the release plan, branch name, and every issue ID minted this session
+(`ISS-CLAUDEMD-9.10.2-001`, `SEC-PAYLOAD-9.10.2-001..005`, `FEAT-PAYLOAD-9.10.2-001` itself) already
+bake `9.10.2` into their identifiers, and USER approval for "the v9.10.2 release plan" is on record.
+Ruling: **PATCH**, dissent recorded — lock the version number before minting IDs on any future
+release that might pick up a net-new FEAT-classified subsystem mid-cycle.
+
+v9.10.2 closes all 3 findings from Toji's `audits/2026-07-20-toji-recent-work-audit.md`
+(`AI-001` HIGH, `IMPL-001` MEDIUM, `IMPL-002` reconciliation), the `ISS-162` EOF-anchor procedure gap
+in `protocol/toji.agent.md`, the v9.10.2 queue items 1-4 (idgov `audits/**` E5 exemption, the
+dependency-scanner backup-crawl fix, the crbase §5b workflow doc, and stamp-linter Types 9-12), the
+v9.10.2 item-5 carried notes (4 fixes: session-monitor UTC normalization, `dzp.py` dynamic `--help`
+epilog, detached-log rotation, `load_registry()` structural guards), the CLAUDE.md changelog-retention
+policy (`ISS-CLAUDEMD-9.10.2-001`), and ships the new `FEAT-PAYLOAD-9.10.2-001` release payload
+subsystem (`scripts/distro/dzp_payload.py` builder + `scripts/verify-payload.py` consumer-facing
+pinned-origin verifier) with its full 5-finding `SEC-PAYLOAD-9.10.2-001..005` remediation loop
+(1 P1 CWE-345/CWE-829 forgeable-origin bypass, 2 P2, 2 P3 — all Megumi-reverified `@approved`).
+
+- Megumi reviews this release: item-5 carried notes **@approved** (0 findings, 206/206 passed); Toji
+  `AI-001`/`IMPL-001` remediations **@approved** (0 findings each, 1 accepted P3); `b090373`
+  stamp-linter reconciliation **@approved** (0 P0/P1/P2, 2 accepted P3); `FEAT-PAYLOAD-9.10.2-001`
+  **@remediation-required** (1 P1 + 2 P2 + 2 P3) → re-review **@approved** (228/228 passed).
+- CLAUDE.md changelog retention: root `CLAUDE.md`'s duplication (~69 KB / 49% of the file) is now
+  bounded — `Major Enhancements` carries only the current release; `Recent Version History` carries a
+  hard cap of the 5 most recent releases. Zero information destroyed (full history remains in this
+  file and `CHANGELOG.md`).
+- Sukuna-implemented (System Update Adversary), Gojo-coordinated, USER-approved.
 
 ---
 

@@ -244,6 +244,23 @@ DEFAULT_ESCAPE_PATH_EXCLUDES: tuple[str, ...] = (
 # workhorse fix; this is an escape hatch for exceptions found in practice.
 DEFAULT_ID_TERM_ALLOWLIST: tuple[str, ...] = ()
 
+# ISS-IDGOV-9.10.1-001 (v9.10.2, SEC-IDGOV-D-*, Sukuna Rev 2 design
+# audits/2026-07-20-sukuna-iss-idgov-9-10-1-001-design.md, Megumi Tier-3
+# @approved twice): E5-only audits/** per-file self-reference exemption
+# kill-switch. USER ruling: default ENABLED. On ANY config problem this falls
+# back to True (E7's fail-SAFE-never-fail-open posture applied to this key --
+# the exemption mechanism itself is D-001-hardened/Megumi-reviewed, so
+# defaulting it on is a usability choice, not a weakening; explicit
+# `enabled: false` is the only way to turn it off).
+DEFAULT_TOJI_SELF_REFERENCE_EXEMPTION: bool = True
+
+# The self-reference exemption is scoped to exactly this corpus glob (reuses
+# _resolve_corpus_targets()'s own fnmatch semantics -- no second glob
+# dialect). Hardcoded rather than config-driven: this fix is deliberately
+# narrow (Sukuna design §3), and widening its scope is a separate, later
+# decision, not an incidental side effect of customizing corpus_paths.
+_TOJI_EXEMPTION_PATH_GLOB = "audits/**"
+
 # ---------------------------------------------------------------------------
 # E7: protocol.config.yaml `issue_governance:` config block wiring
 # ---------------------------------------------------------------------------
@@ -266,6 +283,7 @@ class IssueGovernanceSettings:
     escape_path_excludes: tuple[str, ...]
     override_env: str
     id_term_allowlist: tuple[str, ...] = DEFAULT_ID_TERM_ALLOWLIST
+    toji_self_reference_exemption: bool = DEFAULT_TOJI_SELF_REFERENCE_EXEMPTION
     warnings: tuple[str, ...] = ()
 
 
@@ -408,6 +426,7 @@ def load_issue_governance_settings(
         escape_path_excludes = DEFAULT_ESCAPE_PATH_EXCLUDES
         override_env = OVERRIDE_ENV
         id_term_allowlist = DEFAULT_ID_TERM_ALLOWLIST
+        toji_self_reference_exemption = DEFAULT_TOJI_SELF_REFERENCE_EXEMPTION
     else:
         enabled = bool(block.get("enabled", True))
         registry_path = str(block.get("registry_path") or DEFAULT_REGISTRY_PATH)
@@ -419,6 +438,14 @@ def load_issue_governance_settings(
         override_env = str(block.get("override_env") or OVERRIDE_ENV)
         id_term_allowlist = _validated_str_tuple(
             block.get("id_term_allowlist"), DEFAULT_ID_TERM_ALLOWLIST,
+        )
+        # ISS-IDGOV-9.10.1-001: fail-SAFE on a non-bool value too (mirrors
+        # `enabled`'s own bool() coercion) -- only an explicit `false` (or any
+        # other falsy YAML scalar) turns the exemption off; anything else,
+        # including a malformed/missing key, keeps the secure-and-usable
+        # default (True).
+        toji_self_reference_exemption = bool(
+            block.get("toji_self_reference_exemption", DEFAULT_TOJI_SELF_REFERENCE_EXEMPTION)
         )
 
     if tuple(sorted(families)) != engine_families:
@@ -441,6 +468,7 @@ def load_issue_governance_settings(
         escape_path_excludes=escape_path_excludes,
         override_env=override_env,
         id_term_allowlist=id_term_allowlist,
+        toji_self_reference_exemption=toji_self_reference_exemption,
         warnings=tuple(warnings),
     )
 
@@ -901,16 +929,109 @@ def _resolve_corpus_targets(
     return [t for t in targets if not _is_path_escape_excluded(t, escape_path_excludes)]
 
 
+def _is_audits_scope_target(path: str) -> bool:
+    """True if `path` (already resolved by _resolve_corpus_targets, so
+    forward-slash-normalized) matches the SEC-IDGOV-D-001 self-reference
+    exemption's fixed scope glob (_TOJI_EXEMPTION_PATH_GLOB) -- reuses the
+    same fnmatch semantics _resolve_corpus_targets()/_is_path_escape_excluded()
+    already use (no second glob dialect)."""
+    norm = path.replace("\\", "/")
+    return fnmatch.fnmatchcase(norm, _TOJI_EXEMPTION_PATH_GLOB)
+
+
+def _toji_contract_module():
+    """SEC-IDGOV-D-005 (P3): LAZY import of check_toji_report_contract,
+    confined to the audits/** self-reference-exemption path only (this
+    function is only ever called from _declared_finding_ids(), itself only
+    ever called when there is at least one audits/**-scoped corpus target to
+    process AND the toji_self_reference_exemption setting is enabled). A
+    commit that never touches an audits/** file never reaches this function
+    at all, so a broken/missing check_toji_report_contract.py module has ZERO
+    effect on non-audits commits -- it must not fail-close the gate
+    repo-wide. On ImportError, print a loud stderr warning and return None so
+    the caller degrades to "no self-reference exemption available for this
+    file" -- E5 falls back to blocking bare FINDING-shaped citations exactly
+    as it did before this feature existed (a conservative, fail-closed-for-
+    that-file posture, not a repo-wide internal-error abort)."""
+    try:
+        import check_toji_report_contract as toji_contract
+    except ImportError as e:
+        print(
+            f"[idgov-gate] WARNING: could not import check_toji_report_contract "
+            f"({e}) -- the audits/** self-reference exemption (SEC-IDGOV-D-001) "
+            "is unavailable for this run; bare FINDING-shaped citations in "
+            "audits/** files will NOT be exempted (falls back to standard E5 "
+            "malformed-id blocking).",
+            file=sys.stderr,
+        )
+        return None
+    return toji_contract
+
+
+def _declared_finding_ids(candidate: Optional[bytes]) -> set[str]:
+    """SEC-IDGOV-D-001: return the set of (uppercased, D-002) FINDING ID
+    values that `candidate` (an audits/**-scoped target's staged/working-tree
+    bytes -- the SAME bytes the citation scan itself uses, D-004) declares in
+    a structurally-complete Toji SECTION B finding block. Reuses
+    check_toji_report_contract.py's real per-finding structural validation
+    (Checks 1/2/3/4 via check_finding_structure()) as the precondition --
+    deliberately NOT whole-document Checks 5/6 or raw_id uniqueness, per the
+    design's per-finding (not per-document) exemption scope. Returns an empty
+    set if `candidate` is None, the contract module is unavailable (D-005), or
+    the file has no "## SECTION B: DETAILED FINDINGS" heading at all (not
+    Toji-contract-shaped -- e.g. a non-Toji audits/** document, which
+    correctly gets zero self-reference exemptions and falls back to requiring
+    E6 backtick escapes exactly as today)."""
+    if candidate is None:
+        return set()
+    toji_contract = _toji_contract_module()
+    if toji_contract is None:
+        return set()
+    # Mirrors _lines()'s own decoding convention (strip \r, errors=replace) --
+    # this is whole-text reconstruction for regex/MULTILINE matching, not
+    # line-splitting, so no further _lines()-style split is needed here.
+    text = candidate.replace(b"\r", b"").decode("utf-8", errors="replace")
+    section_b = toji_contract.section_b_text(text)
+    if section_b is None:
+        return set()
+    findings = toji_contract.parse_findings(section_b)
+    return {
+        f.raw_id.upper()
+        for f in findings
+        if not toji_contract.check_finding_structure(f)
+    }
+
+
 def _iter_corpus_citations(
     repo_root: Path, corpus_paths: tuple[str, ...], *, ci: bool, ci_base_ref: str,
     escape_path_excludes: tuple[str, ...] = DEFAULT_ESCAPE_PATH_EXCLUDES,
-) -> list[tuple[str, int, str]]:
+    compute_toji_declarations: bool = False,
+) -> tuple[list[tuple[str, int, str]], dict[str, set[str]]]:
     """Scan the ADDED, escape-filtered lines of each resolved corpus target
     (SEC-IDGOV-E-002: exact paths + glob-expanded changed files) for
-    id-shaped citation tokens. Returns (path, line_no, token) tuples,
-    unclassified -- callers (check_mint_before_cite / check_malformed_id_block)
-    apply grammar.is_wellformed() to split E4 vs E5 concerns."""
+    id-shaped citation tokens. Returns (citations, declared_by_path):
+
+      citations         -- (path, line_no, token) tuples, unclassified --
+                            callers (check_mint_before_cite /
+                            check_malformed_id_block) apply
+                            grammar.is_wellformed() to split E4 vs E5
+                            concerns.
+      declared_by_path  -- SEC-IDGOV-D-001/D-004: {path: {declared FINDING
+                            IDs}}, populated ONLY when
+                            compute_toji_declarations is True AND the target
+                            path matches the audits/** exemption scope
+                            (_is_audits_scope_target()). check_mint_before_cite
+                            (E4) always calls this with the default False --
+                            it is NEVER touched by this exemption -- so it
+                            gets back an always-empty dict at zero extra cost
+                            (no import, no computation). D-004: the SAME
+                            `candidate` bytes fetched in this loop for the
+                            citation/added-lines scan are reused, verbatim,
+                            for the declaration scan below -- never a second,
+                            independent git read.
+    """
     citations: list[tuple[str, int, str]] = []
+    declared_by_path: dict[str, set[str]] = {}
     targets = _resolve_corpus_targets(
         repo_root, corpus_paths, escape_path_excludes, ci=ci, ci_base_ref=ci_base_ref,
     )
@@ -918,6 +1039,8 @@ def _iter_corpus_citations(
         baseline, candidate = _baseline_and_candidate(repo_root, path, ci=ci, ci_base_ref=ci_base_ref)
         if candidate is None:
             continue  # nothing staged/present for this corpus path
+        if compute_toji_declarations and _is_audits_scope_target(path):
+            declared_by_path[path] = _declared_finding_ids(candidate)
         added, start_line_no, is_clean_append = _added_lines_with_offset(baseline, candidate)
         # SEC-IDGOV-E-001: only seed the fence state from the baseline's tail
         # when the added tail is a genuine append (clean line-prefix) -- the
@@ -937,7 +1060,7 @@ def _iter_corpus_citations(
             line_no = start_line_no + offset
             for token in _extract_id_tokens(fragment):
                 citations.append((path, line_no, token))
-    return citations
+    return citations, declared_by_path
 
 
 def _known_registry_ids(repo_root: Path, registry_path: str, *, ci: bool, ci_base_ref: str) -> set[str]:
@@ -989,6 +1112,7 @@ def check_append_only(
     corpus_paths: tuple[str, ...] = DEFAULT_CORPUS_PATHS,
     escape_path_excludes: tuple[str, ...] = DEFAULT_ESCAPE_PATH_EXCLUDES,
     id_term_allowlist: tuple[str, ...] = DEFAULT_ID_TERM_ALLOWLIST,
+    toji_self_reference_exemption: bool = DEFAULT_TOJI_SELF_REFERENCE_EXEMPTION,
 ) -> list[str]:
     baseline, candidate = _baseline_and_candidate(repo_root, registry_path, ci=ci, ci_base_ref=ci_base_ref)
     reasons = find_append_only_violations(_lines(baseline), _lines(candidate))
@@ -1000,6 +1124,7 @@ def check_registry_invariants(
     corpus_paths: tuple[str, ...] = DEFAULT_CORPUS_PATHS,
     escape_path_excludes: tuple[str, ...] = DEFAULT_ESCAPE_PATH_EXCLUDES,
     id_term_allowlist: tuple[str, ...] = DEFAULT_ID_TERM_ALLOWLIST,
+    toji_self_reference_exemption: bool = DEFAULT_TOJI_SELF_REFERENCE_EXEMPTION,
 ) -> list[str]:
     """E2 uniqueness/grammar/seq/rev/transition-legality + E3 writer-authority
     (already covered inside engine.validate() -- see module docstring)."""
@@ -1013,6 +1138,7 @@ def check_mint_before_cite(
     corpus_paths: tuple[str, ...] = DEFAULT_CORPUS_PATHS,
     escape_path_excludes: tuple[str, ...] = DEFAULT_ESCAPE_PATH_EXCLUDES,
     id_term_allowlist: tuple[str, ...] = DEFAULT_ID_TERM_ALLOWLIST,
+    toji_self_reference_exemption: bool = DEFAULT_TOJI_SELF_REFERENCE_EXEMPTION,
 ) -> list[str]:
     """E4: every WELL-FORMED id cited in a corpus prose file's added lines
     must already exist as a registry row (any assigned state -- reserved+).
@@ -1024,8 +1150,13 @@ def check_mint_before_cite(
     tokens, and a well-formed id always carries a numeric SEQ, so it can
     never BE a digitless token in the first place -- id_term_allowlist is
     accepted as a keyword (for CHECKS-loop signature uniformity) but
-    intentionally unused below."""
-    citations = _iter_corpus_citations(
+    intentionally unused below. SEC-IDGOV-D-001: `toji_self_reference_
+    exemption` is likewise accepted-but-unused here -- this call passes
+    `compute_toji_declarations` at its default False, so E4 is NEVER touched
+    by that exemption (design §4 step 3: "No change to check_mint_before_cite
+    (E4) at all"); the declared_by_path return is always empty at zero extra
+    cost (no import, no computation)."""
+    citations, _declared_by_path = _iter_corpus_citations(
         repo_root, corpus_paths, ci=ci, ci_base_ref=ci_base_ref,
         escape_path_excludes=escape_path_excludes,
     )
@@ -1045,25 +1176,41 @@ def check_malformed_id_block(
     corpus_paths: tuple[str, ...] = DEFAULT_CORPUS_PATHS,
     escape_path_excludes: tuple[str, ...] = DEFAULT_ESCAPE_PATH_EXCLUDES,
     id_term_allowlist: tuple[str, ...] = DEFAULT_ID_TERM_ALLOWLIST,
+    toji_self_reference_exemption: bool = DEFAULT_TOJI_SELF_REFERENCE_EXEMPTION,
 ) -> list[str]:
     """E5 (Sukuna F1): a NEW id-shaped-but-not-well-formed token in a corpus
     prose file's added lines is a hard grammar block -- UNLESS it is exempted
-    by the digit-gate (_has_seq_digit()) or the id_term_allowlist
-    (_is_id_term_allowlisted()); see the E5 module-docstring go-live-prep
-    note for the rationale (real ids always carry a numeric SEQ, so a
-    digitless id-shaped token can never be a real or malformed-citation id --
-    it is generic prose vocabulary, not a collidable id)."""
-    citations = _iter_corpus_citations(
+    by the digit-gate (_has_seq_digit()), the id_term_allowlist
+    (_is_id_term_allowlisted()), or (SEC-IDGOV-D-001, v9.10.2) the audits/**
+    self-reference exemption: the SAME audits/**-scoped file independently
+    declares that exact token (case-insensitive, D-002) in a structurally-
+    complete Toji SECTION B finding block. See the module docstring's E5
+    go-live-prep note for the digit-gate rationale, and
+    _declared_finding_ids()/_iter_corpus_citations() for the self-reference
+    exemption's mechanism. `toji_self_reference_exemption` is the
+    issue_governance.toji_self_reference_exemption config kill-switch
+    (USER ruling: default enabled) -- when False, declared_by_path is never
+    populated (compute_toji_declarations=False below) and this check's
+    behavior is byte-for-byte identical to before this feature existed."""
+    citations, declared_by_path = _iter_corpus_citations(
         repo_root, corpus_paths, ci=ci, ci_base_ref=ci_base_ref,
         escape_path_excludes=escape_path_excludes,
+        compute_toji_declarations=toji_self_reference_exemption,
     )
-    return [
-        f"{p}:{ln}: malformed issue id '{t}' — use the full <FAMILY>-<SUBSYSTEM>-<SEQ> grammar"
-        for (p, ln, t) in citations
-        if not grammar.is_wellformed(t)
-        and _has_seq_digit(t)
-        and not _is_id_term_allowlisted(t, id_term_allowlist)
-    ]
+    violations: list[str] = []
+    for (p, ln, t) in citations:
+        if grammar.is_wellformed(t):
+            continue
+        if not _has_seq_digit(t):
+            continue
+        if _is_id_term_allowlisted(t, id_term_allowlist):
+            continue
+        if t.upper() in declared_by_path.get(p, ()):
+            continue  # SEC-IDGOV-D-001/D-002: self-declared in this same file
+        violations.append(
+            f"{p}:{ln}: malformed issue id '{t}' — use the full <FAMILY>-<SUBSYSTEM>-<SEQ> grammar"
+        )
+    return violations
 
 
 CHECKS: tuple[CheckFn, ...] = (
@@ -1079,6 +1226,7 @@ def _run_checks(
     corpus_paths: tuple[str, ...] = DEFAULT_CORPUS_PATHS,
     escape_path_excludes: tuple[str, ...] = DEFAULT_ESCAPE_PATH_EXCLUDES,
     id_term_allowlist: tuple[str, ...] = DEFAULT_ID_TERM_ALLOWLIST,
+    toji_self_reference_exemption: bool = DEFAULT_TOJI_SELF_REFERENCE_EXEMPTION,
 ) -> list[str]:
     violations: list[str] = []
     for check_fn in CHECKS:
@@ -1086,6 +1234,7 @@ def _run_checks(
             repo_root, registry_path, ci=ci, ci_base_ref=ci_base_ref,
             corpus_paths=corpus_paths, escape_path_excludes=escape_path_excludes,
             id_term_allowlist=id_term_allowlist,
+            toji_self_reference_exemption=toji_self_reference_exemption,
         ))
     return violations
 
@@ -1192,6 +1341,7 @@ def main(
             corpus_paths=settings.corpus_paths,
             escape_path_excludes=settings.escape_path_excludes,
             id_term_allowlist=settings.id_term_allowlist,
+            toji_self_reference_exemption=settings.toji_self_reference_exemption,
         )
     except Exception as e:  # noqa: BLE001 -- fail-CLOSED: never warn-then-pass
         print(f"[idgov-gate] INTERNAL ERROR (fail-closed, blocking): {e}", file=sys.stderr)

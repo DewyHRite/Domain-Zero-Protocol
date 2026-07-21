@@ -106,6 +106,34 @@ events:
         command: ["python", ".protocol-state/brain/brain.py", "distill", "--window", "8", "--max", "5"]
         timeout_seconds: 60
         required: false
+      - name: validation-refresh
+        # IMPL-001 (Toji audit 2026-07-20, audits/2026-07-20-toji-recent-work-audit.md):
+        # session-end's own steps mutate project-state.json (session-end),
+        # snapshot-manifest.json + a new snapshot (end-snapshot), and the protected
+        # records (session-end), but validation-state.json's last_full_validation /
+        # last_validation_result previously described only the state BEFORE those
+        # mutations — a consumer reading last_validation_result alone could mistake
+        # a dirty post-mutation state for a validated one (NIST SP 800-53 SI-7).
+        # Fix: re-run the SAME read+recompute+persist check used by ts-complete/
+        # pre-release as the FINAL step of session-end, so the ledger's checksums
+        # and last_full_validation timestamp reflect the true terminal state.
+        # Placement: last step in this event. session-end and end-snapshot are the
+        # only steps that mutate files covered by validate-protocol.py's schema/
+        # checksum set; cortex-medium is detached (fire-and-forget, touches only the
+        # Cortex DB) and cortex-distill only proposes (never auto-writes) memories,
+        # so neither touches validated state — but ordering last removes any doubt
+        # and stays correct if a future step is added.
+        # Fail-soft (required: false): a validation failure/exception here must
+        # never block session-end; the ledger simply records the honest result
+        # (including "failed", which is itself the intended fix for the finding —
+        # an honest failed/stale status is strictly better than a silently stale
+        # "passed"). validate-protocol.py --check only writes to
+        # validation-state.json itself; it never touches project-state.json,
+        # snapshot-manifest.json, or the protected records, so this step cannot
+        # retrigger the mutation-then-stale-ledger cycle it exists to close.
+        command: ["python", "scripts/validate-protocol.py", "--check", "--ci-mode"]
+        timeout_seconds: 60
+        required: false
 
   ts-start:
     description: Pre-troubleshooting context checks.

@@ -9,6 +9,151 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.10.2] - 2026-07-20
+
+### PATCH — Toji recent-work audit closure + CLAUDE.md changelog retention policy + item-5 carried notes + release payload subsystem (`FEAT-PAYLOAD-9.10.2-001`)
+
+**Versioning note (Sukuna adversarial ruling)**: this release ships a genuinely new capability
+(`FEAT-PAYLOAD-9.10.2-001`, the release payload builder/verifier subsystem) alongside a majority of
+remediation/closure work. Under strict SemVer, a net-new feature addition normally warrants a MINOR
+bump. The version number was fixed at **v9.10.2 PATCH** before this cascade began — the release plan,
+branch name, and every issue identifier minted this session (`ISS-CLAUDEMD-9.10.2-001`,
+`SEC-PAYLOAD-9.10.2-001..005`, `FEAT-PAYLOAD-9.10.2-001` itself) already bake `9.10.2` into their IDs,
+and USER approval for "the v9.10.2 release plan" is on record. Relabeling to v9.11.0 now would
+invalidate those identifiers for no safety benefit and contradicts the standing approval. Ruling:
+**PATCH**, with this dissent recorded for the future — when a queue item picks up a net-new
+FEAT-classified subsystem mid-cycle, lock the version number (or use version-agnostic issue IDs)
+*before* identifiers are minted, so the SemVer classification isn't retroactively constrained.
+
+#### Added
+
+- **`FEAT-PAYLOAD-9.10.2-001`** (release payload subsystem, standing USER directive) — two new tools
+  closing the "after every release, downstream installs must verify the kernel before installing" gap:
+  - `scripts/distro/dzp_payload.py` (maintainer-only, NOT shipped): packages an already gate-clean
+    `distro/` release tree into `dzp-payload-vX.Y.Z.zip` + a SHA-256 per-file `.manifest.json`
+    (payload self-hash, canonical repo URL/branch/commit/tree-sha recorded). Re-asserts
+    version/exclude/PII/completeness/tracking gates before packaging; refuses an uncommitted
+    `distro/` tree (`DZP_ALLOW_DIRTY_PAYLOAD_SOURCE=1` loud, scoped override). Snapshots via
+    `git ls-files`, never a filesystem walk. Prints the exact `gh release create`/`gh release upload`
+    commands for manual USER-approved execution — never uploads itself.
+  - `scripts/verify-payload.py` (ships to consumers, stdlib-only): fail-closed check chain — manifest
+    schema → payload self-hash → embedded-vs-external manifest consistency → shipped-verifier
+    self-hash → per-file integrity (missing/extra/modified) → canonical-origin cross-check
+    (`git ls-remote`, tag authoritative over branch). `--skip-origin-check` (loud, offline-only) and
+    `--deep-verify` (opt-in shallow-clone byte-compare) are opt-in, never default. `--extract-to`
+    performs zip-slip-hardened extraction (path-traversal/absolute/symlink rejection, zip-bomb
+    size/entry caps) in the same invocation as verification, closing the verify-then-install TOCTOU
+    gap.
+  - New `manifest_tracking`-adjacent `manifest_completeness_offenders()` Scope 7 in
+    `dzp_publish_core.py` guarantees `scripts/verify-payload.py` can never silently drop out of the
+    manifest; `publish-manifest.yaml` updated in the same change. Documented as post-promotion step 6
+    in `dzp-publish.sh`/`.ps1` — never auto-invoked mid-publish (the payload must reflect the final,
+    CodeRabbit-reviewed, promoted commit). Docs: `docs/guides/DISTRO_RELEASE_WORKFLOW.md` new §9,
+    `README.md` consumer blurb, `docs/installation/IMPLEMENTATION_GUIDE.md` "Obtaining a Release
+    (Verified Payload)" subsection.
+- **`ISS-IDGOV-9.10.1-001`** — `audits/**` E5 digit-gate exemption for the idgov citation gate
+  (closes a false-positive class where historical audit reports were blocked from citing their own
+  frozen issue IDs).
+- **crbase §5b workflow doc** — folded the `DZP-vX.Y.Z-crbase` filter-bearing PR-base helper pattern
+  into `docs/guides/DISTRO_RELEASE_WORKFLOW.md`, documenting how release-only CodeRabbit path-filter
+  relief is scoped to the helper branch without leaking onto dev/Main.
+- **Stamp-linter Types 9-12** (`scripts/distro/check_version_stamps.py`) — `BOLD-FOOTER-SUFFIX`
+  (Type 9), `PROSE-MEMORY-SNIPPET` (Type 10), `TOKEN_EFFICIENCY_RECOMMENDATIONS.md` metadata (Type 11),
+  and `MASK_MODE.md` version heading (Type 12); Type 5 (`BODY-HEADING`) widened from `protocol/`-only
+  to also cover `docs/`. Closes several CodeRabbit PR#113-class stale-stamp blind spots.
+
+#### Fixed
+
+- **`BUG-TEST-9.10.1-001`** — `scripts/dependency-scanner.py` no longer crawls into
+  `.protocol-state/backups/` (and other backup directories), which had caused a false-positive
+  dependency-drift signal and a related test hang.
+- **Toji `AI-001`** (HIGH) — `.coderabbit.yaml` had unconditionally excluded 4 executable AI
+  instruction/control-surface classes (`.claude/commands/**`, `slash-commands/**`,
+  `protocol/modules/**`, `protocol/gojo-procedures/**`) from mandatory CodeRabbit review on **every**
+  dev-branch PR, not just release PRs — traced to commit `372c73f` back-porting the crbase branch's
+  release-only filter superset onto dev verbatim (CodeRabbit reads `path_filters` from the PR **base**
+  branch). Fix: removed the 4 executable-surface classes from `.coderabbit.yaml`'s `path_filters`
+  (8 of 14 entries), leaving only the 3 confirmed-non-executable classes; corrected
+  `DISTRO_RELEASE_WORKFLOW.md` §5b step 2 to frame the crbase list as dev's (now-narrowed) list
+  **plus** the 4 executable-surface classes, explicitly release-PR-only.
+- **Toji `IMPL-001`** (MEDIUM, NIST SP 800-53 SI-7) — `validation-state.json`'s
+  `last_validation_result` could report stale (pre-mutation) state after `session-end`'s own later
+  writes (session monitor + snapshot manifest). Fix: new fail-soft `validation-refresh` step added as
+  the LAST step of the `session-end` lifecycle event (`python scripts/validate-protocol.py --check
+  --ci-mode`, `timeout_seconds: 60`, `required: false`), confirmed structurally incapable of
+  retriggering the mutation-then-stale-ledger cycle it closes.
+- **Toji `IMPL-002`** (reconciliation) — commit `b090373` had asserted an uncorroborated
+  "Megumi Tier-2 @approved" claim with no matching `security-review.md` entry. A dedicated,
+  after-the-fact Tier-2 review is now the authoritative record (`@approved`, 0 P0/P1/P2, 2 accepted
+  P3 residuals: unscoped Type 9/10 regexes and pre-existing `_collect_files` symlink-recursion
+  behavior). Standing rule going forward: commit messages must not assert a Megumi disposition before
+  the corresponding `security-review.md` entry exists.
+- **`ISS-162`** (`protocol/toji.agent.md`) — EOF-anchor procedure added for Toji's own audit-report
+  generation, closing an ambiguity in how audit reports terminate their signed section.
+- **v9.10.2 item-5 carried notes** (4 fixes, deferred across the v9.10.0/v9.10.1 audit cycles):
+  - **Session-monitor UTC normalization** — `_parse_utc()` (`BUG-SESSION-001`, v9.3.0) was wired into
+    only one of 7 timestamp-arithmetic call sites in `.protocol-state/session_monitor.py`; the other 6
+    either crashed uncaught on a naive/legacy timestamp or silently produced a wrong fallback
+    (including the agent-invocation bypass-detection security check silently no-op'ing). All 7 sites
+    migrated onto the shared parser; on-disk storage format unchanged.
+  - **`dzp.py` dynamic `--help` epilog** — the event list was hardcoded and had drifted from the live
+    12-event registry (missing `post-migration`/`post-rotation`/`cortex-compact`/`cortex-rebuild-full`).
+    Now derived dynamically from `script_dependencies.yaml`, with a static fallback so `--help` can
+    never crash.
+  - **Detached-log rotation** — `.protocol-state/logs/cortex-detached.log` (`BUG-CORTEX-008` R5) grew
+    unbounded; added single-backup size-based rotation (default 2 MB), fail-soft.
+  - **`load_registry()` structural guard** — a non-mapping top-level `defaults:` or per-step `env:` in
+    `script_dependencies.yaml` crashed with a raw `AttributeError`; now raises a clear `RegistryError`
+    at load time.
+
+#### Security
+
+- **`SEC-PAYLOAD-9.10.2-001`** (P1, CWE-345/CWE-829) — `verify-payload.py`'s canonical-origin check
+  resolved `git ls-remote` against `manifest["canonical_repo_url"]`, a field read from the SAME
+  manifest under verification, with no hardcoded/pinned canonical URL anywhere in the file — an
+  attacker distributing any self-consistent forged zip+manifest pair could point that field at their
+  own repo and every check, including the origin cross-check, would report PASS. Fixed: new hardcoded
+  `CANONICAL_REPO_URL` constant (parity-asserted against `dzp_payload.py`'s own constant), validated
+  against the manifest's claim BEFORE any network call; mismatch fails closed with a dedicated exit
+  code; explicit loud, non-default `--allow-alternate-origin URL` opt-in for legitimate forks/mirrors.
+- **`SEC-PAYLOAD-9.10.2-002`** (P2, CWE-409) — zip-bomb caps were computed from attacker-declared
+  `ZipInfo.file_size` central-directory metadata rather than bytes actually produced during
+  decompression. Fixed via a streaming running-byte-count budget enforced per-chunk in both
+  `verify_files()` and `safe_extract()`.
+- **`SEC-PAYLOAD-9.10.2-003`** (P2) — `verify_files()`'s "no undeclared extras" check only examined
+  entries already under the expected root, silently never flagging genuinely out-of-root zip entries
+  despite documentation claiming unconditional coverage. Fixed: full `infolist()` scan.
+- **`SEC-PAYLOAD-9.10.2-004`** (P3) — `build_zip()` now pins `ZipInfo.create_system = 3` (POSIX) on
+  every entry, making `payload_sha256` reproducible across build hosts.
+- **`SEC-PAYLOAD-9.10.2-005`** (P3) — `_root_dir_name()` now derives the trusted root primarily from
+  `manifest["release_branch"]` (content-validated), with the physical-first-entry heuristic as
+  fallback only.
+- All 5 findings from Megumi's Part B adversarial supply-chain review of `FEAT-PAYLOAD-9.10.2-001`,
+  closed in the same working tree and Megumi-reverified `@approved`.
+
+#### Notes
+
+- Megumi Tier-2/Tier-3 reviews this release: item-5 carried notes **@approved** (0 findings, 206/206
+  passed); Toji `AI-001`/`IMPL-001` remediations **@approved** (0 findings each, 1 accepted P3);
+  `b090373` stamp-linter reconciliation **@approved** (0 P0/P1/P2, 2 accepted P3); `FEAT-PAYLOAD-9.10.2-001`
+  initial review **@remediation-required** (1 P1 + 2 P2 + 2 P3) → re-review **@approved** (all 5
+  verified fixed, 228/228 passed, 1 new accepted residual — raw-vs-normalized URL string reaching the
+  `ls-remote` argv, bounded/non-exploitable).
+- CLAUDE.md changelog retention policy (`ISS-CLAUDEMD-9.10.2-001`, this release) — the root
+  `CLAUDE.md`'s changelog duplication (`Major Enhancements` + `Recent Version History` re-narrating
+  every release since v8.x, ~69 KB / 49% of the file, re-duplicated a third time in
+  `protocol/CLAUDE.md`) is now bounded: `Major Enhancements` carries ONLY the current release's
+  summary; `Recent Version History` carries a hard cap of the 5 most recent releases. Zero information
+  destroyed — every trimmed entry exists verbatim in this file and `VERSION.md`. Policy codified as a
+  standing Version Update Requirements checklist bullet in both files so the sections do not regrow.
+- Full repo-wide version-stamp cascade 9.10.1 → 9.10.2 (this entry's release): `check_version_stamps.py`
+  0 violations across 472 scanned files; `assert_version.py` 20/20; `validate-protocol.py --check` PASS.
+- Sukuna-implemented (System Update Adversary), Gojo-coordinated, USER-approved. Toji's
+  `audits/2026-07-20-toji-recent-work-audit.md` findings (`AI-001`, `IMPL-001`, `IMPL-002`) are all
+  closed in this release; `ISS-162` closed the same session.
+
+---
+
 ## [9.10.1] - 2026-07-19
 
 ### PATCH — Bundled remediation: distro-integrity (orchestration-trio) + idgov polish (retro-mint, resident wrappers, report-contract validator) + registry lock hardening + brain reset UX fix + `SEC-GUARD-007`

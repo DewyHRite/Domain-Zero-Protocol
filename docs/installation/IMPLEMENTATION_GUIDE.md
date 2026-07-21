@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
@@ -47,6 +47,44 @@
 | Existing project with DZP already installed | **In-Place Upgrade** | Use [In-Place Upgrade Flow](#in-place-upgrade-flow-existing-projects) |
 
 **WARNING:** Using Fresh Install commands on an existing DZP project will overwrite your project-specific state (dev-notes.md, security-review.md, project-state.json). Always use the correct flow for your situation.
+
+---
+
+### Obtaining a Release (Verified Payload — recommended, v9.10.2+)
+
+Every release publishes a **GitHub Release asset pair**: `dzp-payload-vX.Y.Z.zip` and its sibling
+`dzp-payload-vX.Y.Z.manifest.json`. Verify BEFORE you extract — `scripts/verify-payload.py` is
+**stdlib-only** (no DZP install, no third-party packages needed) and is exactly what you'd want to
+run against a file you just downloaded from the internet:
+
+```bash
+# 1. Download both files from the release's "Assets" section (same release page).
+# 2. Verify + extract in ONE step (never verify now and install later from a moved/copied
+#    file -- that reintroduces the exact time-of-check/time-of-use gap this flag exists to close):
+python scripts/verify-payload.py dzp-payload-v9.10.2.zip --extract-to DZP-v9.10.2
+```
+
+What this checks, in order, before it will extract anything: the zip's own hash matches its
+manifest; the manifest bundled inside the zip matches the one you downloaded; the shipped verifier
+script inside the zip matches its own recorded hash; every file the manifest declares is present
+with a matching hash (and the zip contains nothing UNDECLARED); and — the step that distinguishes
+this from a plain checksum file — that the manifest's recorded release branch genuinely resolves,
+on this project's **canonical public GitHub repository**, to the manifest's recorded commit
+(`git ls-remote`, using your local `git`). That last check requires a working internet connection
+and a `git` binary on `PATH`; if you are genuinely offline, `--skip-origin-check` will proceed
+without it, printing a loud warning that this step alone provides no supply-chain provenance
+assurance beyond internal self-consistency — it should not be your everyday default.
+
+The result of a successful run is a plain directory (`DZP-v9.10.2/` in the example above) with the
+exact same layout as an unpacked release archive — use it as `DZP_SRC` in either flow below.
+
+**Trust model, briefly:** this check confirms the download is internally consistent AND points
+somewhere real on the project's own GitHub repository — the same trust boundary as cloning that
+repository directly. It is a supply-chain consistency check, not a code-review substitute, and (in
+its default mode) it does not cryptographically bind the zip's file bytes to that commit's git
+tree object — pass `--deep-verify` for a stronger (network- and time-costly) check that shallow-clones
+the canonical commit and byte-compares every file directly. Run `python scripts/verify-payload.py --help`
+for the full option list and exit-code meanings.
 
 ---
 

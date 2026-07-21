@@ -29,6 +29,17 @@ PROJECT_STATE = STATE_DIR / "project-state.json"
 MAX_EVENTS = 50
 OUTPUT_LIMIT = 500
 
+# v9.10.2 item-5 carried note: detached-log rotation. The rolling detached-step
+# log (see the BUG-CORTEX-008 R5 note below) previously grew unbounded. A
+# simple single-backup, size-based rotation (mirrors the well-understood
+# logging.handlers.RotatingFileHandler scheme) caps it at roughly 2x this
+# threshold: when the live log exceeds DETACHED_LOG_MAX_BYTES, it is renamed
+# to a ".1" backup (overwriting any prior backup) before the new entry is
+# appended. No daemon/scheduler is introduced -- rotation is checked inline,
+# synchronously, at the start of each detached spawn (DZP stays no-daemon).
+DETACHED_LOG_MAX_BYTES = 2 * 1024 * 1024  # 2 MB
+DETACHED_LOG_BACKUP_SUFFIX = ".1"
+
 # BUG-CORTEX-008 R5 (2026-07-18, Sukuna): detached-step logging. A `detach: true`
 # step's child process is launched fully independent of the coordinator (see
 # ScriptCoordinator._spawn_detached) and outlives it; its stdout/stderr cannot be
@@ -73,6 +84,10 @@ class ScriptCoordinator:
         # tests) writes its detached-step log under that same tree.
         self.log_dir = self.state_dir / "logs"
         self.detached_log = self.log_dir / "cortex-detached.log"
+        # v9.10.2 item-5 carried note: instance attribute (not just the module
+        # constant) so tests can override it to a small value without writing
+        # multi-megabyte fixtures.
+        self._detached_log_max_bytes = DETACHED_LOG_MAX_BYTES
 
     def load_registry(self) -> dict[str, Any]:
         """Load and validate the YAML event registry."""
@@ -86,6 +101,16 @@ class ScriptCoordinator:
 
         if not isinstance(data, dict):
             raise RegistryError("Registry root must be a mapping")
+
+        # v9.10.2 item-5 carried note: 'defaults' (if present at all) must
+        # itself be a mapping. Previously an unvalidated non-mapping (e.g. a
+        # YAML list) crashed with a raw AttributeError at the per-step
+        # timeout-default lookup below ('list' object has no attribute 'get'),
+        # deep inside this method rather than as a clear diagnostic.
+        defaults = data.get("defaults", {})
+        if not isinstance(defaults, dict):
+            raise RegistryError("Registry 'defaults' must be a mapping")
+
         events = data.get("events")
         if not isinstance(events, dict) or not events:
             raise RegistryError("Registry must define a non-empty events mapping")
@@ -104,9 +129,19 @@ class ScriptCoordinator:
                     raise RegistryError(f"Event {event_name!r} step {index} needs a command list")
                 if not all(isinstance(part, str) for part in command):
                     raise RegistryError(f"Event {event_name!r} step {index} command parts must be strings")
-                timeout = step.get("timeout_seconds", data.get("defaults", {}).get("timeout_seconds", 30))
+                timeout = step.get("timeout_seconds", defaults.get("timeout_seconds", 30))
                 if not isinstance(timeout, int) or timeout < 1:
                     raise RegistryError(f"Event {event_name!r} step {index} has invalid timeout_seconds")
+                # v9.10.2 item-5 carried note: per-step 'env' (if present) must
+                # be a mapping. Previously an unvalidated non-mapping crashed
+                # later, inside _run_step()'s `.items()` call, with a raw
+                # AttributeError surfacing from a completely different method
+                # than the one that loaded (and should have rejected) it.
+                env = step.get("env", {})
+                if not isinstance(env, dict):
+                    raise RegistryError(
+                        f"Event {event_name!r} step {index} 'env' must be a mapping"
+                    )
         return data
 
     def run_event(
@@ -423,6 +458,40 @@ class ScriptCoordinator:
                 "stderr": f"detach launch failed: {exc}",
             }
 
+    def _rotate_detached_log_if_needed(self) -> None:
+        """v9.10.2 item-5 carried note: single-backup, size-based rotation for
+        the rolling detached-step log (`.protocol-state/logs/cortex-detached.log`).
+
+        Every `detach: true` step (currently session-update/session-end's
+        cortex-medium, BUG-CORTEX-008 R5) appends to this one file forever;
+        without a cap it grows unbounded over the life of a repo. When the
+        live log exceeds `self._detached_log_max_bytes`, it is renamed to a
+        single `.1` backup (overwriting any prior backup) before the caller
+        appends its new entry -- mirroring the well-understood
+        `logging.handlers.RotatingFileHandler(backupCount=1)` scheme, with no
+        daemon/scheduler involved (checked inline at each detached spawn).
+
+        Fail-soft by design: ANY error here (permissions, a concurrent writer
+        holding the file open on Windows, etc.) is swallowed. A rotation
+        failure must never block a detached spawn -- avoiding exactly that
+        kind of blocking is the entire point of detaching a step in the first
+        place. On failure, the coordinator simply keeps appending to the
+        oversized file until a future spawn's rotation attempt succeeds.
+        """
+        try:
+            if not self.detached_log.exists():
+                return
+            if self.detached_log.stat().st_size <= self._detached_log_max_bytes:
+                return
+            backup = self.detached_log.with_suffix(
+                self.detached_log.suffix + DETACHED_LOG_BACKUP_SUFFIX
+            )
+            if backup.exists():
+                backup.unlink()
+            self.detached_log.replace(backup)
+        except OSError:
+            pass
+
     def _spawn_detached(self, command: list[str], name: str) -> None:
         """Launch `command` as a fully detached child process that survives this
         coordinator process's exit (BUG-CORTEX-008 R5, 2026-07-18).
@@ -443,6 +512,7 @@ class ScriptCoordinator:
         writing to it.
         """
         self.log_dir.mkdir(parents=True, exist_ok=True)
+        self._rotate_detached_log_if_needed()
         env = os.environ.copy()
         env.setdefault("PYTHONUTF8", "1")
         kwargs: dict[str, Any] = {

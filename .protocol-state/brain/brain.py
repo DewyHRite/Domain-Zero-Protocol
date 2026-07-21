@@ -570,6 +570,15 @@ def main(argv: list[str] | None = None) -> int:
         # Dispatch early — no Store construction needed.
         if args.cmd == "memory-export":
             data_dir = paths.data_dir(repo, cfg, allow_unsafe=allow_unsafe)
+            # BUG-TEST-9.10.1-001 / Megumi Tier-2 ruling (2026-07-20): flagged
+            # during that investigation as architecturally similar to the
+            # pre-v9.10.1 `reset` hang, but ruled ACCEPT-AS-IS -- unlike
+            # reset's unconditional getpass, _escrow_passphrase() here stays
+            # gated on `allow_prompt and sys.stdin and sys.stdin.isatty()`
+            # and fails soft (returns None) when non-interactive, so this is
+            # NOT the RESET-HANG class. Intentionally left prompt-capable:
+            # this is a manually-run, human-facing export command (no `--yes`
+            # non-interactive-intent signal exists for it).
             out = _do_memory_export(repo, cfg, data_dir, getattr(args, "out_dir", None), allow_prompt=True)
             print("exported:", out if out else "skipped (no escrow passphrase)")
             return 0

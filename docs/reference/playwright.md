@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.1 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
 # Playwright E2E Integration for Domain Zero
 
 This document explains how Playwright fits into the Domain Zero Protocol (DZP) and Domain Zero Agents (DZA), and how to run and visually watch end‑to‑end tests in a real browser.
