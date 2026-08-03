@@ -55,6 +55,21 @@ reviews:
     - "!.protocol-state/jjk-character-reference/**"
     - "!.protocol-state/gojo-templates/**"
     - "!.protocol-state/sukuna-templates/**"
+    # crbase-only release-PR relief valve (DISTRO_RELEASE_WORKFLOW.md section 5b,
+    # USER-authorized pattern; helper base DZP-v9.10.2-crbase for PR #115 /
+    # DZP-v9.11.0). These four stamp-cascade-only classes are safe to skip for a
+    # RELEASE PR specifically because the release train's other gates (version-
+    # stamp linter, distro manifest/PII/identity audits, Megumi Tier-2/3 reviews,
+    # Toji release-gate audit) already cover them for that PR. They must NEVER be
+    # added to the dev/Main branch's .coderabbit.yaml.
+    - "!**/protocol/modules/**"
+    - "!protocol/modules/**"
+    - "!**/protocol/gojo-procedures/**"
+    - "!protocol/gojo-procedures/**"
+    - "!**/.claude/commands/**"
+    - "!.claude/commands/**"
+    - "!**/slash-commands/**"
+    - "!slash-commands/**"
   high_level_summary: true
   review_status: true
   poem: false
