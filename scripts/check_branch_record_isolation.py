@@ -87,11 +87,28 @@ Exit codes:
       same-session-id conflicting terminal record) -- commit/publish/merge should be
       blocked until reconciled.
   2 = could not run the check at all (missing/invalid CLI args, not a git repository, or
-      the merge-base of the two refs could not be resolved -- e.g. an unknown ref or
-      unrelated histories). F8 (CodeRabbit PR#109, P2): this used to collide with the
-      clean-exit 0 above, making "the check passed" indistinguishable from "the check
-      never ran" to a calling script. CI/publish callers MUST treat BOTH exit code 1 and
-      exit code 2 as blocking -- only exit code 0 is a genuine clean pass.
+      the merge-base of the two refs could not be resolved for a reason OTHER than the
+      exit-3 orphan case below -- e.g. an unknown/unresolvable ref). F8 (CodeRabbit
+      PR#109, P2): this used to collide with the clean-exit 0 above, making "the check
+      passed" indistinguishable from "the check never ran" to a calling script.
+      CI/publish callers MUST treat BOTH exit code 1 and exit code 2 as blocking -- only
+      exit code 0 is a genuine clean pass.
+  3 = SKIP (non-blocking) -- added for BUG-BRANCHISO-9.11.0-001 (v9.11.0, first live
+      run of the SEC-BRANCHISO-001 publish gate). Both `base_ref` and `compare_ref`
+      resolve to VALID commits in this repo, but `git merge-base` itself reports no
+      common ancestor between them (git's own exit code 1 for `merge-base` -- see
+      `git help merge-base`, EXIT STATUS). This is the DESIGNED, permanent state for
+      two orphan branches with unrelated histories -- e.g. under the dev/release repo
+      isolation split, every DZP-vX.Y.Z release branch is created via
+      `git worktree add --orphan` (see docs/guides/DISTRO_RELEASE_WORKFLOW.md section
+      3), so it can NEVER share history with the dev branch. An ancestry-based
+      divergence check is not meaningful when there is no common ancestor to diff
+      against -- this is the isolation-split analogue of the "comparison branch is
+      entirely absent" skip already handled by the release-gate wrapper
+      (`scripts/distro/dzp_publish_core.py::branch_record_isolation_guard_cli`), not a
+      genuine execution failure. It is distinguished from exit 2 by checking BOTH refs
+      resolve to valid commit objects first: if either ref is invalid/unresolvable,
+      that is still "could not run" (exit 2), never this skip.
 """
 
 from __future__ import annotations
@@ -150,6 +167,40 @@ def merge_base(repo_root: Path, ref_a: str, ref_b: str) -> Optional[str]:
         return None
     sha = proc.stdout.strip()
     return sha or None
+
+
+def _ref_is_valid_commit(repo_root: Path, ref: str) -> bool:
+    """True iff `ref` resolves to a valid commit object in the repo at `repo_root`."""
+    proc = subprocess.run(
+        ["git", "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"],
+        cwd=str(repo_root),
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return proc.returncode == 0
+
+
+def merge_base_is_unrelated_histories(repo_root: Path, ref_a: str, ref_b: str) -> bool:
+    """True iff `ref_a` and `ref_b` BOTH resolve to valid commits in this repo, but
+    `git merge-base` itself reports no common ancestor between them (git's own exit
+    code 1 for `merge-base` -- distinct from exit 128/other codes for an invalid
+    ref or a git-execution failure). This is the DESIGNED state for two orphan
+    branches with unrelated histories (BUG-BRANCHISO-9.11.0-001) -- see module
+    docstring, exit code 3.
+
+    False whenever at least one ref does not resolve to a valid commit -- that case
+    is always "could not run" (exit 2), never this skip, regardless of what
+    `git merge-base` itself would report.
+    """
+    if not (_ref_is_valid_commit(repo_root, ref_a) and _ref_is_valid_commit(repo_root, ref_b)):
+        return False
+    proc = subprocess.run(
+        ["git", "merge-base", ref_a, ref_b],
+        cwd=str(repo_root),
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return proc.returncode == 1
 
 
 def _repo_toplevel() -> Optional[Path]:
@@ -425,15 +476,25 @@ def find_semantic_conflicts(
 def main(argv: Optional[list[str]] = None, repo_root: Optional[Path] = None) -> int:
     args = sys.argv[1:] if argv is None else argv
 
+    _usage = "Usage: python scripts/check_branch_record_isolation.py <base-ref> [<compare-ref>]"
+
     if not args:
-        print(
-            "Usage: python scripts/check_branch_record_isolation.py <base-ref> [<compare-ref>]",
-            file=sys.stderr,
-        )
+        print(_usage, file=sys.stderr)
         return 2
 
     base_ref = args[0]
     compare_ref = args[1] if len(args) > 1 else "HEAD"
+
+    # BUG-BRANCHISO-9.11.0-001 review observation: any argv token was previously
+    # accepted positionally, including flag-like tokens (e.g. '--help'), which were
+    # then handed straight to `git merge-base` as a literal ref name. Reject
+    # obviously flag-like arguments up front with usage text -- "could not run" (exit
+    # 2), consistent with the existing missing-args case above, never a silent
+    # attempt to resolve '--help' as a branch/tag/SHA.
+    if base_ref.startswith("-") or compare_ref.startswith("-"):
+        bad = base_ref if base_ref.startswith("-") else compare_ref
+        print(f"{_usage}\n       (got unexpected flag-like argument: '{bad}')", file=sys.stderr)
+        return 2
 
     if repo_root is None:
         repo_root = _repo_toplevel()
@@ -445,6 +506,20 @@ def main(argv: Optional[list[str]] = None, repo_root: Optional[Path] = None) -> 
 
     mb = merge_base(repo_root, base_ref, compare_ref)
     if mb is None:
+        # BUG-BRANCHISO-9.11.0-001 (v9.11.0): distinguish the DESIGNED orphan-branch
+        # case (both refs valid, but no common ancestor exists -- e.g. every
+        # DZP-vX.Y.Z release branch under the dev/release repo isolation split) from
+        # a genuine "could not run" failure (invalid/unresolvable ref, git execution
+        # failure, etc.). Only the former becomes the new loud, non-blocking skip.
+        if merge_base_is_unrelated_histories(repo_root, base_ref, compare_ref):
+            print(
+                f"[branch-isolation] SKIP -- comparison branch '{base_ref}' exists but "
+                f"shares no history with '{compare_ref}' (orphan release branch under "
+                f"the dev/release isolation split); ancestry-based divergence check not "
+                f"applicable.",
+                file=sys.stderr,
+            )
+            return 3
         # F8 (CodeRabbit PR#109, P2): was `return 0` (see above) -- an unresolvable
         # merge-base means this check never actually ran, not that it passed clean.
         print(
