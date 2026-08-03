@@ -70,6 +70,17 @@ reviews:
     - "!.claude/commands/**"
     - "!**/slash-commands/**"
     - "!slash-commands/**"
+    # Second USER authorization (2026-08-03, PR #115 still 9 files over cap at
+    # 109/100): three additional pure-prose doc classes, crbase-only. Rationale:
+    # docs/reference = offline mirrors of external standards; docs/installation
+    # + docs/templates content was refreshed and Megumi/Toji-reviewed within
+    # this same release train. Same relief-valve rules as above - NEVER on dev.
+    - "!**/docs/reference/**"
+    - "!docs/reference/**"
+    - "!**/docs/installation/**"
+    - "!docs/installation/**"
+    - "!**/docs/templates/**"
+    - "!docs/templates/**"
   high_level_summary: true
   review_status: true
   poem: false
