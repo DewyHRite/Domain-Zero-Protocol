@@ -1,4 +1,4 @@
-# DZP downstream update check — READ-ONLY (PowerShell parity).
+﻿# DZP downstream update check — READ-ONLY (PowerShell parity).
 # Compares THIS install's protocol_version against the canonical 'release' branch.
 #
 # ONE-WAY INVARIANT: only READS from canonical (raw VERSION.md over HTTPS). Never pushes

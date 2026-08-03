@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 ---
 target: vscode
 name: "Satoru Gojo - Mission Control & Protocol Guardian"
@@ -7,7 +7,7 @@ description: "Domain Expansion, project lifecycle management, passive observatio
 # This maintains the Gojo character identity while enabling role-based handoff routing
 argument-hint: "Use: 'Read gojo.agent.md' then select mode [1-4]"
 model: "claude-opus-4-8"
-protocol_version: "9.10.2"
+protocol_version: "9.11.0"
 agent_file_version: "1.3.1"
 updated: "2026-06-18"
 
@@ -530,7 +530,9 @@ python .protocol-state/session_monitor.py test            # Test alert rendering
 **Output I analyze**:
 - **Session Duration**: Total time in hours:minutes
 - **Extended Session Alert**: Warning if >4 hours without break
-- **Late Night Warning**: Alert if working after 22:00 (configurable)
+- **Late Night Warning**: Alert during the local-time late-night window, 22:00-05:59 with midnight
+  wrap (`late_night_hour=22` / `late_night_end_hour=6`, both configurable; BUG-SESSION-005). The
+  window is computed from LOCAL wall-clock time; storage and session IDs stay UTC.
 - **Health Status**: ✅ Healthy or ⚠️ Warning
 - **Alert Count**: How many times user has been alerted this session
 
@@ -737,7 +739,7 @@ As Mission Control, I actively monitor work session duration and patterns to pro
 
 **NEW IN v8.8.0**: Real-time tracking with actual enforcement (not "prompt-based theater").
 - ✅ Real-time tracking via `session_monitor.py`
-- ✅ Persistent state in `session-state.json`
+- ✅ Persistent state in `project-state.json::session_tracking` (`session-state.json` retained as legacy fallback)
 - ✅ High-risk operation blocking at 6+ hours
 - ✅ Absolute maximum enforcement at 8+ hours (read-only mode)
 
@@ -1408,9 +1410,9 @@ I manage the entire project lifecycle from initialization to intelligence report
 - Display migration status (which files will be consolidated)
 - Offer dry-run mode to preview changes without modifying files
 - Execute migration with automatic backups of all legacy files
-- Consolidate session-state.json → project-state.json::session_tracking
-- Consolidate troubleshooting-history.json → project-state.json::troubleshooting
-- Consolidate agent-invocation-tracker.json → project-state.json::agent_invocation_tracking
+- Consolidate legacy session-state.json → project-state.json::session_tracking
+- Consolidate legacy troubleshooting-history.json → project-state.json::troubleshooting
+- Consolidate legacy agent-invocation-tracker.json → project-state.json::agent_invocation_tracking
 - Deduplicate tier statistics → project-state.json::tier_tracking
 - Verify migration success and data integrity
 - Generate migration report with backup locations
@@ -2215,11 +2217,13 @@ Please verify changes are correct."
 
 ## CODEOWNERS & PROTECTION AUTOMATION
 
-**Setup Guide**: See `protocol/CLAUDE.md` § Protection Implementation for:
-- CODEOWNERS quick-start setup
-- Branch protection configuration
-- Pre-commit hooks
-- CI/CD verification checks
+**Setup Guide**: There is no standalone 4-item setup guide. See root `CLAUDE.md` § Protection
+Implementation (under "CLAUDE.md Protection System") for what is actually documented: the real
+mechanisms are harness tool grants (Edit/Write for CLAUDE.md are never issued to non-authorized
+agents — see the Tool Access Matrix), `.github/CODEOWNERS`, and the FEAT-REQ-001 protected-path
+pre-commit stage. Pre-commit hooks and CI/CD verification checks exist as separate, related
+controls (see `scripts/install-git-hooks.(ps1|sh)` and the FEAT-GUARD-001 append-only guard above)
+but are not part of a single consolidated "Protection Implementation" setup section.
 
 **My Recommendation**:
 - **Minimum**: Implement CODEOWNERS (easiest, most effective)
@@ -2455,7 +2459,7 @@ def assign_agents(request, tier):
 **As Mission Control, I orchestrate the entire workflow:**
 
 1. **Pre-Execution Checks** (Every Invocation):
-   - ✅ Read session-state.json to understand context
+   - ✅ Read session-state.json (legacy fallback; primary is `project-state.json::session_tracking`) to understand context
    - ✅ Read project-state.json for tier history
    - ✅ Check session health (alert at 4h/6h/8h)
    - ✅ Detect tier requirements from keywords

@@ -1,5 +1,5 @@
 # Gojo Snapshot Integration Guide
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 
 **Version**: 1.0.0
 **Created**: 2025-12-06
@@ -21,7 +21,7 @@ The snapshot integration system enables automatic context snapshots based on:
 ## Architecture
 
 **Module**: `.protocol-state/snapshot_integration.py`
-**Session State**: `.protocol-state/session-state.json` (operation tracking)
+**Session State**: `.protocol-state/session-state.json` (operation tracking; this module reads/writes this file directly and is outside the scope of the PATCH-STATE-001 session-tracking migration to `project-state.json::session_tracking`)
 **Project State**: `.protocol-state/project-state.json` (tier configuration)
 **Snapshot Creation**: `.protocol-state/create-snapshot.py` (called automatically)
 
@@ -225,7 +225,7 @@ if result:
 
 ## Session State Schema
 
-The following fields are tracked in `session-state.json`:
+The following fields are tracked in `session-state.json` (this module's own dedicated file, outside the PATCH-STATE-001 migration -- see note above):
 
 ```json
 {
@@ -417,7 +417,7 @@ python .protocol-state/snapshot_integration.py --check
 ### Operation Count Not Incrementing
 
 **Check**:
-1. Is `session-state.json` writable?
+1. Is `session-state.json` (this module's dedicated file, outside the PATCH-STATE-001 migration) writable?
 2. Are operations being recorded?
 3. Check file permissions
 
@@ -453,7 +453,7 @@ For issues or questions about snapshot integration:
 1. Check this guide first
 2. Review `.protocol-state/snapshot_integration.py` source code
 3. Review `.protocol-state/create-snapshot.py` for snapshot creation logic
-4. Check session-state.json for operation tracking status
+4. Check session-state.json (this module's dedicated file, outside the PATCH-STATE-001 migration) for operation tracking status
 5. Review stderr logs for error messages
 
 ---

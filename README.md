@@ -1,7 +1,7 @@
 # Domain Zero Protocol
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 
-**Version**: 9.10.2 | **Last Updated**: 2026-07-20
+**Version**: 9.11.0 | **Last Updated**: 2026-08-03
 
 A nine-agent AI development system plus one external auditor inspired by Jujutsu Kaisen, designed for Claude, GitHub Copilot, and any AI assistant.
 
@@ -34,6 +34,37 @@ Domain Zero Protocol (DZP) is a structured framework for AI-assisted development
 - 🛡️ Safety-first design with escape paths
 - 🔄 Session monitoring and fatigue detection
 - 📝 Skills system for common operations
+
+### What DZP Is — and Is Not
+
+**DZP is a harness-agnostic governance protocol; it delegates loop ownership and tool execution to the host harness and reserves mechanical enforcement for the git and state boundaries it does own.**
+
+It is important to understand this distinction before adopting DZP, so expectations match reality:
+
+**DZP is NOT an agent harness.** An agent harness (Claude Code, Codex CLI, Cursor, OpenCode, etc.) is the software runtime that owns the agentic loop: it sends prompts to the model, parses and *executes* tool calls, manages context, and enforces permissions at the API boundary. The defining property of a harness is that it sits **between the model and the world** — the model cannot act except through it. DZP does none of this. It does not own the loop, does not execute tool calls, and cannot mechanically intercept an agent's action while it is in flight.
+
+**DZP IS a governance and workflow layer that runs on top of a harness.** It operates in three distinct strata, each with a different (and honestly stated) enforcement strength:
+
+| Stratum | Examples | Enforcement strength |
+|---------|----------|---------------------|
+| **Prompt-level convention** | Agent personas, tier workflows, role isolation, Rules of Engagement, "the weight" | Behavioral instruction only — the model follows it because it was told to, not because it is physically prevented from deviating |
+| **Harness configuration** | Per-agent tool allowlists in subagent definitions (e.g. Megumi has no Write/Edit) | As strong as the host harness makes it — DZP configures the harness's own permission system and borrows its muscle |
+| **Mechanical enforcement** | Pre-commit hooks (append-only guard, secret scan, issue-id gate, protocol validation), integrity baselines, session/state machinery | Real software that blocks actions regardless of any agent's intent — but at the **git and filesystem boundaries**, not the tool-call boundary |
+
+**Why this matters in practice**: where DZP wants *actual* guarantees, it builds them into git hooks, environment-variable contracts, and file guards — precisely because it is not the harness and cannot intercept anything in-flight. Everything between commit boundaries is convention. This is why protected documents get a byte-prefix pre-commit guard rather than relying on agents promising to append-only, and why baseline updates require an authorization contract checked by code rather than an agent's self-asserted identity.
+
+### Why the Discipline Is the Strength
+
+DZP's process — test-first development, security review as a staged gate, append-only records, session handoffs — looks slower per step, and it is. But it is dramatically cheaper per **delivered feature**, especially in AI-assisted work where the scarcest resource is the model's context window:
+
+- **Security as a process, not an event**: each feature passes a review gate while its implementation is still "warm" in context. Findings get fixed at the boundary where they were introduced, at a fraction of the cost of excavating them weeks later from a codebase the model must re-load and re-derive from scratch. A remediation loop today is cheaper than an incident-driven audit later — every time.
+- **TDD compresses context burn**: a failing test is a precise, executable statement of intent that *survives context loss*. The model does not need to hold the whole design in its head — the test suite holds it. A test re-run verifies in seconds what re-reading and re-reasoning would cost thousands of tokens to re-confirm, and the suite keeps doing that for free on every future change.
+- **Deterministic gates offload verification**: pre-commit hooks and validators mechanically check what the model would otherwise burn context "eyeballing" — version stamps, secret leaks, append-only invariants, id citations. Software never gets tired mid-review and never summarizes away a detail.
+- **Durable records mean warm starts**: append-only logs, handoff briefs, and local semantic recall (Cortex) let each new session resume from distilled facts instead of re-exploring the repository. Context spent once is captured, not evaporated.
+
+The net effect is fewer remediation cycles, less rework, and less context re-derivation across sessions — ***"slow and steady wins the race."*** Each step is deliberate, but the race is measured in shipped, zero-defect features, not in keystrokes per minute.
+
+For a fuller honest assessment of what DZP does and does not enforce, see [docs/reference/REALITY_CHECK.md](docs/reference/REALITY_CHECK.md).
 
 ---
 
@@ -114,13 +145,82 @@ Domain Zero Protocol (DZP) is a structured framework for AI-assisted development
 
 ### 1. Installation
 
-**Fresh Install**:
+> ⚠️ **Supply-chain notice**: fake/typosquatted "AI agent framework" downloads are a real, documented
+> attack class (see [OWASP LLM03: Supply Chain](https://genai.owasp.org/llm-top-10/)). DZP installs
+> `.agent.md` files that become your AI's *adopted behavioral instructions* and shipped scripts that
+> execute with your OS user's privileges — including, if you opt into the git hook installer, a
+> **standing execution surface that runs on every future `git commit` in your own project**
+> (see "Protected-Document Append-Only Enforcement" further down this README).
+> Verify what you're installing. Use the path below, not a bare `git clone`, unless you have a
+> specific reason not to (see "Fresh Install — Direct Git Clone" further down this section).
+> If anything about a download looks suspicious, see [SECURITY.md § Reporting a Suspected
+> Counterfeit or Tampered Release](SECURITY.md#reporting-a-suspected-counterfeit-or-tampered-release)
+> before you install it.
+
+#### Fresh Install — Verified Release Payload (recommended, default path, v9.10.2+)
+
+Every release publishes a **GitHub Release asset pair**: `dzp-payload-vX.Y.Z.zip` and its sibling
+`dzp-payload-vX.Y.Z.manifest.json`. Verify BEFORE you install (stdlib-only, no third-party
+dependencies required to run the verifier):
+
+```bash
+# 1. Download BOTH dzp-payload-vX.Y.Z.zip and dzp-payload-vX.Y.Z.manifest.json from the
+#    release's "Assets" section on GitHub (same release page, same version).
+
+# 2. Verify + extract in ONE step (never verify now and install later from a
+#    moved/copied file -- that reintroduces the exact time-of-check/time-of-use gap
+#    this flag exists to close):
+python scripts/verify-payload.py dzp-payload-vX.Y.Z.zip --extract-to ./Domain-Zero-Protocol
+
+# 3. Confirm the exit code is 0 before proceeding. Any non-zero exit means a check
+#    FAILED -- do not install; read the printed reason (or see the exit-code table
+#    in scripts/verify-payload.py's module docstring) and, if it looks like tampering
+#    rather than a local/network issue, report it (see the notice above).
+echo $?   # POSIX: expect 0.  PowerShell: echo $LASTEXITCODE
+
+# 4. Read main protocol authority
+cd Domain-Zero-Protocol
+Read ./CLAUDE.md
+```
+
+**What a `VERIFY OK` / exit code `0` actually proves — and does not:**
+It proves the downloaded zip is internally self-consistent (its hash matches the manifest, every
+declared file's content matches, nothing undeclared is present) **and** that the manifest's recorded
+commit is genuinely reachable, on this project's own pinned canonical GitHub repository
+(`git ls-remote`, using your local `git` — a **HARDCODED** URL inside the verifier, never read from
+the manifest under verification, so a forged manifest cannot simply point this check at an attacker's
+own repo). **It does NOT prove**: that the code is safe, bug-free, or behaves as documented (this is
+a consistency check, not a code review); that the *default* mode cryptographically binds the zip's
+raw bytes to that commit's git tree object (pass `--deep-verify` for that stronger,
+network-and-time-costly guarantee); or that the canonical GitHub account/repo itself has never been
+compromised. See the full trust-model discussion in
+[IMPLEMENTATION_GUIDE.md](docs/installation/IMPLEMENTATION_GUIDE.md) and the threat-model notes in
+`scripts/verify-payload.py`'s module docstring.
+
+#### Fresh Install — Direct Git Clone (unverified — development/contributor use only)
+
+**What you give up by using this path**: zero provenance verification. A typosquatted or forked
+repository can present this exact same three-command flow, and you would have no way to tell the
+difference before running it. Use this ONLY if you are a contributor working against dev history, or
+you have already independently verified the source.
+
+> **Honest limitation (Toji audit finding `DESIGN-001`, open/unmitigated):** DZP releases are
+> currently promoted by repointing the canonical repository's default branch to the new release
+> branch, not by publishing an immutable, cryptographically signed tag. A plain `git clone`
+> therefore carries **no cryptographic provenance guarantee whatsoever** — there is currently no
+> signed anchor for it to verify against, even in principle. This is a genuine, open gap, not a
+> theoretical one. If provenance matters for your use case, use the verified-payload flow above
+> instead, which does provide real integrity assurance (see "What a `VERIFY OK`... actually proves"
+> above for the precise, non-overstated scope of that guarantee). Signed release tags are a planned
+> future addition to close this specific gap; no version or date is committed for that work yet.
+
 ```bash
 # Clone or download release
 git clone https://github.com/DewyHRite/Domain-Zero-Protocol.git
 cd Domain-Zero-Protocol
 
-# Verify installation
+# Verify installation (LOCAL file completeness only -- this performs NO provenance,
+# signature, or origin verification; it is not a substitute for the payload flow above)
 python scripts/verify-installation.py
 
 # Sync templates
@@ -132,21 +232,6 @@ Read ./CLAUDE.md
 
 **In-Place Upgrade**:
 See [IMPLEMENTATION_GUIDE.md](docs/installation/IMPLEMENTATION_GUIDE.md) for upgrade procedures.
-
-**Fresh Install — Verified Release Payload (recommended, v9.10.2+)**:
-Every release also publishes a signed-provenance installable zip as a GitHub Release asset.
-Verify it BEFORE installing (stdlib-only, no dependencies required):
-```bash
-# Download dzp-payload-vX.Y.Z.zip + its .manifest.json from the release's Assets, then:
-python scripts/verify-payload.py dzp-payload-vX.Y.Z.zip --extract-to ./Domain-Zero-Protocol
-```
-This checks the zip's own integrity, that its bundled files match the release manifest, and that
-the release's recorded commit is genuinely reachable on this project's canonical GitHub repo
-before extracting anything. See
-[IMPLEMENTATION_GUIDE.md](docs/installation/IMPLEMENTATION_GUIDE.md) for the full verification
-model, trust boundaries, and complete install flow (`docs/installation/IMPLEMENTATION_GUIDE.md`
-ships with every release; the maintainer-only release-publishing process that produces the payload
-does not).
 
 ### 2. Invoke Your First Agent
 
@@ -335,7 +420,7 @@ scripts/brain.ps1 status         # expect: availability_status: ok, encryption_s
 
 ### Core Protocol
 - **[CLAUDE.md](CLAUDE.md)** - Primary protocol authority (START HERE)
-- **[protocol/CLAUDE.md](protocol/CLAUDE.md)** - Compatibility mirror for legacy entrypoints
+- **[protocol/CLAUDE.md](protocol/CLAUDE.md)** - Compatibility pointer/stub (redirects legacy entrypoints to the root file since v9.11.0)
 - **[AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md)** - Complete installation guide for AI assistants
 - **[protocol.config.yaml](protocol.config.yaml)** - Configuration settings
 
@@ -460,5 +545,5 @@ Contributions welcome! Please read the contribution guidelines and submit pull r
 
 ---
 
-**Domain Zero Protocol v9.10.2**
+**Domain Zero Protocol v9.11.0**
 **AI-Assisted Development Done Right**

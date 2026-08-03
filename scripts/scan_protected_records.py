@@ -39,8 +39,12 @@ What this script does:
   It FAILS CLOSED (non-zero exit, file + line number + pattern named) on any match of a
   known secret-token FORMAT, or a `keyword: value` / `keyword=value` credential
   assignment whose value is not an obvious placeholder -- EXCEPT the single allowlisted,
-  already-triaged literal `sk_live_4eC39...7dc` (see the ALLOWLIST NOTE above; full
-  value is defined once, non-contiguously, in ALLOWLIST below).
+  already-triaged literal `sk_live_4eC39...7dc` WHEN FOUND IN ITS OWN HOME FILE
+  (dev-notes.md) ONLY (SEC-SCANTOP-001 Option B, file-scoped allowlist, USER-ruled
+  2026-07-30 -- see the ALLOWLIST NOTE above; full value is defined once,
+  non-contiguously, in ALLOWLIST_BY_FILE below). A byte-identical copy of that literal
+  found in a DIFFERENT file -- including its sibling protected record,
+  security-review.md -- is NOT allowlisted and fails closed like any other match.
 
 Pattern provenance:
   This mirrors (does not import, to avoid pulling the full Cortex engine and its heavy
@@ -77,16 +81,67 @@ from typing import NamedTuple, Optional
 # Scope
 # ---------------------------------------------------------------------------
 
-# .dzp-domain/domain.record.md is intentionally excluded: it is gitignored (never
-# tracked in git), so there is no staged/HEAD git blob to scan, and it was never in
-# GitHub's scanning surface in the first place -- no compensating gap exists for it.
+# The protected-document set defined by CLAUDE.md "PROJECT DOCUMENTS PROTECTION"
+# has THREE members. This scanner covers two of them. Both facts are stated here,
+# and the coverage line printed by main() is computed against the THREE-member set
+# -- not against PROTECTED_RECORDS -- so a clean run can never read as complete
+# coverage of the protected set.
 PROTECTED_RECORDS: tuple[str, ...] = (
     ".protocol-state/dev-notes.md",
     ".protocol-state/security-review.md",
 )
 
-# The single already-triaged, known-invalid literal this scanner must NOT flag.
-# Anything else -- including a DIFFERENT sk_live_/sk_test_-shaped token -- fails closed.
+# .dzp-domain/domain.record.md is intentionally NOT in PROTECTED_RECORDS above.
+#
+# THE PREMISE, AND ITS CONDITION. The exclusion is valid *because the file is
+# untracked*, and only for as long as that remains true:
+#
+#   * untracked => there is no staged/HEAD git blob for this git-backed scanner
+#     to read. Adding the path to PROTECTED_RECORDS would not scan it -- it would
+#     be INERT: staged_blob() returns None and main() skips it on every run, while
+#     the source would read as though the record were covered. That is strictly
+#     worse than an honest, declared exclusion.
+#   * untracked => never pushed => never inside GitHub push-protection's scanning
+#     surface either. This scanner exists to COMPENSATE for a file-wide
+#     secret_scanning.yml path-ignore (see the module docstring). There is no such
+#     ignore for domain.record.md, because there is nothing for GitHub to ignore.
+#     So there is no compensating gap here to close.
+#
+# TRACKING IT WAS CONSIDERED AND REJECTED (v9.11.0): the record carries internal
+# identifier references and a local user path, has never passed the secret scan or
+# the internal-identifier denylist, and scrubbing it would require OVERWRITING an
+# append-only permanent record. Net risk of tracking exceeds the benefit.
+#
+# Because the premise is a fact about the repository rather than a constant, it is
+# RE-VERIFIED AT RUNTIME by coverage_report() on every invocation, not asserted
+# once in this comment. If the file ever becomes tracked, both bullets above stop
+# holding and main() reports a PREMISE BROKEN escalation naming the path.
+OUT_OF_SCOPE_RECORDS: tuple[tuple[str, str], ...] = (
+    (
+        ".dzp-domain/domain.record.md",
+        "untracked/gitignored -- no git blob exists for this git-backed scanner "
+        "to read, and an untracked file is likewise outside GitHub push-"
+        "protection's surface, so there is no path-ignore here to compensate for",
+    ),
+)
+
+# The single already-triaged, known-invalid literal this scanner must NOT flag --
+# SCOPED TO ITS OWN HOME FILE. Anything else -- including a DIFFERENT sk_live_/
+# sk_test_-shaped token, OR a byte-identical COPY of this same literal found in a
+# DIFFERENT protected record -- fails closed.
+#
+# SEC-SCANTOP-001 Option B (USER-ruled 2026-07-30, defense-in-depth): this allowlist
+# was previously FILE-AGNOSTIC -- a single flat set checked via `token in ALLOWLIST`
+# with no regard to which file was being scanned. That meant a copy of this literal
+# planted in security-review.md (which has never actually contained it -- verified by
+# direct grep at the time of this change) would have silently passed, even though the
+# ONLY legitimate historical occurrence is in dev-notes.md (see the module docstring's
+# `.github/secret_scanning.yml` cross-reference, which exempts dev-notes.md ONLY, not
+# security-review.md). ALLOWLIST_BY_FILE below maps each allowlisted literal to the
+# lowercased basename(s) of the file(s) where it is legitimately allowed; scan_text()
+# checks the token against the file actually being scanned, not a flat file-agnostic
+# set. See tests/test_scan_protected_records.py::TestAllowlistIsFileScoped for the
+# behavior contract (before/after) this change establishes.
 #
 # Built via runtime string concatenation, split at the `sk_live_` prefix boundary, so
 # this file's SOURCE BYTES never contain the contiguous `sk_live_<24 chars>` token
@@ -96,7 +151,18 @@ PROTECTED_RECORDS: tuple[str, ...] = (
 # resulting runtime VALUE is byte-identical to the historical literal quoted (now
 # truncated) in the module docstring above -- see
 # test_runtime_allowlist_value_is_unchanged for the equality proof.
-ALLOWLIST: frozenset[str] = frozenset({"sk_" + "live_" + "4eC39HqLyjWDarjtT1zdp7dc"})
+_HISTORICAL_STRIPE_LITERAL: str = "sk_" + "live_" + "4eC39HqLyjWDarjtT1zdp7dc"
+
+ALLOWLIST_BY_FILE: dict[str, frozenset[str]] = {
+    _HISTORICAL_STRIPE_LITERAL: frozenset({"dev-notes.md"}),
+}
+
+# Backward-compat / "is this value allowlisted ANYWHERE" flat view, derived from
+# ALLOWLIST_BY_FILE -- kept as a single source of truth (never a second, independently
+# maintained set) so it cannot drift from the file-scoped mapping above. scan_text()
+# itself does NOT consult this flat set for its allow/deny decision (see below); it is
+# provided only for callers/tests that want the file-agnostic question answered.
+ALLOWLIST: frozenset[str] = frozenset(ALLOWLIST_BY_FILE.keys())
 
 # ---------------------------------------------------------------------------
 # Secret detection (mirrors cortex/ingest.py::contains_secret; see module docstring)
@@ -596,19 +662,39 @@ class Finding(NamedTuple):
     token: str
 
 
+def _is_allowlisted_here(token: str, filename: str) -> bool:
+    """True iff `token` is allowlisted SPECIFICALLY for the file being scanned
+    (SEC-SCANTOP-001 Option B, file-scoped allowlist). `filename` is normalized via
+    `Path(filename).name.lower()` -- the same basename-normalization convention used
+    elsewhere in this codebase (e.g. check_branch_record_isolation.py's session-record
+    parsing) -- so this behaves identically whether scan_text() is called with a bare
+    filename ("dev-notes.md") or a full protected-record-relative path
+    (".protocol-state/dev-notes.md", exactly how main()'s staged-git mode calls it).
+    """
+    allowed_files = ALLOWLIST_BY_FILE.get(token)
+    if allowed_files is None:
+        return False
+    return Path(filename).name.lower() in allowed_files
+
+
 def scan_text(text: str, filename: str) -> list[Finding]:
-    """Scan `text` line-by-line, returning non-allowlisted secret Findings."""
+    """Scan `text` line-by-line, returning non-allowlisted secret Findings.
+
+    SEC-SCANTOP-001 Option B: allowlist membership is FILE-SCOPED (see
+    `_is_allowlisted_here`) -- a token allowlisted for one protected record is NOT
+    automatically allowlisted when found in a different file being scanned here.
+    """
     findings: list[Finding] = []
     for line_no, line in enumerate(text.splitlines(), start=1):
         for name, pattern in SECRET_FORMAT_PATTERNS:
             for m in pattern.finditer(line):
                 token = m.group(0)
-                if token in ALLOWLIST:
+                if _is_allowlisted_here(token, filename):
                     continue
                 findings.append(Finding(filename, line_no, name, token))
         for m in _SECRET_KEYWORD_RE.finditer(line):
             value = m.group(1)
-            if value in ALLOWLIST:
+            if _is_allowlisted_here(value, filename):
                 continue
             if _is_placeholder_value(value):
                 continue
@@ -650,6 +736,60 @@ def _repo_toplevel() -> Optional[Path]:
     return Path(proc.stdout.strip())
 
 
+def is_path_tracked(repo_root: Path, path: str) -> bool:
+    """True when `path` has a git INDEX entry. Mirrors the identically-named
+    helper in check_protected_append_only.py and check_issue_ids.py so all
+    three controls agree on what "git knows about this file" means, rather
+    than each deciding it independently."""
+    proc = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "--", path],
+        cwd=str(repo_root),
+        capture_output=True,
+    )
+    return proc.returncode == 0
+
+
+class CoverageReport(NamedTuple):
+    """What this scanner actually covered, computed against the FULL
+    three-document protected set rather than this scanner's own tuple."""
+
+    in_scope_tracked: list          # in PROTECTED_RECORDS and tracked
+    in_scope_untracked: list        # in PROTECTED_RECORDS but NOT tracked (inert!)
+    out_of_scope: list              # (path, reason) -- declared, premise holding
+    premise_broken: list            # out-of-scope paths that are NOW tracked
+    protected_set_size: int         # the real denominator: 3
+
+
+def coverage_report(repo_root: Path) -> CoverageReport:
+    """Compute this scanner's true coverage, re-verifying the stated premise
+    of every declared exclusion.
+
+    The denominator is the whole protected-document set (PROTECTED_RECORDS +
+    OUT_OF_SCOPE_RECORDS), deliberately NOT len(PROTECTED_RECORDS). Reporting
+    "2/2 records scanned" for a 3-document protected set is the precise way a
+    partial control reads as a complete one.
+    """
+    in_scope_tracked, in_scope_untracked = [], []
+    for rel_path in PROTECTED_RECORDS:
+        (in_scope_tracked if is_path_tracked(repo_root, rel_path)
+         else in_scope_untracked).append(rel_path)
+
+    out_of_scope, premise_broken = [], []
+    for rel_path, reason in OUT_OF_SCOPE_RECORDS:
+        if is_path_tracked(repo_root, rel_path):
+            premise_broken.append(rel_path)
+        else:
+            out_of_scope.append((rel_path, reason))
+
+    return CoverageReport(
+        in_scope_tracked=in_scope_tracked,
+        in_scope_untracked=in_scope_untracked,
+        out_of_scope=out_of_scope,
+        premise_broken=premise_broken,
+        protected_set_size=len(PROTECTED_RECORDS) + len(OUT_OF_SCOPE_RECORDS),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
@@ -678,11 +818,64 @@ def main(argv: Optional[list[str]] = None, repo_root: Optional[Path] = None) -> 
             if repo_root is None:
                 print("[protected-secret-scan] not a git repository — skipping", file=sys.stderr)
                 return 0
+        # --- COVERAGE (always printed, pass or fail) -----------------------
+        # A scanner that cannot state what it scanned is indistinguishable from
+        # one that scanned nothing. Before this, a run that scanned ZERO records
+        # produced ZERO output and exited 0 -- byte-identical to a run that
+        # scanned everything and found nothing.
+        report = coverage_report(repo_root)
+
+        scanned: list[str] = []
+        no_index_blob: list[str] = []
         for rel_path in PROTECTED_RECORDS:
             blob = staged_blob(repo_root, rel_path)
             if blob is None:
-                continue  # not tracked / not staged yet — nothing to scan
+                # CORRECTED PREMISE (v9.11.0 batch 5). The original comment here
+                # read "not tracked / not staged yet", implying that a tracked
+                # record simply untouched by this commit lands in this branch.
+                # It does not: staged_blob() reads the INDEX, and the index holds
+                # a stage-0 blob for EVERY tracked file whether or not it was
+                # staged in this commit -- verified directly. So `blob is None`
+                # means there is NO STAGE-0 INDEX ENTRY, which is only ever:
+                # untracked, staged-for-deletion, or an unmerged/conflicted
+                # entry (during a merge, stages 1/2/3 exist but stage 0 does
+                # not). All three mean this record went UNSCANNED, and none of
+                # them is routine -- which is exactly why swallowing them with a
+                # bare `continue` was wrong.
+                no_index_blob.append(rel_path)
+                continue
+            scanned.append(rel_path)
             all_findings.extend(scan_text(_decode(blob), rel_path))
+
+        lines = [
+            f"[protected-secret-scan] COVERAGE: {len(PROTECTED_RECORDS)}/"
+            f"{report.protected_set_size} protected record(s) in scanner scope; "
+            f"{len(scanned)} scanned this run"
+        ]
+        for rel_path in no_index_blob:
+            lines.append(
+                f"   *** NOT SCANNED: {rel_path} has no stage-0 index blob (untracked,\n"
+                "       staged-for-deletion, or an unmerged/conflicted entry). This record\n"
+                "       is in scope but was NOT checked on this run."
+            )
+        for rel_path, reason in report.out_of_scope:
+            lines.append(
+                f"   OUT OF SCOPE: {rel_path} -- {reason}. Premise re-verified this run."
+            )
+        for rel_path in report.in_scope_untracked:
+            lines.append(
+                f"   *** INERT: {rel_path} is in PROTECTED_RECORDS but is UNTRACKED, so\n"
+                "       there is no git blob to scan and this scanner passes it silently\n"
+                "       on every run. It is listed as covered but is not."
+            )
+        for rel_path in report.premise_broken:
+            lines.append(
+                f"   *** PREMISE BROKEN: {rel_path} is declared OUT OF SCOPE because it is\n"
+                "       untracked -- but it is NOW TRACKED. Both halves of that reasoning\n"
+                "       (no git blob to scan; outside GitHub's scanning surface) have\n"
+                "       stopped holding. Re-decide whether it belongs in PROTECTED_RECORDS."
+            )
+        print("\n".join(lines), file=sys.stderr)
 
     if all_findings:
         bullet = "\n".join(

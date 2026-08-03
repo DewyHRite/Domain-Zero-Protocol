@@ -46,3 +46,10 @@ __pycache__/
 # output (script_coordinator.py `detach: true` mode) writes a rolling
 # diagnostic log here; local runtime artifact, never committed.
 .protocol-state/logs/
+
+# N1-C (v9.11.0): repo-root backups/. The agent backup procedure historically mandated
+# ./backups/[timestamp]/, which was never ignored here -- a consumer following it produced an
+# untracked-but-committable tree of verbatim copies. The mandate now points at
+# .protocol-state/backups/ (protocol/yuuji.agent.md); this entry protects installs that already
+# created the old directory under the previous instructions.
+/backups/

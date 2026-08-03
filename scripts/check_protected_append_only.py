@@ -755,6 +755,56 @@ def _repo_toplevel() -> Optional[Path]:
 # ---------------------------------------------------------------------------
 
 
+def is_path_tracked(repo_root: Path, path: str) -> bool:
+    """True when `path` is tracked by git (i.e. has an index entry)."""
+    proc = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "--", path],
+        cwd=str(repo_root),
+        capture_output=True,
+    )
+    return proc.returncode == 0
+
+
+def coverage_report(repo_root: Path, protected: list) -> tuple:
+    """Return (guarded, unguarded) repo-relative path lists.
+
+    UPSTREAM-002 -- THE GUARD IS INERT ON UNTRACKED PATHS AND SAYS NOTHING.
+
+    This guard enforces its invariant by comparing the HEAD blob against the
+    STAGED blob. A protected path that is untracked or gitignored has no HEAD
+    blob and can never be staged, so there is nothing to compare: the guard
+    examines it, finds nothing, and exits 0. It fails SILENTLY OPEN, with no
+    diagnostic of any kind.
+
+    This is not hypothetical and it is not confined to a misconfigured
+    consumer. In canonical, `.dzp-domain/domain.record.md` is untracked AND
+    gitignored -- verified directly while implementing this -- so
+    FEAT-GUARD-001 currently protects 2 of the 3 documents it claims. Agents
+    have appended to that file believing it mechanically protected; it is
+    protected by convention only. In at least one consumer install the coverage
+    was exactly INVERTED (`.protocol-state/` ignored wholesale, so dev-notes.md
+    and security-review.md were unguarded while domain.record.md was tracked)
+    and nothing reported it -- the guard ran, printed nothing, and exited 0.
+
+    An operator receives an identical silent success whether the guard verified
+    three documents or zero. **Silent success and verified success must not
+    look identical.** That is the entire defect, and it is the same class as
+    every other finding in this release: a control that is present, documented,
+    and not doing what its documentation asserts.
+
+    DELIBERATELY NOT FAIL-CLOSED IN THIS PASS. Making an untracked protected
+    path block the commit is a behaviour change at a version boundary, and it
+    would immediately block every commit in this repository (domain.record.md
+    is gitignored by design today). Reporting first, enforcing later, is the
+    correct order -- and the report is what makes the later decision reviewable
+    rather than theoretical.
+    """
+    guarded, unguarded = [], []
+    for path in protected:
+        (guarded if is_path_tracked(repo_root, path) else unguarded).append(path)
+    return guarded, unguarded
+
+
 def main(
     argv: Optional[list[str]] = None,
     repo_root: Optional[Path] = None,
@@ -777,6 +827,31 @@ def main(
         return 0
 
     exit_code = 0
+
+    # --- Check 0 (UPSTREAM-002): explicit COVERAGE reporting ---------------
+    # Always printed, on every run, pass or fail. A guard that cannot say how
+    # much it guarded is indistinguishable from one that guarded nothing.
+    guarded, unguarded = coverage_report(repo_root, protected)
+    total = len(guarded) + len(unguarded)
+    if unguarded:
+        print(
+            f"[protected-guard] COVERAGE: {len(guarded)}/{total} paths guarded "
+            f"({len(unguarded)} UNTRACKED: {', '.join(unguarded)})\n"
+            "   *** THE APPEND-ONLY GUARD IS INERT FOR THE PATH(S) ABOVE. ***\n"
+            "   They are untracked or gitignored, so they have no HEAD blob and\n"
+            "   can never be staged -- there is nothing for the byte-prefix\n"
+            "   invariant to compare, and this check silently passes them.\n"
+            "   They are protected by CONVENTION ONLY, not mechanically.\n"
+            "   Fix: bring them under version control, or accept the gap\n"
+            "   knowingly. Do not read this run's exit 0 as 'all protected\n"
+            "   documents were verified' (UPSTREAM-002).",
+            file=sys.stderr,
+        )
+    else:
+        print(
+            f"[protected-guard] COVERAGE: {len(guarded)}/{total} paths guarded",
+            file=sys.stderr,
+        )
 
     # --- Check 1: append-only byte-prefix invariant ------------------------
     violations = find_violations(repo_root, protected=protected)

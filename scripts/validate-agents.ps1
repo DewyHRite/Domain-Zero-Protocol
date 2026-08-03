@@ -1,4 +1,4 @@
-# validate-agents.ps1
+﻿# validate-agents.ps1
 # Domain Zero Protocol - Agent File Validation Script
 # Version: 8.0.0
 # Purpose: Validate .agent.md file structure, YAML frontmatter, and configuration integrity
@@ -101,8 +101,14 @@ function Get-YAMLFrontmatter {
     try {
         $Content = Get-Content $FilePath -Raw
 
-        # Extract YAML frontmatter between --- markers
-        if ($Content -match '(?s)^---\s*\n(.*?)\n---') {
+        # Extract YAML frontmatter between --- markers.
+        # SEC-AGENTVAL-001 (v9.11.0 WP5 Item 2): every .agent.md now begins with a
+        # "<!-- [CORE FILE] - Domain Zero Protocol vX.Y.Z -->" stamp line BEFORE the
+        # opening '---', so anchoring '^---' at the literal start of the string no
+        # longer matches and frontmatter extraction silently returned null for every
+        # agent file. The pattern now tolerates zero or more leading HTML-comment
+        # stamp lines before the frontmatter fence.
+        if ($Content -match '(?s)^(?:\s*<!--.*?-->\s*\r?\n)*---\s*\r?\n(.*?)\n---') {
             $YAMLText = $matches[1]
 
             # Parse YAML manually (basic implementation)

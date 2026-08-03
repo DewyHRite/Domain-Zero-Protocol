@@ -700,6 +700,15 @@ def main(argv=None) -> int:
         print(f"  canonical-origin check: PASSED (authorized alternate origin: {args.allow_alternate_origin})")
     else:
         print("  canonical-origin check: PASSED (pinned canonical origin)")
+    # SEC-PAYLOAD-9.10.2-SEC-003 (Toji audit 2026-07-27): surface the same
+    # trust-boundary caveat the module docstring already documents, at the
+    # point a user actually reads it -- the runtime success output -- not
+    # only in the docstring, so "VERIFY OK" is never mistaken for a stronger
+    # guarantee than the default (non-deep-verify) mode actually provides.
+    if not args.deep_verify:
+        print("  NOTE: this does not cryptographically bind the zip's file bytes to the canonical "
+              "commit's git tree (see 'Threat-model notes' in this script's module docstring); "
+              "re-run with --deep-verify for that guarantee.")
     if args.deep_verify:
         print("  deep-verify (canonical clone byte-compare): PASSED")
     if args.extract_to:

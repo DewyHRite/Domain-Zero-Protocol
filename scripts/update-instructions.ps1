@@ -1,4 +1,4 @@
-# Domain Zero Protocol - Instruction File Updater (PowerShell)
+﻿# Domain Zero Protocol - Instruction File Updater (PowerShell)
 #
 # Purpose: Safely append Domain Zero Protocol pointers to existing AI instruction files
 # Safety: Dry-run by default, only modifies with -Apply switch
@@ -10,7 +10,7 @@ Appends Domain Zero Protocol references to existing AI instruction files.
 
 .DESCRIPTION
 Scans for common AI instruction file patterns and appends a "Domain Zero Protocol"
-section with pointers to protocol/CLAUDE.md. Safe and non-destructive.
+section with pointers to CLAUDE.md (root). Safe and non-destructive.
 
 .PARAMETER Apply
 Actually modify files. Without this flag, script runs in dry-run mode (default).
@@ -61,15 +61,15 @@ $ProtocolSection = @"
 
 This project follows the Domain Zero Protocol for AI-assisted development.
 
-**Primary entrypoint**: [`protocol/CLAUDE.md`](protocol/CLAUDE.md)
+**Primary entrypoint**: [`CLAUDE.md`](CLAUDE.md) (root — the canonical source of truth since v8.13.0; `protocol/CLAUDE.md` is a compatibility stub since v9.11.0)
 
 **Workflow guidance**:
-- Mission Control & initialization: `protocol/GOJO.md`
-- Feature implementation: `protocol/YUUJI.md`
-- Security review: `protocol/MEGUMI.md`
+- Mission Control & initialization: `protocol/gojo.agent.md`
+- Feature implementation: `protocol/yuuji.agent.md`
+- Security review: `protocol/megumi.agent.md`
 - Tier selection guide: `protocol/TIER-SELECTION-GUIDE.md`
 
-For complete protocol details, read [`protocol/CLAUDE.md`](protocol/CLAUDE.md) - the canonical source of truth.
+For complete protocol details, read [`CLAUDE.md`](CLAUDE.md) - the canonical source of truth.
 
 ---
 "@
@@ -226,7 +226,7 @@ if (-not $Apply -and $willUpdate.Count -gt 0) {
 if ($Apply -and $updatedCount -gt 0) {
     Write-Host "${Green}✓ Update complete!${Reset}"
     Write-Host ""
-    Write-Host "Modified files now point to protocol/CLAUDE.md as canonical source."
+    Write-Host "Modified files now point to CLAUDE.md (root) as canonical source."
     Write-Host "Backup files created (*.backup) - delete these when confirmed working."
     Write-Host ""
 }

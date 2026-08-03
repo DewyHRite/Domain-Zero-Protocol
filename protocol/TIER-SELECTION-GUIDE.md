@@ -197,7 +197,7 @@ Megumi: [Prompted handoff (Tier 3) with enhanced security review + multi-model a
 
 ## NEED MORE HELP?
 
-- **Full Documentation**: Read ./CLAUDE.md
+- **Full Documentation**: Read the repository-root `CLAUDE.md` (from this directory: `../CLAUDE.md`; `protocol/CLAUDE.md` is a compatibility stub since v9.11.0)
 - **Tier System Spec**: Read .protocol-state/tier-system-specification.md
 - **Ask Gojo**: "Read gojo.agent.md - explain tier system"
 

@@ -1,9 +1,78 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.10.2
-**Release Date:** 2026-07-20
-**Release Type:** PATCH Release (Toji recent-work audit closure — `AI-001`/`IMPL-001`/`IMPL-002` — plus the CLAUDE.md changelog-retention policy, v9.10.2 item-5 carried notes (4 fixes), and the new `FEAT-PAYLOAD-9.10.2-001` release payload subsystem with its full `SEC-PAYLOAD-9.10.2-001..005` remediation loop; see the versioning note below on the PATCH-vs-MINOR call)
+**Version:** 9.11.0
+**Release Date:** 2026-08-03
+**Release Type:** MINOR Release (Session Transfer + Trigger 19-R public-edition sanitization gate +
+prompt-weight reduction + standing docs content-currency review process + Issue-ID Governance
+extensions, plus a full 8-commit backlog-wave closure of the 2026-07-30 Toji recent-work audit)
+
+---
+
+## Release Summary — v9.11.0 (MINOR)
+
+v9.11.0 is a release-train MINOR shipping five planned increments (Session Transfer, Trigger 19-R,
+prompt-weight reduction, docs content-currency review, Issue-ID Governance LL/SF families) plus a
+full 8-commit remediation wave, executed as ONE release per the master plan's "increments first, one
+release train at the end" sequencing. Full narrative and finding-by-finding detail: `CHANGELOG.md`
+`[9.11.0]`.
+
+- **`FEAT-TRANSFER-9.11.0-001`** — `/session transfer`: fail-closed handoff lifecycle event (9-step
+  state machine, event-level `fail_soft: false`, 4 independent guard mechanisms M1-M4 against a
+  partial transfer misreporting session state). Megumi Tier-3 remediation loop closed
+  `SEC-TRANSFER-9.11.0-001..006` (incl. a P1 caller-identity spoof in `file_integrity.py`'s
+  baseline-update authorization). Yuuji TDD (105 new tests).
+- **`FEAT-TRIGGER19R-9.11.0-001`** — Trigger 19-R: first public decision-provenance edition, a
+  fail-closed 3-detector sanitization gate wired into pre-commit + `dzp-publish`, shipping
+  `docs/DESIGN-DECISIONS.md`. Megumi's Task 10 closure resolved `SEC-TRIGGER19R-9.11.0-001..006`;
+  whole-branch review verdict CLEAN; backlog wave closed a Unicode/punctuation shingling-bypass class
+  and (from Toji's own cross-check re-audit) an NTFS ADS containment gap in an unrelated Type-14
+  helper (`SEC-STALEDOCS-9.11.0-004`).
+- **Prompt-weight reduction** — `protocol/CLAUDE.md` collapsed 73,279 → 634 bytes (C1b compatibility
+  stub); ROE + Tier System relocated to `protocol/skills/gojo/roe-and-tiers.md`; D2-ratified
+  enforcement-theatre cuts (~2,000 bytes). Sukuna gate review APPROVED WITH CONDITIONS
+  (`audits/2026-07-29-sukuna-inc3-prompt-reduction-review.md`); measured reduction ~45K → ~24.6K
+  tokens repo-side always-on load. ~15.5K-token KEEP-as-voice backlog carried to v9.12.x candidate.
+- **Docs content-currency review (standing process)** — `ISS-STALEDOCS-9.11.0-001` closed
+  (`AI_INSTRUCTIONS.md`/`IMPLEMENTATION_GUIDE.md` body staleness); root cause institutionalized as a
+  mandatory two-layer per-release review (`DISTRO_RELEASE_WORKFLOW.md` new §4b): stamp-linter Type
+  14/14c (mechanical, manifest-derived ~120+-file scope, 3-round adversarially hardened) + a manual
+  judgment sweep, every finding fixed or dispositioned in writing. Closed `ISS-STALEDOCS-9.11.0-002`
+  (`REALITY_CHECK.md` full rewrite) and `-003` (`PROTOCOL_QUICKSTART.md` refresh) plus a ~44-citation
+  gate-driven sweep.
+- **`FEAT-IDGOV-003`** — `LL` (Gojo) and `SF` (Megumi) adopted as first-class Issue-ID Governance
+  families, USER decision D1 (2026-07-28). No new key material minted; existing wrappers required no
+  code change. **`FEAT-IDGOV-002`** — bounded mint-time corpus-collision advisory (fail-soft).
+- **Backlog-wave closure (8 commits)** — all findings from
+  `audits/2026-07-30-toji-main-v9-11-0-recent-work.md` + its cross-check re-audit; full WP1-WP6
+  registry reconciliation (149 → 0 non-legacy open rows); `SEC-BRANCHISO-001` (branch-isolation
+  publish gate, USER-ruled wiring), `SEC-SCANTOP-001` (file-scoped secret-scan allowlist, USER-ruled
+  Option B), root `CLAUDE.md` brought under `FEAT-REQ-001` protection (a real bypass gap, same class
+  as `BUG-HOOK-SELF-DISARM-001`), `SEC-CR-003` (Cortex lock TTL reap), `SEC-TESTGOV-008` (skip-
+  enumeration governance guard), `SEC-AGENTVAL-001`, `SEC-IDGOVLEFT-001`, and repo-wide GitHub
+  Actions supply-chain pinning.
+- **`BUG-SESSION-005`** (timezone-boundary fix) + **`IMPL-SESSIONMON-001`** (idle-tracking honesty) +
+  **`BUG-COORD-9.11.0-001`** (terminal-validator ordering + transfer-contract resync) — all Megumi
+  `@approved`.
+- **Deferred**: `ISS-TIMEAUTH-9.12.0-001` — the 2026-08-01 Toji session-time-authority audit (9
+  findings, 2 HIGH) is deferred **in full** to a v9.12.0 clock-authority bundle per explicit USER
+  ruling and the audit's own recommendation; `BUG-SESSION-005` (the family, not the fix above) stays
+  open until those gates pass. `ISS-VALIDATION-9.11.0-001` (cosmetic timestamp-suffix doubling,
+  backlog).
+- **Fixed same-day**: `BUG-TESTGOV-001` (P2, found during Sukuna's own ratification sweep — one
+  unenumerated, functionally-dead skip site in `SEC-TESTGOV-008`'s own completeness guard) was
+  closed in this release (commit `18d07e8`, dead skip branch removed from
+  `tests/test_session_transfer.py`; registry `open` → `approved` at `2026-08-03T21:55:41Z`,
+  `attested_writer: yuuji`) — it is NOT an open item.
+- **Sukuna adversarial ratification**: complete 45-commit branch scope (`8241d2e`..`8824394`)
+  ratified 2026-08-03, zero P0/P1 found across the whole branch — full trace in
+  `.dzp-domain/domain.record.md`.
+- Test evidence: targeted core-suite sweep at ratification time 505/505 passed; new distro/
+  security-gate suites 374/375 passed at that intermediate checkpoint (the 1 known failure was
+  `BUG-TESTGOV-001`, closed same-day, above). Final gate re-verification at HEAD `18d07e8`: **full
+  suite 3,148 passed / 90 skipped / 0 failed**; stamp linter 0 violations / 509 files;
+  validate-protocol 29/29; assert_version 20/20.
+- Sukuna-implemented cascade (System Update Adversary), Gojo-coordinated, USER-approved.
 
 ---
 
@@ -217,13 +286,13 @@ each with a committed regression test converted directly from its repro. Provena
 
 ## Release Summary — v9.9.5 (PATCH)
 
-v9.9.5 closes a confirmed, RHS-corroborated defect bundle in the DZP Cortex ingest secret-detector
+v9.9.5 closes a confirmed, downstream-corroborated defect bundle in the DZP Cortex ingest secret-detector
 (`BUG-CORTEX-INGEST-SECRET-FP-001`), reconciles a latent detection-weakening inconsistency between
 the two independent secret-detectors, and closes a publish-manifest gap that had silently omitted
 the SEC-001 protected-records secret scanner from every published `DZP-v9.9.4` distro branch.
 
-- **Cortex ingest remediation** (`cortex/ingest.py`, ported byte-identical from the Megumi-@approved
-  RHS downstream fix) — **SEC-DZPUP-9.9.4-010** (heuristic drift) CLOSED: `_is_placeholder_value`
+- **Cortex ingest remediation** (`cortex/ingest.py`, ported byte-identical from a Megumi-@approved
+  downstream fix) — **SEC-DZPUP-9.9.4-010** (heuristic drift) CLOSED: `_is_placeholder_value`
   gains a BOUNDED closed-vocabulary exact-match type-annotation recognizer (19 TS/JSON-schema
   tokens, fullmatch only) instead of widening the substring-matched `_PLACEHOLDER_WORDS` (which
   would have masked any value merely containing a type word, e.g. `password: correcthorse_string_x9`
@@ -250,8 +319,8 @@ the SEC-001 protected-records secret scanner from every published `DZP-v9.9.4` d
   v9.9.4 canonical working tree and were referenced by the v9.9.4 changelog, but were never added
   to `scripts/distro/publish-manifest.yaml` — so every published `DZP-v9.9.4` branch shipped
   WITHOUT the SEC-001 protected-records secret scanner. Independently confirmed by two downstream
-  reports (RHS `DZP-RHS-Sukuna-Issues-Report-2026-07-10.md` ISS-DZPUP-9.9.4-003 and JamWatHQ
-  `DZP-Missing-Files-Backfill-v9.9.4-2026-07-10.md`). All three files added to the manifest.
+  install issue reports (one covering `ISS-DZPUP-9.9.4-003`, the other from a second, independent
+  downstream install). All three files added to the manifest.
 - **Pre-commit hook hardening** — `scripts/git-hooks/pre-commit` (POSIX) gained the missing-scanner
   `else` warning branch that `scripts/git-hooks/pre-commit.ps1` already had; a missing scanner
   previously silently no-op'd the entire secret-scan gate with zero output.
@@ -262,11 +331,11 @@ the SEC-001 protected-records secret scanner from every published `DZP-v9.9.4` d
   re-publish). Public re-publish to `DZP-v9.9.5` is a separate, later, USER-authorized step — not
   part of this patch.
 
-### Same-day addendum (2026-07-11) — Toji-audit v9.9.5 remediation + RHS snapshot P1 port
+### Same-day addendum (2026-07-11) — Toji-audit v9.9.5 remediation + downstream snapshot P1 port
 
 Gojo coordinated a same-day Toji audit of the v9.9.5 workflow above
 (`audits/2026-07-11-toji-gojo-v9-9-5-workflow.md`; 2 MEDIUM findings, 0 Critical/High), plus a
-downstream RHS bug-report port. Both are folded into this same v9.9.5 patch (no version bump).
+downstream install bug-report port. Both are folded into this same v9.9.5 patch (no version bump).
 
 - **CODE-001** (MED, Code Quality) CLOSED — `.protocol-state/brain/cortex/ingest.py::index()`
   telemetry was misleading: `files_dropped_secret` incremented for any file with **at least one**
@@ -294,8 +363,8 @@ downstream RHS bug-report port. Both are folded into this same v9.9.5 patch (no 
   `1.2.3-1+a1b2c3d.20260315` (exactly 19 characters, zero slack). Two non-blocking usability notes:
   `v`-prefixed version strings and cores with more than 8 digits now fail safe (flagged as
   non-placeholder; resolvable via the existing allowlist).
-- **RHS report port** (`internal-docs/Patch Report/Bug Report/DZP-RHS-Sukuna-Issues-Report-2026-07-11.md`,
-  a downstream self-filed resolution report): **BUG-SNAPSHOT-NULLFIELDS-001** (P1) CLOSED —
+- **Downstream install report port** (a downstream self-filed resolution report):
+  **BUG-SNAPSHOT-NULLFIELDS-001** (P1) CLOSED —
   `.protocol-state/create-snapshot.py::create_snapshot()` now emits a `reason` field (retaining the
   legacy `trigger` field for compatibility) and includes `metadata.description` only when a real
   string is supplied; previously, snapshot bodies (especially session-end snapshots) lacked `reason`
@@ -329,7 +398,7 @@ downstream RHS bug-report port. Both are folded into this same v9.9.5 patch (no 
 ## Release Summary — v9.9.4 (PATCH)
 
 v9.9.4 upgrades Toji (Sentinel) to v1.3.0 with standing read + scoped append-only audit-log write,
-closes the findings from the 2026-07-09 Toji audit, and lands three Sukuna RHS-report canonical
+closes the findings from the 2026-07-09 Toji audit, and lands three Sukuna downstream-report canonical
 items (attestation, publish-manifest completeness, and a report-only note).
 
 - **Toji v1.3.0** — external auditor gains standing (always) read + append-only audit-log write to
@@ -349,7 +418,7 @@ items (attestation, publish-manifest completeness, and a report-only note).
   domain-record correction, plus `scripts/check_branch_record_isolation.py` (append-only-vs-merge-base
   and conflicting-terminal-records detector); program-L reconciliation itself deferred (USER
   decision). Megumi @approved.
-- **Sukuna RHS-report canonical items** — **ISS-083** (P3): authorized-writer attestation
+- **Sukuna downstream-report canonical items** — **ISS-083** (P3): authorized-writer attestation
   (`.protocol-state/attestation.py` — side-channel HMAC ledger + monotonic sequence; sanctioned
   state writers are stamped; `validate-protocol --check` suppresses drift alerts for attested
   writes and alerts on unattested/forged/stale ones; non-blocking; Windows owner-only ACL on the
@@ -600,7 +669,7 @@ orphan-sweep + VACUUM, and live storage reporting in `brain status --json` and
   Deferred: `SEC-ELAST-002` (P3) + `PLAN-CORTEX-ACCESS-001` (write-authorization) +
   `SEC-CORTEX-ACCESS-007` (encryption-at-rest).
 - **Test isolation fix**: `conftest.py` neutralizes ambient `DZP_CORTEX_DATA_DIR`/`INSTALL_GROUP`
-  env vars (root-caused the rhs-shared live-brain mutation).
+  env vars (root-caused a shared-label live-brain mutation — the `<project>-shared` scenario).
 - **Tests**: 1080 passed / 2 skipped / 0 failed.
 - **Review**: Yuuji TDD + Megumi Tier-3 @approved each phase. Lever 5 (group-budget) deferred.
 
@@ -766,7 +835,7 @@ Sukuna-led; **Megumi Tier-2 @approved** (3 accepted P3, zero blocking); **123/12
   ANSI-codepage false-fail on the config's 128 non-ASCII bytes).
 - **CODE-001** — `_SCOPED_PREFIX_RE` consolidated to one canonical definition in `store.py`, imported
   by `ingest.py` (no more two-declaration drift risk).
-- **IMPL-001** — corrected the RHS report: interim relief is `brain dedup --report` (read-only) only;
+- **IMPL-001** — corrected a downstream issue report: interim relief is `brain dedup --report` (read-only) only;
   destructive de-dup rejected pending the content-addressed migration.
 
 **Tier B — new functionality (Yuuji TDD, Megumi-reviewed):**
@@ -811,7 +880,7 @@ gitignored `.protocol-state/` files into the **canonical** `cortex/` engine — 
 **Verification:** `ast.parse` clean ×4; **93/93** Cortex unit tests pass (`tests/brain/` + `tests/test_cortex_sync.py`).
 **Status:** Sukuna-led; **Megumi Tier-2 @approved** (0 findings, 0 publish blockers). **v9.3.1 skipped** (combined single carving per USER decision).
 **Note:** This is the canonical-repo upstream; it does NOT pull in any install-specific scope folders
-(e.g. JamWebStudio's `business-assets/`) — installs opt into expanded scope via their own `brain.config.yaml`.
+(e.g. a downstream install's `business-assets/`) — installs opt into expanded scope via their own `brain.config.yaml`.
 
 ---
 

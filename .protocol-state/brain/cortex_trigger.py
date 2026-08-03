@@ -33,6 +33,7 @@ stdout / stderr contract (MCE-2):
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import os
 import shutil
@@ -153,6 +154,83 @@ def _lock_held(repo: Path) -> bool:
     """Return True if the Cortex index.lock file exists."""
     lock = _get_lock_path(repo)
     return lock is not None and lock.exists()
+
+
+# ---------------------------------------------------------------------------
+# Stale-lock TTL reap (Item 1, v9.11.0 WP5)
+#
+# _run_medium / _run_high previously treated ANY existing index.lock as "another
+# indexer is running" and skipped the index step -- forever, if the lock was
+# orphaned by a killed/detached run (see the R5 liveness-assertion comment
+# block above; this is the exact failure mode it diagnoses but never fixed).
+# store.compact() (cortex/store.py) and the PS1/SH index hooks already
+# TTL-reap orphaned locks; this mirrors that same best-effort pattern here so
+# the lock-acquisition path used by every automatic re-index can no longer be
+# silenced permanently by a single interrupted run.
+# ---------------------------------------------------------------------------
+
+_CORTEX_LOCK_STALE_SECONDS = 600  # matches session_monitor._CORTEX_LOCK_STALE_SECONDS
+# and cortex/store.py's compact() default lock_stale_seconds.
+
+
+def _lock_is_stale(lock_path: Path, now: "float | None" = None) -> bool:
+    """Return True if *lock_path* exists and its mtime is older than
+    _CORTEX_LOCK_STALE_SECONDS. Fail-soft: any stat error -> False (treat as
+    fresh / do not reap something we can't measure)."""
+    try:
+        if not lock_path.exists():
+            return False
+        mtime = lock_path.stat().st_mtime
+        age = (now if now is not None else time.time()) - mtime
+        return age > _CORTEX_LOCK_STALE_SECONDS
+    except Exception:
+        return False
+
+
+def _reap_stale_lock_or_skip(lock: Path, *, step_name: str = "index") -> bool:
+    """Handle an existing index.lock for a lock-gated step.
+
+    Returns True if the caller should PROCEED with the step (lock absent, or
+    stale and successfully reaped). Returns False if the caller should SKIP
+    the step (lock is fresh -- a genuine concurrent indexer -- or the lock is
+    stale but could not be removed).
+
+    Every abort/reap decision is logged loudly to stderr; a silent skip is
+    exactly the defect this closes (BUG-CORTEX-008 R5 residual).
+    """
+    if not lock.exists():
+        return True
+
+    if not _lock_is_stale(lock):
+        print(
+            f"[CORTEX-TRIGGER] {step_name} skipped - lock held. NOTE: under R5 "
+            "(detach: true) a lock left behind by an interrupted detached run "
+            "makes every subsequent run skip here SILENTLY -- if the "
+            "index-liveness check above reported 'stalled', this is very "
+            "likely an orphaned lock, not a genuine concurrent indexer.",
+            file=sys.stderr,
+        )
+        return False
+
+    # Stale: best-effort reap so a crashed/killed indexer can never
+    # permanently silence future automatic re-indexing.
+    try:
+        lock.unlink()
+        print(
+            f"[CORTEX-TRIGGER] {step_name}: reaped stale index.lock at {lock} "
+            f"(age > {_CORTEX_LOCK_STALE_SECONDS}s) — proceeding with {step_name} "
+            "(Item 1, v9.11.0 WP5).",
+            file=sys.stderr,
+        )
+        return True
+    except Exception as exc:
+        print(
+            f"[CORTEX-TRIGGER] {step_name} skipped - stale index.lock at {lock} "
+            f"could not be reaped ({exc}); aborting {step_name} to avoid a data "
+            "race (Item 1, v9.11.0 WP5).",
+            file=sys.stderr,
+        )
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -345,10 +423,18 @@ def _run_medium(
             steps.append(_run_step("export", repo, ["export", "--snapshot"], advisory=True, strict=strict, as_json=as_json))
         return steps, exit_code
 
-    # Lock detection
+    # Post-detach liveness assertion (BUG-CORTEX-008 R5 residual). Runs BEFORE
+    # the index is launched so it records the pre-index stamp, and reports on
+    # the PREVIOUS run's detached outcome. Advisory only -- never touches
+    # exit_code.
+    liveness = check_index_liveness(repo, reason="medium", as_json=as_json)
+    if liveness is not None:
+        steps.append(_liveness_step(liveness))
+
+    # Lock detection (Item 1, v9.11.0 WP5: stale locks are TTL-reaped rather
+    # than causing a permanent silent skip; see _reap_stale_lock_or_skip()).
     lock = _get_lock_path(repo)
-    if lock is not None and lock.exists():
-        print("[CORTEX-TRIGGER] index skipped — lock held", file=sys.stderr)
+    if lock is not None and not _reap_stale_lock_or_skip(lock, step_name="index"):
         steps.append(_skipped_step("index", advisory=False))
     else:
         index_step = _run_step(
@@ -367,6 +453,236 @@ def _run_medium(
         steps.append(export_step)
 
     return steps, exit_code
+
+
+# ---------------------------------------------------------------------------
+# POST-DETACH LIVENESS ASSERTION (BUG-CORTEX-008 R5 residual)
+# ---------------------------------------------------------------------------
+# R5 moved the Cortex re-index OFF the coordinator's critical path with
+# `detach: true`. That correctly removed the chronic embedding-delta-bound
+# timeout -- and it removed, with it, THE ONLY SIGNAL THAT THE INDEX FAILED.
+#
+# A detached step reports "launched" and nothing ever reports what happened
+# next. Observed live in this repository: the last two entries in the Cortex
+# index log are `index hook skipped; lock exists (concurrent run)` at
+# 2026-07-27T22:35Z, followed by silence -- an orphaned lock from an
+# interrupted detached run caused every subsequent hook to skip, quietly, for
+# hours. Nothing failed. Nothing warned. `brain status` still answered `ok`.
+#
+# This is the same defect class as the rest of this release: a control that is
+# present and documented and produces no evidence of actually working. The
+# timeout at least made a stalled index visible.
+#
+# The fix is a LIVENESS ASSERTION rather than a restored timeout (a timeout
+# cannot work here by construction -- the point of detaching is that nobody is
+# waiting). Each run records the `last_index` stamp it OBSERVED before
+# launching. The next run compares: if `last_index` has not advanced since the
+# previous attempt, the previous detached index never completed, and that is
+# reported loudly.
+#
+# NON-NEGOTIABLE: this is ADVISORY. It never changes exit_code, and every
+# failure path is swallowed. A liveness probe that can itself break the run
+# would be worse than the silence it replaces.
+
+_LIVENESS_MARKER_NAME = "last-index-attempt.json"
+
+
+def _read_status_json(repo: Path) -> "dict | None":
+    try:
+        rc, stdout, _stderr = _run_brain(repo, "status", "--json")
+        if rc != 0 or not stdout.strip():
+            return None
+        data = json.loads(stdout)
+        return data if isinstance(data, dict) else None
+    except Exception:
+        return None
+
+
+def _liveness_marker_path(status: dict) -> "Path | None":
+    """Marker lives beside brain.db, i.e. in the external Cortex data dir --
+    never in the repo (Cortex data never ships)."""
+    try:
+        db = status.get("db")
+        if not db:
+            return None
+        return Path(db).parent / _LIVENESS_MARKER_NAME
+    except Exception:
+        return None
+
+
+def _liveness_unavailable(why: str, *, as_json: bool) -> dict:
+    """SEC-CORTEXLIVE-001: the probe could not run. SAY SO.
+
+    The first implementation returned None on every unavailable path and
+    printed nothing, so a HARD Cortex failure -- the one where `brain status`
+    itself stops answering -- produced exactly the silence this check was
+    written to eliminate. The common case (index launched, never completed,
+    `status` still reporting `ok`) was caught; the narrower one was not.
+
+    The fix is not to raise. The advisory contract above is non-negotiable: a
+    liveness probe that can break the run is worse than the silence it
+    replaces. The fix is to emit one line and return an `unknown` advisory, so
+    that neither a human reading stderr nor a --json consumer can mistake
+    "could not check" for "checked, fine". Same lesson as UPSTREAM-002.
+    """
+    if not as_json:
+        print(
+            "[CORTEX-TRIGGER:index-liveness] SKIPPED - liveness UNKNOWN. "
+            f"The probe could not run ({why}).\n"
+            "    This is NOT a clean result: nothing was compared, so do not "
+            "read this run as evidence that the\n"
+            "    previous detached index completed. Investigate with "
+            "`brain status`. (SEC-CORTEXLIVE-001.)",
+            file=sys.stderr,
+        )
+    return {
+        "name": "index-liveness",
+        "status": "unknown",
+        "unavailable_reason": why,
+        "current_last_index": None,
+        "previous_observed_last_index": None,
+        "previous_attempt_at": None,
+        "stalled": False,
+    }
+
+
+# Advisory status -> coordinator step status. `stalled` and `unknown` are NOT
+# successes: the step dict previously hardcoded "success" while the stall sat
+# in a separate field, so a --json consumer keyed on `status` read a frozen
+# index as a healthy run.
+_LIVENESS_STEP_STATUS = {"ok": "success", "stalled": "warning", "unknown": "warning"}
+
+
+def _liveness_step(liveness: dict) -> dict:
+    """Build the coordinator step entry for an index-liveness advisory."""
+    return {
+        "name": "index-liveness",
+        "status": _LIVENESS_STEP_STATUS.get(liveness.get("status"), "warning"),
+        "exit_code": None,
+        "duration_seconds": 0.0,
+        "advisory": True,
+        "liveness_status": liveness.get("status"),
+        "stalled": liveness.get("stalled", False),
+        "unavailable_reason": liveness.get("unavailable_reason"),
+        "current_last_index": liveness.get("current_last_index"),
+        "previous_observed_last_index": liveness.get("previous_observed_last_index"),
+    }
+
+
+def check_index_liveness(repo: Path, *, reason: str, as_json: bool) -> dict:
+    """Compare the current last_index against the previously-recorded attempt,
+    warn if it never advanced, then record a fresh attempt marker.
+
+    Always returns an advisory dict; `status` is one of ok / stalled / unknown.
+    Never raises; never affects exit_code. It never returns None, because an
+    absent advisory is indistinguishable from a clean one (SEC-CORTEXLIVE-001).
+    """
+    try:
+        status = _read_status_json(repo)
+        if status is None:
+            return _liveness_unavailable(
+                "brain status failed, returned a non-zero code, or produced no "
+                "parseable JSON",
+                as_json=as_json,
+            )
+        marker_path = _liveness_marker_path(status)
+        if marker_path is None:
+            return _liveness_unavailable(
+                "brain status carried no 'db' path, so the liveness marker "
+                "location beside brain.db could not be derived",
+                as_json=as_json,
+            )
+
+        current_last_index = status.get("last_index")
+        if current_last_index is None:
+            return _liveness_unavailable(
+                "brain status reported no 'last_index' stamp, so there is "
+                "nothing to compare against the previous attempt",
+                as_json=as_json,
+            )
+
+        previous = None
+        try:
+            if marker_path.is_file():
+                previous = json.loads(marker_path.read_text(encoding="utf-8"))
+        except Exception:
+            previous = None
+
+        advisory = {
+            "name": "index-liveness",
+            "status": "ok",
+            "current_last_index": current_last_index,
+            "previous_observed_last_index": None,
+            "previous_attempt_at": None,
+            "stalled": False,
+        }
+
+        if isinstance(previous, dict):
+            prev_observed = previous.get("observed_last_index")
+            advisory["previous_observed_last_index"] = prev_observed
+            advisory["previous_attempt_at"] = previous.get("attempted_at")
+
+            # Stalled == a previous run launched an index and last_index is
+            # STILL exactly what that run observed beforehand. String equality
+            # is deliberate: these are ISO-8601 stamps produced by the same
+            # writer, and an unparseable value must not be treated as progress.
+            if (
+                prev_observed is not None
+                and current_last_index is not None
+                and current_last_index == prev_observed
+            ):
+                advisory["status"] = "stalled"
+                advisory["stalled"] = True
+                if not as_json:
+                    print(
+                        "[CORTEX-TRIGGER:index-liveness] WARNING - the Cortex "
+                        "index has NOT advanced since the previous run.\n"
+                        f"    last_index is still {current_last_index}, the same "
+                        "value observed before the previous index was launched\n"
+                        f"    (previous attempt: {previous.get('attempted_at')}, "
+                        f"reason: {previous.get('reason')}).\n"
+                        "    The previous DETACHED index run did not complete. "
+                        "Because R5 runs this step off the critical path\n"
+                        "    (detach: true), no timeout and no exit code can "
+                        "report that -- this check is the only signal.\n"
+                        "    Common cause: an orphaned index.lock from an "
+                        "interrupted run makes every later run skip silently.\n"
+                        "    Investigate: `brain status`, then check for a stale "
+                        "index.lock beside brain.db and remove it if no\n"
+                        "    indexer is running. (BUG-CORTEX-008 R5 residual.)",
+                        file=sys.stderr,
+                    )
+
+        # Record this attempt for the NEXT run to compare against.
+        try:
+            marker_path.parent.mkdir(parents=True, exist_ok=True)
+            marker_path.write_text(
+                json.dumps(
+                    {
+                        "attempted_at": datetime.datetime.now(
+                            datetime.timezone.utc
+                        ).isoformat(),
+                        "observed_last_index": current_last_index,
+                        "reason": reason,
+                        "note": (
+                            "Written by cortex_trigger.py before launching an "
+                            "index. If the next run sees last_index still equal "
+                            "to observed_last_index, the index never completed. "
+                            "BUG-CORTEX-008 R5 post-detach liveness assertion."
+                        ),
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+        except Exception:
+            pass
+
+        return advisory
+    except Exception as exc:  # advisory contract: swallow, but never silently
+        return _liveness_unavailable(
+            f"the liveness probe itself raised {type(exc).__name__}", as_json=as_json
+        )
 
 
 def _parse_storage_from_status(repo: Path) -> "dict | None":
@@ -436,10 +752,10 @@ def _run_high(
         # On status failure, storage is unavailable — return None (advisory)
         return steps, exit_code, rotation_recommended, rotation_recommended_details, None
 
-    # Step 2: conditional index (if lock not held)
+    # Step 2: conditional index (if lock not held; Item 1, v9.11.0 WP5: stale
+    # locks are TTL-reaped rather than causing a permanent silent skip).
     lock = _get_lock_path(repo)
-    if lock is not None and lock.exists():
-        print("[CORTEX-TRIGGER] index skipped — lock held", file=sys.stderr)
+    if lock is not None and not _reap_stale_lock_or_skip(lock, step_name="index"):
         steps.append(_skipped_step("index", advisory=False))
     else:
         index_step = _run_step(

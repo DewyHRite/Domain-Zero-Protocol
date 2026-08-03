@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Megumi `secid` Skill — Issue-ID Governance
 
 **Name:** megumi-secid
@@ -17,8 +17,8 @@ Gojo) sign and invoke `scripts/issue_id.py` directly via their own process, neve
 ## Purpose
 
 `secid` is Megumi's scoped front-end to the DZP Issue-ID registry (FEAT-IDGOV-001). It mints, looks up,
-lists, and transitions issue IDs (SEC / BUG / FEAT / IMPL / CODE / ISS / TEST / MF) against a single
-append-only JSONL ledger (`.protocol-state/issue-registry.jsonl`) so an ID like `SEC-001` can never be
+lists, and transitions issue IDs (SEC / BUG / FEAT / IMPL / CODE / ISS / TEST / MF / LL / SF) against
+a single append-only JSONL ledger (`.protocol-state/issue-registry.jsonl`) so an ID like `SEC-001` can never be
 silently reused to mean five different things.
 
 `secid` is a Megumi-signed wrapper (`scripts/secid.sh` / `scripts/secid.ps1`) over the shared engine
@@ -115,14 +115,16 @@ from a flag):
 |---|---|
 | `SEC`, `CODE` | **Megumi** (sole) |
 | `MF` (Megumi Finding) | **Megumi** (sole) |
+| `SF` (Security Framework, v9.11.0 `FEAT-IDGOV-003`) | **Megumi** (sole) |
 | `TEST` | Megumi, Yuuji |
 | `BUG` | Yuuji, Sukuna |
 | `FEAT` | Sukuna |
 | `IMPL` | Sukuna, Yuuji |
 | `ISS` | Sukuna, Gojo |
+| `LL` (Lessons Learned, v9.11.0 `FEAT-IDGOV-003`) | Gojo (sole; via `residentid-gojo`, not this wrapper) |
 
 If you try to mint a family you are not authorized for, `new` exits non-zero (`error: ... not authorized
-for ...`). This is by design — it keeps SEC/CODE/MF findings attributable to Security.
+for ...`). This is by design — it keeps SEC/CODE/MF/SF findings attributable to Security.
 
 ---
 

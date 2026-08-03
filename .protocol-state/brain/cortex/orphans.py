@@ -6,7 +6,7 @@
 Safety invariants enforced here (referenced by tests):
   INV-2  ``*-shared`` dirs (contain '-shared' or match a known-shared pattern) —
          conservatively: any dir whose name is NOT a pure 12-hex hash is SKIPPED.
-         (Non-hash dirs include shared labels like ``rhs-shared``, ``jamwebstudio-shared``.)
+         (Non-hash dirs include shared labels like ``<project>-shared``, e.g. ``acme-shared``.)
   INV-3  The *current_install_id* dir is SKIPPED.
   INV-4  A hash dir whose ``brain.db`` is >= ORPHAN_DB_THRESHOLD_BYTES OR has > 0
          rows in ``content_refs`` is NOT an orphan.

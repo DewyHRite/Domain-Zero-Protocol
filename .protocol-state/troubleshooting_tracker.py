@@ -23,16 +23,53 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
 
-# Import path_validator for input validation (security enhancement)
-try:
-    sys.path.insert(0, str(Path(__file__).parent / "security"))
-    from path_validator import validate_file_path
-    PATH_VALIDATOR_AVAILABLE = True
-except ImportError:
-    PATH_VALIDATOR_AVAILABLE = False
-    def validate_file_path(path: str) -> bool:
-        """Fallback validator if path_validator not available"""
-        return True  # No validation if module missing
+# BUG-TRACKER-PATHVAL-001 (P3): affected_files validation is self-contained and
+# local to this module (not imported from .protocol-state/security/path_validator.py).
+#
+# Two reasons this must NOT depend on an external module:
+#   1. That module never defined `validate_file_path` in the first place (it only
+#      exports SecurityError, safe_join(), validate_backup_path()), so importing it
+#      here always raised ImportError -- unconditionally, on every run, everywhere,
+#      including dev. The guard this was meant to gate was therefore permanently dead.
+#   2. `.protocol-state/security/` is blanket-excluded from the public distro
+#      (scripts/distro/publish-manifest.yaml `forbid_tokens`), so even a corrected
+#      import could never ship to consumer installs. troubleshooting_tracker.py IS
+#      shipped (publish-manifest.yaml `include_state`), so its validation must work
+#      standalone with no `.protocol-state/security/` directory present at all.
+#
+# `affected_files` entries are advisory strings only: they are stored in session
+# JSON and rendered into a markdown report -- no code path in this module resolves
+# them against a base directory or opens/reads/writes them. So this validator
+# rejects traversal sequences, absolute paths, null bytes, and absurd lengths as a
+# defense-in-depth input sanity check; it deliberately does NOT attempt safe_join()
+# / base-dir resolution semantics (nothing here resolves against a base dir).
+_MAX_AFFECTED_FILE_LENGTH = 260  # advisory cap (mirrors classic MAX_PATH); not a filesystem guarantee
+
+
+def _is_safe_affected_file_entry(path_str: str) -> bool:
+    """Validate a single `affected_files` entry. Fails CLOSED: any exception-prone
+    or suspicious input is rejected rather than silently accepted."""
+    if not path_str or not isinstance(path_str, str):
+        return False
+    if len(path_str) > _MAX_AFFECTED_FILE_LENGTH:
+        return False
+    if "\x00" in path_str:
+        return False
+    if ".." in path_str:
+        return False
+    # POSIX-style absolute path
+    if path_str.startswith("/") or path_str.startswith("\\"):
+        return False
+    # Windows drive-letter absolute path, e.g. "C:\..." or "C:/..."
+    if (
+        len(path_str) >= 3
+        and path_str[0].isalpha()
+        and path_str[1] == ":"
+        and path_str[2] in ("\\", "/")
+    ):
+        return False
+    return True
+
 
 # PATCH-STATE-001: Import centralized state manager
 try:
@@ -176,13 +213,14 @@ class TroubleshootingTracker:
         if len(description) > 5000:
             raise ValueError("Description exceeds maximum length (5000 characters)")
 
-        # Validate affected_files if provided
+        # Validate affected_files if provided (BUG-TRACKER-PATHVAL-001: this guard
+        # now actually runs -- see _is_safe_affected_file_entry() above -- instead
+        # of being permanently skipped behind a dead external import)
         if affected_files:
             file_list = [f.strip() for f in affected_files.split(',')]
             for file_path in file_list:
-                if file_path and PATH_VALIDATOR_AVAILABLE:
-                    if not validate_file_path(file_path):
-                        raise ValueError(f"Invalid file path: {file_path}")
+                if file_path and not _is_safe_affected_file_entry(file_path):
+                    raise ValueError(f"Invalid file path: {file_path}")
 
         history = self.load_history()
         now = datetime.now(timezone.utc)

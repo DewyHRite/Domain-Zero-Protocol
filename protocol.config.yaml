@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 9.10.2
+# Version: 9.11.0
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,8 +8,8 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v9.10.2"
-  release_branch: "DZP-v9.10.2"
+  version: "v9.11.0"
+  release_branch: "DZP-v9.11.0"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -938,7 +938,7 @@ paths:
   work_session_alert_template: ".protocol-state/work-session-alert.template.md"
 
   # Protocol files
-  claude_md: "CLAUDE.md"  # Root is primary authority since v8.13.0 (protocol/CLAUDE.md is synced mirror)
+  claude_md: "CLAUDE.md"  # Root is primary authority since v8.13.0 (protocol/CLAUDE.md is a pointer/stub since v9.11.0)
   yuuji_md: "protocol/yuuji.agent.md"
   megumi_md: "protocol/megumi.agent.md"
   nobara_md: "protocol/nobara.agent.md"
@@ -1168,8 +1168,8 @@ protocol_packs:
 
   # Pack-specific content (e.g., appendices, examples, checklists)
   # packs:
-  #   jamwathq:
-  #     appendix: "protocol-packs/jamwathq/APPENDIX.md"
+  #   myproject:
+  #     appendix: "protocol-packs/myproject/APPENDIX.md"
   #     tech_stack: ["FastAPI", "PostgreSQL", "React"]
   #   blank:
   #     appendix: "protocol-packs/blank/APPENDIX.md"
@@ -1350,6 +1350,49 @@ custom_agent_security:
       # command (or the engine that spawns it) without tripping FEAT-REQ-001.
       - ".protocol-state/script_coordinator.py"
       - ".protocol-state/script_dependencies.yaml"
+      # WP5b (Gojo-authorized, USER full-remediation directive, 2026-07-30):
+      # the root-level CLAUDE.md -- THE canonical protocol file since v8.13.0,
+      # and ABSOLUTE since the v9.11.0 stub swap (protocol/CLAUDE.md is now
+      # only a ~15-line redirect pointer, no protocol content) -- was NEVER
+      # listed here. protocol/CLAUDE.md's content is covered transitively by
+      # the "protocol/" prefix entry above, but the root file that actually
+      # carries the protocol was not covered by ANY entry, so a local commit
+      # editing only ./CLAUDE.md bypassed the FEAT-REQ-001 stage 4 guard
+      # entirely (CODEOWNERS only bites under PR branch protection, which a
+      # local dev-branch commit never goes through). Same gap CLASS as
+      # F6(b)/BUG-HOOK-SELF-DISARM-001 above: a security-relevant path left
+      # off this list is invisible to the guard, full stop.
+      #   Matcher semantics verified before adding this entry (both hooks,
+      #   stage 4): plain shell/PowerShell PREFIX match on the staged
+      #   git-relative path (`case "$f" in "$p"*)` / `$ff.StartsWith($p)`),
+      #   identical mechanism used for every existing single-FILE entry above
+      #   (e.g. "protocol.config.yaml", "scripts/validate-protocol.py") -- no
+      #   trailing slash is used or needed for a file (trailing slash is only
+      #   the convention for DIRECTORY entries like "protocol/"). A bare
+      #   "CLAUDE.md" entry:
+      #     - DOES match the root file itself (staged path "CLAUDE.md" starts
+      #       with "CLAUDE.md" -- exact-length prefix = equality).
+      #     - Does NOT match "protocol/CLAUDE.md" or "docs/foo/CLAUDE.md" --
+      #       those staged paths start with "protocol/" / "docs/" respectively,
+      #       not "CLAUDE.md", so a bare filename-only entry checked against a
+      #       full relative path can never accidentally reach into a
+      #       subdirectory under this prefix-match scheme.
+      #     - DOES also match a same-directory extension of the filename such
+      #       as a hypothetical "CLAUDE.md.bak" (prefix match, not exact-match)
+      #       -- an accepted, pre-existing characteristic of every bare-filename
+      #       entry in this list already (e.g. "protocol.config.yaml" would
+      #       likewise match "protocol.config.yaml.bak"), not a new risk this
+      #       entry introduces, and arguably the safer direction (over-
+      #       protecting an adjacent backup-shaped filename beats under-
+      #       protecting it).
+      #   Conclusion: the existing matcher already expresses exact-root-file
+      #   protection correctly for this case; no hook (scripts/git-hooks/pre-
+      #   commit[.ps1]) source-logic change was required. Both hooks' degraded
+      #   DEFAULT_PATHS fallback lists (used when python/yaml is unavailable)
+      #   were updated in the SAME change to include "CLAUDE.md" too, per the
+      #   standing rule the BUG-HOOK-SELF-DISARM-001 fix established: the
+      #   fallback must never be weaker than the config-driven path.
+      - "CLAUDE.md"
 
     # Scoped pre-commit override for the FEAT-REQ-001 guard (Cross-Agent Edit
     # Restrictions, scripts/git-hooks/pre-commit[.ps1] stage 4). Mirrors
@@ -1640,7 +1683,10 @@ issue_governance:
   # This list MUST equal sorted(scripts/idgov/grammar.py FAMILIES); the
   # engine, not this config, is authoritative -- see the drift-warning note
   # above.
-  families: [SEC, BUG, FEAT, IMPL, CODE, ISS, TEST, MF]
+  # FEAT-IDGOV-003 (v9.11.0 Increment 4, USER decision D1 2026-07-28):
+  # LL (Lessons Learned -- Gojo) and SF (Security Framework -- Megumi) added
+  # as first-class families (engine.AUTHORITY: LL->gojo, SF->megumi).
+  families: [SEC, BUG, FEAT, IMPL, CODE, ISS, TEST, MF, LL, SF]
   corpus_paths:
     - .protocol-state/dev-notes.md
     - .protocol-state/security-review.md
@@ -1681,9 +1727,9 @@ issue_governance:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "9.10.2"
+  protocol_version: "9.11.0"
   config_version: "2.11"
-  last_updated: "2026-07-20"
+  last_updated: "2026-08-03"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

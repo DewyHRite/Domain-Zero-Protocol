@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Domain Zero Protocol - Quick Start Guide
 
 ## Get Up and Running with Domain Zero in 2 Minutes
@@ -34,15 +34,23 @@ That's it! Everything else has sensible defaults.
 ```powershell
 Copy-Item -Recurse "Domain Zero Protocol\protocol" -Destination "your-project\"
 Copy-Item -Recurse "Domain Zero Protocol\.protocol-state" -Destination "your-project\"
+Copy-Item -Recurse "Domain Zero Protocol\scripts" -Destination "your-project\"
+Copy-Item -Recurse "Domain Zero Protocol\.claude\commands" -Destination "your-project\.claude\"
 Copy-Item "Domain Zero Protocol\protocol.config.yaml" -Destination "your-project\"
+Copy-Item "Domain Zero Protocol\CLAUDE.md" -Destination "your-project\"
 ```
 
 **macOS/Linux Bash**:
 ```bash
 cp -r "Domain Zero Protocol/protocol" your-project/
 cp -r "Domain Zero Protocol/.protocol-state" your-project/
+cp -r "Domain Zero Protocol/scripts" your-project/
+mkdir -p your-project/.claude && cp -r "Domain Zero Protocol/.claude/commands" your-project/.claude/
 cp "Domain Zero Protocol/protocol.config.yaml" your-project/
+cp "Domain Zero Protocol/CLAUDE.md" your-project/
 ```
+
+`scripts/` and `.claude/commands/` are what make the day-one subsystems in Step 6 (Cortex, `/session`, the git-hook guards, `verify-installation.py`) and the native `/gojo`, `/yuuji`, etc. slash commands work — don't skip them.
 
 ---
 
@@ -54,7 +62,8 @@ cp "Domain Zero Protocol/protocol.config.yaml" your-project/
 ```
 Add to memory: Domain Zero Protocol
 
-I use Domain Zero Protocol v9.10.2 for AI development. Nine-agent system:
+I use Domain Zero Protocol v9.11.0 for AI development. Nine resident agents
+plus one external, non-resident auditor:
 
 Core Four:
 - YUUJI: Implementation (TDD)
@@ -71,7 +80,17 @@ Extended Four:
 Special Agent:
 - SUKUNA: System update adversary (Gojo-invoked only)
 
-Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md, protocol/inumaki.agent.md, protocol/sukuna.agent.md
+External Auditor (non-resident, report-only):
+- TOJI: Independent audits across UI/UX, code quality, security, system
+  design, implementation integrity, and AI security. Not part of the
+  Gojo-coordinated chain of command.
+
+Main protocol: CLAUDE.md (repository root — the single source of truth
+since v9.11.0; protocol/CLAUDE.md is just a compatibility stub/redirect).
+Agent files: protocol/yuuji.agent.md, protocol/megumi.agent.md,
+protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md,
+protocol/maki.agent.md, protocol/panda.agent.md, protocol/inumaki.agent.md,
+protocol/sukuna.agent.md, protocol/toji.agent.md
 Tiers: Rapid/Standard/Critical
 Always read protocol files when I reference them.
 Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
@@ -80,8 +99,10 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 **ChatGPT (Custom Instructions)**:
 Add to Settings → Personalization → Custom Instructions:
 ```
-I use Domain Zero Protocol v9.10.2 (nine-agent AI dev framework).
-Protocol files: protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md, protocol/inumaki.agent.md, protocol/sukuna.agent.md.
+I use Domain Zero Protocol v9.11.0 (nine resident agents + one external,
+non-resident auditor).
+Main protocol: CLAUDE.md (repository root).
+Agent files: protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md, protocol/inumaki.agent.md, protocol/sukuna.agent.md, protocol/toji.agent.md.
 Always read protocol files first.
 ```
 
@@ -133,47 +154,48 @@ Read protocol/yuuji.agent.md --tier critical and implement OAuth2 authentication
 
 ---
 
-## Step 6: Use Dual-AI Workflow (Recommended for Power Users)
+## Step 6: Wire Up the Day-One Subsystems (2 minutes, all optional but recommended)
 
-**For optimal token efficiency**, use two AI assistants together:
+These ship with the protocol but aren't active until you turn them on. None are required to start
+Step 5 above — add them whenever you're ready.
 
-| AI Role | Tool | Purpose |
-|---------|------|---------|
-| **Prompt Generator** | IDE AI (VS Code, Cursor, Antigravity, etc.) | Reads `gojo.prompt.md`, generates `prompt.md` |
-| **Main Executor** | Claude CLI | Executes the generated `prompt.md` |
+**Session lifecycle** — tracks a work session from start to handoff, keeping `.protocol-state/`
+and (if enabled) Cortex in sync automatically:
+```
+/session start      # begin a tracked session
+/session update      # full sync: project documents + Cortex re-index + timestamp
+/session transfer     # sync + end + write a durable handoff brief for next time
+/session end         # end the session
+```
 
-### Quick Setup
+**DZP Cortex** (local semantic memory, no cloud calls after first model download) — lets agents
+recall prior decisions and security findings instead of rereading files cold every session:
+```bash
+scripts/brain.sh status    # POSIX — or scripts/brain.ps1 status on Windows
+scripts/brain.sh index     # build the local index
+scripts/brain.sh query "prior security decision"
+```
 
-1. **Copy meta prompt** to your project:
-   ```bash
-   cp /path/to/Domain-Zero/gojo.prompt.md your-project/
-   ```
+**Protected-document guard (FEAT-GUARD-001)** — installs a pre-commit hook that blocks any commit
+which would overwrite or truncate `.protocol-state/dev-notes.md`, `.protocol-state/security-review.md`,
+or `.dzp-domain/domain.record.md`:
+```bash
+scripts/install-git-hooks.sh     # POSIX — or scripts\install-git-hooks.ps1 on Windows
+```
 
-2. **In IDE AI** (e.g., Antigravity):
-   ```bash
-   "Read gojo.prompt.md and create a prompt for implementing user authentication"
-   ```
-
-3. **In Claude CLI**:
-   ```bash
-   "Read prompt.md"
-   ```
-
-### Why This Works
-
-- **IDE AI** has full project context (files, imports, structure)
-- **Token savings**: 70-80% reduction on main AI
-- **Better prompts**: IDE AI references actual code when generating
-- **Faster iteration**: Pre-built prompts execute immediately
-
-**See:** [Dual-AI Meta Prompt Workflow](README.md#-dual-ai-meta-prompt-workflow-recommended) in README.md for detailed setup.
+**Installation + integrity check** — confirm every required file is present, then create a
+SHA-256 baseline so future tampering or accidental deletion is detectable:
+```bash
+python scripts/verify-installation.py
+python scripts/verify-installation.py --init-integrity   # run once, before manual edits
+```
 
 ---
 
 ## You're Done! 🎉
 
 **What You Just Set Up**:
-- ✅ Nine AI agents (Yuuji, Megumi, Nobara, Gojo, Todo, Maki, Panda, Inumaki, Sukuna) ready to work
+- ✅ Nine resident AI agents (Yuuji, Megumi, Nobara, Gojo, Todo, Maki, Panda, Inumaki, Sukuna) ready to work, plus Toji — an external, non-resident, report-only auditor for independent audits (`Read protocol/toji.agent.md and audit [target]`)
 - ✅ Three-tier workflow system (Rapid/Standard/Critical)
 - ✅ Test-first development (TDD) by default
 - ✅ OWASP Top 10 security review
@@ -185,11 +207,11 @@ Read protocol/yuuji.agent.md --tier critical and implement OAuth2 authentication
 ## Next Steps
 
 ### Learn the Basics (15 minutes)
-1. **Read protocol/CLAUDE.md** - Full system overview
+1. **Read `CLAUDE.md`** (repository root) - Full system overview (`protocol/CLAUDE.md` is a compatibility stub that redirects there)
 2. **Read protocol/TIER-SELECTION-GUIDE.md** - When to use which tier
 3. **Try a Tier 2 feature** - Experience the full workflow
 
-### Typical Workflow (v7.1.0 - Prompted Security Handoff)
+### Typical Workflow (Prompted Security Handoff)
 
 ```
 1. You: "Read protocol/yuuji.agent.md and implement [feature]"
@@ -249,7 +271,7 @@ cp -r /path/to/Domain-Zero/protocol/* ./protocol/
 claude
 ```
 
-See [README.md § Non-Code Projects](README.md#-non-code-projects-school-work-research--academic-writing) for detailed examples.
+See `docs/reference/REALITY_CHECK.md` for an honest breakdown of what this framework does and doesn't get you before you invest time customizing it for non-code work.
 
 ---
 
@@ -271,6 +293,15 @@ See [README.md § Non-Code Projects](README.md#-non-code-projects-school-work-re
 # Creative strategy & UX (Nobara)
 "Read protocol/nobara.agent.md and design [feature/experience]"
 
+# Extended specialists (Todo/database, Maki/performance, Panda/build+CI, Inumaki/API)
+"Read protocol/todo.agent.md and design schema for [feature]"
+"Read protocol/maki.agent.md and audit [component] performance"
+"Read protocol/panda.agent.md and configure [pipeline/build task]"
+"Read protocol/inumaki.agent.md and design REST API for [resource]"
+
+# External audit (Toji) - report-only, independent of the other nine agents
+"Read protocol/toji.agent.md and audit [target]"
+
 # Intelligence report (Gojo)
 "Read protocol/gojo.agent.md - Trigger 19"
 ```
@@ -286,13 +317,14 @@ See [README.md § Non-Code Projects](README.md#-non-code-projects-school-work-re
 
 ## Configuration Tips
 
-### Enable Claude Haiku 4.5 for All Clients
-Edit `protocol.config.yaml`:
+### Enable Claude Haiku for All Clients
+Edit `protocol.config.yaml`. `ai.model_policy` is the single source of truth for model IDs — update
+it (and the per-agent `model:` front-matter) together, then keep `default_models` in sync:
 ```yaml
 ai:
   default_models:
     - provider: "Anthropic"
-      model: "claude-3-5-haiku-20241022"
+      model: "claude-haiku-4-5-20251001"
       scope: "all-clients"
       priority: 1
 ```
@@ -302,7 +334,7 @@ ai:
 ai:
   default_models:
     - provider: "Anthropic"
-      model: "claude-3-5-haiku-20241022"
+      model: "claude-haiku-4-5-20251001"
       scope: "rapid-tier"
       priority: 1
 ```
@@ -310,7 +342,7 @@ ai:
 ### Adjust Enforcement Strictness
 ```yaml
 enforcement:
-  isolation: "moderate"  # strict, moderate, advisory
+  isolation: "strict"  # strict (current default), moderate, advisory
   quality_gates:
     block_on_failure: false  # Warn instead of block
 ```
@@ -320,7 +352,7 @@ enforcement:
 ai:
   multi_model_review:
     enabled: true
-    models: ["claude-3-5-sonnet-20241022", "claude-3-5-opus-20241022"]
+    models: ["claude-sonnet-4-6", "claude-opus-4-8"]
 ```
 
 ### Enable Passive Observer (Gojo's Background Monitoring)
@@ -410,13 +442,18 @@ Run protocol verification (optional, requires setup):
 → Ensure the agent reads the protocol file first: `"Read protocol/yuuji.agent.md and..."`
 
 ### "How do I modify the protocol?"
-→ Edit `protocol/CLAUDE.md` directly (you have write access) or use Gojo with authorization
+→ Edit `CLAUDE.md` directly at the repository root (you have write access) or use Gojo with
+authorization. `protocol/CLAUDE.md` is only a compatibility stub that redirects to the root file —
+editing it does nothing.
 
 ### "What's the difference between tiers?"
 → See `protocol/TIER-SELECTION-GUIDE.md` for detailed examples and decision tree
 
 ### "How do I integrate with GitHub Copilot/Cursor?"
-→ See README.md section "AI Assistant Integration & Canonical Source"
+→ DZP is harness-agnostic — it's markdown files any AI assistant can read, not a plugin. See
+README.md § "What DZP Is — and Is Not" for exactly which protections are real regardless of
+harness (mechanical, git/filesystem-level) versus harness-dependent (per-agent tool allowlists)
+versus convention-only (prompt instructions).
 
 ### "Can I customize agent personalities?"
 → Yes! Edit `protocol.config.yaml` under `roles.output_style`
@@ -427,28 +464,38 @@ Run protocol verification (optional, requires setup):
 
 ```
 your-project/
-├── protocol/                     # Protocol agents
-│   ├── CLAUDE.md                 # Main protocol (READ THIS)
-│   ├── yuuji.agent.md                  # Implementation agent
-│   ├── megumi.agent.md                 # Security agent
-│   ├── nobara.agent.md                 # Creative strategy & UX agent
-│   ├── gojo.agent.md                   # Mission control
-│   └── TIER-SELECTION-GUIDE.md  # Tier selection help
-│
-├── .protocol-state/              # State files (gitignored)
-│   ├── project-state.json        # Project config
-│   ├── dev-notes.md              # Yuuji's implementation log
-│   ├── security-review.md        # Megumi's security findings
-│   └── trigger-19.md             # Gojo's intelligence (private)
-│
-├── .dzp-domain/                  # Domain Record (Gojo/Sukuna ONLY, v8.8.0+)
-│   ├── domain.record.md          # Shared notes repository
-│   ├── archive/                  # Rotated archives (auto at 5k lines)
-│   └── .rotation-metadata.json   # Rotation tracking
-│
+├── CLAUDE.md                     # Main protocol — THE single source of truth (READ THIS)
 ├── protocol.config.yaml          # CENTRAL CONFIG (edit this!)
-├── src/                          # Your code
-└── tests/                        # Your tests
+│
+├── protocol/                     # Agent files, tier guide, skill definitions
+│   ├── CLAUDE.md                 # Compatibility stub — redirects to root CLAUDE.md
+│   ├── gojo.agent.md             # Mission control
+│   ├── yuuji.agent.md            # Implementation agent
+│   ├── megumi.agent.md           # Security agent
+│   ├── nobara.agent.md           # Creative strategy & UX agent
+│   ├── todo.agent.md             # Database & backend agent
+│   ├── maki.agent.md             # Performance agent
+│   ├── panda.agent.md            # Build & integration agent
+│   ├── inumaki.agent.md          # API & communication agent
+│   ├── sukuna.agent.md           # System update agent (Gojo-invoked only)
+│   ├── toji.agent.md             # External auditor (report-only, non-resident)
+│   ├── TIER-SELECTION-GUIDE.md   # Tier selection help
+│   └── skills/                   # Slash-command skill definitions (session, ts-*, brain, dzp-roe, ...)
+│
+├── .claude/commands/              # Native Claude Code slash commands (/gojo, /yuuji, /session, ...)
+│
+├── .protocol-state/               # State + Cortex (mixed: some files tracked, most gitignored)
+│   ├── project-state.json         # Tracked — central state (session tracking, tier stats, etc.)
+│   ├── dev-notes.md               # Tracked, append-only — Yuuji's implementation log
+│   ├── security-review.md         # Tracked, append-only — Megumi's security findings
+│   ├── issue-registry.jsonl       # Tracked, append-only — issue-ID ledger (once enabled)
+│   └── brain/                     # DZP Cortex local semantic-memory engine (data dir is external, not in the repo)
+│
+├── .dzp-domain/                   # Domain Record (Gojo/Sukuna only; gitignored — see CLAUDE.md for why)
+│   └── domain.record.md           # Shared notes repository, append-only, auto-rotates at 5,000 lines
+│
+├── src/                           # Your code
+└── tests/                         # Your tests
 ```
 
 ---
@@ -468,16 +515,31 @@ A controlled collaboration space where agents operate under absolute protocol au
 **Zero Flaws ≠ Perfection**. Perfection is the horizon we walk toward, not the destination we reach.
 
 ### Agent Roles
+
+**Core Four**
 - **Yuuji**: Implementation, TDD, documentation
 - **Megumi**: Security review, OWASP Top 10, approval/rejection
 - **Nobara**: Creative strategy, UX design, product vision
 - **Gojo**: Mission control, passive observation, protocol enforcement
 
+**Extended Four**
+- **Todo**: Database schema, migrations, query optimization
+- **Maki**: Performance profiling and optimization
+- **Panda**: CI/CD pipelines and build systems
+- **Inumaki**: REST/GraphQL/WebSocket API design
+
+**Special Agent**
+- **Sukuna**: Protocol/system updates, red-team reviews (Gojo-invoked only)
+
+**External Auditor**
+- **Toji**: Independent, report-only audits across 6 domains (UI/UX, code quality, security, system design, implementation integrity, AI security). Outside the Gojo-coordinated chain of command; reports to you only.
+
 ### Protection
-- **CLAUDE.md is protected**: Only YOU and GOJO (with authorization) can edit
-- **Yuuji, Megumi, and Nobara are read-only**: Prevents accidental protocol corruption
-- **trigger-19.md is gitignored**: Private intelligence for you and Gojo only
-- **domain.record.md (v8.8.0+)**: Shared notes for Gojo and Sukuna only - prevents agent file bloat, enables crash recovery, auto-rotates at 5,000 lines
+- **CLAUDE.md** (repository root): only you, and Gojo with your authorization, are expected to edit it. That expectation is enforced by convention (every other agent's prompt refuses) plus GitHub CODEOWNERS if you have branch protection enabled — check `scripts/install-git-hooks.sh`'s protected-path guard coverage in your own install before assuming a local commit is blocked.
+- **Yuuji, Megumi, Nobara, Todo, Maki, Panda, and Inumaki are read-only** on protocol files: prevents accidental protocol corruption
+- **`dev-notes.md` / `security-review.md`**: append-only, mechanically enforced by the FEAT-GUARD-001 pre-commit guard once you run `scripts/install-git-hooks.sh`/`.ps1`
+- **`domain.record.md`**: shared notes for Gojo and Sukuna only — gitignored (never committed), prevents agent-file bloat, enables crash recovery, auto-rotates at 5,000 lines
+- **Trigger 19 reports**: written on-demand to a gitignored `.protocol-state/trigger-19.md` only when you ask Gojo for one — nothing runs in the background unless you opt into Passive Observer (below)
 
 ---
 
@@ -520,7 +582,7 @@ You'll know Domain Zero is working when:
 ## Getting Help
 
 **Have Questions?**
-- Read `protocol/CLAUDE.md` for comprehensive docs
+- Read `CLAUDE.md` (repository root) for comprehensive docs
 - Read `protocol/TIER-SELECTION-GUIDE.md` for tier examples
 - Ask Gojo: `"Read protocol/gojo.agent.md - Trigger 19"` for intelligence reports
 
@@ -539,6 +601,6 @@ You'll know Domain Zero is working when:
 
 ---
 
-**Domain Zero Protocol v9.10.2** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v9.11.0** - Perfect Code Through Infinite Collaboration
 
 *The weight is real. The protocol is absolute. Domain Zero is active.*

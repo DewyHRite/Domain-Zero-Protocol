@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 9.10.2 | **Last Updated**: 2026-07-20
+**Version**: 9.11.0 | **Last Updated**: 2026-08-03
 **Purpose**: Complete installation and verification guide for AI assistants
 
 ---
@@ -16,7 +16,7 @@
 
 ## For AI Assistants: READ THIS FIRST
 
-**Primary Instructions**: Read [`CLAUDE.md`](CLAUDE.md) AFTER completing installation verification below. `protocol/CLAUDE.md` remains a compatibility mirror for legacy entrypoints.
+**Primary Instructions**: Read [`CLAUDE.md`](CLAUDE.md) AFTER completing installation verification below. `protocol/CLAUDE.md` is a compatibility pointer/stub (since v9.11.0) that redirects legacy entrypoints to the root file — it carries no protocol content.
 
 **MANDATORY STEPS** (Run these before reading `./CLAUDE.md`):
 1. ✅ Complete file structure verification (Section 3)
@@ -32,7 +32,12 @@
 
 ---
 
-## What's New in v8.13.0
+## Previous Release: v8.13.0
+
+**Note**: This section is retained release history, not current-state documentation.
+Per the CLAUDE.md changelog-retention policy (v9.10.2+), the current protocol reality
+is described by the sections below and by `./CLAUDE.md`; the complete release
+narrative lives in `CHANGELOG.md` and `VERSION.md`.
 
 ### Toji (Sentinel) — Domain Zero External Auditor (2026-03-18, updated 2026-06-13 → v1.2.1, updated 2026-07-09 → v1.3.0)
 **Addition**: New 10th agent — `protocol/toji.agent.md` (v1.3.0) + `~/.claude/agents/toji.md`
@@ -73,7 +78,16 @@ Read protocol/toji.agent.md and audit [target]
 
 ---
 
-## What's New in v8.12.0
+## Previous Release: v8.12.0
+
+**Note**: Retained release history (not current-state documentation). This section's
+PATCH-STATE-001 narrative below is the historical record of the state-file
+consolidation itself — it legitimately names the pre-consolidation legacy filenames
+(`session-state.json`, `troubleshooting-history.json`, `agent-invocation-tracker.json`)
+as the THING THAT WAS CONSOLIDATED. For the CURRENT (post-v8.13.0) state model, see
+`project-state.json`'s `session_tracking` / `troubleshooting` / `agent_invocation_tracking`
+namespaces, with legacy-file fallback only where the implementation still provides it
+(documented inline where that applies).
 
 ### PATCH-STATE-001: State File Consolidation (2025-12-31)
 **Purpose**: Consolidate 4 fragmented state files into unified `project-state.json` with nested namespaces for improved data consistency and reduced file sprawl.
@@ -511,8 +525,11 @@ Read ./CLAUDE.md
 
 **Installation** (`docs/installation/`):
 - [ ] `docs/installation/IMPLEMENTATION_GUIDE.md`
-- [ ] `docs/installation/MCP_SERVER_SETUP.md`
 - [ ] `docs/installation/SLASH_COMMANDS_INSTALLATION.md`
+<!-- docs/installation/MCP_SERVER_SETUP.md intentionally removed from this checklist (v9.11.0, WP1
+     commit-b2): it documents installing dzp_server.py, which does not exist anywhere in this
+     codebase. Excluded from the publish manifest; do not re-add to this checklist unless the
+     server is actually built and the manifest exclusion is reversed. -->
 
 **Reference** (`docs/reference/`):
 - [ ] `docs/reference/AUTHORIZATION_PROTOCOL.md`
@@ -553,7 +570,7 @@ Read ./CLAUDE.md
 - [ ] `.protocol-state/security-review.md` (sample security log shipped with the template)
 - [ ] `.protocol-state/session_monitor.py`
 - [ ] `.protocol-state/session-state.example.json` (template)
-- [ ] `.protocol-state/session-state.json` (created by session_monitor.py)
+- [ ] `.protocol-state/session-state.json` (legacy fallback state file — current primary storage is `project-state.json::session_tracking` via `ProjectStateManager`; session_monitor.py writes this file only if that primary write path is unavailable, or may not exist at all on a healthy install)
 - [ ] `.protocol-state/work-session-alert.template.md`
 - [ ] `.protocol-state/WORK_SESSION_STATUS.md`
 
@@ -841,221 +858,30 @@ done
 
 **MANDATORY**: Run this script after ANY installation/upgrade.
 
-### 6.1 Complete Verification Script
+### 6.1 Verification Script (Canonical Source -- Toji IMPL-001 remediation, v9.11.0+)
 
-**Create**: `scripts/verify-installation.py`
+**Do NOT hand-author `scripts/verify-installation.py` from a fenced snippet in this document.** This
+section previously embedded a full, independent Python implementation. That copy silently drifted out
+of sync with the shipped script -- it was missing the SHA-256 file-integrity gate
+(`.protocol-state/security/file_integrity.py`), the `--init-integrity` / `--skip-integrity` /
+`--require-integrity` CLI flags, and the current required/optional file classifications (it
+mis-classified several dev-only files as required for a genuine consumer install). Following the old
+embedded copy as authoritative would have silently downgraded a security-relevant control.
 
-```python
-#!/usr/bin/env python3
-"""
-Domain Zero Protocol - Installation Verification
-Verifies complete file structure and identifies missing components
-"""
+The tracked script at `scripts/verify-installation.py` IS the sole executable source of truth. It ships
+as part of this distribution (`scripts/distro/publish-manifest.yaml` `include_scripts`). Verify it
+exists and run it directly:
 
-from pathlib import Path
-import sys
-
-# Complete file manifest (based on Section 3)
-REQUIRED_FILES = {
-    # Root files
-    'AI_INSTRUCTIONS.md': 'Root',
-    'CLAUDE.md': 'Root',
-    'CHANGELOG.md': 'Root',
-    'LICENSE': 'Root',
-    'PASSIVE_OBSERVER.md': 'Root',
-    'protocol.config.yaml': 'Root',
-    'PROTOCOL_QUICKSTART.md': 'Root',
-    'README.md': 'Root',
-    'SECURITY.md': 'Root',
-    'VERSION.md': 'Root',
-
-    # Protocol agents
-    'protocol/gojo.agent.md': 'Agent',
-    'protocol/yuuji.agent.md': 'Agent',
-    'protocol/megumi.agent.md': 'Agent',
-    'protocol/nobara.agent.md': 'Agent',
-    'protocol/todo.agent.md': 'Agent',
-    'protocol/maki.agent.md': 'Agent',
-    'protocol/panda.agent.md': 'Agent',
-    'protocol/inumaki.agent.md': 'Agent',
-    'protocol/sukuna.agent.md': 'Agent',
-    'protocol/toji.agent.md': 'Agent',
-
-    # Protocol main
-    'protocol/CLAUDE.md': 'Protocol',
-
-    # Protocol reference
-    'protocol/AGENT_SELF_IDENTIFICATION_STANDARD.md': 'Reference',
-    'protocol/CANONICAL_SOURCE_ADOPTION.md': 'Reference',
-    'protocol/EMERGENCY_STOP_STANDARD.md': 'Reference',
-    'protocol/ENVIRONMENT_TARGETING.md': 'Reference',
-    'protocol/HANDOFF_SPECIFICATION.md': 'Reference',
-    'protocol/MASK_MODE.md': 'Reference',
-    'protocol/MCP_INTEGRATION.md': 'Reference',
-    'protocol/MODE_INDICATORS.md': 'Reference',
-    'protocol/RESEARCH_MODE.md': 'Reference',
-    'protocol/TECHNICAL_LEVEL_ADAPTATION.md': 'Reference',
-    'protocol/TIER-SELECTION-GUIDE.md': 'Reference',
-
-    # Protocol modules
-    'protocol/modules/BINDING_OATH.md': 'Module',
-    'protocol/modules/EMERGENCY_STOP_PROTOCOL.md': 'Module',
-    'protocol/modules/ESCAPE_PATH_PROTOCOL.md': 'Module',
-    'protocol/modules/MASK_MODE_BEHAVIOR.md': 'Module',
-    'protocol/modules/MISSION_CONTROL_ISOLATION.md': 'Module',
-    'protocol/modules/SAFETY_FIRST.md': 'Module',
-    'protocol/modules/USER_LEVEL_ADAPTATION.md': 'Module',
-
-    # Gojo procedures
-    'protocol/gojo-procedures/OPERATIONAL_PROCEDURES.md': 'Procedures',
-
-    # Skills
-    'protocol/skills/AGENT_SKILLS_MAP.yaml': 'Skills',
-    'protocol/skills/SKILL_REGISTRY.md': 'Skills',
-    'protocol/skills/skill-builder.md': 'Skills',
-
-    # Documentation
-    'docs/FAQ.md': 'Docs',
-    'docs/DZP_DZA_INSTALLATION_REVIEW.md': 'Docs',
-    'docs/SYSTEM_UPDATE_IMPLEMENTATION_GUIDE.md': 'Docs',
-    'docs/TOKEN_EFFICIENCY_RECOMMENDATIONS.md': 'Docs',
-
-    # Docs - Guides
-    'docs/guides/AGENT_BINDING_OATH.md': 'Guides',
-    'docs/guides/CREATING_CLAUDE_AGENTS.md': 'Guides',
-    'docs/guides/DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md': 'Guides',
-    'docs/guides/EMERGENCY_STOP_GUIDE.md': 'Guides',
-    'docs/guides/TIER_TRANSITION_GUIDE.md': 'Guides',
-    'docs/guides/USER_LEVEL_GUIDE.md': 'Guides',
-
-    # Docs - Installation
-    'docs/installation/IMPLEMENTATION_GUIDE.md': 'Installation',
-    'docs/installation/MCP_SERVER_SETUP.md': 'Installation',
-    'docs/installation/SLASH_COMMANDS_INSTALLATION.md': 'Installation',
-
-    # Docs - Reference
-    'docs/reference/AUTHORIZATION_PROTOCOL.md': 'Reference',
-    'docs/reference/DOMAIN_ZERO_RESEARCH_AND_SKILLS_GUIDE.md': 'Reference',
-    'docs/reference/INSTRUCTION_CONFIRMATION_PROTOCOL.md': 'Reference',
-    'docs/reference/MIGRATION_GUIDE_TEMPLATE.md': 'Reference',
-    'docs/reference/playwright.md': 'Reference',
-    'docs/reference/REALITY_CHECK.md': 'Reference',
-
-    # Docs - Templates
-    'docs/templates/DECISION_REASONING_TEMPLATE.md': 'Templates',
-
-    # State files
-    '.protocol-state/custom-agent-registry.example.json': 'State',
-    '.protocol-state/custom_agent_monitor.py': 'State',
-    '.protocol-state/dev-notes.md': 'State',
-    '.protocol-state/dev-notes.template.md': 'State',
-    '.protocol-state/gojo-session-monitoring-guide.md': 'State',
-    '.protocol-state/security-review.md': 'State',
-    '.protocol-state/session_monitor.py': 'State',
-    '.protocol-state/session-state.example.json': 'State',
-    '.protocol-state/work-session-alert.template.md': 'State',
-    '.protocol-state/WORK_SESSION_STATUS.md': 'State',
-
-    # System Update Framework
-    '.protocol-state/system-update-framework/backup-manifest.template.json': 'SUF',
-    '.protocol-state/system-update-framework/file-classifications.template.json': 'SUF',
-    '.protocol-state/system-update-framework/plan-documentation.md': 'SUF',
-    '.protocol-state/system-update-framework/plan-documentation.template.md': 'SUF',
-    '.protocol-state/system-update-framework/SYSTEM_UPDATE_FRAMEWORK.md': 'SUF',
-    '.protocol-state/system-update-framework/SYSTEM_UPDATE_FRAMEWORK.template.md': 'SUF',
-    '.protocol-state/system-update-framework/version-registry.template.json': 'SUF',
-
-    # JJK Character Reference
-    '.protocol-state/jjk-character-reference/ryomen-sukuna.md': 'JJK',
-    '.protocol-state/jjk-character-reference/satoru-gojo.md': 'JJK',
-
-    # Scripts
-    'scripts/verify-protocol.ps1': 'Scripts',
-    'scripts/verify-protocol.sh': 'Scripts',
-    'scripts/validate-protocol.py': 'Scripts',
-    'scripts/domain-record-rotate.py': 'Scripts',
-    'scripts/verify-installation.py': 'Scripts',
-    'scripts/sync-templates.py': 'Scripts',
-
-    # Domain Record System (v8.8.0+)
-    '.dzp-domain/domain.record.md': 'Domain Record',
-    '.dzp-domain/.rotation-metadata.json': 'Domain Record',
-}
-
-# Optional files (won't fail if missing)
-OPTIONAL_FILES = {
-    '.protocol-state/project-state.json': 'State (created on first use)',
-    '.protocol-state/session-state.json': 'State (created by session_monitor.py)',
-    '.protocol-state/authorization/session-state.json': 'Auth (created on first use)',
-}
-
-def verify_installation():
-    """Verify complete DZP installation"""
-
-    missing_files = []
-    present_files = []
-
-    print("=" * 70)
-    print("DOMAIN ZERO PROTOCOL - INSTALLATION VERIFICATION")
-    print("=" * 70)
-    print()
-
-    # Check required files
-    for file_path, category in REQUIRED_FILES.items():
-        path = Path(file_path)
-        if path.exists():
-            present_files.append((file_path, category))
-        else:
-            missing_files.append((file_path, category))
-
-    # Report results
-    total = len(REQUIRED_FILES)
-    present_count = len(present_files)
-    missing_count = len(missing_files)
-
-    print(f"📊 RESULTS: {present_count}/{total} files present")
-    print()
-
-    if missing_count == 0:
-        print("✅ INSTALLATION COMPLETE - All required files present")
-        print()
-        print("Next steps:")
-        print("1. Run: python scripts/sync-templates.py")
-        print("2. Read: ./CLAUDE.md")
-        return 0
-
-    else:
-        print(f"❌ INSTALLATION INCOMPLETE - {missing_count} files missing")
-        print()
-        print("MISSING FILES:")
-        print()
-
-        # Group by category
-        by_category = {}
-        for file_path, category in missing_files:
-            if category not in by_category:
-                by_category[category] = []
-            by_category[category].append(file_path)
-
-        for category, files in sorted(by_category.items()):
-            print(f"  {category} ({len(files)} missing):")
-            for file_path in sorted(files):
-                print(f"    ❌ {file_path}")
-            print()
-
-        print("RECOVERY STEPS:")
-        print("1. Identify source: core-files-vX.Y.Z/ directory")
-        print("2. Copy missing files from source to current directory")
-        print("3. Re-run this verification script")
-        print("4. See Section 9 in AI_INSTRUCTIONS.md for detailed recovery")
-        print()
-
-        return 1
-
-if __name__ == '__main__':
-    exit_code = verify_installation()
-    sys.exit(exit_code)
+```bash
+# Confirm the shipped script is present
+ls scripts/verify-installation.py          # Linux/Mac
+Test-Path scripts/verify-installation.py   # Windows PowerShell
 ```
+
+If `scripts/verify-installation.py` is missing from an installation, restore it from the canonical
+source (`core-files-vX.Y.Z/scripts/verify-installation.py`, or
+https://github.com/DewyHRite/Domain-Zero-Protocol) -- never reconstruct it from memory or from any
+documentation snippet, including a prior version of this section.
 
 ### 6.2 Running Verification
 
@@ -1063,14 +889,25 @@ if __name__ == '__main__':
 # Make executable (Linux/Mac)
 chmod +x scripts/verify-installation.py
 
-# Run verification
+# Run verification (file-presence check + file-integrity check, if a baseline exists)
 python scripts/verify-installation.py
 
+# Establish the SHA-256 file-integrity baseline (run ONCE, immediately after install/update,
+# before making any manual edits)
+python scripts/verify-installation.py --init-integrity
+
+# Strict/CI mode: treat a MISSING integrity baseline as a failure instead of an informational notice
+python scripts/verify-installation.py --require-integrity
+
+# Skip the file-integrity check; only run the file-presence check
+python scripts/verify-installation.py --skip-integrity
+
 # Expected output if complete:
-# ✅ INSTALLATION COMPLETE - All required files present (X/X files present)
+# [OK] INSTALLATION COMPLETE - All required files present (X/X files present)
+# [OK] File integrity verified: N files checked against the baseline, 0 violations
 
 # Expected output if incomplete:
-# ❌ INSTALLATION INCOMPLETE - Y files missing
+# [FAIL] INSTALLATION INCOMPLETE - Y files missing
 # [List of missing files by category]
 ```
 
@@ -1091,7 +928,7 @@ python scripts/verify-installation.py
 
 **⚠️ DO NOT OVERWRITE THESE**:
 - `.protocol-state/project-state.json` (user project configuration)
-- `.protocol-state/session-state.json` (current work session)
+- `.protocol-state/session-state.json` (legacy fallback for the current work session; primary storage is `project-state.json::session_tracking`)
 - `.protocol-state/custom-agent-registry.json` (custom agents)
 - `.protocol-state/dev-notes.md` (implementation log)
 - `.protocol-state/security-review.md` (security findings)
@@ -1558,7 +1395,7 @@ python scripts/validate-protocol.py --check --strict
 - Non-breaking additions increment minor version
 - Document all schema changes in version header
 
-### 11.4 Compliance Status (v8.10.0)
+### 11.4 Compliance Status (Historical — resolved as of v8.10.0)
 
 **Current Compliance** (as of PATCH-COMP-001):
 - ✅ `project-state.json`: COMPLIANT (fixed in PATCH-COMP-001)
@@ -1778,7 +1615,7 @@ python scripts/validate-protocol.py --check
 **After installation is verified**, read these files in order:
 
 1. **[`CLAUDE.md`](CLAUDE.md)** - **START HERE** (Primary protocol authority)
-   `protocol/CLAUDE.md` is the compatibility mirror for legacy entrypoints.
+   `protocol/CLAUDE.md` is a compatibility pointer/stub (since v9.11.0) redirecting legacy entrypoints to the root file.
 2. [`protocol.config.yaml`](protocol.config.yaml) - Configuration
 3. Agent-specific `.agent.md` files as needed
 
@@ -1826,9 +1663,11 @@ scripts and work normally on any install.
 
 **What it is**: an append-only JSONL registry (`.protocol-state/issue-registry.jsonl`) plus a
 fail-closed pre-commit/CI gate (`scripts/check_issue_ids.py`) that mints and validates issue-tracker
-IDs (`SEC-`, `BUG-`, `FEAT-`, `IMPL-`, `CODE-`, `ISS-`, `TEST-`, `MF-` prefixed) cited in the three
-protected records and `audits/**`. It prevents an ID being cited before it exists in the registry
-(mint-before-cite) and blocks malformed IDs.
+IDs (`SEC-`, `BUG-`, `FEAT-`, `IMPL-`, `CODE-`, `ISS-`, `TEST-`, `MF-`, `LL-`, `SF-` prefixed) cited
+in the three protected records and `audits/**`. It prevents an ID being cited before it exists in the
+registry (mint-before-cite) and blocks malformed IDs. (`LL`/`SF` adopted v9.11.0, `FEAT-IDGOV-003` --
+`LL` = Lessons Learned/Gojo, `SF` = Security Framework/Megumi; see `scripts/idgov/engine.py`
+`AUTHORITY`.)
 
 **Ships DISABLED** (Toji `UX-001` remediation, 2026-07-18): the canonical dev tree runs the gate live
 (`issue_governance.enabled: true` in `protocol.config.yaml`), but every **published/distributed**
@@ -1868,7 +1707,7 @@ See `protocol/skills/megumi-secid.md` for the Megumi-mediated `secid` tool workf
 ## Canonical Source
 
 > **Repository**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Version**: 9.10.2
+> **Version**: 9.11.0
 > **Canonical Local Authority**: `./CLAUDE.md`
 
 All protocol updates originate from the canonical source.
@@ -1885,7 +1724,7 @@ All protocol updates originate from the canonical source.
 - [ ] Check `.protocol-state/session_monitor.py` exists
 - [ ] Check `protocol/gojo.agent.md` exists
 - [ ] Check `CLAUDE.md` exists
-- [ ] Check `protocol/CLAUDE.md` exists (compatibility mirror)
+- [ ] Check `protocol/CLAUDE.md` exists (compatibility pointer/stub since v9.11.0)
 
 **If ANY checklist item fails**: Follow Section 9 (Troubleshooting) to recover missing files.
 
@@ -1897,5 +1736,5 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**Domain Zero Protocol v9.10.2 - Complete Installation Guide**
-**Updated**: 2026-07-19
+**Domain Zero Protocol v9.11.0 - Complete Installation Guide**
+**Updated**: 2026-08-03

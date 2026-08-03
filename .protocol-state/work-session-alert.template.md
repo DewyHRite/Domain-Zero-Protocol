@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 ---
 
 # Work Session Alert: Save Progress & Take a Break - Must be followed verbatim!!!
@@ -33,6 +33,9 @@ You have been working on {PROJECT_NAME} for {DURATION}. Prolonged sessions can l
    - If fatigued, consider ending the session
    - Schedule a fresh start when well-rested
    - Quality > quantity—tired code is buggy code
+
+4. **Or, end the session safely with full continuity (FEAT-TRANSFER-9.11.0-001)**
+   - {SESSION_TRANSFER_TIP}
 
 > _Tip: Use this time to stretch, hydrate, and clear your mind before resuming work._
 
@@ -108,7 +111,7 @@ Gojo requires you to make a conscious decision about how to proceed:
 
 **Default to Option 1 (Save & Break)** if:
 - Session duration exceeds {DURATION}
-- It's after {LATE_NIGHT_THRESHOLD} (late night work)
+- It's within the late-night window (starts {LATE_NIGHT_THRESHOLD} local, wraps past midnight until early morning)
 - You hesitate or feel uncertain
 - You're debugging the same issue repeatedly
 

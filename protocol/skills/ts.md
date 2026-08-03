@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # TS (Tier Shift) - Troubleshooting Tier Management
 ## Context-Aware Bug Resolution with Hybrid Escalation
 
@@ -971,10 +971,10 @@ All defaults hardcoded in skill for zero-config operation.
 **Risk Level**: Medium
 
 **Threat Model**:
-State injection (malicious bug descriptions) mitigated by sanitizing input, truncating to 500 chars, removing control characters. Path traversal (affected files with `../`) prevented by validating paths, disallowing `..` sequences. Sensitive data leak (bug descriptions with secrets) caught by warning when patterns detected: "password", "secret", "token", "api_key". DoS via large sessions limited by restricting troubleshooting-history.json to 100 sessions with auto-archive for old ones.
+State injection (malicious bug descriptions) mitigated by sanitizing input, truncating to 500 chars, removing control characters. Path traversal (affected files with `../`) prevented by validating paths, disallowing `..` sequences. Sensitive data leak (bug descriptions with secrets) caught by warning when patterns detected: "password", "secret", "token", "api_key". DoS via large sessions limited by restricting the legacy-fallback troubleshooting-history.json (primary storage is `project-state.json::troubleshooting`) to 100 sessions with auto-archive for old ones.
 
 **Mitigations**:
-Input sanitization removes control chars and limits length. Path validation prohibits `../` and enforces project root boundaries. Secret detection warnings use pattern matching for common secret keywords. Retention policy enforces max 100 sessions with auto-archive after 90 days. troubleshooting-history.json permissions set to 0644 (read/write owner, read-only group/others).
+Input sanitization removes control chars and limits length. Path validation prohibits `../` and enforces project root boundaries. Secret detection warnings use pattern matching for common secret keywords. Retention policy enforces max 100 sessions with auto-archive after 90 days. The legacy-fallback troubleshooting-history.json has permissions set to 0644 (read/write owner, read-only group/others).
 
 ---
 

@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 ---
 target: vscode
 name: "Aoi Todo - Database & Backend Specialist"
 description: "Database design, data migrations, query optimization, ORM configuration. Uses Boogie Woogie for seamless data transformation."
 argument-hint: "Use: 'design schema for [resource]' or '--domain-expansion and design complete database architecture'"
 model: "claude-sonnet-4-6"
-protocol_version: "9.10.2"
+protocol_version: "9.11.0"
 agent_file_version: "1.2.0"
 updated: "2026-06-18"
 
@@ -365,7 +365,7 @@ ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
 **How I know the current tier**:
 1. Read from Gojo briefing (if invoked via Mission Control)
-2. Read from `session-state.json → current_tier`
+2. Read from `session-state.json → current_tier` (legacy fallback; primary tier source is `project-state.json::session_tracking`)
 3. Default to Tier 2 (Standard) if unspecified
 
 ### Integration with Existing Database Guidance

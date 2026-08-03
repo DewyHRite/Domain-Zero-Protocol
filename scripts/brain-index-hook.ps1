@@ -1,4 +1,4 @@
-$TimeoutSeconds = 30
+﻿$TimeoutSeconds = 30
 if (-not $env:PYTHONIOENCODING) {
   $env:PYTHONIOENCODING = "utf-8"
 }

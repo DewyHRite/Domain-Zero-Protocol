@@ -1,4 +1,4 @@
-# Domain Zero Protocol Verification Script (PowerShell)
+﻿# Domain Zero Protocol Verification Script (PowerShell)
 # Version: 2.0
 # Purpose: Verify protocol integrity, configuration completeness, and enforcement rules
 
@@ -408,8 +408,33 @@ function Test-ConfigCompleteness {
     # SEC-9720-004: the contact placeholder (email@example.com) is demoted to a
     # WARNING so a fresh install passes verification; all other placeholders remain
     # hard ERRORs because they affect project identity / repo references.
+    # BUGREPORT-009 (re-rated P3 -> P2): this check could NEVER FIRE.
+    #
+    # It searched only for Title-Case literals ("Your Name", "Your Project
+    # Name", ...). The distribution actually ships UPPER_SNAKE placeholders --
+    # protocol.config.yaml carries `name: "YOUR_NAME"` and
+    # `name: "YOUR_PROJECT_NAME"`. PowerShell's -match is case-insensitive, so
+    # case was never the problem; the SEPARATOR was. "Your Name" (space) can
+    # not match "YOUR_NAME" (underscore). Zero overlap across the entire list.
+    #
+    # This was not drift that degraded accuracy. There was no configuration of
+    # a fresh install in which this check could fire on the identity fields it
+    # exists to guard, so its "No placeholder values detected" PASS carried no
+    # information for that check class, in every install, for an unknown
+    # period. A gate that cannot fail is worse than an absent gate: it
+    # manufactures false confidence. Confirmed empirically before this fix by
+    # running `-Only config` against a config containing BOTH placeholders --
+    # the checker printed PASS.
+    #
+    # The fix is a case/separator-TOLERANT regex family, so a future template
+    # restyling (YOUR_NAME -> Your-Name -> your name) cannot silently
+    # reintroduce the same false negative. Matching a fixed literal is what
+    # broke; matching the SHAPE is what survives.
     $ContactPlaceholder = "email@example.com"
-    $Placeholders = @(
+
+    # Retained for backward compatibility with older or hand-edited configs
+    # that really do carry the Title-Case forms. No regression.
+    $LegacyPlaceholders = @(
         "Your Name",
         "Your Project Name",
         "Your Organization",
@@ -417,16 +442,73 @@ function Test-ConfigCompleteness {
         "YYYY-MM-DD"
     )
 
+    $PlaceholderPatterns = @(
+        @{ Label = "YOUR_NAME-style placeholder";         Regex = "YOUR[_\-\s]+NAME\b" },
+        @{ Label = "YOUR_PROJECT_NAME-style placeholder"; Regex = "YOUR[_\-\s]+PROJECT[_\-\s]+NAME\b" },
+        @{ Label = "YOUR_ORGANIZATION-style placeholder"; Regex = "YOUR[_\-\s]+ORG(ANIZATION)?\b" },
+        @{ Label = "YOUR_REPO-style placeholder";         Regex = "YOUR[_\-\s]+REPO\b" }
+    )
+
+    # Scope detection to YAML *values* by stripping inline comments. Without
+    # this the file's own explanatory prose -- e.g. a comment reading "adjust
+    # for your project" -- false-positives.
+    #
+    # SEC-VERIFYPS-001: the first version of this scoping split on the FIRST
+    # '#' in the line, unconditionally. A '#' living INSIDE a quoted scalar
+    # (a URL fragment, a channel name, a product name such as "C# Toolkit")
+    # therefore truncated the line and hid every placeholder after it. That is
+    # a newly-introduced path along which THIS GATE CANNOT FIRE, created inside
+    # the fix for a finding titled "a gate that could never fire". The earlier
+    # claim that no shipped config places a '#' inside a quoted value was true
+    # of the shipped configs and irrelevant to the CONSUMER configs this gate
+    # actually runs against.
+    #
+    # Rule applied (YAML's own): a '#' opens a comment only when it is OUTSIDE
+    # quotes AND is at the start of the line or preceded by whitespace.
+    #
+    # Deliberately NOT a YAML parse: this script must keep working on a config
+    # too malformed to parse, which is exactly when it matters most. A line
+    # with unbalanced quotes therefore strips NOTHING, which fails toward
+    # reporting a placeholder rather than toward hiding one.
+    function Get-YamlValuePortion {
+        param([string]$Line)
+        $inSingle = $false
+        $inDouble = $false
+        for ($i = 0; $i -lt $Line.Length; $i++) {
+            $ch = $Line[$i]
+            if ($ch -eq "'" -and -not $inDouble) { $inSingle = -not $inSingle; continue }
+            if ($ch -eq '"' -and -not $inSingle) { $inDouble = -not $inDouble; continue }
+            if ($ch -eq '#' -and -not $inSingle -and -not $inDouble) {
+                if ($i -eq 0 -or [char]::IsWhiteSpace($Line[$i - 1])) {
+                    return $Line.Substring(0, $i)
+                }
+            }
+        }
+        return $Line
+    }
+
+    $ConfigValuesOnly = (
+        ($ConfigContent -split "`n") | ForEach-Object { Get-YamlValuePortion $_ }
+    ) -join "`n"
+
     $PlaceholdersFound = @()
-    foreach ($Placeholder in $Placeholders) {
-        if ($ConfigContent -match [regex]::Escape($Placeholder)) {
+    foreach ($Placeholder in $LegacyPlaceholders) {
+        if ($ConfigValuesOnly -match [regex]::Escape($Placeholder)) {
             $PlaceholdersFound += $Placeholder
+        }
+    }
+    foreach ($Pattern in $PlaceholderPatterns) {
+        if ($ConfigValuesOnly -match $Pattern.Regex) {
+            $PlaceholdersFound += $Pattern.Label
         }
     }
 
     # Check the contact placeholder separately as a warning.
-    if ($ConfigContent -match [regex]::Escape($ContactPlaceholder)) {
-        Write-Warn "contact field still contains placeholder '$ContactPlaceholder' — update protocol.config.yaml with your real contact address."
+    # SEC-9720-004 preserved: contact stays a WARNING so a fresh install still
+    # passes verification; every identity placeholder above remains a hard
+    # ERROR.
+    if ($ConfigValuesOnly -match [regex]::Escape($ContactPlaceholder)) {
+        Write-Warn "contact field still contains placeholder '$ContactPlaceholder' - update protocol.config.yaml with your real contact address."
     }
 
     if ($PlaceholdersFound.Count -eq 0) {
@@ -617,12 +699,12 @@ if ($List) {
 
 Write-Host @"
 
-╔═══════════════════════════════════════════════════════════════╗
-║                                                               ║
-║        DOMAIN ZERO PROTOCOL VERIFICATION TOOL                 ║
-║                     Version 2.0                               ║
-║                                                               ║
-╚═══════════════════════════════════════════════════════════════╝
++---------------------------------------------------------------+
+|                                                               |
+|        DOMAIN ZERO PROTOCOL VERIFICATION TOOL                 |
+|                     Version 2.0                               |
+|                                                               |
++---------------------------------------------------------------+
 
 "@
 

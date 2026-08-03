@@ -150,6 +150,20 @@ STORAGE_WARNING_BYTES = 200 * 1024 * 1024
 #                                                     separately; included here defensively so
 #                                                     repairing that import will not reintroduce
 #                                                     BUG-SNAPSHOT-NULLFIELDS-001)
+#
+# ISS-TRANSFER-9.11.0-001 (2026-07-29, USER-directed): "session-transfer" added.
+# script_dependencies.yaml's new session-transfer event wires
+# --trigger session-transfer straight into this script with required: true
+# (event fail_soft: false), reproducing the identical class of gap
+# BUG-SNAPSHOT-NULLFIELDS-001 fixed for pre-protected-edit/toji-snapshot: an
+# accepted-looking config value the argparse choices did not actually accept.
+# First live run of session-transfer caught this -- --dry-run cannot, since it
+# only resolves step targets and never executes the command. Mirrored into
+# BOTH protocol/validation-rules.yaml `reason` enums (snapshot-manifest and
+# snapshot schemas) in the same change, per this comment's own "MUST mirror
+# EXACTLY" rule above -- see tests/test_session_transfer.py
+# TestSnapshotTriggerConfigConsumerParity for the machine-checked guard
+# (same family as dzp.py's _STATIC_FALLBACK_EVENTS parity test).
 VALID_TRIGGERS = [
     "manual",
     "operation_count",
@@ -159,6 +173,7 @@ VALID_TRIGGERS = [
     "pre-protected-edit",
     "toji-snapshot",
     "pre_restore_backup",
+    "session-transfer",
 ]
 
 

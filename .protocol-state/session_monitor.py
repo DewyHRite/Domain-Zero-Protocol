@@ -14,12 +14,35 @@ Usage:
 
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+# SEC-TRANSFER-9.11.0-005 (P3, CWE-22): session ids flow into filenames
+# (handoff archive copies) and must be restricted to a safe charset BEFORE
+# any path is built anywhere in this module.
+_SESSION_ID_PATTERN = re.compile(r'^[A-Za-z0-9_-]+$')
+
+
+def _is_valid_session_id(value: Optional[str]) -> bool:
+    """True only for a non-empty string matching the safe session-id charset
+    (letters, digits, underscore, hyphen). Rejects None, empty strings, and
+    anything containing path separators / traversal sequences / other
+    metacharacters -- e.g. '../../evil' is rejected outright."""
+    return bool(value) and bool(_SESSION_ID_PATTERN.fullmatch(value))
+
+
+# IMPL-001 remediation (Toji audit 2026-07-29): the ordered set of required
+# transfer steps that must ALL be recorded complete in the .INCOMPLETE marker
+# before it is cleared. Previously handoff_write() cleared the marker on its
+# own success -- before the mandatory end-snapshot step even ran -- so a
+# failing snapshot left no durable evidence of the incomplete transfer. See
+# SessionMonitor._mark_transfer_step_complete() / transfer_finalize().
+_TRANSFER_REQUIRED_STEPS = ("handoff-write", "end-snapshot")
 
 # PATCH-STATE-001: Import centralized state manager
 try:
@@ -105,6 +128,43 @@ def _parse_utc(timestamp: Optional[str]) -> Optional[datetime]:
     return dt
 
 
+def _local_now(utc_dt: datetime) -> datetime:
+    """
+    Convert an aware UTC datetime to local wall-clock time.
+
+    BUG-SESSION-005: extracted as its own function (rather than inlining
+    `utc_dt.astimezone()` at every call site) so tests can monkeypatch this
+    single seam and inject a deterministic local time, without depending on
+    the real system timezone of whatever machine runs the test suite.
+    """
+    return utc_dt.astimezone()
+
+
+def _is_late_night(local_dt: datetime, thresholds: Dict) -> bool:
+    """
+    BUG-SESSION-005: single implementation for every "is it late night"
+    computation site in this module.
+
+    Two defects fixed here:
+    (a) previously computed from UTC hour (`now.hour >= late_night_hour`
+        where `now = datetime.now(timezone.utc)`) instead of local wall-clock
+        hour -- for a non-UTC user this both false-positived (UTC evening
+        hours misread as local late-night) and false-negatived (real local
+        late-night hours landing on a low UTC hour never tripped the check).
+    (b) `hour >= late_night_hour` alone has no midnight wrap: 00:00-05:59 was
+        never flagged in ANY timezone. `late_night_end_hour` (default 06:00)
+        closes the wrap.
+
+    `.get(..., default)` on both threshold keys means a legacy on-disk
+    thresholds dict (minted before `late_night_end_hour` existed) is
+    tolerated without requiring a state-file migration.
+    """
+    late_night_hour = thresholds.get('late_night_hour', 22)
+    late_night_end_hour = thresholds.get('late_night_end_hour', 6)
+    local_hour = local_dt.hour
+    return local_hour >= late_night_hour or local_hour < late_night_end_hour
+
+
 class SessionMonitor:
     """
     Work session monitoring with real time tracking and enforcement.
@@ -124,6 +184,20 @@ class SessionMonitor:
         self.template_file = self.protocol_root / ".protocol-state" / "work-session-alert.template.md"
         self.config_file = self.protocol_root / "protocol.config.yaml"
         self.invocation_tracker_file = self.protocol_root / ".protocol-state" / "agent-invocation-tracker.json"
+
+        # FEAT-TRANSFER-9.11.0-001 (v9.11.0 Increment 2): /session transfer
+        # handoff artifacts. Deliberately NOT protected documents (see
+        # protocol/skills/session.md § /session transfer) -- regenerable
+        # derived state, overwritten each transfer, gitignored, never shipped.
+        self.handoff_file = self.protocol_root / ".protocol-state" / "session-handoff.md"
+        self.handoff_marker_file = self.protocol_root / ".protocol-state" / "session-handoff.INCOMPLETE"
+        self.handoff_archive_dir = self.protocol_root / ".protocol-state" / "archive" / "handoff"
+        self.handoff_notes_file = self.protocol_root / ".protocol-state" / "session-handoff-notes.md"
+        # CODE-001 remediation (Toji audit 2026-07-29): once handoff_write()
+        # successfully consumes the staged notes file into a written brief,
+        # it is moved here (single-use) so a later transfer can never
+        # silently reuse stale notes -- see _archive_and_clear_handoff_notes().
+        self.handoff_notes_archive_dir = self.protocol_root / ".protocol-state" / "handoff-notes-archive"
 
         # Load high-risk operation literals (no regex, safer and faster)
         self._high_risk_literals = self._load_high_risk_literals()
@@ -500,6 +574,11 @@ class SessionMonitor:
                 "critical_session_minutes": self.alert_thresholds['critical_session_minutes'],
                 "max_continuous_minutes": self.alert_thresholds['max_continuous_minutes'],
                 "late_night_hour": 22,
+                # BUG-SESSION-005: midnight-wrap end of the late-night window
+                # (local hour < this counts as late night too). .get()'d with
+                # a fallback everywhere it's read, so legacy state files
+                # without this key are never broken -- see _is_late_night().
+                "late_night_end_hour": 6,
                 "minimum_break_minutes": 15
             },
             "session_history": [],
@@ -637,10 +716,34 @@ class SessionMonitor:
 
         Returns:
             Updated state with session initialized, or default state if disabled
+
+        Raises:
+            ValueError: if an explicit `session_id` is supplied and does not
+                match the safe session-id charset (SEC-TRANSFER-9.11.0-005,
+                CWE-22) -- this id later flows into handoff archive filenames,
+                so it is rejected at creation time, before any state mutation.
         """
         # Early return if session monitoring is disabled (v8.13.0)
         if not self.enabled:
             return self._default_state()
+
+        # SEC-TRANSFER-9.11.0-005 (P3, CWE-22): validate a caller-supplied id
+        # BEFORE anything else -- this parameter is not currently exposed via
+        # the CLI, but the API itself must not accept an unsafe value that
+        # would later be embedded in a handoff archive filename.
+        if session_id is not None and not _is_valid_session_id(session_id):
+            raise ValueError(
+                f"Invalid session_id {session_id!r}: must match "
+                f"{_SESSION_ID_PATTERN.pattern} (SEC-TRANSFER-9.11.0-005)."
+            )
+
+        # FEAT-TRANSFER-9.11.0-001 (v9.11.0 Increment 2): checked BEFORE
+        # anything else mutates state, per the master plan's "/session start
+        # integration" requirement -- these are read-only advisories, never
+        # blocking, and must never raise (a broken marker/handoff file must
+        # not prevent starting a session).
+        self._warn_if_transfer_incomplete()
+        self._point_to_fresh_handoff_brief()
 
         state = self.load_state()
         now = datetime.now(timezone.utc)
@@ -863,16 +966,62 @@ class SessionMonitor:
             alert_level = "maximum"  # Highest severity level
 
         # Build alert context
+        # BUG-SESSION-005: is_late_night must be computed from LOCAL wall-clock
+        # time (with midnight wrap), never from the UTC `now` above -- see
+        # _is_late_night() for the single implementation and rationale.
         context = {
             "duration_minutes": int(duration_minutes),
             "duration_formatted": self._format_duration(duration_minutes),
             "alert_level": alert_level,
-            "is_late_night": now.hour >= thresholds['late_night_hour'],
+            "is_late_night": _is_late_night(_local_now(now), thresholds),
             "continuous_minutes": state['session_metrics']['continuous_work_minutes'],
             "alert_count": state['current_session']['alert_count']
         }
 
         return alert_needed, alert_level, context
+
+    def format_no_alert_message(self, state: Dict = None) -> str:
+        """
+        Build the CLI message for the "no alert needed" case (`check` /
+        `check-and-record`).
+
+        2026-08-01 UX-honesty fix (Toji session-time-authority audit
+        follow-up, audits/2026-08-01-toji-session-time-authority-claude-codex.md):
+        previously both commands printed the bare "[OK] No alert needed" line
+        whenever check_alert_needed() returned no alert -- even when NO
+        session was active at all (check_alert_needed() bails out early on
+        the `session_active` guard, same state this method reads). That is
+        technically true (no alert fired) but misleading: wellbeing/duration
+        tracking is idle, not merely quiet between thresholds. This adds an
+        ASCII-only [INFO] line recommending the user start a session, while
+        leaving the active-session output byte-for-byte unchanged.
+
+        Args:
+            state: Optional pre-loaded session state (as returned by
+                load_state()). Callers that already have the state in hand
+                (e.g. check_alert_needed()'s caller) can pass it directly to
+                avoid a redundant reload; if omitted, load_state() (fail-soft,
+                never raises) is called.
+
+        Returns:
+            The message to print. Active session: exactly "[OK] No alert
+            needed" (unchanged from pre-fix behavior). No active session:
+            that same line plus an appended "[INFO] ..." line, ASCII only.
+        """
+        if state is None:
+            state = self.load_state()
+
+        lines = ["[OK] No alert needed"]
+
+        session_active = state.get('current_session', {}).get('session_active', False)
+        if not session_active:
+            lines.append(
+                "[INFO] No active session - wellbeing tracking is idle. "
+                "Start one for accurate duration/alert tracking: "
+                "/session start (or: python .protocol-state/session_monitor.py start)"
+            )
+
+        return "\n".join(lines)
 
     def render_alert(self, context: Dict) -> str:
         """
@@ -901,6 +1050,7 @@ class SessionMonitor:
 **Options:**
 1. Save progress and take a break (recommended)
 2. Continue working (proceed with caution)
+3. Or run /session transfer to end this session safely with a handoff brief so the next session resumes with full context
 
 Template file not found at: {self.template_file}
 """
@@ -911,15 +1061,26 @@ Template file not found at: {self.template_file}
         now = datetime.now(timezone.utc)
         state = self.load_state()
 
+        # BUG-SESSION-005 (BUG C): {DATE} was rendering a bare, unlabeled UTC
+        # timestamp into a user-facing alert. Label local+UTC, same pattern
+        # as get_session_summary()'s Current Time/Started fields.
+        now_local = _local_now(now)
+        date_display = f"{now_local.strftime('%Y-%m-%d %H:%M %Z')} ({now.strftime('%Y-%m-%d %H:%M')} UTC)"
+
         # Build replacement values
         replacements = {
-            '{DATE}': now.strftime('%Y-%m-%d %H:%M'),
+            '{DATE}': date_display,
             '{DURATION}': context.get('duration_formatted', 'Unknown'),
             '{PROJECT_NAME}': self._get_project_name(),
             '{LATE_NIGHT_FLAG}': '[LATE] YES - Late night work detected' if context.get('is_late_night') else '[DAY] No',
             '{CONTINUOUS_FLAG}': f"[!] {context.get('continuous_minutes', 0)} minutes without break" if context.get('continuous_minutes', 0) > 120 else '[OK] Recent breaks taken',
             '{BREAK_RECOMMENDATION}': self._get_break_recommendation(context),
-            '{LATE_NIGHT_THRESHOLD}': f"{state['thresholds']['late_night_hour']}:00"
+            '{LATE_NIGHT_THRESHOLD}': f"{state['thresholds']['late_night_hour']}:00",
+            # FEAT-TRANSFER-9.11.0-001 (v9.11.0 Increment 2, USER scope addition):
+            # every wellness checkpoint (standard/escalated/critical/maximum)
+            # renders through this same template, so this placeholder appears
+            # at every alert level without needing per-level branching here.
+            '{SESSION_TRANSFER_TIP}': self._get_session_transfer_tip(),
         }
 
         # Replace all placeholders
@@ -1009,7 +1170,8 @@ Template file not found at: {self.template_file}
         if duration_minutes and duration_minutes >= state['thresholds']['minimum_break_minutes']:
             state['current_session']['high_risk_operations_blocked'] = False
 
-        print(f"[OK] Break recorded at {now.strftime('%H:%M')}")
+        # BUG-SESSION-005 (BUG C): label local+UTC instead of a bare unlabeled UTC time.
+        print(f"[OK] Break recorded at {_local_now(now).strftime('%H:%M %Z')} ({now.strftime('%H:%M')} UTC)")
         self.save_state(state)
         return state
 
@@ -1044,6 +1206,12 @@ Template file not found at: {self.template_file}
 
                 # EXTENSION 3: Security Review (PATCH-SESSION-005)
                 self._log_session_to_security_review('session_end', archived_session)
+        else:
+            # FEAT-TRANSFER-9.11.0-001 (v9.11.0 Increment 2, requirement 4):
+            # 'end' (bare, or as the session-end step inside a 'transfer'
+            # event run with no active session) must degrade gracefully with
+            # a clear message -- never a traceback, and never silence either.
+            print("[INFO] No active session to end (already ended, or never started). Nothing to do.")
 
         self.save_state(state)
 
@@ -1160,16 +1328,34 @@ Template file not found at: {self.template_file}
         # rest of this module (also picks up 'Z'-suffix normalization); display
         # only, so no arithmetic risk either way, but keeping every timestamp
         # parse on the same centralized helper avoids future drift.
+        #
+        # BUG-SESSION-005 (BUG C): the stored `start_time` stays UTC (never
+        # changed -- it is persisted, parsed elsewhere, and IDs derived from
+        # it must remain stable/sortable). Only the DISPLAY string changes:
+        # local wall-clock time with an explicit zone abbreviation, plus the
+        # UTC value in parentheses for cross-reference.
         start_dt = _parse_utc(start_time)
-        start_formatted = (
-            start_dt.strftime('%Y-%m-%d %H:%M') if start_dt is not None else "Invalid timestamp"
-        )
+        if start_dt is not None:
+            start_local = _local_now(start_dt)
+            start_formatted = (
+                f"{start_local.strftime('%Y-%m-%d %H:%M %Z')} "
+                f"({start_dt.strftime('%Y-%m-%d %H:%M')} UTC)"
+            )
+        else:
+            start_formatted = "Invalid timestamp"
 
         # Calculate live duration (BUG FIX: PATCH-SESSION-005 - SESSION-001)
         # Fixes bug where status command showed 0 minutes for long-running sessions
         current_duration = self._calculate_current_duration(state)
         current_continuous = self._calculate_current_continuous_work(state)
-        current_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+        # BUG-SESSION-005 (BUG C): same local+UTC labeling as `start_formatted`
+        # above -- previously this printed a bare, unlabeled UTC timestamp.
+        current_time_utc = datetime.now(timezone.utc)
+        current_time_local = _local_now(current_time_utc)
+        current_time = (
+            f"{current_time_local.strftime('%Y-%m-%d %H:%M %Z')} "
+            f"({current_time_utc.strftime('%Y-%m-%d %H:%M')} UTC)"
+        )
 
         summary = f"""
 [STATUS] **Work Session Summary**
@@ -1182,7 +1368,7 @@ Template file not found at: {self.template_file}
 **Escalation Level:** {current['escalation_level']}
 **High-Risk Blocking:** {'[BLOCKED] ENABLED' if current['high_risk_operations_blocked'] else '[OK] Disabled'}
 
-**Session ID:** {current['session_id']}
+**Session ID:** {current['session_id']} (UTC-stamped)
 **Started:** {start_formatted}
 """
         return summary.strip()
@@ -1319,6 +1505,23 @@ Template file not found at: {self.template_file}
             return "[LATE] Late night work - consider ending session"
         else:
             return "Continue with awareness"
+
+    def _get_session_transfer_tip(self) -> str:
+        """FEAT-TRANSFER-9.11.0-001 (v9.11.0 Increment 2, USER scope addition):
+        recommend `/session transfer` alongside the existing wellness-alert
+        recommendations (save & break / continue). Additive, not a
+        replacement -- keeps both options and adds a third that ends the
+        session safely with a regenerable handoff brief so the next session
+        resumes with full context instead of losing the 'why'.
+
+        Same fixed wording at every alert level (standard/escalated/critical/
+        maximum) -- the recommendation to preserve continuity applies
+        regardless of how severe the current alert is.
+        """
+        return (
+            "Or run `/session transfer` to end this session safely with a "
+            "handoff brief so the next session resumes with full context."
+        )
 
     def _inject_custom_messages(self, context: Dict) -> str:
         """
@@ -2322,6 +2525,775 @@ Template file not found at: {self.template_file}
 
         return result
 
+    # -----------------------------------------------------------------------
+    # FEAT-TRANSFER-9.11.0-001 (v9.11.0 Increment 2) - /session transfer
+    #
+    # See internal-docs/Patch Report/DZP-MASTER-PLAN-2026-07-28.md Workstream B
+    # and protocol/skills/session.md § /session transfer for the full design.
+    #
+    # `.protocol-state/script_dependencies.yaml`'s new `session-transfer` event
+    # is fail-closed (event-level fail_soft: false) and chains:
+    #   0 transfer-begin (required) -> 1 session-update (required) ->
+    #   2 session-end (required) -> 3 handoff-write (required) ->
+    #   4 end-snapshot (required) -> 5 transfer-finalize (required) ->
+    #   6 cortex-medium / 7 cortex-distill / 8 validation-refresh
+    #   (optional AND non_blocking -- cannot fail or block this event)
+    #
+    # M1 (event fail-closed) + M4 (this `handoff` retry subcommand) live
+    # outside this module (registry + CLI). M2 (positive identity predicate)
+    # and M3 (incomplete-transfer marker) are implemented below.
+    #
+    # M3 note: ScriptCoordinator (.protocol-state/script_coordinator.py) has NO
+    # mechanism to pass a value computed by one step into a later step's
+    # command list (each step is a static, YAML-declared subprocess
+    # invocation). transfer_begin() therefore PERSISTS the expected session id
+    # in the .INCOMPLETE marker file itself; handoff_write() reads it back
+    # from there when the caller (the coordinator's yaml step) does not pass
+    # --expect-session-id explicitly. Direct/manual/test invocations MAY still
+    # pass --expect-session-id explicitly -- both paths are supported.
+    #
+    # IMPL-001 remediation (Toji audit 2026-07-29): handoff_write() success no
+    # longer clears the marker directly -- it only records 'handoff-write'
+    # complete via _mark_transfer_step_complete(). transfer_finalize() (step 5
+    # above) records 'end-snapshot' complete and clears the marker ONLY once
+    # every step in _TRANSFER_REQUIRED_STEPS is recorded. Because this event is
+    # fail-closed, a failing end-snapshot breaks the loop BEFORE
+    # transfer-finalize ever runs, so the marker correctly survives with only
+    # 'handoff-write' recorded -- durable, visible evidence that the mandatory
+    # snapshot (not just the handoff) is what remains outstanding.
+    # -----------------------------------------------------------------------
+
+    def transfer_begin(self) -> Dict:
+        """M3: write the incomplete-transfer marker BEFORE anything else in
+        the transfer chain mutates state (this is step 0, required, of the
+        session-transfer event -- it runs before session-update/session-end).
+
+        Captures the CURRENTLY active session's id -- the same id
+        session-end (step 2) is about to archive -- so handoff-write (step 3)
+        can later assert identity against session_history[-1] even though
+        the coordinator cannot pass this value between steps directly.
+
+        Never raises. Returns dict:
+            {"success": bool, "session_id": str | None, "reason": str}
+        A caller (CLI) surfaces failure via a printed message and non-zero
+        exit code -- never a traceback (requirement 4: graceful degradation
+        when the transfer event runs with no active session).
+        """
+        state = self.load_state()
+        current = state.get('current_session', {})
+        session_id = current.get('session_id')
+        active = current.get('session_active')
+
+        if not active or not session_id:
+            return {
+                "success": False,
+                "session_id": None,
+                "reason": (
+                    "No active session to transfer. Start a session first "
+                    "('/session start') before running '/session transfer'."
+                ),
+            }
+
+        # SEC-TRANSFER-9.11.0-005 (P3, CWE-22): defense-in-depth. session_id
+        # normally comes from start_session()'s own now-validated id, but a
+        # hand-edited state file could still smuggle an unsafe value through
+        # this read. Reject before the marker (or any path) is built.
+        if not _is_valid_session_id(session_id):
+            return {
+                "success": False,
+                "session_id": session_id,
+                "reason": (
+                    f"Active session id {session_id!r} has an invalid format "
+                    f"(must match {_SESSION_ID_PATTERN.pattern}); refusing to "
+                    "begin transfer (SEC-TRANSFER-9.11.0-005)."
+                ),
+            }
+
+        # SEC-TRANSFER-9.11.0-004 (P3, CWE-459): do not silently overwrite a
+        # marker left behind by a DIFFERENT, still-incomplete transfer -- that
+        # would discard M3's visible-evidence guarantee for whatever session
+        # that marker was protecting. A re-begin for the SAME session id
+        # already in progress is idempotent and allowed to proceed.
+        existing_marker = self._read_transfer_marker()
+        if existing_marker is not None:
+            existing_id = existing_marker.get('session_id')
+            if existing_id and existing_id != session_id:
+                return {
+                    "success": False,
+                    "session_id": session_id,
+                    "reason": (
+                        f"Refusing to start a new transfer: an incomplete "
+                        f"transfer marker already exists for a DIFFERENT "
+                        f"session {existing_id!r}. Resolve it first -- retry "
+                        f"with: python .protocol-state/session_monitor.py "
+                        f"handoff --session-id {existing_id}"
+                    ),
+                }
+
+        now = datetime.now(timezone.utc)
+        marker = {
+            "_comment": (
+                "Domain Zero Protocol - Incomplete Session Transfer Marker "
+                "(FEAT-TRANSFER-9.11.0-001). This artifact is NOT a protected "
+                "document -- it is regenerable runtime state, gitignored, "
+                "never shipped. Its presence means a '/session transfer' "
+                "began but did not finish. Retry with: "
+                f"python .protocol-state/session_monitor.py handoff --session-id {session_id}"
+            ),
+            "session_id": session_id,
+            "start_time": now.isoformat(),
+        }
+
+        try:
+            self.handoff_marker_file.parent.mkdir(parents=True, exist_ok=True)
+            with tempfile.NamedTemporaryFile(
+                'w', encoding='utf-8', delete=False,
+                dir=self.handoff_marker_file.parent, suffix='.tmp',
+            ) as tmp_file:
+                json.dump(marker, tmp_file, indent=2)
+                tmp_file.write('\n')
+                tmp_path = tmp_file.name
+            os.replace(tmp_path, self.handoff_marker_file)
+        except (IOError, OSError) as e:
+            return {
+                "success": False,
+                "session_id": session_id,
+                "reason": f"Failed to write transfer marker: {e}",
+            }
+
+        print(f"[OK] Transfer marker written for session {session_id!r}")
+        return {"success": True, "session_id": session_id, "reason": ""}
+
+    def _read_transfer_marker(self) -> Optional[Dict]:
+        """Read the .INCOMPLETE marker if present. Returns None if absent,
+        corrupted, OR structurally the wrong shape (fail-soft read -- any of
+        these is treated the same as a missing marker; the caller's own
+        identity check is the real guard).
+
+        SEC-TRANSFER-9.11.0-003 (P2, CWE-20): previously only IOError/OSError/
+        JSONDecodeError were caught. A marker file containing VALID JSON that
+        is not an object (e.g. a bare list `[1, 2, 3]` or a bare string) was
+        not caught here -- it passed through as whatever json.load() returned,
+        and every caller (transfer_begin(), handoff_write(),
+        _warn_if_transfer_incomplete()) then calls `.get(...)` on it
+        unconditionally. `_warn_if_transfer_incomplete()` runs at EVERY
+        `/session start`, so this shape crashed session start entirely rather
+        than degrading gracefully as designed."""
+        if not self.handoff_marker_file.exists():
+            return None
+        try:
+            with open(self.handoff_marker_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except (IOError, OSError, json.JSONDecodeError):
+            return None
+        if not isinstance(data, dict):
+            return None
+        return data
+
+    def _clear_transfer_marker_if_matches(self, session_id: str) -> None:
+        """Clear the marker only if it belongs to the session just written --
+        never blindly, so an unrelated retry (M4) cannot mask a different,
+        still-incomplete transfer."""
+        marker = self._read_transfer_marker()
+        if marker is not None and marker.get('session_id') == session_id:
+            try:
+                self.handoff_marker_file.unlink()
+            except OSError:
+                pass
+
+    def _mark_transfer_step_complete(self, session_id: str, step_name: str) -> None:
+        """IMPL-001 remediation (Toji audit 2026-07-29): record that
+        `step_name` (one of _TRANSFER_REQUIRED_STEPS) has completed for the
+        transfer identified by `session_id`, WITHOUT clearing the marker --
+        the marker's durable presence/absence is now the state machine for
+        the whole required prefix, not just the handoff write. No-op if no
+        marker exists or it belongs to a different session (mirrors
+        _clear_transfer_marker_if_matches's existing match-only-if-belongs-
+        to-this-session guard -- an unrelated M4 retry must never mutate a
+        different, still-incomplete transfer's marker).
+
+        Fail-soft: a write failure here must never turn an otherwise
+        successful step (handoff-write, end-snapshot) into a reported
+        failure -- the marker is bookkeeping, not the source of truth for
+        whether the step itself succeeded."""
+        marker = self._read_transfer_marker()
+        if marker is None or marker.get('session_id') != session_id:
+            return
+        steps_completed = marker.get('steps_completed')
+        if not isinstance(steps_completed, list):
+            steps_completed = []
+        if step_name not in steps_completed:
+            steps_completed.append(step_name)
+        marker['steps_completed'] = steps_completed
+        try:
+            with tempfile.NamedTemporaryFile(
+                'w', encoding='utf-8', delete=False,
+                dir=self.handoff_marker_file.parent, suffix='.tmp',
+            ) as tmp_file:
+                json.dump(marker, tmp_file, indent=2)
+                tmp_file.write('\n')
+                tmp_path = tmp_file.name
+            os.replace(tmp_path, self.handoff_marker_file)
+        except (IOError, OSError):
+            pass
+
+    def transfer_finalize(self, session_id: Optional[str] = None) -> Dict:
+        """IMPL-001 remediation (Toji audit 2026-07-29): the LAST step of the
+        session-transfer required prefix (wired into script_dependencies.yaml
+        immediately after end-snapshot, required: true). Records 'end-snapshot'
+        complete in the marker and clears the marker if and ONLY IF every step
+        in _TRANSFER_REQUIRED_STEPS has now been recorded -- i.e. the mandatory
+        snapshot AND the handoff write both durably succeeded.
+
+        Because the session-transfer event is fail-closed (fail_soft: false),
+        a failing end-snapshot breaks the coordinator's loop before this step
+        ever runs -- so the marker correctly survives, with only
+        'handoff-write' recorded, as visible evidence of the still-incomplete
+        transfer. Re-running just the snapshot and this command is the
+        correct, minimal retry (see _warn_if_transfer_incomplete()).
+
+        Never raises. Returns dict: {"success": bool, "reason": str}.
+        """
+        # SEC-TRANSFER-9.11.0-010 (P3, CWE-20): validate any caller-supplied
+        # session_id BEFORE any marker lookup or comparison, mirroring
+        # SEC-TRANSFER-9.11.0-005's rule -- already applied to every other
+        # externally-supplied session-id entry point in this module
+        # (transfer_begin()'s active-session read, handoff_write()'s
+        # session_id/expect_session_id parameters). transfer_finalize() does
+        # not currently build a filesystem path from this value, but the
+        # established defense-in-depth posture is "validate at every
+        # session-id entry point, not only the ones that build paths today."
+        if session_id is not None and not _is_valid_session_id(session_id):
+            return {
+                "success": False,
+                "reason": (
+                    f"Invalid session_id {session_id!r}: must match "
+                    f"{_SESSION_ID_PATTERN.pattern} (SEC-TRANSFER-9.11.0-010)."
+                ),
+            }
+        marker = self._read_transfer_marker()
+        if marker is None:
+            return {
+                "success": False,
+                "reason": "No transfer marker found; nothing to finalize.",
+            }
+        target_id = session_id or marker.get('session_id')
+        if not target_id or marker.get('session_id') != target_id:
+            return {
+                "success": False,
+                "reason": (
+                    f"Marker session_id {marker.get('session_id')!r} does not "
+                    f"match {target_id!r}; refusing to finalize."
+                ),
+            }
+        self._mark_transfer_step_complete(target_id, "end-snapshot")
+        refreshed = self._read_transfer_marker()
+        steps_completed = set((refreshed or {}).get('steps_completed', []) or [])
+        missing = [s for s in _TRANSFER_REQUIRED_STEPS if s not in steps_completed]
+        if not missing:
+            self._clear_transfer_marker_if_matches(target_id)
+            print(f"[OK] Session transfer finalized for {target_id!r}; marker cleared")
+            return {"success": True, "reason": ""}
+        return {
+            "success": False,
+            "reason": (
+                f"Transfer for {target_id!r} not yet complete; missing required "
+                f"step(s): {missing}. Marker retained."
+            ),
+        }
+
+    def _find_archived_session(self, session_id: str) -> Optional[Dict]:
+        """Find an archived session_history record by id (search full
+        history, most recent first -- used by the M4 retry path, which may
+        target any past session, not only the last one)."""
+        state = self.load_state()
+        history = state.get('session_history', []) or []
+        for record in reversed(history):
+            if record.get('session_id') == session_id:
+                return record
+        return None
+
+    def _history_last(self) -> Optional[Dict]:
+        state = self.load_state()
+        history = state.get('session_history', []) or []
+        return history[-1] if history else None
+
+    def handoff_write(
+        self,
+        *,
+        session_id: Optional[str] = None,
+        expect_session_id: Optional[str] = None,
+    ) -> Dict:
+        """Regenerate the session-handoff brief.
+
+        Three modes, in precedence order:
+          1. `session_id` given (M4 retry path): regenerate for that
+             SPECIFIC archived session, found anywhere in session_history.
+             No identity assertion against history[-1] -- the caller is
+             deliberately naming a session to (re)generate a brief for.
+          2. `expect_session_id` given (explicit M2 path): assert
+             history[-1].session_id == expect_session_id; refuse to write on
+             mismatch.
+          3. Neither given (the automated session-transfer event's
+             handoff-write step): read the expected id from the .INCOMPLETE
+             marker transfer_begin() wrote (M3 fallback for the coordinator's
+             lack of inter-step value passing), then behave as mode 2.
+
+        Idempotent and keyed to the resolved session id -- re-running with
+        the same id/marker regenerates the same two artifacts.
+
+        Never raises. Returns dict:
+            {"success": bool, "reason": str, "path": str | None, "session_id": str | None}
+        """
+        # SEC-TRANSFER-9.11.0-005 (P3, CWE-22): validate any caller-supplied
+        # session id BEFORE any lookup, secret scan, or path is built --
+        # rejects path-traversal-style values (e.g. "../../evil") up front,
+        # at the exact site the archive filename would otherwise be
+        # constructed from an unvalidated value.
+        for _label, _value in (("session_id", session_id), ("expect_session_id", expect_session_id)):
+            if _value is not None and not _is_valid_session_id(_value):
+                return {
+                    "success": False,
+                    "reason": (
+                        f"Invalid {_label} {_value!r}: must match "
+                        f"{_SESSION_ID_PATTERN.pattern} (SEC-TRANSFER-9.11.0-005)."
+                    ),
+                    "path": None,
+                    "session_id": None,
+                }
+
+        marker = self._read_transfer_marker()
+
+        if session_id is not None:
+            record = self._find_archived_session(session_id)
+            if record is None:
+                return {
+                    "success": False,
+                    "reason": f"No archived session found with id {session_id!r}.",
+                    "path": None,
+                    "session_id": session_id,
+                }
+            target_id = session_id
+        else:
+            if expect_session_id is None:
+                if marker is None:
+                    return {
+                        "success": False,
+                        "reason": (
+                            "No --expect-session-id given and no transfer marker "
+                            f"found at {self.handoff_marker_file}. Cannot verify "
+                            "session identity; refusing to write a handoff brief."
+                        ),
+                        "path": None,
+                        "session_id": None,
+                    }
+                expect_session_id = marker.get('session_id')
+                if not expect_session_id:
+                    return {
+                        "success": False,
+                        "reason": "Transfer marker is missing a session_id; refusing to write.",
+                        "path": None,
+                        "session_id": None,
+                    }
+                # SEC-TRANSFER-9.11.0-005: defense-in-depth -- the marker is
+                # local trusted state normally written by transfer_begin()
+                # (which itself now validates), but a hand-edited marker file
+                # must not smuggle an unsafe value through to the archive
+                # filename construction below either.
+                if not _is_valid_session_id(expect_session_id):
+                    return {
+                        "success": False,
+                        "reason": (
+                            f"Transfer marker contains an invalid session_id "
+                            f"{expect_session_id!r} (must match "
+                            f"{_SESSION_ID_PATTERN.pattern}); refusing to write "
+                            "(SEC-TRANSFER-9.11.0-005)."
+                        ),
+                        "path": None,
+                        "session_id": None,
+                    }
+
+            last = self._history_last()
+            actual_id = last.get('session_id') if last else None
+            if last is None or actual_id != expect_session_id:
+                return {
+                    "success": False,
+                    "reason": (
+                        f"Identity check failed: expected session {expect_session_id!r} "
+                        f"but the last archived session is {actual_id!r}. Refusing "
+                        "to write a handoff brief for the wrong session "
+                        "(FEAT-TRANSFER-9.11.0-001 M2)."
+                    ),
+                    "path": None,
+                    "session_id": expect_session_id,
+                }
+            record = last
+            target_id = expect_session_id
+
+        content = self._build_handoff_content(record)
+
+        # Handoff content summarizes protected docs -- it must pass the same
+        # secret scan those docs get before any write (Risk table, B4).
+        secrets_found = self._scan_for_secrets(
+            ['session-handoff.md'], content_map={'session-handoff.md': content}
+        )
+        high_confidence = [s for s in secrets_found if s.get('confidence') == 'high']
+        if high_confidence:
+            return {
+                "success": False,
+                "reason": (
+                    f"Refusing to write handoff brief: {len(high_confidence)} "
+                    "high-confidence secret(s) detected in generated content."
+                ),
+                "path": None,
+                "session_id": target_id,
+            }
+
+        archive_path = self.handoff_archive_dir / f"session-handoff-{target_id}.md"
+        try:
+            self.handoff_file.parent.mkdir(parents=True, exist_ok=True)
+            with tempfile.NamedTemporaryFile(
+                'w', encoding='utf-8', delete=False,
+                dir=self.handoff_file.parent, suffix='.tmp', newline="\n",
+            ) as tmp_file:
+                tmp_file.write(content)
+                tmp_path = tmp_file.name
+            os.replace(tmp_path, self.handoff_file)
+
+            self.handoff_archive_dir.mkdir(parents=True, exist_ok=True)
+            with open(archive_path, 'w', encoding='utf-8', newline="\n") as f:
+                f.write(content)
+        except (IOError, OSError) as e:
+            return {
+                "success": False,
+                "reason": f"Failed to write handoff artifacts: {e}",
+                "path": None,
+                "session_id": target_id,
+            }
+
+        # IMPL-001 remediation (Toji audit 2026-07-29): do NOT clear the
+        # marker here anymore -- only record that 'handoff-write' completed.
+        # The marker is now cleared exclusively by transfer_finalize(), and
+        # only once 'end-snapshot' has ALSO been recorded complete. This is
+        # a no-op if no marker exists (M4 explicit retries commonly run with
+        # no marker present) or it belongs to a different session.
+        self._mark_transfer_step_complete(target_id, "handoff-write")
+
+        # CODE-001 remediation (Toji audit 2026-07-29): the staged notes file
+        # (if any) has now been consumed into a durably-written brief -- move
+        # it out of the well-known staging path so a later transfer can never
+        # silently reuse it without deliberate restaging.
+        self._archive_and_clear_handoff_notes(target_id)
+
+        print(f"[OK] Session handoff brief written for {target_id!r}: {self.handoff_file}")
+        return {"success": True, "reason": "", "path": str(self.handoff_file), "session_id": target_id}
+
+    def _archive_and_clear_handoff_notes(self, session_id: str) -> None:
+        """CODE-001 remediation (Toji audit 2026-07-29): _build_handoff_content()
+        reads optional freeform staged notes from
+        `.protocol-state/session-handoff-notes.md`, but previously nothing
+        ever consumed/cleared/archived that staging file afterward -- a LATER
+        transfer that did not restage notes would silently reuse the SAME
+        stale content (blocking gates, next queue, START HERE pointer, etc.)
+        as if it were current.
+
+        Called only from handoff_write()'s success path (i.e. AFTER both
+        durable handoff artifacts -- session-handoff.md and the per-session
+        archive copy -- have already been written), this MOVES (not copies)
+        the staging file into a per-session, timestamped archive so the
+        well-known staging path is single-use: it cannot be read again as
+        'current' staged notes by any subsequent transfer unless an operator
+        deliberately restages it.
+
+        Fail-soft by design (mirrors _clear_transfer_marker_if_matches /
+        _mark_transfer_step_complete): any error here must never turn an
+        already-successful handoff write into a reported failure. A no-op if
+        the staging file does not exist or is empty (nothing was consumed,
+        so there is nothing stale to retire)."""
+        try:
+            if not self.handoff_notes_file.exists():
+                return
+            if self.handoff_notes_file.stat().st_size == 0:
+                return
+        except OSError:
+            return
+        try:
+            self.handoff_notes_archive_dir.mkdir(parents=True, exist_ok=True)
+            timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
+            archive_target = (
+                self.handoff_notes_archive_dir
+                / f"session-handoff-notes-{session_id}-{timestamp}.md"
+            )
+            # Move, not copy: the staging path itself must become unavailable
+            # so a later transfer that forgets to restage cannot read it.
+            os.replace(self.handoff_notes_file, archive_target)
+        except OSError:
+            pass
+
+    def _build_handoff_content(self, record: Dict) -> str:
+        """Build the deterministic, machine-generated handoff brief content
+        for an archived session_history `record`. Freeform prose (blocking
+        gates, next queue, known drift, traps hit, START HERE pointer -- all
+        Gojo-authored, per the design) is confined to a single clearly marked
+        section at the end, sourced from an optional staging file
+        (`.protocol-state/session-handoff-notes.md`) so this method itself
+        stays fully deterministic and testable."""
+        now = datetime.now(timezone.utc)
+        session_id = record.get('session_id', 'unknown')
+        start_time = record.get('start_time')
+        end_time = record.get('end_time')
+        duration = record.get('total_duration_minutes', 0)
+        breaks = record.get('total_breaks', 0)
+        alerts = record.get('alerts_issued', 0)
+        continues = record.get('continues_chosen', 0)
+
+        # Cross-session continuity: gap between the PREVIOUS archived
+        # session's end and THIS session's start, recorded as data (never as
+        # an instruction) -- this is exactly the signal a per-session
+        # duration counter structurally cannot see (B1).
+        state = self.load_state()
+        history = state.get('session_history', []) or []
+        idx = None
+        for i, rec in enumerate(history):
+            if rec.get('session_id') == session_id:
+                idx = i
+        prev_gap_minutes = None
+        if idx is not None and idx > 0:
+            prev_end = _parse_utc(history[idx - 1].get('end_time'))
+            this_start = _parse_utc(start_time)
+            if prev_end is not None and this_start is not None:
+                prev_gap_minutes = (this_start - prev_end).total_seconds() / 60
+
+        branch = self._git_query(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+        head_sha = self._git_query(["git", "rev-parse", "--short", "HEAD"])
+        status_summary = self._git_status_summary()
+        protocol_version = self._read_protocol_version()
+        cortex_summary = self._cortex_status_summary()
+        domain_record_summary = self._domain_record_line_summary()
+
+        agent_notes = ""
+        if self.handoff_notes_file.exists():
+            try:
+                agent_notes = self.handoff_notes_file.read_text(encoding='utf-8').strip()
+            except (IOError, OSError):
+                agent_notes = ""
+        if not agent_notes:
+            agent_notes = (
+                "_No agent notes were staged for this transfer "
+                "(`.protocol-state/session-handoff-notes.md` absent or empty). "
+                "Gojo should populate that file with blocking gates and exit "
+                "criteria, the next queue in order, known drift accepted-but-"
+                "unfixed, traps hit this session, and a `START HERE:` pointer "
+                "before invoking `/session transfer` for these to appear here._"
+            )
+
+        lines = [
+            "<!-- FEAT-TRANSFER-9.11.0-001 - Domain Zero Protocol Session Handoff -->",
+            "# Session Handoff Brief",
+            "",
+            "> **Contract**: this artifact is REGENERABLE derived state, NOT "
+            "an append-only protected document. It is overwritten on every "
+            "`/session transfer` and is gitignored -- never committed, never "
+            "shipped. The permanent record lives in `dev-notes.md` / "
+            "`security-review.md` / `domain.record.md`.",
+            "",
+            f"Generated: {now.isoformat()}",
+            "",
+            "## Machine-Generated Summary",
+            "",
+            f"- **Session ID**: {session_id}",
+            f"- **Start**: {start_time or 'unknown'}",
+            f"- **End**: {end_time or 'unknown'}",
+            f"- **Duration**: {self._format_duration(duration)}",
+            f"- **Breaks taken**: {breaks}",
+            f"- **Alerts issued**: {alerts}",
+            f"- **Continues chosen (escalations)**: {continues}",
+            "",
+            "### Cross-Session Continuity",
+            "",
+        ]
+        if prev_gap_minutes is not None:
+            lines.append(f"- Gap since previous archived session's end: {prev_gap_minutes:.1f} minutes")
+            if prev_gap_minutes < 30:
+                lines.append(
+                    "- **Rolling continuous-work window**: under 30 minutes since "
+                    "the previous session ended -- this is a CONTINUATION, not a "
+                    "fresh start, even though the per-session counter resets to zero."
+                )
+        else:
+            lines.append("- No prior archived session found for continuity comparison.")
+        lines.extend([
+            "",
+            "### Repository State",
+            "",
+            f"- **Branch**: {branch or 'unavailable'}",
+            f"- **HEAD**: {head_sha or 'unavailable'}",
+            f"- **Working tree**: {status_summary}",
+            "",
+            "### Protocol State",
+            "",
+            f"- **Protocol version**: {protocol_version or 'unknown'}",
+            f"- **Cortex**: {cortex_summary}",
+            f"- **domain.record.md**: {domain_record_summary}",
+            "",
+            "## Agent Notes (freeform -- Gojo-authored)",
+            "",
+            agent_notes,
+            "",
+        ])
+        return "\n".join(lines) + "\n"
+
+    def _git_query(self, args: List[str]) -> Optional[str]:
+        """Fail-soft git query -- never raises, returns None on any error."""
+        try:
+            import subprocess as _sp
+            proc = _sp.run(
+                args, cwd=self.protocol_root, capture_output=True, text=True, timeout=5,
+            )
+            if proc.returncode != 0:
+                return None
+            return proc.stdout.strip() or None
+        except Exception:
+            return None
+
+    def _git_status_summary(self) -> str:
+        output = self._git_query(["git", "status", "--porcelain"])
+        if output is None:
+            return "unavailable"
+        changed = [l for l in output.splitlines() if l.strip()]
+        return "clean (0 changed paths)" if not changed else f"{len(changed)} changed path(s)"
+
+    def _read_protocol_version(self) -> Optional[str]:
+        """Best-effort protocol version lookup from protocol.config.yaml's
+        versioning.protocol_version key. Fail-soft -- returns None on any
+        error (missing file, missing key, parse failure)."""
+        if not self.config_file.exists():
+            return None
+        try:
+            import yaml
+            with open(self.config_file, 'r', encoding='utf-8') as f:
+                config = yaml.safe_load(f) or {}
+            version = (config.get('versioning') or {}).get('protocol_version')
+            return str(version) if version else None
+        except Exception:
+            return None
+
+    def _cortex_status_summary(self) -> str:
+        """Best-effort Cortex status summary via `brain.py status --json`.
+        Fail-soft (mirrors `_sync_cortex_index`'s status-gate pattern) --
+        Cortex being unavailable must never block a handoff write."""
+        brain_py = self.protocol_root / ".protocol-state" / "brain" / "brain.py"
+        if not brain_py.exists():
+            return "unavailable (brain.py not found)"
+        try:
+            import subprocess as _sp
+            proc = _sp.run(
+                [sys.executable, str(brain_py), "--repo", str(self.protocol_root), "status", "--json"],
+                capture_output=True, text=True, timeout=10,
+            )
+            if proc.returncode != 0:
+                return "unavailable (status check failed)"
+            data = json.loads(proc.stdout)
+            chunks = data.get("chunks", data.get("chunk_count", "unknown"))
+            last_index = data.get("last_index", data.get("last_indexed", "unknown"))
+            return f"ok, chunks={chunks}, last_index={last_index}"
+        except Exception:
+            return "unavailable"
+
+    def _domain_record_line_summary(self) -> str:
+        """Best-effort domain.record.md line count vs its configured rotation
+        threshold (protocol.config.yaml domain_record.rotation.threshold_lines,
+        default 5000 -- see .dzp-domain/.rotation-metadata.json)."""
+        domain_record_file = self.protocol_root / ".dzp-domain" / "domain.record.md"
+        if not domain_record_file.exists():
+            return "unavailable (domain.record.md not found)"
+        try:
+            with open(domain_record_file, 'r', encoding='utf-8') as f:
+                line_count = sum(1 for _ in f)
+        except (IOError, OSError):
+            return "unavailable (read failed)"
+
+        threshold = 5000
+        try:
+            import yaml
+            if self.config_file.exists():
+                with open(self.config_file, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f) or {}
+                threshold = (
+                    (config.get('domain_record') or {}).get('rotation', {}).get('threshold_lines', threshold)
+                )
+        except Exception:
+            pass
+
+        return f"{line_count} lines (rotation threshold: {threshold})"
+
+    def _warn_if_transfer_incomplete(self) -> None:
+        """`/session start` integration, requirement: warn LOUDLY, before
+        anything else, if a previous `/session transfer` did not finish.
+        Read-only advisory; never raises.
+
+        IMPL-001 remediation (Toji audit 2026-07-29): the retry command now
+        depends on WHICH required step(s) the marker shows outstanding.
+        Previously this always pointed at `handoff --session-id`, even when
+        the handoff itself had already succeeded and only the mandatory
+        end-snapshot (+ transfer-finalize) remained -- a retry that could
+        never actually complete the missing snapshot.
+
+        SEC-TRANSFER-9.11.0-008 (P3, CWE-696) remediation: a THIRD state is
+        possible and was previously mishandled -- a crash between
+        `_mark_transfer_step_complete(target_id, "end-snapshot")` and the
+        marker clear a few lines later in `transfer_finalize()` leaves a
+        marker where EVERY entry of `_TRANSFER_REQUIRED_STEPS` is already
+        recorded, yet the marker itself was never cleared. That state used
+        to fall into the generic `else` branch below and print
+        `handoff --session-id`, which is idempotent and can never clear a
+        marker whose required steps are already complete -- a permanent
+        false-positive warning at every future `/session start`. This is now
+        its own branch, checked first, pointing directly at the one command
+        that can actually finish the job: `transfer-finalize` (no
+        `--session-id` needed -- it reads the marker's own session id)."""
+        marker = self._read_transfer_marker()
+        if marker is None:
+            return
+        session_id = marker.get('session_id', 'unknown')
+        steps_completed = marker.get('steps_completed')
+        if not isinstance(steps_completed, list):
+            steps_completed = []
+        print("")
+        print("[!] INCOMPLETE SESSION TRANSFER DETECTED")
+        print(f"    A previous '/session transfer' for session {session_id!r} did not finish.")
+        if all(step in steps_completed for step in _TRANSFER_REQUIRED_STEPS):
+            print("    Every required step (handoff-write, end-snapshot) is already recorded, but")
+            print("    the marker was never cleared -- the process likely stopped right before")
+            print("    that final step. Finish it with:")
+            print("      python .protocol-state/session_monitor.py transfer-finalize")
+        elif "handoff-write" in steps_completed and "end-snapshot" not in steps_completed:
+            print("    The handoff brief was already written successfully -- only the mandatory")
+            print("    end-of-transfer snapshot did not complete. Retry with:")
+            print("      python .protocol-state/create-snapshot.py --auto --tier 2 --trigger session-transfer")
+            print("      python .protocol-state/session_monitor.py transfer-finalize")
+        else:
+            print(f"    Retry it with: python .protocol-state/session_monitor.py handoff --session-id {session_id}")
+        print("")
+
+    def _point_to_fresh_handoff_brief(self) -> None:
+        """`/session start` integration: if session-handoff.md exists and
+        postdates the last recorded session start, point to it before reading
+        the large protocol documents (cheapest high-value context in the
+        tree). Read-only advisory; never raises."""
+        if not self.handoff_file.exists():
+            return
+        try:
+            mtime = datetime.fromtimestamp(self.handoff_file.stat().st_mtime, tz=timezone.utc)
+        except OSError:
+            return
+
+        state = self.load_state()
+        last_start = _parse_utc(state.get('current_session', {}).get('start_time'))
+        if last_start is None or mtime > last_start:
+            print(f"[TIP] A session handoff brief is available: {self.handoff_file}")
+            print("      Read it first for warm context from the prior session.")
+
 
 def main():
     """Command-line interface for session monitoring."""
@@ -2352,6 +3324,14 @@ def main():
         print("  sync --no-git              Sync documents without git operations")
         print("  end                        End the current session")
         print("  reset                      Reset session state (clear all data)")
+        print("")
+        print("Session Transfer (v9.11.0, FEAT-TRANSFER-9.11.0-001):")
+        print("  transfer-begin             Step 0 of 'python dzp.py event session-transfer' - writes .INCOMPLETE marker")
+        print("  handoff                    Regenerate session-handoff.md (auto mode: reads expected id from marker)")
+        print("  handoff --expect-session-id <id>  Explicit identity check before writing")
+        print("  handoff --session-id <id>  Retry: regenerate brief for a specific archived session (no identity check)")
+        print("  transfer-finalize          Last required step: marks end-snapshot complete + clears .INCOMPLETE marker")
+        print("                             only once handoff-write AND end-snapshot are both recorded (IMPL-001)")
         print("")
         print("Monitoring & Alerts:")
         print("  check                      Check if alert is needed")
@@ -2426,12 +3406,79 @@ def main():
             print(f"[!] Alert needed: {level}")
             print(monitor.render_alert(context))
         else:
-            print("[OK] No alert needed")
+            print(monitor.format_no_alert_message())
     elif command == "summary" or command == "status":
         # 'status' is an alias for 'summary' (industry standard expectation)
         print(monitor.get_session_summary())
     elif command == "end":
         monitor.end_session()
+    elif command == "transfer-begin":
+        # FEAT-TRANSFER-9.11.0-001 (v9.11.0 Increment 2): step 0 of the
+        # session-transfer coordinator event. Writes the .INCOMPLETE marker
+        # BEFORE session-update/session-end run.
+        result = monitor.transfer_begin()
+        if not result["success"]:
+            print(f"[ERROR] {result['reason']}", file=sys.stderr)
+            sys.exit(1)
+    elif command == "handoff":
+        # FEAT-TRANSFER-9.11.0-001: regenerate the session-handoff brief.
+        #   handoff                              -- auto mode: read expected
+        #                                            id from the .INCOMPLETE
+        #                                            marker (coordinator step 3)
+        #   handoff --expect-session-id <id>     -- explicit identity check (M2)
+        #   handoff --session-id <id>            -- retry a specific archived
+        #                                            session, no identity check (M4)
+        expect_session_id = None
+        explicit_session_id = None
+        handoff_args = sys.argv[2:]
+        i = 0
+        while i < len(handoff_args):
+            arg = handoff_args[i]
+            if arg == "--expect-session-id" and i + 1 < len(handoff_args):
+                expect_session_id = handoff_args[i + 1]
+                i += 2
+            elif arg.startswith("--expect-session-id="):
+                expect_session_id = arg.split("=", 1)[1]
+                i += 1
+            elif arg == "--session-id" and i + 1 < len(handoff_args):
+                explicit_session_id = handoff_args[i + 1]
+                i += 2
+            elif arg.startswith("--session-id="):
+                explicit_session_id = arg.split("=", 1)[1]
+                i += 1
+            else:
+                i += 1
+
+        result = monitor.handoff_write(session_id=explicit_session_id, expect_session_id=expect_session_id)
+        if not result["success"]:
+            print(f"[ERROR] {result['reason']}", file=sys.stderr)
+            sys.exit(1)
+    elif command == "transfer-finalize":
+        # IMPL-001 remediation (Toji audit 2026-07-29): final required step
+        # of the session-transfer event, wired in immediately after
+        # end-snapshot. Records 'end-snapshot' complete and clears the
+        # .INCOMPLETE marker only once 'handoff-write' is ALSO recorded.
+        #   transfer-finalize                 -- auto mode: read session_id
+        #                                         from the .INCOMPLETE marker
+        #   transfer-finalize --session-id <id>  -- explicit target (manual retry)
+        explicit_session_id = None
+        finalize_args = sys.argv[2:]
+        i = 0
+        while i < len(finalize_args):
+            arg = finalize_args[i]
+            if arg == "--session-id" and i + 1 < len(finalize_args):
+                explicit_session_id = finalize_args[i + 1]
+                i += 2
+            elif arg.startswith("--session-id="):
+                explicit_session_id = arg.split("=", 1)[1]
+                i += 1
+            else:
+                i += 1
+
+        result = monitor.transfer_finalize(session_id=explicit_session_id)
+        if not result["success"]:
+            print(f"[ERROR] {result['reason']}", file=sys.stderr)
+            sys.exit(1)
     elif command == "break":
         # Record break with optional duration argument
         # PATCH-SEC-005: Validate duration to prevent DoS via infinite loops
@@ -2455,7 +3502,9 @@ def main():
         # PATCH-SEC-007 (SEC-004): Add error handling
         try:
             state = monitor.update_interaction()
-            timestamp = datetime.now(timezone.utc).strftime('%H:%M')
+            # BUG-SESSION-005 (BUG C): label local+UTC instead of a bare unlabeled UTC time.
+            timestamp_utc = datetime.now(timezone.utc)
+            timestamp = f"{_local_now(timestamp_utc).strftime('%H:%M %Z')} ({timestamp_utc.strftime('%H:%M')} UTC)"
             print(f"[OK] Work resumed at {timestamp}")
             print(f"    Total session time: {state['session_metrics']['total_duration_minutes']} minutes")
         except Exception as e:
@@ -2554,7 +3603,7 @@ def main():
             print("")
             print(monitor.render_alert(context))
         else:
-            print("[OK] No alert needed")
+            print(monitor.format_no_alert_message())
     elif command == "record-invocation":
         # PATCH-SESSION-004 Component 5: Record agent invocation for bypass detection
         if len(sys.argv) < 3:
@@ -2616,6 +3665,14 @@ def main():
         print("  update                     Record an interaction (updates duration)")
         print("  end                        End the current session")
         print("  reset                      Reset session state (clear all data)")
+        print("")
+        print("Session Transfer (v9.11.0, FEAT-TRANSFER-9.11.0-001):")
+        print("  transfer-begin             Step 0 of 'python dzp.py event session-transfer' - writes .INCOMPLETE marker")
+        print("  handoff                    Regenerate session-handoff.md (auto mode: reads expected id from marker)")
+        print("  handoff --expect-session-id <id>  Explicit identity check before writing")
+        print("  handoff --session-id <id>  Retry: regenerate brief for a specific archived session (no identity check)")
+        print("  transfer-finalize          Last required step: marks end-snapshot complete + clears .INCOMPLETE marker")
+        print("                             only once handoff-write AND end-snapshot are both recorded (IMPL-001)")
         print("")
         print("Monitoring & Alerts:")
         print("  check                      Check if alert is needed")

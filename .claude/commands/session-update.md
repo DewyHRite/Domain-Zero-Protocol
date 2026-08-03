@@ -57,7 +57,7 @@ The `session-update` coordinator event chains:
 
 - Fail-soft: Cortex error never blocks the overall sync
 - Single-trigger: no direct `brain.ps1/sh` index call; coordinator owns the one Cortex path
-- Scope: incremental (changed/new chunks only); full rebuild occurs on `/session end`
+- Scope: incremental (changed/new chunks only); `/session end` is ALSO incremental (BUG-CORTEX-008 R3/R5) — the full rebuild + export lives in the separate manual/periodic `python dzp.py event cortex-rebuild-full`
 
 **Git Operations** (APPROVAL-GATED — never automatic):
 - User is prompted before any commit or push

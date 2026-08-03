@@ -1,5 +1,5 @@
 # Gojo Custom Agent Security Integration Guide
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 
 **Purpose**: Guide for Gojo to enforce custom agent security policies
 **Version**: 9.0.0
@@ -629,6 +629,16 @@ A: Include custom agent activity in Trigger 19 intelligence reports. Review logs
 ---
 
 ## Version History
+
+- **v9.0.0** (2026-06-13): Version-stamp cascade only; no procedural change.
+  This file's `**Version**` field was carried 8.10.0 -> 8.12.0 -> 8.13.0 ->
+  9.0.0 by successive release cascades (`caae08d`, `34e3e49`, `6c8b130`) while
+  this log went unupdated for four releases. Entry reconstructed from git
+  history during the v9.11.0 batch-3 remediation, which added
+  `check_version_stamps.py` Type 13 (VERSION-VS-CHANGELOG) -- the rule that
+  detected the drift. Note the field has NOT been cascaded since 9.0.0: a bare
+  `**Version**:` field is invisible to every other stamp type, which is the
+  same blind spot from the other direction.
 
 - **v8.10.0** (2025-12-25): Documentation updates
   - Updated version references

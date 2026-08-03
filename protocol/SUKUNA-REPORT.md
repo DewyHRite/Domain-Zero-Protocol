@@ -50,7 +50,7 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 
 ---
 
-## v9.9.4 PATCH MANIFEST (2026-07-09): Toji Capability Upgrade + Toji-Audit-2026-07-09 Remediation + Sukuna RHS-Report Canonical Items
+## v9.9.4 PATCH MANIFEST (2026-07-09): Toji Capability Upgrade + Toji-Audit-2026-07-09 Remediation + Sukuna Downstream-Report Canonical Items
 
 ### PATCH-TOJI-9940-001 (2026-07-09): Toji v1.3.0 Append-Only Audit-Log Access (SEC-TOJI-101/102/103)
 
@@ -166,9 +166,13 @@ go stale silently. **IMPL-001** (MED): a signed session-record reconciliation fo
 `session_20260707_203626` was appended to `dev-notes.md` and `security-review.md`, using
 `project-state.json` as the authoritative source of truth (the parallel program-L record for the
 same window was reviewed and ruled non-authoritative for DZP-mainline purposes), plus a domain-record
-correction entry. `scripts/check_branch_record_isolation.py` is added as a standing detector for two
+correction entry. `scripts/check_branch_record_isolation.py` is added as a detector for two
 classes of drift going forward: append-only-vs-merge-base violations, and conflicting terminal
-records for the same session/branch pairing across branches. Program-L's own record reconciliation
+records for the same session/branch pairing across branches. [SEC-BRANCHISO-001, v9.11.0 update:
+at the time of this v9.9.4 entry the detector had no automated call site — it required manual CLI
+invocation only. It is now wired as a publish-time release gate (see
+`docs/guides/DISTRO_RELEASE_WORKFLOW.md` §4c and `dzp_publish_core.branch_record_isolation_guard_cli`);
+outside the release train it remains manually invocable via its own CLI.] Program-L's own record reconciliation
 is explicitly deferred pending a separate USER decision — this patch only reconciles the DZP-mainline
 session record.
 
@@ -245,7 +249,7 @@ residual, not a blocker).
 
 ---
 
-### PATCH-RHSCANON-9940-003 (2026-07-09): Sukuna RHS-Report Canonical Items (ISS-083/084/085/086)
+### PATCH-RHSCANON-9940-003 (2026-07-09): Sukuna Downstream-Report Canonical Items (ISS-083/084/085/086)
 
 **Patch ID**: PATCH-RHSCANON-9940-003
 **Applies To**: v9.9.3 installations
@@ -254,7 +258,7 @@ residual, not a blocker).
 **Status**: ACTIVE
 **Required For**: Optional — hardening items, not required for baseline v9.9.4 functionality
 
-**Description**: Lands three canonical items carried in the Sukuna RHS report. **ISS-083** (P3):
+**Description**: Lands three canonical items carried in the Sukuna downstream report. **ISS-083** (P3):
 authorized-writer attestation — `.protocol-state/attestation.py` implements a side-channel HMAC
 ledger with a monotonic sequence number; sanctioned DZP state writers (the scripts that are supposed
 to touch `project-state.json` and friends) are stamped on write. `validate-protocol --check` reads
@@ -694,7 +698,7 @@ cp "docs/superpowers/plans/2026-06-16-dzp-cortex-unified-roadmap.md.2026-06-17T0
 **Invoked by**: User (/sukuna) → Sukuna executed; Tier B by Yuuji + Megumi
 **Implemented by**: Sukuna (Tier A + cascade) + Yuuji (Tier B TDD, 120 passed) + Megumi (Tier-2 @approved, 3 accepted P3)
 
-**Summary**: Remediates the Toji Sentinel audit (`internal-docs/Patch Report/BugReport3.md`). Tier A corrections (Sukuna): IMPL-002 version reconciliation + extended `assert_version.py` gate, SEC-001 `verify-protocol.ps1` UTF-8 YAML fix, IMPL-001 RHS report correction, CODE-001 `_SCOPED_PREFIX_RE` consolidation. Tier B new functionality (Yuuji TDD + Megumi review): SEC-002 indexable-extension allowlist + `max_file_chunks` cap + outlier reporting, IMPL-003 read-only `brain dedup --report` + `brain doctor` diagnostics. DESIGN-001 (content-addressed storage) deferred to v9.4.0.
+**Summary**: Remediates the Toji Sentinel audit. Tier A corrections (Sukuna): IMPL-002 version reconciliation + extended `assert_version.py` gate, SEC-001 `verify-protocol.ps1` UTF-8 YAML fix, IMPL-001 downstream report correction, CODE-001 `_SCOPED_PREFIX_RE` consolidation. Tier B new functionality (Yuuji TDD + Megumi review): SEC-002 indexable-extension allowlist + `max_file_chunks` cap + outlier reporting, IMPL-003 read-only `brain dedup --report` + `brain doctor` diagnostics. DESIGN-001 (content-addressed storage) deferred to v9.4.0.
 
 **Deliverables**:
 
@@ -702,7 +706,7 @@ cp "docs/superpowers/plans/2026-06-16-dzp-cortex-unified-roadmap.md.2026-06-17T0
 - `scripts/distro/assert_version.py` — extended to scan `protocol/*.agent.md` frontmatter + ALL `project-state.json` `protocol_version` fields (was 7 core files; now 20 sources). Negative-tested.
 - `scripts/verify-protocol.ps1` — Python YAML validation reads config as explicit UTF-8 (SEC-001).
 - `.protocol-state/brain/cortex/store.py` + `ingest.py` — `_SCOPED_PREFIX_RE` single-sourced in `store.py`, imported by `ingest.py` (CODE-001). No new files → publish-manifest unchanged.
-- `internal-docs/Patch Report/Bug Report/DZP-RHS-Sukuna-Issues-Report-2026-06-15.md` — R3 corrected; destructive de-dup rejected (IMPL-001).
+- Downstream issue report (2026-06-15) — R3 corrected; destructive de-dup rejected (IMPL-001).
 
 *B. Tier B — new functionality (Megumi Tier-2 @approved)*:
 - `.protocol-state/brain/cortex/config.py` — new `index_extensions` + `max_file_chunks` keys + `validate()` coverage.
@@ -5407,8 +5411,8 @@ archives->untrusted->semi->LRU; NEVER evict protected/trusted/live, SQL-guarded;
 index.lock abort) + brain compact + brain status --json storage object + cortex_trigger RESERVE-D
 storage advisory (ALWAYS advisory, never fail-closed even --strict) + cortex-compact event [Phase 2].
 Lever 5 group-budget deferred. SEC-ELAST-001 (include_protected SQL guard) + SEC-UNIFIED-004 closed.
-Test-isolation fix: conftest neutralizes ambient DZP_CORTEX_DATA_DIR/INSTALL_GROUP (root-caused the
-rhs-shared live-brain mutation). Deferred to follow-on: SEC-ELAST-002 (P3) + PLAN-CORTEX-ACCESS-001
+Test-isolation fix: conftest neutralizes ambient DZP_CORTEX_DATA_DIR/INSTALL_GROUP (root-caused a
+shared-label live-brain mutation — the `<project>-shared` scenario). Deferred to follow-on: SEC-ELAST-002 (P3) + PLAN-CORTEX-ACCESS-001
 (write-authorization) + SEC-CORTEX-ACCESS-007 encryption-at-rest. Yuuji TDD + Megumi Tier-3 @approved
 each phase. 1080 tests pass.
 

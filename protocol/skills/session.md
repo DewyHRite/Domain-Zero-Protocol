@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Session Management Skill
 ## Unified Interface for Work Session Tracking
 
-**Version**: 2.1.0
+**Version**: 2.4.1
 **Agent(s)**: Gojo (Mission Control)
 **Category**: Session Management
 **Risk Level**: Medium (code execution via Python)
@@ -45,6 +45,11 @@ Provides unified skill interface for session_monitor.py operations with integrat
 
 **Implementation**:
 ```bash
+# Step 0 (v9.11.0, FEAT-TRANSFER-9.11.0-001): if .protocol-state/session-handoff.md
+# exists and postdates the last session start, READ IT FIRST - it is the cheapest
+# high-value context in the tree (session_monitor.py start also warns loudly if a
+# session-handoff.INCOMPLETE marker exists, and names the keyed retry command)
+
 # Step 1: Start session monitoring (safety/session state is first)
 python .protocol-state/session_monitor.py start
 
@@ -54,8 +59,9 @@ python .protocol-state/session_monitor.py start
 #   if unavailable: report "Cortex unavailable - proceeding without recall" and continue.
 #   Surfaces prior context as cited evidence before reading large docs.
 
-# Step 3: Activate Domain Zero Protocol
-Read ./CLAUDE.md
+# Step 3: Activate Domain Zero Protocol — read the REPOSITORY-ROOT CLAUDE.md
+# (canonical; protocol/CLAUDE.md is a compatibility stub since v9.11.0)
+Read CLAUDE.md
 ```
 
 **Output**:
@@ -71,7 +77,7 @@ Read ./CLAUDE.md
 **Workflow**:
 1. Initialize session monitoring (Python script)
 2. Attempt Cortex-first recall (status-gated, fail-soft)
-3. Read ./CLAUDE.md to load complete DZP context
+3. Read the repository-root CLAUDE.md to load complete DZP context
 4. Agents now have full protocol awareness for the session
 
 ---
@@ -143,13 +149,14 @@ The coordinator chains: `session_monitor.py sync` (DZP_AGENT=gojo) → `cortex-m
 - **Fail-soft**: Cortex error never blocks the overall sync
 - **Never writes protected docs**: Cortex is a derived index, never canonical
 
-Reindex scope per invocation (BUG-CORTEX-008 R3, 2026-07-13):
+Reindex scope per invocation (BUG-CORTEX-008 R3 2026-07-13, DETACHED by R5 2026-07-18):
 - `/session update` → **incremental** (only changed/new chunks, via cortex_trigger.py --level medium)
 - `/session end` → **incremental** (`--level medium`, no export — see /session end). The full rebuild + export no longer runs at session-end; it moved to the manual/periodic `cortex-rebuild-full` event to avoid the embedding-delta-bound timeout that used to fire chronically right after a session's largest content delta.
 
-Reindex scope per invocation:
-- `/session update` → **incremental** (only changed/new chunks)
-- `/session end` → **incremental** (see /session end); full rebuild is now a separate manual/periodic step (`python dzp.py event cortex-rebuild-full`)
+Both Cortex steps run **detached** (`detach: true`, R5 2026-07-18): the
+coordinator launches them off its critical path and they report `launched`, not
+`succeeded`. A stalled or failed index is therefore reported by the
+post-detach liveness assertion in `cortex_trigger.py`, not by an exit code.
 
 **Secret Patterns Detected**:
 - API Keys (32+ characters)
@@ -239,8 +246,35 @@ python .protocol-state/session_monitor.py continue
 python dzp.py event session-end
 ```
 
-**BUG-CORTEX-008 R3 (2026-07-13)**: `/session end`'s Cortex step is **incremental**
-(`--level medium`, no `--export`, **90-second timeout**), not a full rebuild. The full `--level high` rebuild +
+**BUG-CORTEX-008 R5 (2026-07-18) - SUPERSEDES R3 BELOW**: the Cortex step is
+**DETACHED** (`detach: true` in `.protocol-state/script_dependencies.yaml`).
+It is launched fire-and-forget off the coordinator's critical path and returns
+`launched` immediately. **There is no longer an effective timeout**: the
+`timeout_seconds: 90` still present in that file is a *detach-disabled fallback
+only*, consulted solely if `detach` is ever removed or set false. R3's premise
+-- that switching to `--level medium` alone would fix the stall -- was
+disproven by the same timeout class recurring on medium; Cortex re-index cost
+is embedding-DELTA-bound, not corpus-size-bound, so the run immediately after a
+session's largest content delta starves any budget. Detaching removes the step
+from the critical path instead of racing a bigger budget.
+
+**Consequence you must know about.** Removing the timeout also removed **the
+only signal that the index failed**. A detached step reports `launched` and
+nothing ever reports what happened next. Observed live in canonical: an
+orphaned `index.lock` from an interrupted detached run caused every subsequent
+run to log `index hook skipped; lock exists` and then go silent for hours -
+nothing failed, nothing warned, and `brain status` still answered `ok`.
+
+Mitigation (v9.11.0): `cortex_trigger.py` now performs a **post-detach liveness
+assertion**. Each run records the `last_index` stamp it observed *before*
+launching an index; the next run compares, and if `last_index` has not advanced
+it prints a loud `[CORTEX-TRIGGER:index-liveness] WARNING`. It is **advisory
+only** and never changes an exit code - a liveness probe that could break the
+run would be worse than the silence it replaces. If you see that warning, check
+for a stale `index.lock` beside `brain.db`.
+
+**BUG-CORTEX-008 R3 (2026-07-13) - HISTORICAL, superseded by R5 above**: `/session end`'s Cortex step is **incremental**
+(`--level medium`, no `--export`), not a full rebuild. The full `--level high` rebuild +
 export snapshot moved to a separate, manually/periodically invoked event —
 `python dzp.py event cortex-rebuild-full` — to keep session-end off a chronic
 embedding-delta-bound timeout (the full rebuild's cost scales with how much NEW
@@ -272,7 +306,7 @@ Per Phase 5b (WI-29), `/session end` routes its Cortex step through the coordina
 python dzp.py event session-end
 ```
 
-The coordinator chains: `session_monitor.py end` (DZP_AGENT=gojo, required) → `end-snapshot` (fail-soft) → `cortex-medium` (fail-soft, **incremental** re-index, no export, **90-second timeout** — BUG-CORTEX-008 R3) → `cortex-distill` (fail-soft, propose-only) → `validation-refresh` (fail-soft, `scripts/validate-protocol.py --check --ci-mode`, 60s timeout — added v9.10.2, Toji finding `IMPL-001`: refreshes `validation-state.json` AFTER session-end's own state mutations so the validation ledger describes the terminal state instead of a stale pre-session-end `passed`; a failing or absent validator degrades to a warning and never fails the event).
+The coordinator chains: `session_monitor.py end` (DZP_AGENT=gojo, required) → `end-snapshot` (fail-soft) → `cortex-medium` (fail-soft, **incremental** re-index, no export, **DETACHED / no effective timeout** — BUG-CORTEX-008 R5 2026-07-18; the `timeout_seconds: 90` in script_dependencies.yaml is a detach-disabled fallback only, and a post-detach liveness assertion is what reports a stalled index) → `cortex-distill` (fail-soft, propose-only) → `validation-refresh` (fail-soft, `scripts/validate-protocol.py --check --ci-mode`, 60s timeout — added v9.10.2, Toji finding `IMPL-001`: refreshes `validation-state.json` AFTER session-end's own state mutations so the validation ledger describes the terminal state instead of a stale pre-session-end `passed`; a failing or absent validator degrades to a warning and never fails the event).
 
 **PARITY NOTE**: Session-tracking / wellbeing logging / domain.record.md write are NOT lost — the coordinator `session-end` step runs `session_monitor.py end` with `DZP_AGENT=gojo`.
 
@@ -287,6 +321,61 @@ scripts/brain.ps1 remember "<session outcome: what shipped / decided>" --type de
 Best-effort: on any Cortex error, log and continue — session end is never blocked. Cortex never writes the protected docs.
 
 **Toji snapshot** (`export --snapshot`) is **no longer** generated automatically at session-end (R3). To produce a fresh snapshot for Toji audits, **prefer** the lighter-weight `python dzp.py event toji-snapshot` (does `--level medium --export` — faster, sufficient for routine snapshot refresh); use the heavier `python dzp.py event cortex-rebuild-full` (full rebuild + export) or `scripts/brain.ps1 export --snapshot` / `scripts/brain.sh export --snapshot` directly (export only, against whatever is currently indexed) only when a full re-embed is actually needed.
+
+---
+
+### /session transfer
+
+**Action**: `/session transfer` = **update + end + a durable handoff brief**, so the next session starts warm instead of losing the "why" behind the state files (FEAT-TRANSFER-9.11.0-001, v9.11.0 Increment 2).
+
+**Problem it solves**: `/session end` + `/session start` technically transfers state, but the next session gets the state FILES, not a BRIEF. Reconstructing "what was I doing and why" costs the first twenty minutes of every resume. A long session can also degrade before it hits any wellbeing threshold — the per-session duration counter resets to zero at every `/session start`, so it structurally cannot see cross-session continuity (e.g. a 5h05m session ending at 01:58 followed by a new session starting at 02:02 looks, to the counter, like two unrelated sessions rather than one continuous 5h09m stretch).
+
+**Wellness alerts now point here (v9.11.0)**: every wellness checkpoint (4h initial, 6h critical, 8h maximum, and escalated re-alerts) additionally recommends `/session transfer` alongside the existing save-and-break / continue recommendations — see `render_alert()` / `{SESSION_TRANSFER_TIP}` in `.protocol-state/work-session-alert.template.md`.
+
+**Implementation**:
+```bash
+# Fail-closed event chain — event-level fail_soft: false is the LOAD-BEARING
+# line (see .protocol-state/script_dependencies.yaml § session-transfer).
+python dzp.py event session-transfer
+```
+
+**Execution order — fail-closed state machine (nine steps)**:
+
+| # | Step | Required | Notes |
+|---|---|---|---|
+| 0 | `transfer-begin` | yes | writes `.protocol-state/session-handoff.INCOMPLETE` marker with the currently active session's id, BEFORE anything mutates |
+| 1 | `session-update` (full sync) | yes | documents + secret scan + backups |
+| 2 | `session-end` | yes | `DZP_AGENT=gojo`; archives the current session |
+| 3 | `handoff-write` | yes | identity-checked against the just-archived session, writes the brief + archive copy, records `handoff-write` complete in the marker — **does NOT clear the marker** (IMPL-001, 2026-07-29 remediation; only step 5 below does) |
+| 4 | `end-snapshot` | **yes** | mandatory (`ISS-TRANSFER-9.11.0-001`, USER directive) — durable post-transfer state capture under `.protocol-state/snapshots/`, readable by Toji for post-session audit (standing read access, no CLI needed) |
+| 5 | `transfer-finalize` | **yes** | **the sole marker-clearer.** Records `end-snapshot` complete in the marker and clears the marker ONLY once every required step (`handoff-write`, `end-snapshot`) is recorded. Because this event is fail-closed, a failing `end-snapshot` breaks the loop BEFORE this step ever runs, so the marker correctly survives with only `handoff-write` recorded — durable, visible evidence that the mandatory snapshot (not the handoff) is what remains outstanding |
+| 6 | `cortex-medium` | no | detached, non_blocking — indexes the handoff brief for next-session recall |
+| 7 | `cortex-distill` | no | non_blocking, propose-only |
+| 8 | `validation-refresh` | no | non_blocking AND `terminal_validator: true` (IMPL-001, 2026-07-30) — runs strictly AFTER the coordinator's own event-result bookkeeping write, so its checksum/attested-seq describe the TRUE terminal `project-state.json`, not a state the coordinator's own next write would immediately supersede |
+
+**Why event-level `fail_soft: false` (not just `required: true`)**: per Toji `DESIGN-001` (2026-07-27), `required: true` on a step only sets a failure flag — it does **not** stop `script_coordinator.py`'s step loop (`if fail_closed: break` is the only thing that does, and `fail_closed = strict or not event_fail_soft`). Without the event-level flag, a failed `session-end` would still be followed by `handoff-write`, which — reading `session_history[-1]` — would durably record the **previous** session as the one just ended. Four independent mechanisms close this instead of one flag:
+
+- **M1 — event fail-closed**: `session-transfer` declares `fail_soft: false` at the event level.
+- **M2 — positive identity predicate**: `handoff-write` asserts `session_history[-1].session_id` matches the expected id and **refuses to write** on any mismatch.
+- **M3 — incomplete-transfer marker**: `transfer-begin` writes `.protocol-state/session-handoff.INCOMPLETE` (session id + start timestamp) before anything else mutates. This is also how the expected id reaches `handoff-write` at all — the coordinator has no mechanism to pass a value computed by one step into a later step's command, so `handoff-write` falls back to reading the marker when no explicit `--expect-session-id` is given.
+- **M4 — retry paths, keyed to marker state**: the marker's `steps_completed` list tells you exactly what to retry — never a one-size-fits-all command (see `session_monitor.py`'s `_warn_if_transfer_incomplete()`, which implements exactly this matrix):
+  - **Neither `handoff-write` nor `end-snapshot` recorded** (or no marker-derivable progress at all): `python .protocol-state/session_monitor.py handoff --session-id <id>` regenerates the brief from the archived history record for that id. Idempotent, keyed to the id — the correct response to "session-end succeeded but handoff-write failed."
+  - **`handoff-write` recorded, `end-snapshot` is not**: the brief already exists; only the mandatory snapshot is missing. Retry with `python .protocol-state/create-snapshot.py --auto --tier 2 --trigger session-transfer` followed by `python .protocol-state/session_monitor.py transfer-finalize`. Re-running `handoff` alone here is a no-op that can never complete the transfer.
+  - **Both `handoff-write` and `end-snapshot` recorded but the marker was never cleared** (e.g. a crash between marking `end-snapshot` complete and clearing the marker): every required step is already done — finish directly with `python .protocol-state/session_monitor.py transfer-finalize` (no `--session-id` needed; it reads the marker's own session id).
+
+**If the transfer is interrupted**: `/session start` checks for the `.INCOMPLETE` marker and warns loudly — before anything else — naming the exact retry command for whichever of the three states above applies (see `_warn_if_transfer_incomplete()`). If `session-handoff.md` exists and postdates the last recorded session start, `/session start` also points to it first (cheapest high-value context in the tree).
+
+**Artifact**:
+- `.protocol-state/session-handoff.md` — current brief, overwritten each transfer
+- `.protocol-state/archive/handoff/session-handoff-<session_id>.md` — immutable per-session copy
+
+**Deliberately NOT a protected document.** The three protected records are append-only; a handoff must be *replaced* to stay current. It is derived state, like `trigger-19.md` — gitignored, never shipped. The header of the generated artifact itself states this contract.
+
+**Content**: machine-generated (session identity, final duration, breaks, alerts, escalation, cross-session continuity gap, branch/HEAD/working-tree summary, protocol version, Cortex status, domain-record line count vs rotation threshold) plus one clearly marked freeform section sourced from an optional `.protocol-state/session-handoff-notes.md` staging file (Gojo-authored: blocking gates, next queue, known drift, traps hit, a `START HERE:` pointer). Handoff content passes the same secret scan the protected docs get before any write.
+
+**Double-end guard**: running `session-end` (bare, or as this event's own step 2) with no active session degrades gracefully with a clear message — never a traceback.
+
+**Toji availability (`ISS-TRANSFER-9.11.0-001`)**: the mandatory end-of-transfer snapshot (step 4) lands under `.protocol-state/snapshots/`, which is already within Toji's standing read access across all Domain Zero records — no CLI invocation needed on his part. This gives every `/session transfer` a durable, complete post-session state capture for audit, alongside the existing `toji-snapshot` event (`python dzp.py event toji-snapshot`) that refreshes the lighter-weight Cortex export used for the same purpose.
 
 ---
 
@@ -465,6 +554,25 @@ args: "start"
 ---
 
 ## Changelog
+
+### 2.4.1 (2026-07-31)
+- **IMPL-002 remediation (Toji audit `audits/2026-07-30-toji-main-v9-11-0-completed-work.md`, MEDIUM; tracked as `BUG-COORD-9.11.0-001`)**: the `/session transfer` contract section was resynced to the implemented nine-step state machine — `transfer-finalize` documented as the sole marker-clearer (`handoff-write` explicitly does NOT clear the marker), `validation-refresh` documented as step 8 with `terminal_validator: true` (runs strictly after the coordinator's own event-result write, per IMPL-001), and the single retry command replaced with the 3-way marker-state recovery matrix mirroring `session_monitor.py`'s `_warn_if_transfer_incomplete()`. Drafted by Yuuji, applied by Gojo under USER authorization; parity-guarded by `tests/test_session_transfer.py::TestIMPL002ContractParity`
+
+### 2.4.0 (2026-07-28)
+- **`FEAT-TRANSFER-9.11.0-001` (v9.11.0 Increment 2)**: added `/session transfer` — update + end + a durable handoff brief (`.protocol-state/session-handoff.md` + immutable per-session archive copy), so the next session resumes with full context instead of just state files
+- New `session-transfer` coordinator event (event-level `fail_soft: false` — the load-bearing line) chaining `transfer-begin` (new) → `session-update` → `session-end` → `handoff-write` (new) → optional snapshot/Cortex/validation refresh
+- Fail-closed state machine documented via four independent mechanisms (M1-M4: event fail-closed, positive identity predicate, incomplete-transfer marker, retry path) per Toji `DESIGN-001` (2026-07-27): `required: true` alone does not stop the coordinator's step loop
+- `/session start` now checks for an incomplete-transfer marker (warns loudly, names the retry command) and points to a fresh `session-handoff.md` before reading the large protocol documents
+- Wellness alerts (`render_alert()` / `work-session-alert.template.md`) now additionally recommend `/session transfer` at every alert level, alongside the existing save-and-break / continue recommendations
+- `/session end` (and the transfer event's own session-end step) now prints a clear message and degrades gracefully when there is no active session, instead of silently no-op'ing
+- Megumi Tier-3 remediation (`SEC-TRANSFER-9.11.0-001..006`, all closed): baseline-update authorization now cross-checks `DZP_AGENT`, transfer-marker reads degrade gracefully on any wrong-shape JSON, `transfer-begin` refuses to clobber a different incomplete transfer, and session ids are charset-validated before any path is built
+- `ISS-TRANSFER-9.11.0-001` (first live run, 2026-07-29): `end-snapshot` mandatory (`required: true`) — durable post-transfer state capture readable by Toji for post-session audit, no CLI needed on his part. Fixed the root cause the live run surfaced: `create-snapshot.py`'s `--trigger` choices did not include `session-transfer` (dry-run cannot catch this — it only resolves step targets, never executes); mirrored into `protocol/validation-rules.yaml`'s two `reason` enums in the same change (same class as `BUG-SNAPSHOT-NULLFIELDS-001`/MF-1)
+- `/session start`'s Step 0 (handoff-brief-first / incomplete-marker warning) now documented explicitly in this section, mirroring `.claude/commands/session-start.md`
+
+### 2.3.0 (2026-07-28)
+- **Doc sync to BUG-CORTEX-008 R5 (2026-07-18)**: this document still described R3 (`90-second timeout`) while `.protocol-state/script_dependencies.yaml` had carried `detach: true` since 2026-07-18, with its own comment stating the timeout is a "detach-DISABLED FALLBACK ONLY". The doc and the executable config disagreed for ten days
+- Recorded the consequence R5 did not: detaching removed the timeout and with it the ONLY failure signal for the Cortex index. Confirmed live - an orphaned `index.lock` silenced indexing for hours with no warning and `brain status` still reporting `ok`
+- Added a **post-detach liveness assertion** in `cortex_trigger.py`: records the observed `last_index` before launching, warns loudly on the next run if it never advanced. Advisory only, never affects exit codes
 
 ### 2.2.0 (2026-07-13)
 - BUG-CORTEX-008 R3 (durable fix): `/session end`'s Cortex step changed from a synchronous full `--level high --export` rebuild to an **incremental** `--level medium` re-index (no export) — removes the chronic embedding-delta-bound timeout that fired right after a session's own largest content delta

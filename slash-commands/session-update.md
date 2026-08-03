@@ -17,10 +17,12 @@ Read protocol/skills/session.md and execute `/session update` command.
 
 **Implementation**:
 ```bash
-# Standard full sync (recommended)
-DZP_AGENT=gojo python .protocol-state/session_monitor.py sync
+# Standard full sync (recommended) — v9.5.0+ routes through coordinator (WI-29)
+python dzp.py event session-update
 
-# Full sync without git operations
+# Full sync without git operations — pass env so session_monitor skips git
+# NOTE: git-skip is handled by session_monitor.py sync --no-git inside the coordinator step;
+# until a --no-git flag is added to `dzp.py event`, set NO_GIT=1 env or run session_monitor directly:
 DZP_AGENT=gojo python .protocol-state/session_monitor.py sync --no-git
 
 # Timestamp-only fast path (internal callers only — skips document sync and Cortex)
@@ -42,16 +44,20 @@ DZP_AGENT=gojo python .protocol-state/session_monitor.py update --time-only
 4. **domain.record.md** - Strategic notes (Gojo permission only via DZP_AGENT env var)
 
 **Cortex Re-Index (mandatory-attempt, fail-soft)**:
-```bash
-# After document sync succeeds — Windows
-scripts/brain.ps1 status && scripts/brain.ps1 index --incremental
 
-# POSIX
-scripts/brain.sh status && scripts/brain.sh index --incremental
+Routed through the coordinator (WI-29 / Phase 5b). The coordinator fires the Cortex step exactly once:
+```bash
+# v9.5.0+ — route through coordinator (single Cortex trigger, no direct brain call)
+python dzp.py event session-update
 ```
-- Status-gated: only runs if `brain status` exits 0
-- Fail-soft: on any Cortex error, logs and continues — sync is never blocked
-- Scope: incremental (changed/new chunks only); full rebuild occurs on `/session end`
+The `session-update` coordinator event chains:
+1. `session_monitor.py sync` (DZP_AGENT=gojo) — document sync, timestamp, secret scan, git prompt
+2. `cortex-medium` — `cortex_trigger.py --level medium --reason session-update` (fail-soft, incremental)
+3. `custom-agent-list` + `tier-status` + `tier-statistics` (all fail-soft)
+
+- Fail-soft: Cortex error never blocks the overall sync
+- Single-trigger: no direct `brain.ps1/sh` index call; coordinator owns the one Cortex path
+- Scope: incremental (changed/new chunks only); `/session end` is ALSO incremental (BUG-CORTEX-008 R3/R5) — the full rebuild + export lives in the separate manual/periodic `python dzp.py event cortex-rebuild-full`
 
 **Git Operations** (APPROVAL-GATED — never automatic):
 - User is prompted before any commit or push

@@ -1,19 +1,19 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Domain Zero Protocol - The Brutal Reality Check
 
 ## How to Use This Framework for Best Results
 
 **Skip the hype. Here's what actually works.**
 
-Domain Zero is structured prompt engineering for software development. It's not magic AI—it's **workflow discipline enforced through prompts**. Here's how to get real value from it:
+Domain Zero is structured prompt engineering for software development. It's not magic AI—it's **workflow discipline, mostly enforced through prompts, with a couple of opt-in git-level guards layered on top**. Here's how to get real value from it:
 
 ---
 
 ### The 3 Rules for Success
 
 **Rule 1: Know What You're Using**
-- Domain Zero = One AI reading different instruction files (not separate agents)
-- The anime theme is optional window dressing (rename everything if you want)
+- Domain Zero = One AI reading different instruction files (not nine separate agent brains) — see "What the Agents Really Are" below for the one real exception
+- The anime theme is optional window dressing (flip `mask_mode` off, or rename everything if you want)
 - "Zero defects" is a goal, not a guarantee
 
 **Rule 2: Match the Process to Your Reality**
@@ -85,10 +85,10 @@ Domain Zero is structured prompt engineering for software development. It's not 
 ```bash
 # Copy protocol files to your project
 # Edit protocol.config.yaml (replace placeholders)
-# Initialize: "Read protocol/GOJO.md"
+# Initialize: "Read protocol/gojo.agent.md"
 
 # Try Tier 1 (Rapid) first - no tests, just structure
-"Read protocol/YUUJI.md --tier rapid and create a utility function"
+"Read protocol/yuuji.agent.md --tier rapid and create a utility function"
 ```
 
 **Goal:** See if you tolerate the AI reading protocol files. If this feels annoying, Domain Zero isn't for you.
@@ -96,7 +96,7 @@ Domain Zero is structured prompt engineering for software development. It's not 
 **Day 3-4: Try Tier 2 (Standard)**
 ```bash
 # Now try with tests
-"Read protocol/YUUJI.md and implement [small feature]"
+"Read protocol/yuuji.agent.md and implement [small feature]"
 
 # Let Megumi review
 # See if the TDD + security review flow feels valuable
@@ -107,8 +107,8 @@ Domain Zero is structured prompt engineering for software development. It's not 
 **Day 5-7: Customize**
 - Strip what annoys you (anime references? gone)
 - Adjust tier time limits (30-45 min too slow? shorten it)
-- Add your testing framework to YUUJI.md
-- Integrate your linters/scanners into MEGUMI.md
+- Add your testing framework to `protocol/yuuji.agent.md`
+- Integrate your linters/scanners into `protocol/megumi.agent.md`
 
 **Goal:** Make it yours. Protocol files are templates, not dogma.
 
@@ -189,25 +189,25 @@ Use this to adapt Domain Zero to your needs:
 #### Essential Customizations (Do These)
 
 - [ ] **Replace placeholders in protocol.config.yaml** (name, email, project info)
-- [ ] **Add your testing framework** (pytest, jest, junit - edit YUUJI.md)
-- [ ] **Add your security tools** (Snyk, SonarQube - edit MEGUMI.md)
+- [ ] **Add your testing framework** (pytest, jest, junit - edit `protocol/yuuji.agent.md`)
+- [ ] **Add your security tools** (Snyk, SonarQube - edit `protocol/megumi.agent.md`)
 - [ ] **Adjust tier time limits** (if 30-45 min is too slow/fast)
 - [ ] **Set up AI memory** (saves 90% of token costs for protocol files)
 
 #### Recommended Customizations (Improves Fit)
 
-- [ ] **Rename agents if anime theme bothers you** (Developer, Security, UX, Coordinator)
-- [ ] **Remove Nobara if you don't do UX work** (just use Yuuji + Megumi)
+- [ ] **Flip MASK OFF if the anime theme bothers you** (`mask_mode.enabled: false` in `protocol.config.yaml` swaps every agent to plain professional-mode responses; core behavior — TDD, security review, tiers — is unchanged either way)
+- [ ] **Drop the agents you don't need** (`roles.enabled` in `protocol.config.yaml` lists all nine resident agents — Nobara for UX, Todo/Maki/Panda/Inumaki are all optional extras; disable what you don't use)
 - [ ] **Disable Passive Observer** (it's OFF by default, keep it that way for privacy)
-- [ ] **Skip CLAUDE.md protection** (if CODEOWNERS setup feels like overkill)
-- [ ] **Integrate with your CI/CD** (run verify-protocol.sh in GitHub Actions)
+- [ ] **Skip the git-hook guards** (`scripts/install-git-hooks.sh`/`.ps1` wires up the FEAT-GUARD-001 append-only check and the protocol-path guard; CODEOWNERS is a separate, GitHub-only layer — skip either if that level of enforcement feels like overkill for a solo project)
+- [ ] **Integrate with your CI/CD** (run `verify-protocol.sh`/`.ps1` in GitHub Actions)
 
 #### Optional Customizations (Nice to Have)
 
-- [ ] **Add custom triggers** (shortcuts for common operations)
+- [ ] **Add custom triggers** (shortcuts for common operations — `custom_triggers` in `protocol.config.yaml`)
 - [ ] **Create project-specific appendices** (stack-specific guidance)
 - [ ] **Add compliance checklists** (PCI, HIPAA, SOC2 for Tier 3)
-- [ ] **Integrate desktop wrapper** (if you want Electron UI)
+- [ ] **Turn on DZP Cortex** (`scripts/brain.sh`/`.ps1 index`) so agents can recall prior decisions and security findings across sessions instead of re-reading everything cold
 - [ ] **Set up multi-model review** (use Claude Opus + Sonnet for Tier 3)
 
 ---
@@ -231,8 +231,8 @@ Use this to adapt Domain Zero to your needs:
 
 **Pitfall 4: Not Customizing**
 - ❌ Using protocol files as-is when they don't fit
-- ✅ Editing YUUJI.md to use your testing framework
-- ✅ Adding your linters to MEGUMI.md's checklist
+- ✅ Editing `protocol/yuuji.agent.md` to use your testing framework
+- ✅ Adding your linters to `protocol/megumi.agent.md`'s checklist
 
 **Pitfall 5: Ignoring Measurement**
 - ❌ Assuming productivity gains without tracking
@@ -294,7 +294,9 @@ Now that you know how to use it, here's what you're actually using:
 
 **Domain Zero is a structured prompt engineering framework disguised as an anime-themed AI collaboration system.**
 
-Let's be clear: These "agents" (Yuuji, Megumi, Nobara, Gojo) are **not separate AI systems**. They're **the same AI reading different instruction files**. It's like putting on different hats - the AI is just following different role-playing prompts with specific behavioral constraints.
+Let's be clear: at the core, these "agents" — nine resident roles (Yuuji, Megumi, Nobara, Gojo, Todo, Maki, Panda, Inumaki, Sukuna) plus one external, non-resident auditor (Toji) — are **not nine separate AI models**. In most harnesses they're **the same underlying AI reading different instruction files**. It's like putting on different hats - the AI is just following different role-playing prompts with specific behavioral constraints.
+
+**One real nuance worth naming honestly:** in a harness that supports scoped subagents (e.g. Claude Code's Task/Agent tool), the separation isn't purely narrative anymore. When Toji runs as such a subagent, the harness itself withholds Bash and Task execution tools from that role — the file's claim of "zero execution privileges by design" is, in that specific surface, a real permission boundary, not just a sentence in a markdown file. That's the exception, not the rule: most of the role separation described below (see "CLAUDE.md Protection," next) is still convention enforced by the prompt, not the platform. Which kind of protection you're getting depends on which one you're looking at — this document tells you which is which.
 
 ---
 
@@ -302,14 +304,14 @@ Let's be clear: These "agents" (Yuuji, Megumi, Nobara, Gojo) are **not separate 
 
 ### The Uncomfortable Truth
 
-**Yuuji, Megumi, Nobara, and Gojo don't exist as distinct entities.** They are:
+**Yuuji, Megumi, Nobara, Gojo, Todo, Maki, Panda, Inumaki, Sukuna, and Toji don't exist as distinct entities.** They are:
 
-1. **Markdown instruction files** with role-playing prompts
+1. **Markdown instruction files** (`protocol/*.agent.md`) with role-playing prompts
 2. **The same underlying AI** (Claude, GPT-4, etc.) reading different context
 3. **Prompt engineering patterns** that constrain AI behavior through psychological framing
 4. **Workflow orchestration** masquerading as character personalities
 
-When you invoke "Yuuji," you're not calling a specialized implementation AI. You're telling Claude to read `YUUJI.md` and pretend to be an enthusiastic developer who feels "protocol weight." That's it.
+When you invoke "Yuuji," you're not calling a specialized implementation AI. You're telling Claude to read `protocol/yuuji.agent.md` and pretend to be an enthusiastic developer who feels "protocol weight." That's it. The same is true of Megumi, Nobara, Todo, Maki, Panda, Inumaki, and Sukuna — nine files, nine personas, one model. Toji is the partial exception described above: still the same model, but (in harnesses that support it) with a narrower tool grant that matches its "report-only, no execution" design on purpose.
 
 ### The Jujutsu Kaisen Theme
 
@@ -325,7 +327,8 @@ The anime references (Gojo's "Domain Expansion," Megumi's "Divine Dogs," Yuuji's
 | "Zero Defects" | Aspirational quality target (not achievable 100% of the time) |
 | "Satoru Gojo's Authority" | User has final say (obvious in any AI system) |
 | "Protocol Consciousness" | Prompts that make AI self-monitor behavior |
-| "Trigger 19" | Session logging and retrospective analysis |
+| "Trigger 19" | On-demand session/intelligence report, written to a gitignored, local-only file when you ask Gojo for one — nothing is generated automatically |
+| "Toji's Zero Cursed Energy" | An auditor role kept deliberately outside the other nine agents' chain of command, with a narrower (report-only) tool grant |
 
 **If you renamed "Yuuji" to "Developer Bot" and "Megumi" to "Security Bot," the system would function identically.** The anime theme is **narrative scaffolding**, not technical architecture.
 
@@ -335,7 +338,7 @@ The anime references (Gojo's "Domain Expansion," Megumi's "Divine Dogs," Yuuji's
 
 ### 1. **Enforces Test-Driven Development Through Prompts**
 
-**Reality:** The protocol forces the AI to write tests before implementation by explicitly instructing it to do so in YUUJI.md. This is valuable because:
+**Reality:** The protocol forces the AI to write tests before implementation by explicitly instructing it to do so in `protocol/yuuji.agent.md`. This is valuable because:
 - ✅ You get test coverage as a byproduct of development
 - ✅ Tests are written when requirements are fresh
 - ✅ Forces clear thinking about interfaces before coding
@@ -344,16 +347,16 @@ The anime references (Gojo's "Domain Expansion," Megumi's "Divine Dogs," Yuuji's
 
 ### 2. **Structures Security Reviews (When You Actually Do Them)**
 
-**Reality:** MEGUMI.md contains a checklist of OWASP Top 10 vulnerabilities. This is helpful because:
+**Reality:** `protocol/megumi.agent.md` contains a checklist of OWASP Top 10 vulnerabilities. This is helpful because:
 - ✅ You get a systematic security review process
 - ✅ Common vulnerabilities are explicitly checked
 - ✅ Security isn't an afterthought
 
-**But:** 
+**But:**
 - AI security reviews are **better than nothing, worse than a human security expert**
 - The AI can miss novel vulnerabilities or context-specific risks
-- "80% vulnerability detection" (claimed in docs) is **aspirational, not measured**
 - You still need penetration testing and security audits for critical systems
+- By policy, Megumi finds issues and hands them back to Yuuji rather than fixing code herself — but treat that as a **process rule the prompt enforces**, not a hard permission boundary. Whether "Megumi can't Edit files" is actually true at the tool level depends on how your specific harness wires up her session; don't assume it without checking
 
 ### 3. **Provides Workflow Structure**
 
@@ -389,44 +392,45 @@ The anime references (Gojo's "Domain Expansion," Megumi's "Divine Dogs," Yuuji's
 
 **What You Actually Get:** Better-than-average code quality if you follow the process rigorously. Still needs human review, especially for critical systems.
 
-### 2. **Multi-Agent Architecture is an Illusion**
+### 2. **Multi-Agent Architecture is (Mostly) an Illusion**
 
-**The Claim:** Four specialized agents working together
+**The Claim:** Nine specialized agents plus an external auditor, all working together
 
 **The Reality:**
-- ❌ It's one AI reading different prompts sequentially
+- ❌ In most harnesses, it's one AI reading different prompts sequentially
 - ❌ Agents don't "collaborate" - you manually pass context between them
-- ❌ "Passive observation" (Gojo watching Yuuji/Megumi) is just session logging
+- ❌ "Passive observation" (Gojo watching other agents) is opt-in session logging, OFF by default — see `privacy.passive_monitoring` in `protocol.config.yaml`
 - ❌ "The Weight" agents feel is just prompt instructions like "always follow protocol"
+- ⚠️ **The one exception:** in a harness with scoped subagents (e.g. Claude Code's Task/Agent tool), Toji's role genuinely gets a narrower tool grant than the implementation agents — no Bash, no Task execution — so "Toji has zero execution privileges" can be a real, platform-enforced boundary there, not just a sentence in `toji.agent.md`. Don't assume this generalizes to every AI tool you might point at these files.
 
-**What You Actually Get:** A structured way to use AI for development with explicit separation of concerns (implementation vs security review).
+**What You Actually Get:** A structured way to use AI for development with explicit separation of concerns (implementation vs security review vs UX vs database vs performance vs build vs API vs system-update vs external audit) — real in the sense of "you get organized outputs," not real in the sense of "nine independent minds are debating."
 
 ### 3. **Productivity Gains are Context-Dependent**
 
-**The Claim:** "~50% productivity gains across mixed workload"
+**The Claim:** Substantial productivity gains from following the protocol
 
 **The Reality:**
 - ⚠️ Gains depend on **your existing process** (or lack thereof)
 - ⚠️ If you already do TDD + security reviews, gains are minimal
 - ⚠️ If you skip testing and security, Domain Zero adds **structure**, not speed
-- ⚠️ "~50%" is from **internal evaluations** (no peer review, no control group)
+- ⚠️ Be skeptical of any specific percentage claim (here or anywhere) that isn't backed by a controlled before/after comparison **on your own codebase** — this project doesn't run peer-reviewed benchmarks, and neither should you trust ones that aren't yours
 
-**What You Actually Get:** 
+**What You Actually Get:**
 - Faster if you're chaotic and undisciplined (structure helps)
 - Slower if you're already rigorous (process overhead)
 - Most value for **solo developers** or **small teams without formal processes**
 
-### 4. **CLAUDE.md Protection is Theater**
+### 4. **CLAUDE.md Protection: Partly Real, Partly Theater — Here's Which Is Which**
 
 **The Claim:** CLAUDE.md is "protected" from unauthorized modifications
 
-**The Reality:**
-- ❌ AI can't enforce file permissions (it's not an operating system)
-- ❌ Protection is achieved through **Git CODEOWNERS**, which you manually configure
-- ❌ "Yuuji can't modify CLAUDE.md" means **the prompt tells the AI not to suggest edits**
-- ❌ Nothing stops you (or a malicious actor) from editing the file directly
+**The Reality (verified against this repo's actual guard config, 2026-07-30):**
+- ❌ No agent's Read/Write/Edit *tool grant* is what stops it from touching CLAUDE.md. In this harness, Yuuji genuinely has full Edit access to every file in the repo, CLAUDE.md included — the restriction lives entirely in the prompt telling the agent not to use it that way. That part really is convention, not permission.
+- ✅ **But a real, mechanical layer does exist on top of that convention**: `scripts/install-git-hooks.sh`/`.ps1` wires up a pre-commit hook (FEAT-REQ-001) that reads a protected-path allowlist from `protocol.config.yaml` (`custom_agent_security.file_protection.immutable_paths`) and refuses to `git commit` any staged change under those paths without the explicit `DZP_ALLOW_PROTOCOL_EDIT=1` override — that check runs regardless of what the AI "decided" to do, and it's opt-in (you have to run the installer).
+- ⚠️ **A gap worth knowing about, not hiding:** that allowlist currently protects the `protocol/` directory and `protocol.config.yaml` by path prefix, but does **not** list the repository-root `CLAUDE.md` file as its own entry — even though root `CLAUDE.md` has been the single canonical protocol source (not `protocol/CLAUDE.md`, now just a stub) since v9.11.0. In this install, as of this writing, a local commit that edits only root `CLAUDE.md` would **not** be blocked by that hook. GitHub CODEOWNERS *does* list `CLAUDE.md` by name, so a PR-and-branch-protection workflow with code-owner review turned on would still catch it there — but a direct local commit on a repo without that GitHub setting enabled would not.
+- ❌ Nothing stops you (or a malicious actor with commit access) from editing the file directly and bypassing both layers if the git hook isn't installed and GitHub branch protection isn't configured.
 
-**What You Actually Get:** A convention to keep protocol files stable, enforced by Git tooling (if you set it up).
+**What You Actually Get:** A convention (self-restraint baked into every other agent's prompt) backed by two *optional* mechanical layers you have to actually turn on — a local pre-commit path guard (currently with a real gap around the root `CLAUDE.md` file specifically) and GitHub CODEOWNERS (which needs branch protection enabled to do anything). None of the three layers is automatic out of the box; check your own setup rather than trusting the label "protected." (README.md's "What DZP Is — and Is Not" section names this same three-way split — prompt-level convention, harness configuration, mechanical enforcement — as DZP's general design principle; this section is that principle applied to one specific file, with the one gap it currently has named explicitly.)
 
 ---
 
@@ -439,7 +443,7 @@ The anime references (Gojo's "Domain Expansion," Megumi's "Divine Dogs," Yuuji's
 - The structure makes you think through requirements before coding
 
 **2. Teams Without Formal Security Review Processes**
-- If you don't have a dedicated security engineer, MEGUMI.md provides a checklist
+- If you don't have a dedicated security engineer, `protocol/megumi.agent.md` provides a checklist
 - Better than shipping without any security review
 
 **3. Learning Projects and Skill Development**
@@ -515,16 +519,19 @@ The anime references (Gojo's "Domain Expansion," Megumi's "Divine Dogs," Yuuji's
 ### Token/Cost Implications
 
 **Overhead:**
-- Protocol files: ~16,000 tokens (reread each session without memory)
-- AI memory saves ~90% of this (recommended)
-- Per-feature prompts: +20-30% tokens vs unstructured "write this code"
+- Protocol files are large now (nine agent files plus `CLAUDE.md` — this isn't the four-agent, single-digit-thousand-token system from early versions). Rereading everything cold, every session, is real, measurable overhead. Don't trust an old specific token count here; measure your own by checking the file sizes in `protocol/` against your provider's tokenizer.
+- Per-feature prompts also cost more than unstructured "write this code" — you're paying for the tier workflow, the confirmation loop, and the templates.
+
+**What actually reduces the overhead today:** Two independent things, not one:
+1. Your AI assistant's own memory/custom-instructions feature (if it has one) — keeps you from repasting protocol context every session. Generic advice, not specific to Domain Zero.
+2. **DZP Cortex** (`scripts/brain.sh`/`.ps1`) — a project-specific, local semantic-memory layer this project ships. Instead of rereading whole files, agents can query it for cited, relevant chunks (`brain query "..."`) and write distilled decisions back (`brain remember ...`). It runs fully on-device after the first model download — no cloud calls. This is a real, verifiable subsystem you can inspect at `.protocol-state/brain/`, not marketing language.
 
 **Savings:**
 - Fewer iterations from clearer requirements (tests define behavior)
 - Fewer bugs to fix post-implementation
 - Less time spent on "what was I thinking?" archeology
 
-**Net Effect:** Probably neutral to positive if you use AI memory.
+**Net Effect:** Depends on whether you set up Cortex and/or your assistant's memory feature — measure it on your own project rather than trusting a number here.
 
 ---
 
@@ -558,8 +565,8 @@ The anime references (Gojo's "Domain Expansion," Megumi's "Divine Dogs," Yuuji's
 ### How to Make This Actually Useful For You
 
 **1. Strip the Anime Theme (If It Bothers You)**
-- Rename agents to roles: Developer, Security, UX, Coordinator
-- Remove anime references from prompts
+- Flip `mask_mode.enabled: false` in `protocol.config.yaml` for a built-in professional-mode toggle (no manual renaming needed — core behavior is identical either way)
+- Or go further: rename agents to roles yourself (Developer, Security, UX, Coordinator) and edit the prompts directly
 - Keep the workflow structure (it's the valuable part)
 
 **2. Adjust Tier Thresholds**
@@ -568,19 +575,19 @@ The anime references (Gojo's "Domain Expansion," Megumi's "Divine Dogs," Yuuji's
 - Tune based on your actual risk tolerance and deadlines
 
 **3. Integrate Your Existing Tools**
-- If you use pytest, tell Yuuji to use it (edit YUUJI.md)
+- If you use pytest, tell Yuuji to use it (edit `protocol/yuuji.agent.md`)
 - If you use Snyk/SonarQube, tell Megumi to defer to tool output
 - Protocol files are **templates**, not laws of nature
 
 **4. Remove What You Don't Need**
-- If you don't care about "Trigger 19" intelligence reports, ignore them
-- If CLAUDE.md protection feels like overkill, skip CODEOWNERS setup
-- If you don't need Nobara (creative/UX), just use Yuuji and Megumi
+- If you don't care about Trigger 19 intelligence reports, just never ask Gojo for one — nothing runs automatically
+- If the git-hook guards or CODEOWNERS feel like overkill for your project, skip installing them (`scripts/install-git-hooks.sh` is opt-in)
+- If you don't need Nobara (creative/UX) or any of the extended four (Todo/Maki/Panda/Inumaki), drop them from `roles.enabled` in `protocol.config.yaml` and just use Yuuji and Megumi
 
 **5. Measure Your Own Results**
 - Track time spent with vs without Domain Zero
 - Count bugs found in production before vs after
-- Measure your actual productivity, don't trust claimed "~50% gains"
+- Measure your actual productivity — don't trust any claimed percentage gain, including ones in this document, without your own before/after numbers
 
 ---
 
@@ -674,6 +681,6 @@ Customize it. Question it. Measure your results. Discard what doesn't work for y
 
 ---
 
-**Domain Zero Protocol v9.10.2** - A Structured Approach to AI-Assisted Development
+**Domain Zero Protocol v9.11.0** - A Structured Approach to AI-Assisted Development
 
 *Now you know what you're actually getting into.*

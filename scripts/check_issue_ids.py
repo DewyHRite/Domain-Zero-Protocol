@@ -543,6 +543,34 @@ def _repo_toplevel() -> Optional[Path]:
     return Path(proc.stdout.strip())
 
 
+def is_path_tracked(repo_root: Path, path: str) -> bool:
+    """True when `path` has a git INDEX entry (i.e. git tracks it).
+
+    SEC-IDGOVBASE-001 -- this is the discriminator between the two situations
+    that BOTH present as `baseline is None`, and conflating them is exactly
+    the bug:
+
+      * a file genuinely NEW in the change under review -- no baseline because
+        it did not previously exist. It IS tracked (a staged addition has an
+        index entry; a CI checkout sees PR content as committed). Scanning it
+        in full is CORRECT: all of it really is new.
+
+      * a file that is UNTRACKED/gitignored -- no baseline because it has never
+        been in git at all, and never will be. Scanning it in full is WRONG:
+        its entire accumulated history gets reported as if written today.
+
+    Deliberately NOT `baseline is None`, which cannot tell these apart. Mirrors
+    check_protected_append_only.is_path_tracked() (UPSTREAM-002) so the two
+    guards agree on what "covered" means rather than each inventing it.
+    """
+    proc = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "--", path],
+        cwd=str(repo_root),
+        capture_output=True,
+    )
+    return proc.returncode == 0
+
+
 def _baseline_and_candidate(
     repo_root: Path, path: str, *, ci: bool, ci_base_ref: str,
 ) -> tuple[Optional[bytes], Optional[bytes]]:
@@ -664,15 +692,22 @@ _ILLUSTRATIVE_MARKER = "<!-- idgov:illustrative -->"
 # exempt an unbounded number of real citations, Sukuna CWE-807 class).
 _ILLUSTRATIVE_MARKER_CAP = 3
 # SEC-IDGOV-E-004: LOCAL, gate-only case-insensitive locator built from the
-# single-source grammar.FAMILIES set (grammar.py itself is never modified --
-# it remains the sole authority for what counts as WELL-FORMED via the
-# case-SENSITIVE grammar.is_wellformed()). This locator only widens what
-# counts as a CANDIDATE token to inspect; classification is still always
-# grammar.is_wellformed(), so a lowercase/mixed-case hit can only ever
-# classify as malformed (a real minted id is always uppercase).
+# single-source grammar.FAMILIES set. grammar.is_wellformed() remains the
+# sole, unmodified authority for what counts as WELL-FORMED (case-SENSITIVE);
+# this locator only widens what counts as a CANDIDATE token to inspect --
+# classification is still always grammar.is_wellformed(), so a
+# lowercase/mixed-case hit can only ever classify as malformed (a real
+# minted id is always uppercase).
+#
+# SEC-IDGOVLEFT-001 (v9.11.0 WP5 Item 4): this locator carried the identical
+# left-boundary defect as grammar.ID_SHAPED_RE (see grammar.py for the full
+# explanation) -- a leading \b does not guard against the family name being
+# embedded inside a longer hyphen-joined token (e.g. PATCH-SEC-002 extracted
+# a false-positive "SEC-002" hit). Same negative-lookbehind fix mirrored here
+# since this is the locator actually wired into the live gate.
 _FAMILIES_ALT = "|".join(sorted(grammar.FAMILIES))
 _ID_SHAPED_CI_RE = re.compile(
-    rf"\b(?:{_FAMILIES_ALT})-[0-9A-Za-z][0-9A-Za-z.\-]*\b", re.IGNORECASE,
+    rf"(?<![A-Za-z0-9-])(?:{_FAMILIES_ALT})-[0-9A-Za-z][0-9A-Za-z.\-]*\b", re.IGNORECASE,
 )
 # Trailing sentence punctuation that ID_SHAPED_RE's own [0-9A-Z.\-]* char
 # class can greedily swallow (e.g. "...cite SEC-CORTEX-030." matches through
@@ -908,7 +943,19 @@ def _resolve_corpus_targets(
     a GLOB pattern (e.g. `audits/**`), expanded against the CHANGED files in
     this diff range via _changed_files(). A resolved target matching an
     escape_path_excludes entry is dropped (escape wins -- same precedence
-    E6(c) already established for exact entries)."""
+    E6(c) already established for exact entries).
+
+    SEC-IDGOVBASE-001: an UNTRACKED exact entry is also dropped here. It has no
+    baseline blob at ANY ref, so `_added_lines_with_offset()` degrades to
+    treating the whole file as "added" and the gate reports the file's entire
+    citation history as newly-written findings (confirmed at 8241d2e: 77
+    findings from `.dzp-domain/domain.record.md` alone). Dropping it is only
+    half the fix -- the other half is `corpus_coverage()`, which NAMES every
+    path dropped here so the reduced coverage is visible on every run instead
+    of becoming an invisible hole. Glob-resolved targets come from
+    `_changed_files()` (a git diff) and are tracked by construction, so this
+    filter can only ever affect exact entries.
+    """
     targets: list[str] = []
     seen: set[str] = set()
     changed: Optional[list[str]] = None
@@ -917,7 +964,8 @@ def _resolve_corpus_targets(
         if not is_glob:
             if pattern not in seen:
                 seen.add(pattern)
-                targets.append(pattern)
+                if is_path_tracked(repo_root, pattern):
+                    targets.append(pattern)
             continue
         if changed is None:
             changed = _changed_files(repo_root, ci=ci, ci_base_ref=ci_base_ref)
@@ -927,6 +975,46 @@ def _resolve_corpus_targets(
                 seen.add(norm)
                 targets.append(norm)
     return [t for t in targets if not _is_path_escape_excluded(t, escape_path_excludes)]
+
+
+def corpus_coverage(
+    repo_root: Path, corpus_paths: tuple[str, ...],
+    escape_path_excludes: tuple[str, ...] = DEFAULT_ESCAPE_PATH_EXCLUDES,
+) -> tuple[list[str], list[tuple[str, str]]]:
+    """Return (scannable, unscanned) for the EXACT (non-glob) corpus entries.
+
+    `unscanned` is a list of (path, reason) pairs. Reported unconditionally by
+    main() on every run, pass or fail.
+
+    SEC-IDGOVBASE-001 -- WHY THIS EXISTS RATHER THAN A BARE SKIP. The obvious
+    fix for the whole-file over-fire is "skip the path". That trades a wall of
+    false findings for an invisible coverage hole: the operator sees a clean
+    run and reasonably concludes every configured corpus document was checked.
+    An unscanned corpus path is a real reduction in what this gate verifies,
+    and the operator must be able to see it without reading the source.
+
+    The rule this batch enforces, of which this is one instance: a control that
+    cannot cover something must SAY SO, every run. Silent success and verified
+    success must never look identical.
+    """
+    scannable: list[str] = []
+    unscanned: list[tuple[str, str]] = []
+    for pattern in corpus_paths:
+        if any(ch in pattern for ch in "*?["):
+            continue  # glob entries resolve from the diff; always tracked
+        if _is_path_escape_excluded(pattern, escape_path_excludes):
+            continue  # deliberately configured out of scope, not a coverage gap
+        if is_path_tracked(repo_root, pattern):
+            scannable.append(pattern)
+        elif (repo_root / pattern).exists():
+            unscanned.append((
+                pattern,
+                "present on disk but UNTRACKED/gitignored -- no baseline blob "
+                "exists at any ref, so added-line scoping is impossible",
+            ))
+        else:
+            unscanned.append((pattern, "absent from the working tree"))
+    return scannable, unscanned
 
 
 def _is_audits_scope_target(path: str) -> bool:
@@ -1334,6 +1422,45 @@ def main(
 
     registry_path = args.registry or settings.registry_path
     override_env = settings.override_env
+
+    # --- CORPUS COVERAGE (SEC-IDGOVBASE-001) -------------------------------
+    # Always printed, on every run, pass or fail. A gate that cannot state what
+    # it covered is indistinguishable from one that covered nothing.
+    try:
+        scannable, unscanned = corpus_coverage(
+            repo_root, settings.corpus_paths, settings.escape_path_excludes,
+        )
+        total = len(scannable) + len(unscanned)
+        if unscanned:
+            detail = "\n".join(f"     - {p}: {reason}" for p, reason in unscanned)
+            print(
+                f"[idgov-gate] CORPUS COVERAGE: {len(scannable)}/{total} exact corpus "
+                f"path(s) scannable ({len(unscanned)} NOT SCANNED):\n"
+                f"{detail}\n"
+                "   *** CITATIONS IN THE PATH(S) ABOVE ARE NOT CHECKED BY THIS GATE. ***\n"
+                "   They have no baseline blob to diff against, so this gate cannot tell\n"
+                "   a newly-written citation from a decade-old one. Scanning them whole\n"
+                "   would report their ENTIRE history as findings, which trains operators\n"
+                f"   to reach for {override_env}=1 on every run -- so they are skipped,\n"
+                "   and named here instead. Do not read this run's result as 'every\n"
+                "   configured corpus document was checked' (SEC-IDGOVBASE-001).",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                f"[idgov-gate] CORPUS COVERAGE: {len(scannable)}/{total} exact corpus "
+                "path(s) scannable",
+                file=sys.stderr,
+            )
+    except Exception as e:  # noqa: BLE001 -- reporting must never mask the checks
+        # Fail-SOFT deliberately, and ONLY here: this block is a diagnostic, not
+        # an invariant. Its failure must be loud but must not decide the gate's
+        # verdict -- the real checks below remain fail-CLOSED and run regardless.
+        print(
+            f"[idgov-gate] WARNING: corpus-coverage reporting failed ({e}) -- "
+            "coverage is UNKNOWN for this run; the checks below still ran.",
+            file=sys.stderr,
+        )
 
     try:
         violations = _run_checks(

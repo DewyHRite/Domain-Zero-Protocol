@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Security Policy
 
 ## Scope
@@ -13,6 +13,12 @@ The Domain Zero Protocol security policy covers:
 - **Tier System**: Security bypasses or privilege escalation in tier enforcement
 - **Authentication & Authorization**: Issues in agent identity verification or protocol authority enforcement
 - **Workflow Automation**: Security risks in scripts (`scripts/verify-protocol.sh`, `scripts/verify-protocol.ps1`)
+- **Release Provenance & Supply Chain**: Flaws in `scripts/verify-payload.py` (the consumer-facing
+  release-payload verifier) or `scripts/distro/dzp_payload.py` (the maintainer-only payload builder),
+  including anything that would let a forged/tampered download report a false PASS
+- **Standing Execution Surfaces**: Flaws in `scripts/git-hooks/pre-commit` or the
+  `scripts/install-git-hooks.*` installer — this hook, once installed, runs on every future
+  `git commit` in the installing project
 - **Documentation**: Security guidance errors or misleading security recommendations
 - **State Management**: Information disclosure or tampering risks in `.protocol-state/`
 
@@ -37,6 +43,53 @@ We provide security updates for the following versions:
 **Support Policy**: Only the **latest minor release line (currently 9.10.x)** receives security updates. All earlier versions are end-of-life.
 
 **Upgrade Recommendation**: Users on any version below the current 9.10.x line should upgrade to the latest release immediately. See `VERSION.md` for the current version.
+
+---
+
+## Verifying a Release
+
+**Before installing DZP, verify what you're installing.** This section is the canonical reference for
+"how do I know this download is genuine" — see also the [README.md Fresh Install
+section](README.md#1-installation), which links back here.
+
+### Verified Release Payload (`scripts/verify-payload.py`)
+
+Every release publishes a `dzp-payload-vX.Y.Z.zip` + sibling `dzp-payload-vX.Y.Z.manifest.json` as
+GitHub Release assets. `scripts/verify-payload.py` (stdlib-only — no DZP install or third-party
+package required) verifies the pair BEFORE you extract anything:
+
+```bash
+python scripts/verify-payload.py dzp-payload-vX.Y.Z.zip --extract-to ./Domain-Zero-Protocol
+```
+
+**What a passing run (`VERIFY OK`, exit code `0`) proves**: the zip is internally self-consistent
+(its own hash, every declared file's hash, no undeclared extra content) **and** the manifest's
+recorded commit is genuinely reachable, under the recorded release tag/branch, on this project's
+pinned canonical GitHub repository (the check target is a hardcoded constant inside the verifier,
+never read from the manifest under verification).
+
+**What it does NOT prove**: that the code is safe, bug-free, or behaves as documented — this is a
+supply-chain consistency check, not a code review or a security audit. In its default (non-
+`--deep-verify`) mode it also does not cryptographically bind the zip's raw file bytes to the
+commit's git tree object (a plain SHA-256 of a file's bytes is not the same value as its git blob
+hash) — pass `--deep-verify` for that stronger, network-and-time-costly guarantee. Run
+`python scripts/verify-payload.py --help` for the full check order and exit-code meanings, and see
+the module's own docstring for the complete threat-model discussion.
+
+### `git clone` Has No Cryptographic Provenance Guarantee (Open, Unmitigated)
+
+**Toji audit finding `DESIGN-001`, currently OPEN.** DZP releases are promoted by repointing the
+canonical repository's default branch to the new release branch — not by publishing an immutable,
+cryptographically signed tag. A plain `git clone` therefore has **no cryptographic anchor to verify
+against, even in principle**: nothing about the clone itself lets you confirm you received the
+genuine repository rather than a compromised or impersonated one. This is a real, currently-open gap
+— not a theoretical one, and not something this policy will overstate as mitigated.
+
+If provenance matters for your use case, use the **Verified Release Payload** flow above instead — it
+provides real integrity assurance (SHA-256 manifest match + pinned canonical-origin cross-check; see
+the precise, non-overstated scope of that guarantee above). Signed release tags, which would close
+this specific gap for the `git clone` path as well, are a planned future addition; no version or date
+is committed for that work yet.
 
 ---
 
@@ -96,6 +149,31 @@ For critical vulnerabilities requiring immediate attention (e.g., active exploit
   - Authentication bypass allowing unauthorized agent impersonation
   - Privilege escalation from Tier 1 to Tier 3 without proper authorization
   - Information disclosure of sensitive credentials or API keys
+
+### Reporting a Suspected Counterfeit or Tampered Release
+
+This is a **distinct channel from a code vulnerability report** — use it when you suspect the DZP
+*distribution itself* has been impersonated or tampered with, rather than when you've found a flaw
+in DZP's own code. Signs worth reporting:
+
+- `scripts/verify-payload.py` reports a FAILED check (any non-zero exit) against a download you
+  obtained from what you believed was the official GitHub Release page.
+- A repository, link, blog post, or package registry entry claiming to be Domain Zero Protocol at a
+  URL other than `https://github.com/DewyHRite/Domain-Zero-Protocol`.
+- Any `.agent.md` file, script, or `CLAUDE.md` content that doesn't match what
+  `scripts/verify-payload.py` says it should be.
+
+**How to report**: use the same [Private Security Advisory](#preferred-method-private-security-advisory-recommended)
+channel above (preferred — this is exactly the kind of sensitive report that should not be public
+before triage) or the [Emergency Contact](#emergency-contact) email for anything that looks like an
+active, ongoing impersonation campaign. Include: the exact URL/source you downloaded from, the
+verification command you ran and its full output (including the exit code), and, if possible, the
+suspected-fake artifact itself (zip/manifest/repo URL) rather than just a description of it.
+
+**How to verify a release is genuine before you report** (so you have concrete evidence to attach):
+see "Verifying a Release" above — run `scripts/verify-payload.py` against the payload zip and
+include the output in your report. As noted above, note that a plain `git clone` currently has no
+provenance check available at all — see "`git clone` Has No Cryptographic Provenance Guarantee".
 
 ---
 
@@ -177,27 +255,42 @@ You must NOT:
 
 ### Deployment Recommendations
 
-1. **Credential Management**:
+1. **Verifying Your Download** (do this FIRST, before anything else on this list):
+   - Use the [README.md verified-payload install path](README.md#1-installation) —
+     `scripts/verify-payload.py` — rather than a bare `git clone`, unless you have a specific reason
+     not to (e.g. you are a contributor working against dev history).
+   - See "Verifying a Release" above for the full procedure and what it does and does not prove. A
+     plain `git clone` currently has no provenance check available at all (see "`git clone` Has No
+     Cryptographic Provenance Guarantee" above) — prefer the verified-payload flow.
+   - If verification fails, or something about the source looks suspicious, do not proceed with
+     installation — see "Reporting a Suspected Counterfeit or Tampered Release" above.
+
+2. **Credential Management**:
    - Never commit API keys, tokens, or credentials to version control
    - Use `.gitignore` to exclude `.protocol-state/trigger-19.md` and sensitive files
    - Rotate credentials regularly (every 90 days minimum)
 
-2. **Tier System Enforcement**:
+3. **Tier System Enforcement**:
    - Always use Tier 3 for authentication, payment processing, or sensitive data handling
    - Never downgrade tier mid-workflow without explicit security review
    - Document tier selection rationale in `project-state.json`
 
-3. **Agent Identity Verification**:
+4. **Agent Identity Verification**:
    - Verify agent self-identification using the canonical verification prompts
    - Use GOJO's Trigger 19 intelligence reports for security-critical decisions
    - Maintain audit logs of agent interactions in `dev-notes.md`
 
-4. **Script Execution**:
+5. **Script Execution**:
    - Review `scripts/verify-protocol.sh` and `scripts/verify-protocol.ps1` before execution
    - Run protocol verification scripts in sandboxed environments
    - Use principle of least privilege for script permissions
+   - **Standing execution surface**: `scripts/install-git-hooks.*` installs
+     `scripts/git-hooks/pre-commit`, which subsequently runs shipped Python scripts on **every future
+     `git commit`** in that project — not a one-time action. Review the hook's contents before
+     installing it, and treat it as an ongoing trust dependency on this repository's integrity, not a
+     single setup step.
 
-5. **State File Protection**:
+6. **State File Protection**:
    - Restrict file permissions on `.protocol-state/` directory (0700 on Unix, ACLs on Windows)
    - Encrypt `trigger-19.md` if it contains sensitive threat intelligence
    - Backup state files before major protocol updates
@@ -244,6 +337,7 @@ Full threat-model rationale: `docs/superpowers/specs/2026-06-19-cortex-encryptio
 > `.protocol-state/security-review.md`. Below are the recent **security-relevant** releases.
 
 ### Recent security-relevant releases (9.x)
+- **v9.10.2** — Release payload subsystem (`FEAT-PAYLOAD-9.10.2-001`): `scripts/distro/dzp_payload.py` (maintainer-only builder) + `scripts/verify-payload.py` (stdlib-only consumer verifier) — SHA-256 manifest integrity + pinned canonical-origin cross-check before install; SEC-PAYLOAD-9.10.2-001..005 CLOSED (1 P1 CWE-345/CWE-829 forgeable-origin bypass + 2 P2 + 2 P3)
 - **v9.8.1** — Cortex encryption migration user_version preservation (BUG-CORTEX-ENC-UV-001): `encrypt_brain()`/`decrypt_brain()` now capture + restore `PRAGMA user_version`; smoke-verify aborts on mismatch. Fixes silent `availability: unavailable` on any v9.8.0 encrypted brain.
 - **v9.8.0** — Cortex encryption-at-rest (PLAN-CORTEX-ENC-001): opt-in SQLCipher AES-256 with Argon2id/OS-keyring key management; reversible backup-first migration; SEC-CORTEX-ENC-001..009 CLOSED
 - **v9.7.2** — Cortex memory-keying silent data-loss fix (SEC-CORTEX-MEM-001) + content-addressed migration hardening
@@ -292,8 +386,8 @@ When reporting, please indicate:
 
 This security policy is versioned alongside the Domain Zero Protocol:
 
-- **Current Version**: 1.5.0 (matches Domain Zero Protocol v9.10.0)
-- **Last Updated**: July 4, 2026
+- **Current Version**: 1.6.0 (matches Domain Zero Protocol v9.11.0)
+- **Last Updated**: August 3, 2026
 - **Next Review**: Upon the next minor/major protocol update
 
 Changes to this policy will be documented in `CHANGELOG.md` and announced via GitHub releases.

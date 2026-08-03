@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Slash Commands
 
 Ready-to-use slash command files for Claude Code CLI.
@@ -26,6 +26,23 @@ cp -r slash-commands/* .claude/commands/
 | `/panda` | Panda | Build Specialist - CI/CD and Docker |
 | `/inumaki` | Toge Inumaki | API Specialist - REST/GraphQL design |
 | `/sukuna` | Ryomen Sukuna | System Update Adversary - Protocol updates via Gojo |
+
+## Session & Utility Commands
+
+| Command | Description |
+|---------|-------------|
+| `/session-start` | Start work session + activate DZP context (reads fresh handoff brief first if present) |
+| `/session-status` | Display current session summary |
+| `/session-update` | Core full sync: project documents + Cortex re-index + timestamp |
+| `/session-break` / `/session-continue` | Record a break / resume after break |
+| `/session-end` | End session (coordinator event; incremental Cortex re-index, detached) |
+| `/session-transfer` | Update + end + durable handoff brief in one fail-closed event (v9.11.0) |
+| `/session-check` | Auto-invoked session monitoring enforcement (4h/6h/8h alerts) |
+| `/dzp-roe` | Restore agent context after compaction |
+| `/brain` / `/input` | Query or update DZP Cortex semantic memory |
+| `/ts-tier1`..`/ts-tier4`, `/ts-codered` | Tiered troubleshooting sessions |
+| `/ts-status`, `/ts-escalate`, `/ts-complete`, `/ts-history` | Troubleshooting session management |
+| `/sys-update` | System update framework entry |
 
 ## Usage
 

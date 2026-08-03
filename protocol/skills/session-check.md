@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Session Check Skill
 ## Automatic Work Session Alert Enforcement
 
@@ -27,14 +27,14 @@
 ## Prerequisites
 
 - [ ] `.protocol-state/session_monitor.py` exists
-- [ ] `.protocol-state/session-state.json` exists (auto-created if missing)
+- [ ] `.protocol-state/project-state.json` exists with `session_tracking` namespace (PATCH-STATE-001 consolidated; auto-created if missing; legacy `session-state.json` supported as fallback only)
 - [ ] Python 3.8+ available
 - [ ] Gojo agent context (auto-invocation capability)
 
 **ESCAPE PATH**: If prerequisites fail:
 1. If session_monitor.py missing: Skip alert check, log warning to domain.record.md
 2. If Python unavailable: Skip alert check, continue with Mission Control
-3. If session-state.json corrupted: Auto-reset state, start fresh session
+3. If session state (project-state.json::session_tracking, or legacy session-state.json fallback) corrupted: Auto-reset state, start fresh session
 4. **NEVER block Mission Control activation** (graceful degradation)
 
 ---
@@ -80,10 +80,10 @@ Your Options:
 Please select an option:
 ```
 
-**State Updates**:
-- `session-state.json`: Auto-increments alert counters (defense-in-depth)
-- `session-state.json`: Records user choice when selected
-- `session-state.json`: Updates escalation level based on choice
+**State Updates** (PATCH-STATE-001: `project-state.json::session_tracking`, legacy `session-state.json` fallback):
+- Auto-increments alert counters (defense-in-depth)
+- Records user choice when selected
+- Updates escalation level based on choice
 
 ---
 
@@ -97,7 +97,11 @@ Please select an option:
 1. Checks current session duration against thresholds
 2. **IF alert needed**: Auto-increments `alert_count` and `alerts_issued` counters
 3. Renders alert text for presentation to user
-4. **IF no alert needed**: Returns "✅ No alert needed" (silent success)
+4. **IF no alert needed**: Prints `[OK] No alert needed`. This is NOT silent when no session is
+   active (`IMPL-SESSIONMON-001`, 2026-08-03 UX-honesty fix): if there is no active session, the
+   tool ALSO appends an `[INFO] No active session - wellbeing tracking is idle...` line pointing to
+   `session start`, so an idle Gojo invocation is never mistaken for "actively monitoring, nothing to
+   report."
 
 **Defense-in-Depth**: Even if Step 3 (record user choice) is skipped, alert counters still increment. This prevents the 0-alerts-in-46-hours scenario.
 
@@ -120,7 +124,7 @@ Please select an option:
 **Command**: `python .protocol-state/session_monitor.py record-choice <user_choice>`
 
 **What it does**:
-1. Records user's choice in `session-state.json`
+1. Records user's choice in `session-state.json` (legacy fallback; primary is `project-state.json::session_tracking`)
 2. Increments appropriate counter (`breaks_chosen` OR `continues_chosen`)
 3. Updates escalation level (increases if `continue` chosen)
 4. Enables high-risk operation blocking if at 6+ hours with `continue`
@@ -180,7 +184,7 @@ if should_block:
 1. Alert detected at 4-hour threshold
 2. Alert counters increment automatically (`check-and-record`)
 3. User presented with clear alert text
-4. User choice recorded in session-state.json
+4. User choice recorded in session-state.json (legacy fallback; primary is `project-state.json::session_tracking`)
 5. Escalation level increases appropriately
 6. High-risk operations blocked at 6+ hours with `continue` choice
 
@@ -284,7 +288,7 @@ rm slash-commands/session-check.md
 
 ---
 
-**Protocol Version**: 9.10.2
+**Protocol Version**: 9.11.0
 **Created**: 2025-12-29
 **Last Updated**: 2026-07-04
 **Status**: ACTIVE

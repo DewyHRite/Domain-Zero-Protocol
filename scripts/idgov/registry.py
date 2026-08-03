@@ -3,6 +3,24 @@
 is authoritative. read/project here; writes go through append()."""
 import json, pathlib, os, sys, time, shutil
 
+# BUG-IDGOVSEQ-001: legacy_seq_floors() needs the id grammar. Imported
+# PACKAGE-RELATIVELY on purpose. An absolute `from idgov import grammar` works
+# for the ordinary `sys.path += scripts/` + `from idgov import registry` entry
+# point, but it BREAKS the break-glass invocation this very module prints in its
+# own Lock.__enter__ TimeoutError (C2 fix (3)):
+#     python -c "from scripts.idgov.registry import Lock; Lock.force_break(...)"
+# -- that one puts the REPO ROOT on sys.path, so top-level `idgov` does not
+# exist and the import dies with ModuleNotFoundError. Verified against the
+# pre-fix module: that invocation worked before (registry.py had no imports of
+# its siblings at all), so an absolute import here would have been a silent
+# regression in a documented recovery path. `from . import` resolves correctly
+# under BOTH package names; the fallback preserves the previously-working
+# bare-module (`sys.path += scripts/idgov`) style as well.
+try:
+    from . import grammar
+except ImportError:  # pragma: no cover - bare-module import, no package context
+    import grammar
+
 SCHEMA_VERSION = 1
 
 # SEC-IDGOV-F-002 (P1): single source of the sentinel `attested_writer` value
@@ -40,17 +58,112 @@ def project_latest(events) -> dict:
     return latest
 
 def all_ids(events) -> set:
-    return {ev["id"] for ev in events}
+    """Known ids for mint-before-cite purposes: the literal `id` of every
+    event, UNION the plain `legacy_id` of every backfilled legacy row
+    (SEC-IDGOV-001 fix). A legacy row's existence IS the registry's
+    attestation that this literal id was already in use pre-governance --
+    E4 must treat it as known for its own plain-string form going forward,
+    not only for its internal LEGACY-wrapper id."""
+    known = {ev["id"] for ev in events}
+    # BUG-IDGOVSEQ-001 (adjacent crash, found by
+    # test_malformed_legacy_ids_do_not_crash_or_corrupt_derivation): a
+    # structurally corrupt row whose `legacy_id` is a non-string (e.g. a JSON
+    # list) made this set-update raise `TypeError: unhashable type: 'list'`,
+    # crashing every mint AND every pre-write freshness check against that
+    # ledger -- a whole-registry denial of service from one malformed row.
+    # The isinstance filter is a CRASH fix, NOT a narrowing of the guard: the
+    # set of *string* legacy ids it admits is byte-for-byte identical to
+    # before (the previous truthiness test already dropped None and ""), and a
+    # non-string value could never equal a grammar.format_id() output anyway.
+    # SEC-IDGOV-001's legacy_id union and SEC-IDGOV-002's accept-with-rationale
+    # decision to keep all 266 plain legacy ids in scope are both preserved.
+    known.update(ev["legacy_id"] for ev in events
+                 if ev.get("legacy") and isinstance(ev.get("legacy_id"), str)
+                 and ev["legacy_id"])
+    return known
 
-def max_seq(events, key_tuple) -> int:
+def legacy_seq_floors(events) -> dict:
+    """BUG-IDGOVSEQ-001 (P2): highest sequence number OCCUPIED by a backfilled
+    `legacy_id`, per counter key.
+
+    A backfill row records its real identity in the free-text `legacy_id` field;
+    its structured `subsystem`/`seq` fields are deliberately null (the row is a
+    non-destructive annotation of pre-governance id usage, not a governed mint).
+    max_seq() below therefore never saw them, while all_ids() DID union
+    `legacy_id` -- so for any subsystem whose `-001` existed only as a legacy row,
+    mint() derived seq 1, formatted an id that all_ids() already knew, and raised
+    a hard collision OUTSIDE its ConflictError retry loop. Every retry recomputed
+    the same seq and failed identically: that subsystem could never receive its
+    first governed mint. (Canonical had three such dead subsystems --
+    SEC-CORTEX, BUG-SESSION, SEC-R1A -- and the documented adoption path for
+    consumers, running the backfill over an existing corpus, is exactly what
+    manufactures this state.)
+
+    PARSED DEFENSIVELY. `legacy_id` is free text from a pre-governance corpus:
+    673 of canonical's 1,229 legacy ids do not parse as FAMILY-SUBSYSTEM-NNN
+    (range notation `SEC-CORTEX-ENC-001..009`, suffixed forms
+    `SEC-001-LEGACY-2026-07-06`, trailing-dash `SEC-CORTEX-ACCESS-`, seq-less
+    `BUG-CORTEX-PROLIF`, ...), and a structurally corrupt row may carry a
+    non-string value entirely (which makes parse_id() raise TypeError, not
+    ValueError). None of that may crash a mint. An unparseable id is skipped --
+    which is SAFE rather than a silent swallow, because an id that cannot be
+    produced by grammar.format_id() can never collide with a governed id either.
+
+    Mirrors all_ids()'s union rule exactly: only rows with a truthy `legacy` flag
+    contribute their `legacy_id`.
+    """
+    floors = {}
+    for ev in events:
+        if not ev.get("legacy"):
+            continue
+        lid = ev.get("legacy_id")
+        if not isinstance(lid, str):
+            continue
+        try:
+            p = grammar.parse_id(lid)
+        except (ValueError, TypeError):
+            continue
+        key = (p["family"], p["subsystem"], p["version"], p["tag"])
+        if p["seq"] > floors.get(key, 0):
+            floors[key] = p["seq"]
+    return floors
+
+
+def governed_max_seq(events, key_tuple) -> int:
+    """Highest seq among GOVERNED (non-legacy) assign rows for this counter key.
+    The original max_seq() body, split out so callers that specifically need the
+    governed-only counter (engine.validate()'s in-file-order running check) can
+    reason about it separately from legacy occupancy."""
     fam, sub, ver, tag = key_tuple
     best = 0
     for ev in events:
         if ev.get("event") != "assign":
             continue
         if (ev.get("family"), ev.get("subsystem"), ev.get("version"), ev.get("tag")) == (fam, sub, ver, tag):
-            best = max(best, int(ev.get("seq", 0)))
+            best = max(best, int(ev.get("seq", 0) or 0))
     return best
+
+
+def max_seq(events, key_tuple) -> int:
+    """Highest seq OCCUPIED for this counter key, counting governed rows UNION
+    parseable legacy_id occupancy (BUG-IDGOVSEQ-001).
+
+    Deliberately the single derivation point shared by engine.mint() and
+    _validate_fresh_before_write()'s concurrent-write freshness check, so the
+    mint decision and the pre-write revalidation can never disagree about what
+    the next value is.
+
+    DESIGN CHOICE -- MAX-OCCUPIED, not first-free-in-a-gap. Legacy occupancy is
+    routinely non-contiguous (canonical SEC-CORTEX holds {1,3,6,10,13,16,22,25}),
+    so a "first free" rule would land the next mint in a numbering hole. Chosen
+    against because (a) 673 canonical legacy ids are unparseable, so a hole may
+    well be occupied by a historical citation the backfill never captured in
+    parseable form -- a fresh high number is strictly safer than reusing one;
+    (b) monotonic counters are auditable and match this function's existing
+    name/contract. `SEC-CORTEX` therefore mints -026, not -002.
+    """
+    return max(governed_max_seq(events, key_tuple),
+               legacy_seq_floors(events).get(tuple(key_tuple), 0))
 
 def max_rev(events, id_) -> int:
     return max((int(ev.get("rev", 0)) for ev in events if ev.get("id") == id_), default=0)

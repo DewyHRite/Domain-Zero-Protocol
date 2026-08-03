@@ -3,6 +3,8 @@
 Writer identity is DERIVED from the per-wrapper signature (never caller-supplied).
 mint/transition do read->decide->append atomically under one reentrant registry.Lock."""
 import datetime
+import sys
+from pathlib import Path
 from idgov import grammar, registry, identity
 
 STATES = frozenset({"open", "reserved", "remediation-required", "re-review", "approved",
@@ -28,6 +30,18 @@ AUTHORITY = {
     "ISS": {"sukuna", "gojo"},
     # MF = "Megumi Finding" (Gojo decision, Phase C review P2-1); TEST = test-scoped
     "TEST": {"megumi", "yuuji"}, "MF": {"megumi"},
+    # FEAT-IDGOV-003 (v9.11.0 Increment 4, USER decision D1 2026-07-28 22:34
+    # UTC, domain.record.md session_20260728_015655 "Approved for all"):
+    # LL = "Lessons Learned" (Gojo/Mission Control's observational-output
+    # domain -- Trigger 19 reports, session intelligence); SF = "Security
+    # Framework" (Megumi's security-framework domain). Both writers already
+    # hold provisioned per-wrapper tokens from their existing families (Gojo:
+    # ISS; Megumi: SEC/CODE/MF/TEST) -- no new key material was minted for
+    # this adoption. Existing wrappers (residentid-gojo.{sh,ps1} for LL,
+    # secid.{sh,ps1} for SF) require no code change: they stamp writer
+    # identity only and never pre-filter families -- this AUTHORITY table is
+    # the single source of truth they defer to.
+    "LL": {"gojo"}, "SF": {"megumi"},
 }
 
 def is_authorized(writer, family) -> bool:
@@ -41,8 +55,86 @@ def _now() -> str:
 # + 2 retries), each against a freshly re-read ledger.
 _MAX_APPEND_ATTEMPTS = 3
 
+# FEAT-IDGOV-002 (v9.11.0 WP5 Item 5): pre-mint corpus-collision advisory.
+# mint()'s ledger-uniqueness check (registry.all_ids(), below) is blind to a
+# pre-governance BARE-TEXT meaning of the same id string already sitting in
+# prose/code corpus (e.g. a hand-written "SEC-013" mention in dev-notes.md
+# that was never actually minted). A fresh per-subsystem -001 can silently
+# collide with that established unrelated meaning, creating an ambiguous
+# citation once the id IS minted. This check is ADVISORY ONLY: the ledger is
+# the sole authority for whether an id is free, so a corpus hit never blocks
+# or fails the mint -- it prints a loud stderr warning naming file:line so
+# the writer can catch and disambiguate before the id propagates further.
+#
+# Bounded, non-recursive file set (kept fast; NOT a repo-wide scan): the two
+# guard-enforced protected records, CHANGELOG.md, and every *.md directly
+# under audits/ (Toji's report output -- flat directory, no need to recurse).
+_CORPUS_COLLISION_RELATIVE_FILES = (
+    ".protocol-state/dev-notes.md",
+    ".protocol-state/security-review.md",
+    "CHANGELOG.md",
+)
+_CORPUS_COLLISION_GLOB_DIRS = ("audits",)
+
+
+def _corpus_collision_hits(new_id: str, repo_root) -> list:
+    """Return a list of 'relative/path:lineno' strings where `new_id` already
+    appears verbatim as a substring in the bounded prose corpus under
+    `repo_root`. Best-effort / fail-soft: a missing file, an unreadable file,
+    or an unresolvable repo_root all simply yield no hits -- this is an
+    advisory, never a gate, and must never raise or block a mint."""
+    hits: list = []
+    try:
+        root = Path(repo_root).resolve()
+    except (OSError, RuntimeError, TypeError):
+        return hits
+
+    paths = [root / rel for rel in _CORPUS_COLLISION_RELATIVE_FILES]
+    for d in _CORPUS_COLLISION_GLOB_DIRS:
+        try:
+            paths.extend(sorted((root / d).glob("*.md")))
+        except OSError:
+            pass
+
+    for path in paths:
+        try:
+            text = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            if new_id in line:
+                try:
+                    rel = path.relative_to(root)
+                except ValueError:
+                    rel = path
+                hits.append(f"{rel.as_posix()}:{lineno}")
+    return hits
+
+
+def _warn_corpus_collision(new_id: str, repo_root) -> None:
+    """Fail-soft wrapper: any unexpected exception inside the collision scan
+    itself must never abort a mint -- the ledger check already decided the
+    id is free; this is purely advisory noise reduction, not a safety gate."""
+    try:
+        hits = _corpus_collision_hits(new_id, repo_root)
+    except Exception:
+        return
+    if not hits:
+        return
+    print(
+        f"[idgov] WARNING (FEAT-IDGOV-002): candidate id {new_id!r} is free in "
+        f"the registry ledger but already appears verbatim in the prose/code "
+        f"corpus at: {', '.join(hits)}. This may be a pre-governance bare-text "
+        "mention unrelated to this mint, or a genuine ambiguous citation -- "
+        "minting proceeds (advisory only); verify the existing occurrence(s) "
+        "before relying on this id being unambiguous.",
+        file=sys.stderr,
+    )
+
+
 def mint(reg_path, family, subsystem, title, *, version=None, tag=None, reserved=False,
-         reported_by=None, signature, nonce, protocol_version, origin, **audit) -> str:
+         reported_by=None, signature, nonce, protocol_version, origin,
+         repo_root=None, **audit) -> str:
     if family not in grammar.FAMILIES:
         raise ValueError(f"unknown family {family!r}")
     who = identity.derive_writer(signature, nonce)
@@ -51,6 +143,13 @@ def mint(reg_path, family, subsystem, title, *, version=None, tag=None, reserved
     attested_writer, writer_token_id = who
     if not is_authorized(attested_writer, family):
         raise PermissionError(f"{attested_writer} not authorized for family {family}")
+    # FEAT-IDGOV-002: repo_root for the corpus-collision advisory. Callers
+    # (e.g. scripts/issue_id.py) should pass it explicitly for correctness;
+    # when omitted, best-effort derive from reg_path's grandparent (mirrors
+    # the canonical <repo_root>/.protocol-state/issue-registry.jsonl layout).
+    # Wrong or unresolvable in a non-canonical layout simply yields zero
+    # corpus hits (fail-soft) -- never affects minting.
+    _collision_repo_root = repo_root if repo_root is not None else Path(reg_path).parent.parent
     # D2: authority is checked once above -- it depends only on (attested_writer,
     # family), never on ledger contents, so it needs no re-check across retries.
     # seq/new_id DO depend on ledger state and must be recomputed from a FRESH
@@ -59,10 +158,24 @@ def mint(reg_path, family, subsystem, title, *, version=None, tag=None, reserved
     for _attempt in range(1, _MAX_APPEND_ATTEMPTS + 1):
         with registry.Lock(reg_path):
             events = registry.read_events(reg_path)
+            # BUG-IDGOVSEQ-001 (P2): max_seq() is OCCUPANCY-aware -- it counts
+            # governed rows UNION parseable backfilled `legacy_id` occupancy for
+            # this counter key. Before that, backfilled rows (subsystem/seq =
+            # null) were invisible to the counter while all_ids() below DID know
+            # their legacy_id, so any subsystem whose -001 existed only as a
+            # legacy row derived seq 1, collided, and raised here -- outside the
+            # ConflictError retry loop, so no retry could ever clear it. The
+            # collision check below is deliberately RETAINED as the backstop that
+            # proves this derivation is right; with the fix it must not fire for
+            # legacy-occupied keys. See registry.max_seq()/legacy_seq_floors()
+            # for the MAX-OCCUPIED (not first-free) design choice.
             seq = registry.max_seq(events, (family, subsystem, version, tag)) + 1
             new_id = grammar.format_id(family, subsystem, seq, version=version, tag=tag)
             if new_id in registry.all_ids(events):
                 raise ValueError(f"collision: {new_id} already exists")
+            # FEAT-IDGOV-002: advisory only -- runs after the ledger has
+            # confirmed new_id is free, never blocks/raises.
+            _warn_corpus_collision(new_id, _collision_repo_root)
             ev = {
                 "schema": registry.SCHEMA_VERSION, "event": "assign", "id": new_id, "rev": 1,
                 "family": family, "subsystem": subsystem, "version": version, "tag": tag, "seq": seq,
@@ -175,6 +288,9 @@ def validate(reg_path) -> list:
     prior_rev = {}            # id -> last-seen rev (0 = none yet)
     running_state = {}        # id -> RECONSTRUCTED current state (not self-reported prev_state)
     family_of = {}            # id -> family (recorded at assign; transitions never carry family)
+    # BUG-IDGOVSEQ-001: computed ONCE (not per row) -- a per-row call would make
+    # this validator O(rows^2) with a regex parse per pair over a 1,300+ row ledger.
+    legacy_floors = registry.legacy_seq_floors(events)
     for i, ev in enumerate(events, 1):
         eid = ev.get("id")
         etype = ev.get("event")
@@ -253,9 +369,49 @@ def validate(reg_path) -> list:
             if not is_legacy:
                 key = (ev.get("family"), ev.get("subsystem"), ev.get("version"), ev.get("tag"))
                 expected = seq_by_key.get(key, 0) + 1
-                if ev.get("seq") != expected:
-                    violations.append(f"line {i}: {eid} seq {ev.get('seq')} != expected {expected} for {key}")
-                seq_by_key[key] = ev.get("seq")
+                # BUG-IDGOVSEQ-001 (P2): this check HAD to learn about legacy
+                # occupancy too. Once mint() derives its seq clear of backfilled
+                # `legacy_id` occupancy (registry.max_seq()), the very first
+                # governed row in a legacy-occupied key legitimately starts ABOVE
+                # 1 -- e.g. SEC-CORTEX-026. Left as-is, this check would have
+                # flagged that row and made the ledger INVALID, and the
+                # pre-commit/CI gate (scripts/check_issue_ids.py, stage E2) runs
+                # engine.validate() over the candidate registry, so the fix would
+                # have traded an un-mintable subsystem for an un-committable one.
+                #
+                # The accepted set is EXACTLY TWO values -- the ordinary next
+                # governed value, OR the one-time jump clear of pre-governance
+                # occupancy. Deliberately NOT relaxed to "any strictly greater
+                # value": that would silently permit arbitrary seq skips forever
+                # (see test_validate_rejects_an_arbitrary_seq_jump_beyond_legacy_floor).
+                #
+                # Why an ADDITIONAL accepted value rather than a hard floor
+                # (max(governed, legacy) + 1): 78 governed rows already in the
+                # canonical ledger were minted into keys legacy occupancy also
+                # claims (SEC-GUARD-001..007 alongside legacy SEC-GUARD-001..007
+                # etc.) -- all written before the SEC-IDGOV-001 all_ids union
+                # existed, and all preceded in file order by the entire 1,229-row
+                # backfill block. A hard floor would retroactively flag every one
+                # of them; ids are never retro-renamed, so the rule must accept
+                # the history it already has. Guarded by
+                # test_validate_still_clean_over_live_registry.
+                legacy_next = legacy_floors.get(key, 0) + 1
+                seq_val = ev.get("seq")
+                if seq_val != expected and seq_val != legacy_next:
+                    violations.append(
+                        f"line {i}: {eid} seq {seq_val} != expected {expected}"
+                        + (f" (or {legacy_next}, the next value clear of pre-governance "
+                           f"legacy occupancy)" if legacy_next > 1 else "")
+                        + f" for {key}"
+                    )
+                # Only a genuine integer may advance the running counter. A
+                # non-int seq (corrupt/hand-written row -- already reported just
+                # above, and by the id<->field binding check) previously poisoned
+                # seq_by_key, so the NEXT row in the same key raised TypeError on
+                # `None + 1` and CRASHED validate() -- taking the gate down with
+                # an unhandled traceback instead of reporting the violation.
+                if isinstance(seq_val, int) and not isinstance(seq_val, bool):
+                    seq_by_key[key] = seq_val
             # §4.1 writer-authority check. Bound to the id-DERIVED family
             # (id_derived_family), not the self-reported ev["family"] --
             # finding 11: authority must be structurally anchored to the id

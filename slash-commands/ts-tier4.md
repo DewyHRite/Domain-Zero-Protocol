@@ -18,14 +18,20 @@ Requires root cause diagram/flowchart (visual bug propagation), multi-hypothesis
 # Review past patterns
 python .protocol-state/troubleshooting_tracker.py stats
 
-# Start new session
+# Start new session — fire coordinator ts-start event (Cortex + context checks)
+python dzp.py event ts-start
+
+# Register the TS session in troubleshooting tracker (direct call: coordinator lacks this step)
 DESCRIPTION="Brief description of the bug"
 FILES="src/file1.ts,src/file2.ts"
 python .protocol-state/troubleshooting_tracker.py start 4 "$DESCRIPTION" "$FILES"
 
 # ... (Yuuji + Megumi work - agents fix and review) ...
 
-# Mark complete
+# Mark complete — fire coordinator ts-complete event (Cortex medium re-index + stats)
+python dzp.py event ts-complete
+
+# Archive TS session in tracker (direct call: coordinator lacks this step)
 RESOLUTION="Bug fixed: root cause was X, implemented fix Y with Z tests"
 python .protocol-state/troubleshooting_tracker.py complete "$RESOLUTION"
 

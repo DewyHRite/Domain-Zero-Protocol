@@ -1,5 +1,5 @@
 # Gojo Operational Procedures Index
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 
 **Purpose**: Central index of all Gojo (Mission Control) operational procedures and implementation guides.
 **Version**: 8.10.0
@@ -73,7 +73,7 @@ Complete technical guide for integrating `session_monitor.py` with real-time tra
 
 ### Key Features
 - ✅ Real-time tracking via `session_monitor.py`
-- ✅ Persistent state in `session-state.json`
+- ✅ Persistent state in `project-state.json::session_tracking` (`session-state.json` retained as legacy fallback)
 - ✅ Template rendering with actual data
 - ✅ High-risk operation blocking enforcement
 - ✅ Integration with Passive Observer
@@ -150,7 +150,7 @@ Uses `snapshot_integration.py` to:
 - **gojo.agent.md** - Main agent file (references procedures)
 - **protocol/skills/gojo/** - Optional/complex Gojo skills
 - **protocol.config.yaml** - Configuration for all procedures
-- **.protocol-state/session-state.json** - Session tracking state
+- **.protocol-state/session-state.json** - Legacy fallback session tracking state (primary is `project-state.json::session_tracking`)
 - **.protocol-state/project-state.json** - Project and tier state
 
 ### Integration Points

@@ -121,6 +121,13 @@ class ScriptCoordinator:
             steps = event_cfg.get("steps")
             if not isinstance(steps, list) or not steps:
                 raise RegistryError(f"Event {event_name!r} must define at least one step")
+            # IMPL-001: collects every (index, name) pair where this event's
+            # step sets 'terminal_validator: true' -- validated as a separate
+            # pass AFTER the per-step loop below (see after the loop) so
+            # "more than one configured" is reported as its own diagnosis
+            # instead of being masked by whichever offending step the
+            # per-step loop happens to reach first.
+            terminal_validator_hits: list[tuple[int, str]] = []
             for index, step in enumerate(steps, start=1):
                 if not isinstance(step, dict):
                     raise RegistryError(f"Event {event_name!r} step {index} must be a mapping")
@@ -141,6 +148,76 @@ class ScriptCoordinator:
                 if not isinstance(env, dict):
                     raise RegistryError(
                         f"Event {event_name!r} step {index} 'env' must be a mapping"
+                    )
+                # SEC-TRANSFER-9.11.0-009 (P3, CWE-693): `non_blocking: true`
+                # silently and completely neuters `required: true` at
+                # run_event() time (`step_required = False if non_blocking
+                # else required`) -- a step declaring BOTH is contradictory
+                # config and, before this guard, loaded without complaint on
+                # ANY event, not just session-transfer. Reject it here, fail
+                # closed at LOAD time, rather than relying on a single
+                # event-specific regression test to catch a future mistaken
+                # or tampered combination. Checked against the EXPLICIT
+                # values only (`required is True`) -- a step where
+                # `required` is simply absent (defaulted later from the
+                # event's fail_soft setting) or explicitly `false` is not
+                # this contradiction and must load exactly as before.
+                if step.get("required") is True and step.get("non_blocking") is True:
+                    step_label = step.get("name", f"#{index}")
+                    raise RegistryError(
+                        f"Event {event_name!r} step {step_label!r} (index {index}) cannot set "
+                        "both 'required: true' and 'non_blocking: true' -- non_blocking "
+                        "silently neuters required, which is almost certainly a "
+                        "configuration mistake (SEC-TRANSFER-9.11.0-009)"
+                    )
+                # IMPL-001 (Toji audit 2026-07-30): 'terminal_validator: true'
+                # opts a step OUT of the main step loop entirely -- run_event()
+                # instead runs it AFTER _record_result() has persisted this
+                # event's own outcome to project-state.json (see run_event()
+                # for the full rationale: _record_result()'s own save is
+                # ALWAYS the true last project-state.json mutation of any
+                # event, so a step meant to describe the "terminal" state must
+                # run after that save, not before it -- no matter where it
+                # sits in the configured step list). Just record the hit here;
+                # validated as a whole-event pass below.
+                if step.get("terminal_validator") is True:
+                    terminal_validator_hits.append((index, step.get("name", f"#{index}")))
+
+            # IMPL-001: two invariants enforced here, at LOAD time, rather
+            # than left to silently do the wrong thing at runtime:
+            #   1. at most one 'terminal_validator: true' step per event
+            #      (there is only one "after record" execution slot);
+            #   2. it must be that event's LAST configured step (anything
+            #      else would make "terminal" a lie about ordering intent,
+            #      even though only the flagged step is actually deferred).
+            # A terminal_validator step can never affect the event's
+            # recorded success/failure (it runs after that decision is
+            # already made and saved), so combining it with `required: true`
+            # is rejected as a misleading contradiction, mirroring the
+            # non_blocking+required guard above.
+            if len(terminal_validator_hits) > 1:
+                names = ", ".join(repr(name) for _, name in terminal_validator_hits)
+                raise RegistryError(
+                    f"Event {event_name!r} defines more than one 'terminal_validator: true' "
+                    f"step ({names}) -- at most one is allowed per event (IMPL-001)"
+                )
+            if terminal_validator_hits:
+                index, step_label = terminal_validator_hits[0]
+                if index != len(steps):
+                    raise RegistryError(
+                        f"Event {event_name!r} step {step_label!r} (index {index} of "
+                        f"{len(steps)}) sets 'terminal_validator: true' but is not the "
+                        "event's LAST step -- a terminal validator must be the final "
+                        "configured step (IMPL-001)"
+                    )
+                validator_step = steps[index - 1]
+                if validator_step.get("required") is True:
+                    raise RegistryError(
+                        f"Event {event_name!r} step {step_label!r} cannot combine "
+                        "'terminal_validator: true' with 'required: true' -- a terminal "
+                        "validator runs AFTER the event's result is already recorded and "
+                        "can never affect success/failure, so 'required: true' is "
+                        "misleading (IMPL-001)"
                     )
         return data
 
@@ -163,7 +240,29 @@ class ScriptCoordinator:
         event_cfg = events[event_name]
         event_fail_soft = bool(event_cfg.get("fail_soft", defaults.get("fail_soft", True)))
         fail_closed = strict or not event_fail_soft
-        steps = event_cfg["steps"]
+        all_steps = event_cfg["steps"]
+
+        # IMPL-001 (Toji audit 2026-07-30): a step opts in as this event's
+        # SOLE terminal validator via `terminal_validator: true`
+        # (load_registry() guarantees at most one per event, and that it is
+        # the event's LAST configured step). That step is excluded from the
+        # main loop below and is instead run AFTER self._record_result()
+        # has persisted this event's own outcome to project-state.json --
+        # closing the gap where the coordinator's own bookkeeping write was
+        # itself always the true last project-state.json mutation of any
+        # event, occurring AFTER a step that was supposed to describe the
+        # terminal state. See the finding for the full reproduction:
+        # validation-state.json recorded a project-state.json checksum/seq
+        # that the coordinator's own post-loop _record_result() call
+        # immediately superseded, regardless of step order.
+        terminal_validator_step = None
+        steps: list[dict[str, Any]] = []
+        for step in all_steps:
+            if step.get("terminal_validator") is True:
+                terminal_validator_step = step
+            else:
+                steps.append(step)
+
         results: list[dict[str, Any]] = []
         success = True
 
@@ -171,18 +270,40 @@ class ScriptCoordinator:
             step_result = self._dry_step_result(step) if dry_run else self._run_step(step, defaults)
             results.append(step_result)
             required = bool(step.get("required", not event_fail_soft))
+            # DESIGN-001 (Toji audit 2026-07-29): a step may opt out of the
+            # EVENT-level fail-closed policy entirely via `non_blocking: true`.
+            # Without this, an event-level `fail_soft: false` makes even a
+            # `required: false` optional-tail step both break the loop AND
+            # mark the whole event failed -- the step's own `required` flag
+            # cannot preserve an optional failure under a fail-closed event
+            # (see script_dependencies.yaml's session-transfer event: this is
+            # exactly what made cortex-medium/cortex-distill/validation-refresh
+            # fail-closed in practice despite being documented as optional).
+            # `non_blocking` is opt-in per step and changes NOTHING for any
+            # step that does not set it -- existing events/tests are
+            # unaffected. `--strict` is an explicit, stronger CLI override and
+            # always wins over `non_blocking` (belt-and-braces semantics
+            # unchanged for events that document `--strict` as a stricter
+            # invocation mode).
+            non_blocking = bool(step.get("non_blocking", False)) and not strict
+            step_fail_closed = False if non_blocking else fail_closed
+            step_required = False if non_blocking else required
             # BUG-CORTEX-008 R5: "launched" (a detach: true step that was
             # successfully spawned off-path) is a SUCCESS outcome — the step
             # returned immediately by design, not because it failed. Only the
             # spawn itself failing (status "failure", see _run_detached_step)
             # counts against the event.
             failed = step_result["status"] not in ("success", "launched")
-            if failed and (fail_closed or required):
+            if failed and (step_fail_closed or step_required):
                 success = False
-                if fail_closed:
+                if step_fail_closed:
                     break
             elif failed:
-                step_result["warning"] = "optional step failed under fail-soft event"
+                step_result["warning"] = (
+                    "optional step failed under fail-soft event"
+                    if not non_blocking
+                    else "non_blocking step failed; does not affect overall event status"
+                )
 
         result = {
             "event": event_name,
@@ -198,6 +319,38 @@ class ScriptCoordinator:
 
         if not dry_run:
             self._record_result(result)
+
+        if terminal_validator_step is not None:
+            # Runs strictly AFTER self._record_result() above -- this is the
+            # entire fix. Its result is appended to `result["steps"]` ONLY
+            # for this call's printed/returned output (operator visibility);
+            # it is never persisted via a second _record_result() call, since
+            # doing so would just reproduce the exact post-record mutation
+            # this ordering exists to close. Its outcome can therefore never
+            # retroactively change `success`/`status` above -- a failure
+            # here only WARNS loudly, per Toji's explicit recommendation
+            # that a failing terminal validator must never fail an
+            # already-completed event.
+            validator_result = (
+                self._dry_step_result(terminal_validator_step)
+                if dry_run
+                else self._run_step(terminal_validator_step, defaults)
+            )
+            validator_failed = validator_result["status"] not in ("success", "launched")
+            if validator_failed:
+                validator_result["warning"] = (
+                    "terminal validator step failed; it runs AFTER this event's own "
+                    "result was recorded (IMPL-001) and therefore can never affect "
+                    "this event's recorded success/status -- investigate separately"
+                )
+                print(
+                    f"WARNING: event {event_name!r} terminal validator step "
+                    f"{validator_result['name']!r} failed (status="
+                    f"{validator_result['status']!r}); this does not affect the "
+                    "already-recorded event outcome (IMPL-001)",
+                    file=sys.stderr,
+                )
+            result["steps"].append(validator_result)
 
         self._print_result(result, as_json=json_output)
         return 0 if success else 1

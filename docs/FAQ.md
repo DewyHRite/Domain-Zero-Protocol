@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
-**Version:** v9.10.2
-**Last Updated:** 2026-07-13
+**Version:** v9.11.0
+**Last Updated:** 2026-08-03
 
 ---
 
@@ -190,7 +190,7 @@ Is this production code?
 ### Why doesn't the agent follow the protocol?
 
 **Common Causes:**
-1. **Protocol files not read:** Say `"Read protocol/CLAUDE.md"`
+1. **Protocol files not read:** Say `"Read CLAUDE.md"` (repository root; `protocol/CLAUDE.md` is a compatibility pointer/stub since v9.11.0 that redirects to the root file, not the protocol itself)
 2. **Wrong file path:** Verify `protocol/` directory exists
 3. **AI memory conflict:** Clear memory and re-read protocol
 4. **Outdated context:** Start a new conversation session
@@ -564,7 +564,7 @@ Runs only critical checks (dependencies, files, config, yaml)
 **Approach:**
 1. Edit `.protocol-state/tier-system-specification.md`
 2. Define Tier 4 requirements (tests, reviews, documentation, etc.)
-3. Update `protocol/CLAUDE.md` to reference Tier 4
+3. Update `CLAUDE.md` (repository root; `protocol/CLAUDE.md` is a compatibility pointer/stub since v9.11.0) to reference Tier 4
 4. Update `protocol.config.yaml` with tier4 settings
 5. Update `protocol/TIER-SELECTION-GUIDE.md` with decision tree
 
@@ -685,6 +685,6 @@ python scripts/domain-record-rotate.py --rotate
 
 ---
 
-**Last Updated:** July 13, 2026
-**Protocol Version:** v9.10.2
+**Last Updated:** August 3, 2026
+**Protocol Version:** v9.11.0
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol

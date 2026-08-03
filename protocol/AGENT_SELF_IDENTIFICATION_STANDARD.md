@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Agent Self-Identification Standard (v1.0)
 ## Core Directive - Must be followed verbatim!!!
 
@@ -17,7 +17,7 @@ Outcomes: predictable agent start cues, consistent UX, reduced context confusion
 ---
 
 ## 2) Scope and placement
-- Core rule (global): Add a new Core Principle in `protocol/CLAUDE.md` under “CORE PRINCIPLES → Self‑Identification”.
+- Core rule (global): Add a new Core Principle in root `CLAUDE.md` under “CORE PRINCIPLES → Self‑Identification”.
 - Agent behavior (per-role): Add a mandatory "Self‑Identification" subsection in each agent spec: `yuuji.agent.md`, `megumi.agent.md`, `gojo.agent.md`, `nobara.agent.md`, `todo.agent.md`, `maki.agent.md`, `panda.agent.md`, `inumaki.agent.md`.
 - Configuration: Add `self_identification` block to `protocol.config.yaml` (see §5).
 - Verification: Update `scripts/verify-protocol.(ps1|sh)` to assert presence and config (see §6).
@@ -189,7 +189,7 @@ self_identification:
 ## 6) Verification hooks
 - Presence checks
   - Each agent file contains a “Self‑Identification” section with a two-line banner example.
-  - `protocol/CLAUDE.md` includes the new Core Principle.
+  - Root `CLAUDE.md` includes the new Core Principle.
 - Config checks
   - `self_identification.enabled` is present and boolean.
   - If `include_metadata: true`, then `metadata_fields` is non-empty array.
@@ -224,7 +224,7 @@ Add under “Protocol Compliance”:
 
 ```markdown
 ### Self-Identification
-- [ ] `protocol/CLAUDE.md` includes the Self‑Identification Core Principle
+- [ ] Root `CLAUDE.md` includes the Self‑Identification Core Principle
 - [ ] All agent docs include a Self‑Identification section with the banner
 - [ ] `protocol.config.yaml` updated (or explicitly N/A) for self_identification
 ```
@@ -232,7 +232,7 @@ Add under “Protocol Compliance”:
 ---
 
 ## 8) Placement details (copy blocks)
-- `protocol/CLAUDE.md` – add under CORE PRINCIPLES:
+- Root `CLAUDE.md` – add under CORE PRINCIPLES:
 ```markdown
 #### Self‑Identification
 All agents must clearly self‑identify at invocation and during Domain Expansion using the standard two‑line banner. The banner must respect debounce and privacy settings and must not include PII or mental‑state content.
@@ -266,7 +266,7 @@ Don’t:
 ---
 
 ## 10) Rollout checklist
-- [ ] Insert Core Principle in `protocol/CLAUDE.md`
+- [ ] Insert Core Principle in root `CLAUDE.md`
 - [ ] Add Self‑Identification sections to agent docs
 - [ ] Add `self_identification` block to `protocol.config.yaml`
 - [ ] Update verification scripts for checks

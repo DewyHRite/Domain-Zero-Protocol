@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Memory Tool Configuration Guide
 ## Enabling Claude Memory Tool Beta for DZP v8.12.0
 
@@ -189,15 +189,50 @@ DZP v8.11.0 uses this standardized memory structure:
 
 ## Security & Path Validation
 
-**CRITICAL**: All Memory Tool operations are restricted to the `/memories/` directory for security.
+> **CORRECTION (v9.11.0, `SEC-MEMPATH-PENDING-L`)**: this section previously
+> stated that *"DZP automatically validates all paths - no additional security
+> configuration needed."* **That was not true, and the claim has been removed.**
+> DZP contains no Memory Tool code path and performs **no** path validation of
+> its own. The statement is corrected here rather than quietly deleted, because
+> anyone who read the previous version may have skipped validation work on the
+> strength of it.
 
-**Built-in Security**:
-- ✅ Paths must start with `/memories/`
-- ✅ Directory traversal attacks prevented (no `..` sequences)
-- ✅ Canonical path resolution enforced
-- ✅ Whitelist-based directory access
+**What actually enforces the `/memories/` boundary**
 
-**DZP automatically validates all paths** - no additional security configuration needed.
+Memory Tool path handling is performed by the **client/runtime that implements
+the tool** (the Claude Code / API Memory Tool integration), not by Domain Zero
+Protocol. Whatever sandboxing that runtime applies is the enforcement you
+actually get. DZP neither adds to it nor verifies it.
+
+**What DZP provides**
+
+`scripts/memory_path_validator.py` is an **unwired reference library for
+integrators** — a `MemoryPathValidator` class plus `validate_memory_path()` /
+`get_validation_error()` / `sanitize_memory_path()` helpers implementing
+`/memories/` prefix enforcement, `..` traversal rejection, canonical
+resolution, and a directory/agent whitelist.
+
+It has **zero callers anywhere in DZP**. Nothing calls it for you. It is
+therefore no longer shipped in the published distribution (removed from
+`scripts/distro/publish-manifest.yaml`), because a shipped module carrying a
+"SECURITY CRITICAL" banner and no call site reads as protection that is not
+there.
+
+**If you are building a Memory Tool integration on top of DZP**
+
+Take the module from the canonical dev repository and call it explicitly at
+every point a path enters a filesystem operation — validation only protects the
+call sites that invoke it:
+
+```python
+from memory_path_validator import validate_memory_path, get_validation_error
+
+if not validate_memory_path(user_supplied_path):
+    raise ValueError(f"unsafe memory path: {get_validation_error(user_supplied_path)}")
+# ... only now touch the filesystem
+```
+
+Do not assume any layer beneath you has already done this.
 
 ---
 

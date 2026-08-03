@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 ---
 title: "Skill Registry"
 version: "3.2.2"
-protocol_version: "9.10.2"
+protocol_version: "9.11.0"
 last_updated: "2026-07-18"
 status: "Production-Ready"
 ---
@@ -10,7 +10,7 @@ status: "Production-Ready"
 # Domain Zero Protocol - Skill Registry
 
 **Version**: 3.2.2
-**Protocol Version**: 9.10.2
+**Protocol Version**: 9.11.0
 **Last Updated**: 2026-07-18
 
 ---
@@ -48,24 +48,70 @@ These skills are from the official Anthropic repository: https://github.com/anth
 
 ## Custom Skills Registry
 
-| Skill Name | Version | Owner | Risk Level | Code Execution | Last Review | Target Agents |
-|------------|---------|-------|------------|----------------|-------------|---------------|
-| skill-builder | 1.0.0 | gojo | Low | No | 2025-11-22 | gojo |
-| dzp-roe | 2.0.0 | gojo | Low | No | 2025-12-28 | gojo |
-| session | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-28 | gojo |
-| session-check | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
-| ts | 1.0.0 | gojo | Medium | No | 2025-12-28 | gojo |
-| validate-protocol | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
-| verify-installation | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
-| dependency-scanner | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-29 | gojo |
-| file-rotate | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-29 | gojo |
-| verify-auto-invoked | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
-| validate-custom-agents | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-29 | gojo |
-| verify-working-directory | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
-| create-snapshot | 1.0.0 | gojo | Medium | Yes (Python) | 2025-12-29 | gojo |
-| restore-snapshot | 1.0.0 | gojo | High | Yes (Python) | 2025-12-29 | gojo |
-| domain-record-rotate | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
-| memory-path-validator | 1.0.0 | gojo | Low | Yes (Python) | 2025-12-29 | gojo |
+> **Accuracy note (`SEC-SKILLREG-001`, v9.11.0).** This table previously listed every entry as an
+> invocable skill with `Code Execution: Yes (Python)`. **Ten of them had no skill document**, so
+> `skill: "<name>"` resolved to nothing. Nine are in fact **script-backed** — the capability is real
+> and directly invocable, but it is a script, not a skill. One had lost its script entirely. The
+> **Backing** column below now states what actually implements each row; a row must never again
+> assert a resolution path that does not exist. Verified by direct inspection 2026-07-28.
+
+| Skill Name | Version | Owner | Risk Level | Code Execution | Backing | Last Review | Target Agents |
+|------------|---------|-------|------------|----------------|---------|-------------|---------------|
+| skill-builder | 1.0.0 | gojo | Low | No | skill doc `skill-builder.md` | 2025-11-22 | gojo |
+| dzp-roe | 2.0.0 | gojo | Low | No | skill doc `dzp-roe.md` | 2025-12-28 | gojo |
+| trigger19r | 1.0.0 | sukuna | Medium | No (gate script runs via hooks/publish, not the skill) | skill doc `trigger19r.md` + **script** `scripts/check_trigger19r_sanitization.py` | 2026-07-29 | sukuna |
+| session | 2.4.1 | gojo | Medium | Yes (Python) | skill doc `session.md` | 2026-07-31 | gojo |
+| session-check | 1.0.0 | gojo | Low | Yes (Python) | skill doc `session-check.md` | 2025-12-29 | gojo |
+| ts | 1.0.0 | gojo | Medium | No | skill doc `ts.md` | 2025-12-28 | gojo |
+| validate-protocol | 1.0.0 | gojo | Low | Yes (Python) | **script** `scripts/validate-protocol.py` | 2026-07-28 | gojo |
+| verify-installation | 1.0.0 | gojo | Low | Yes (Python) | **script** `scripts/verify-installation.py` | 2026-07-28 | gojo |
+| dependency-scanner | 1.0.0 | gojo | Medium | Yes (Python) | **script** `scripts/dependency-scanner.py` | 2026-07-28 | gojo |
+| file-rotate | 1.0.0 | gojo | Medium | Yes (Python) | **script** `scripts/file-rotate.py` | 2026-07-28 | gojo |
+| verify-auto-invoked | 1.0.0 | gojo | Low | Yes (Python) | **script** `scripts/verify-auto-invoked.py` | 2026-07-28 | gojo |
+| validate-custom-agents | 1.0.0 | gojo | Medium | Yes (Python) | **script** `scripts/validate-custom-agents.py` | 2026-07-28 | gojo |
+| ⚠️ verify-working-directory | 1.0.0 | gojo | Low | **NO — implementation MISSING** | ❌ **none in live tree** (see below) | 2026-07-28 | **none** |
+| create-snapshot | 1.0.0 | gojo | Medium | Yes (Python) | **script** `.protocol-state/create-snapshot.py` | 2026-07-28 | gojo |
+| restore-snapshot | 1.0.0 | gojo | High | Yes (Python) | **script** `.protocol-state/restore-snapshot.py` | 2026-07-28 | gojo |
+| domain-record-rotate | 1.0.0 | gojo | Low | Yes (Python) | **script** `scripts/domain-record-rotate.py` | 2026-07-28 | gojo |
+| ~~memory-path-validator~~ **DEPRECATED v9.11.0** | 1.0.0 | gojo | n/a | **No — not executed, not shipped** | 2026-07-28 | none |
+| megumi-secid | 1.0.0 | megumi | Medium | Yes (Python, mediated — Megumi has no Bash; a bash-capable resident executes `secid.{sh,ps1}` on her behalf per D9) | skill doc `megumi-secid.md` + wrapper `scripts/secid.{sh,ps1}` + engine `scripts/idgov/engine.py` | 2026-08-03 | megumi (mediated via gojo/yuuji) |
+| resident-mint | 1.0.0 | gojo/sukuna/yuuji | Medium | Yes (Python) | skill doc `resident-mint.md` + wrappers `scripts/residentid-{sukuna,gojo,yuuji}.{sh,ps1}` | 2026-08-03 | sukuna, gojo, yuuji |
+
+> **⚠️ MISSING IMPLEMENTATION — `verify-working-directory` (`SEC-SKILLREG-001`, v9.11.0).**
+> This row claimed an active `Code Execution: Yes (Python)` skill. It has **no skill document; the
+> underlying module remains live and imported by three scripts** (per Sukuna's 2026-07-29 Inc-3
+> review §7: the earlier "no script in the live tree" phrasing here was imprecise enough to read as
+> "the module is gone," which is false — `scripts/verify_working_directory.py` is tracked and
+> actively imported, see the next paragraph). It is not a row that was never implemented: `verify_working_directory.py`
+> (underscore form) is present in the June 2026 `distro-publish` backup trees under
+> `.protocol-state/backups/distro-publish_*/distro/scripts/`, so the implementation **existed and was
+> shipped, then disappeared** while this registry entry, the `AGENT_SKILLS_MAP.yaml` entry, and
+> references in `CHANGELOG.md` / `VERSION.md` / `MIGRATION_v8.7_to_v8.8.md` / `protocol/SUKUNA-REPORT.md`
+> all survived it.
+>
+> **Marked non-invocable pending an owner decision** — restore from the backup tree, or deregister
+> across all referencing documents. Do NOT leave it advertised as available.
+>
+> *Method note:* found by corroborating a negative. A single `Test-Path` reported simple absence;
+> the `UPSTREAM-003` rule (a negative result is not self-verifying) required a second method, and
+> `find` located the backup copies that reframed this from "never existed" to "was removed."
+> The rule earned its place on its first application.
+
+> **Deprecation note — `memory-path-validator` (v9.11.0).** `scripts/memory_path_validator.py`
+> declared itself `SECURITY CRITICAL` and this registry listed it as an active
+> `Code Execution: Yes (Python)` skill, but it had **zero callers anywhere in the repo** and no
+> code outside the module even referenced the `/memories/` path space it claimed to guard. It was
+> shipping to consumers alongside documentation stating that path validation happened
+> automatically. It never ran.
+>
+> Found by the rescoped orphan-control guard (`tests/test_security_module_orphan_guard.py`) as the
+> fourth instance of a control documented-as-existing but not wired.
+> **Replacement: none — no live consumer exists.** The module is de-shipped
+> (removed from `publish-manifest.yaml`), the false claim in
+> `docs/reference/MEMORY_TOOL_CONFIGURATION.md` is retracted, and the entry is retained here per
+> the Deprecation rule in § Review Requirements rather than deleted, so the record survives.
+> If Memory Tool path validation is wanted later, it must be re-introduced **with a live call site
+> and a test asserting it is reached** — not merely present.
 
 ---
 
@@ -156,6 +202,7 @@ These skills are from the official Anthropic repository: https://github.com/anth
 | adversarial-review | Challenge and stress-test protocol changes | Active |
 | update-validation | Validate system updates before deployment | Active |
 | protocol-stress-test | Test protocol under adversarial conditions | Active |
+| trigger19r | Decision-provenance report, Sukuna-exclusive (Trigger 19-R) | Active |
 
 ---
 
@@ -185,6 +232,16 @@ These skills are from the official Anthropic repository: https://github.com/anth
 ---
 
 ## Changelog
+
+### 3.2.2 (2025-12-29) - v8.12.0 post-implementation version sync
+- Version-sync pass only. No skill was added, removed, re-owned or re-scoped.
+- Entry reconstructed from git history (`6aade7f`, "fix(version-sync): Complete
+  v8.12.0 post-implementation cleanup") during the v9.11.0 batch-3 remediation:
+  the header field was bumped 3.2.1 -> 3.2.2 without a corresponding changelog
+  entry, and stayed that way for seven months because no linter covered a bare
+  `**Version**:` field. This was the SIXTH logged occurrence of that class and
+  the first found by a machine -- `check_version_stamps.py` Type 13
+  (VERSION-VS-CHANGELOG) now compares this header against this section.
 
 ### 3.2.1 (2025-12-29) - PATCH-SESSION-003
 - **NEW**: **session-check** skill (Auto-Invoked Session Alert Enforcement) - Gojo-owned

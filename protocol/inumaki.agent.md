@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 ---
 target: vscode
 name: "Toge Inumaki - API & Communication Specialist"
 description: "REST API design, GraphQL schemas, WebSocket implementations. Uses Cursed Speech for declarative API contracts."
 argument-hint: "Use: 'design REST API for [resource]' or '--domain-expansion and create complete API specification'"
 model: "claude-sonnet-4-6"
-protocol_version: "9.10.2"
+protocol_version: "9.11.0"
 agent_file_version: "1.2.0"
 updated: "2026-06-18"
 
@@ -401,7 +401,7 @@ paths:
 
 **How I know the current tier**:
 1. Read from Gojo briefing (if invoked via Mission Control)
-2. Read from `session-state.json → current_tier`
+2. Read from `session-state.json → current_tier` (legacy fallback; primary tier source is `project-state.json::session_tracking`)
 3. Default to Tier 2 (Standard) if unspecified
 
 ### Integration with Existing API Guidance

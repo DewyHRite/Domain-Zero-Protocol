@@ -16,7 +16,7 @@ events:
         required: true
       - name: cortex-medium
         command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "medium", "--reason", "session-update", "--repo", "."]
-        # BUG-CORTEX-008 R5 (2026-07-18, Sukuna, canonical port of the RHS-verified
+        # BUG-CORTEX-008 R5 (2026-07-18, Sukuna, canonical port of a downstream-verified
         # durable fix): detach: true launches this step fully off the coordinator's
         # critical path (fire-and-forget via ScriptCoordinator._spawn_detached) so
         # it returns "launched" immediately instead of blocking on a timeout. Root
@@ -83,10 +83,10 @@ events:
         # accepted trade-off (export snapshot freshness now depends on that event
         # being run, not on session-end).
         #
-        # BUG-CORTEX-008 R5 (2026-07-18, Sukuna, canonical port of the RHS-verified
+        # BUG-CORTEX-008 R5 (2026-07-18, Sukuna, canonical port of a downstream-verified
         # durable fix — supersedes R3's premise, does NOT replace R3's rename):
         # R3's rename to --level medium alone was later disproven as a full fix —
-        # the RHS install's `session-update.cortex-medium` (same --level medium)
+        # a downstream install's `session-update.cortex-medium` (same --level medium)
         # ALSO timed out at its 90s cap, showing the defect is a fixed timeout on
         # a variable-length embed, independent of level (see report §11.1).
         # detach: true now launches this step fully off the coordinator's critical
@@ -127,13 +127,201 @@ events:
         # never block session-end; the ledger simply records the honest result
         # (including "failed", which is itself the intended fix for the finding —
         # an honest failed/stale status is strictly better than a silently stale
-        # "passed"). validate-protocol.py --check only writes to
-        # validation-state.json itself; it never touches project-state.json,
-        # snapshot-manifest.json, or the protected records, so this step cannot
-        # retrigger the mutation-then-stale-ledger cycle it exists to close.
+        # "passed").
+        #
+        # IMPL-001 CORRECTION (Toji audit 2026-07-30, MEDIUM): the paragraph
+        # above ("validate-protocol.py --check only writes to validation-state.json
+        # itself... this step cannot retrigger the mutation-then-stale-ledger
+        # cycle") was TRUE about validate-protocol.py but incomplete: it did not
+        # account for script_coordinator.py's OWN post-step bookkeeping write.
+        # `run_event()` calls `self._record_result(result)` AFTER every configured
+        # step finishes — including this one — and that call mutates + saves
+        # project-state.json (appending this event's script_orchestration
+        # summary). Being the LAST configured STEP therefore did not make this
+        # the last project-state.json mutation: the coordinator's own bookkeeping
+        # save ran after it every time, immediately invalidating the checksum/
+        # sequence this step had just recorded. `terminal_validator: true` below
+        # is the fix — script_coordinator.py's run_event() excludes a step so
+        # flagged from the main step loop and instead runs it AFTER
+        # _record_result() has persisted the event's own outcome, so it measures
+        # the TRUE terminal project-state.json. See
+        # tests/test_coordinator_registry.py::TestIMPL001TerminalValidatorOrdering
+        # for the reproduction + fix proof.
         command: ["python", "scripts/validate-protocol.py", "--check", "--ci-mode"]
         timeout_seconds: 60
         required: false
+        terminal_validator: true
+
+  session-transfer:
+    # FEAT-TRANSFER-9.11.0-001 (v9.11.0 Increment 2): update + end + a durable
+    # handoff brief, so the next session starts warm instead of losing the
+    # "why" behind the state files. See
+    # internal-docs/Patch Report/DZP-MASTER-PLAN-2026-07-28.md Workstream B
+    # and protocol/skills/session.md § /session transfer for the full design.
+    #
+    # fail_soft: false (EVENT-LEVEL) IS THE LOAD-BEARING LINE (M1). Per Toji
+    # DESIGN-001 (2026-07-27): `required: true` on a step only sets a failure
+    # flag -- it does NOT stop the loop (see script_coordinator.py's
+    # run_event(): `if fail_closed: break` is the ONLY thing that breaks it,
+    # and `fail_closed = strict or not event_fail_soft`). Without this
+    # event-level flag, a failed session-end (step 2) would still be followed
+    # by handoff-write (step 3), which -- reading session_history[-1] -- would
+    # durably record the PREVIOUS session as the one just ended. Invoke with
+    # --strict as belt-and-braces (M1 is already sufficient on its own).
+    #
+    # IMPL-001 + DESIGN-001 remediation (Toji audit 2026-07-29): two changes
+    # from the first live run's post-mortem:
+    #   1. `transfer-finalize` (new step, required: true) runs immediately
+    #      after end-snapshot and is the ONLY thing that clears the durable
+    #      .INCOMPLETE marker now -- handoff-write no longer clears it
+    #      directly (see session_monitor.py's handoff_write()/
+    #      transfer_finalize()). If end-snapshot fails, this event is
+    #      fail-closed (see above) so transfer-finalize never runs and the
+    #      marker correctly survives with only 'handoff-write' recorded --
+    #      closing the exact gap IMPL-001 identified (marker cleared before
+    #      the mandatory snapshot actually completed).
+    #   2. cortex-medium/cortex-distill/validation-refresh now additionally
+    #      carry `non_blocking: true` (script_coordinator.py's run_event()) so
+    #      their failure can never break this fail-closed event or flip an
+    #      otherwise-complete transfer to `failure` -- closing DESIGN-001
+    #      without loosening the fail-closed guarantee for the required
+    #      prefix (transfer-begin..transfer-finalize) at all.
+    description: >-
+      Fail-closed state machine: transfer-begin marker -> full session-update
+      sync -> session-end (archives current session) -> handoff-write (brief +
+      archive copy, identity-checked against session_history[-1]) ->
+      end-snapshot (mandatory terminal state capture) -> transfer-finalize
+      (clears the marker only once every required step above has completed)
+      -> non_blocking Cortex/validation refresh tail (advisory; cannot fail
+      or block this event).
+    fail_soft: false
+    steps:
+      - name: transfer-begin
+        # M3: writes .protocol-state/session-handoff.INCOMPLETE with the
+        # CURRENTLY active session's id, captured BEFORE session-end (below)
+        # archives and resets it. This is how the expected id survives to
+        # step 3's identity check despite the coordinator having no mechanism
+        # to pass a value from one step's output into a later step's command.
+        command: ["python", ".protocol-state/session_monitor.py", "transfer-begin"]
+        timeout_seconds: 30
+        required: true
+      - name: session-update
+        # Full sync: project documents + secret scan + backups (same command
+        # as the session-update event's own first step). Runs the document
+        # sync BEFORE session-end so the pre-transfer state is captured too.
+        command: ["python", ".protocol-state/session_monitor.py", "update"]
+        env:
+          DZP_AGENT: "gojo"
+        timeout_seconds: 60
+        required: true
+      - name: session-end
+        # Archives session_history[-1] -- the exact record handoff-write
+        # (below) will read and identity-check against.
+        command: ["python", ".protocol-state/session_monitor.py", "end"]
+        env:
+          DZP_AGENT: "gojo"
+        timeout_seconds: 60
+        required: true
+      - name: handoff-write
+        # M2: no --expect-session-id is passed here (the coordinator cannot
+        # inject transfer-begin's captured id into this static command list).
+        # handoff_write() falls back to reading the expected id from the
+        # .INCOMPLETE marker transfer-begin just wrote, asserts it against
+        # session_history[-1], writes session-handoff.md + the archive copy
+        # ONLY on a match, and clears the marker. Refuses to write (non-zero
+        # exit) on any mismatch or if the marker is missing entirely.
+        command: ["python", ".protocol-state/session_monitor.py", "handoff"]
+        timeout_seconds: 30
+        required: true
+      - name: end-snapshot
+        # ISS-TRANSFER-9.11.0-001 (2026-07-29, USER directive): mandatory, not
+        # optional. Two reasons: (1) the end-of-transfer snapshot is the
+        # durable, complete state capture Toji reads for post-session audit
+        # (.protocol-state/snapshots/ -- standing read access, no CLI needed);
+        # a transfer that silently skipped it would leave that audit trail
+        # incomplete with no visible signal. (2) it was the trigger value
+        # --trigger session-transfer that was rejected by create-snapshot.py's
+        # argparse choices on the first live run (fixed in the same change,
+        # see VALID_TRIGGERS in .protocol-state/create-snapshot.py) -- required:
+        # true ensures that class of failure is never silently swallowed again.
+        #
+        # SEC-TRANSFER-9.11.0-007 (P3, informational, Megumi 2026-07-29)
+        # MECHANISM CORRECTION -- the previous version of this comment claimed
+        # required: true is what breaks the loop before the optional
+        # cortex-medium/cortex-distill/validation-refresh tail below. That was
+        # WRONG. Per script_coordinator.py's run_event() (~lines 164-183):
+        #     fail_closed = strict or not event_fail_soft
+        #     if failed and (fail_closed or required): success = False
+        #     if fail_closed: break        # <-- gates the break; `required` is
+        #                                  #     NEVER consulted here
+        # The break is gated on this EVENT's `fail_soft: false` (fail_closed)
+        # ALONE -- it happens for ANY failing step, required or not. `required:
+        # true` here only affects whether a non-breaking failure marks the
+        # overall event `success: False`, which matters only if this event's
+        # `fail_soft` were ever flipped to `true`. It is defensive
+        # future-proofing, not what currently causes the break. Proven with
+        # two identical scenarios (required: true and required: false) in
+        # tests/test_session_transfer.py::TestFinding_EndSnapshotRequiredBreaksBeforeCortexTail.
+        # Whether the fail-closed cortex-tail-skipping behavior ITSELF is
+        # correct is a SEPARATE, OPEN question tracked under
+        # ISS-TRANSFER-9.11.0-001 for Sukuna's coordinator-semantics call
+        # (step-level fail_soft) -- NOT changed in this batch.
+        command: ["python", ".protocol-state/create-snapshot.py", "--auto", "--tier", "2", "--trigger", "session-transfer"]
+        timeout_seconds: 120
+        required: true
+      - name: transfer-finalize
+        # IMPL-001 remediation (Toji audit 2026-07-29): the FINAL required
+        # step. Only runs if end-snapshot (above) succeeded -- this event is
+        # fail-closed, so a failing end-snapshot breaks the loop before this
+        # step is ever reached, leaving the .INCOMPLETE marker in place with
+        # only 'handoff-write' recorded (see session_monitor.py's
+        # transfer_finalize()/_mark_transfer_step_complete()). Marks
+        # 'end-snapshot' complete in the marker and clears the marker only
+        # once every step in _TRANSFER_REQUIRED_STEPS is recorded --
+        # completing the durable state machine handoff-write alone used to
+        # (incorrectly) finish on its own.
+        command: ["python", ".protocol-state/session_monitor.py", "transfer-finalize"]
+        timeout_seconds: 30
+        required: true
+      - name: cortex-medium
+        # Indexes the handoff brief itself for next-session recall. Detached
+        # (BUG-CORTEX-008 R5 precedent) -- fire-and-forget, off the critical path.
+        # non_blocking (DESIGN-001, 2026-07-29): failure here must never break
+        # this fail-closed event or flip a completed transfer to `failure`.
+        command: ["python", ".protocol-state/brain/cortex_trigger.py", "--level", "medium", "--reason", "session-transfer", "--repo", "."]
+        detach: true
+        timeout_seconds: 90
+        required: false
+        non_blocking: true
+      - name: cortex-distill
+        # Propose-only (never auto-writes); mirrors session-end's cortex-distill step.
+        # non_blocking (DESIGN-001, 2026-07-29): see cortex-medium above.
+        command: ["python", ".protocol-state/brain/brain.py", "distill", "--window", "8", "--max", "5"]
+        timeout_seconds: 60
+        required: false
+        non_blocking: true
+      - name: validation-refresh
+        # Last, per IMPL-001 (v9.10.2) -- refreshes the validation ledger
+        # AFTER this event's own state mutations (session-update, session-end,
+        # end-snapshot) so it describes the true terminal state.
+        # non_blocking (DESIGN-001, 2026-07-29): see cortex-medium above.
+        #
+        # terminal_validator: true (IMPL-001, Toji audit 2026-07-30, MEDIUM):
+        # being the last configured STEP was not sufficient -- the coordinator's
+        # own post-loop _record_result() write is ALWAYS the true last
+        # project-state.json mutation of any event, so it superseded whatever
+        # this step had just measured, every single run (proven live: validation
+        # recorded seq 87 / feb4d939..., the coordinator's own write then
+        # advanced project-state.json to seq 88 / 1d928296... while this step
+        # still reported "passed"). `terminal_validator: true` moves this step's
+        # EXECUTION to after _record_result() (see script_coordinator.py's
+        # run_event()) without changing its fail-soft/non_blocking posture --
+        # a failure here still only WARNs and can never fail this event.
+        command: ["python", "scripts/validate-protocol.py", "--check", "--ci-mode"]
+        timeout_seconds: 60
+        required: false
+        non_blocking: true
+        terminal_validator: true
 
   ts-start:
     description: Pre-troubleshooting context checks.
@@ -165,9 +353,17 @@ events:
         timeout_seconds: 30
         required: false
       - name: validation-check
+        # IMPL-001 (Toji audit 2026-07-30, MEDIUM): must be this event's
+        # terminal_validator, not merely its last configured step -- the
+        # coordinator's own post-loop _record_result() write is ALWAYS the
+        # true last project-state.json mutation, so a step meant to describe
+        # the terminal state must run AFTER that write (see run_event() /
+        # the equivalent session-end validation-refresh comment above for
+        # the full rationale).
         command: ["python", "scripts/validate-protocol.py", "--check", "--ci-mode"]
         timeout_seconds: 60
         required: false
+        terminal_validator: true
 
   pre-protected-edit:
     description: Fail-closed gate before protected document edits.

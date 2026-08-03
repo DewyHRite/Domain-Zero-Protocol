@@ -1,4 +1,4 @@
-# Mask-Off Mode Verification Script
+﻿# Mask-Off Mode Verification Script
 # Version: 1.1
 # Purpose: Scan for prohibited themed vocabulary when mask_mode.enabled=false
 

@@ -624,6 +624,7 @@ schemas:
                 - pre-protected-edit
                 - toji-snapshot
                 - pre_restore_backup
+                - session-transfer
               # BUG-SESSION-004 (v9.9.x Track C): added session-end and session-start.
               # snapshot_integration.py emits reason="session-end" on /session end;
               # the lifecycle coordinator can also emit reason="session-start".
@@ -638,6 +639,9 @@ schemas:
               # trigger; that call site is currently dead due to an unrelated wrong-import-path
               # bug, but the enum is future-proofed so repairing the import won't reintroduce
               # this failure mode).
+              # ISS-TRANSFER-9.11.0-001 (2026-07-29): added session-transfer -- same MF-1
+              # class one layer down from create-snapshot.py's VALID_TRIGGERS fix (mirrored
+              # in the same change, per the "MUST mirror EXACTLY" rule documented there).
               description: "Reason snapshot was created"
             file_path:
               type: string
@@ -694,10 +698,13 @@ schemas:
           - pre-protected-edit
           - toji-snapshot
           - pre_restore_backup
+          - session-transfer
         # BUG-SESSION-004 (v9.9.x Track C): added session-end and session-start.
         # BUG-SNAPSHOT-NULLFIELDS-001 (MF-1, v9.9.5): added pre-protected-edit,
         # toji-snapshot, and pre_restore_backup. Mirrors the snapshot-manifest
         # schema fix above.
+        # ISS-TRANSFER-9.11.0-001 (2026-07-29): added session-transfer, mirroring
+        # the snapshot-manifest schema fix above in the same change.
         description: "Reason for snapshot creation"
 
       state_files:

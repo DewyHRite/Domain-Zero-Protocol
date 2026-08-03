@@ -1,9 +1,15 @@
 {
-  "protocol_version": "9.10.2",
+  "protocol_version": "9.11.0",
   "compaction_recovery": {
-    "last_recovery_timestamp": null,
-    "recovery_count": 0,
-    "recovery_history": []
+    "last_recovery_timestamp": "2026-07-29T14:38:41Z",
+    "recovery_count": 1,
+    "recovery_history": [
+      {
+        "timestamp": "2026-07-29T14:38:41Z",
+        "invoked_by": "gojo",
+        "context": "USER /dzp-roe mid Trigger 19-R SDD execution (session_20260729_132144)"
+      }
+    ]
   },
   "validation_state": {
     "enabled": true,
@@ -81,7 +87,7 @@
     "name": "YOUR_PROJECT_NAME",
     "description": "Your project description",
     "created": "2025-12-25T00:00:00Z",
-    "last_updated": "2026-07-20T22:44:23.143679+00:00"
+    "last_updated": "2026-07-31T05:06:44.155413+00:00"
   },
   "mission_status": {
     "yuuji_briefed": false,
@@ -326,10 +332,10 @@
   "session_tracking": {
     "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.11.0)",
     "current_session": {
-      "session_id": "session_20260720_215447",
+      "session_id": "session_20260803_205237",
       "session_active": true,
-      "start_time": "2026-07-20T21:54:47.055838+00:00",
-      "last_interaction_time": "2026-07-20T22:44:22.983438+00:00",
+      "start_time": "2026-08-03T20:52:37.945163+00:00",
+      "last_interaction_time": "2026-08-03T20:52:37.945163+00:00",
       "last_alert_time": null,
       "alert_count": 0,
       "escalation_level": 0,
@@ -338,8 +344,8 @@
       "high_risk_operations_blocked": false
     },
     "session_metrics": {
-      "total_duration_minutes": 49,
-      "continuous_work_minutes": 49,
+      "total_duration_minutes": 0,
+      "continuous_work_minutes": 0,
       "break_timestamps": [],
       "total_breaks": 0,
       "alerts_issued": 0,
@@ -499,10 +505,100 @@
         "total_breaks": 0,
         "alerts_issued": 0,
         "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260720_215447",
+        "start_time": "2026-07-20T21:54:47.055838+00:00",
+        "end_time": "2026-07-21T11:23:52.899908+00:00",
+        "total_duration_minutes": 809,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260727_205100",
+        "start_time": "2026-07-27T20:51:00.830386+00:00",
+        "end_time": "2026-07-28T01:32:26.609728+00:00",
+        "total_duration_minutes": 281,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260728_015655",
+        "start_time": "2026-07-28T01:56:55.565882+00:00",
+        "end_time": "2026-07-29T01:31:52.728793+00:00",
+        "total_duration_minutes": 1414,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260729_014813",
+        "start_time": "2026-07-29T01:48:13.862493+00:00",
+        "end_time": "2026-07-29T04:00:37.691173+00:00",
+        "total_duration_minutes": 132,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260729_043413",
+        "start_time": "2026-07-29T04:34:13.426020+00:00",
+        "end_time": "2026-07-29T13:19:07.082547+00:00",
+        "total_duration_minutes": 524,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260729_132144",
+        "start_time": "2026-07-29T13:21:44.544326+00:00",
+        "end_time": "2026-07-29T21:22:28.430914+00:00",
+        "total_duration_minutes": 480,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260729_212802",
+        "start_time": "2026-07-29T21:28:02.166545+00:00",
+        "end_time": "2026-07-29T22:11:58.308567+00:00",
+        "total_duration_minutes": 43,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260730_003314",
+        "start_time": "2026-07-30T00:33:14.455521+00:00",
+        "end_time": "2026-07-30T11:05:47.279145+00:00",
+        "total_duration_minutes": 632,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260730_110547",
+        "start_time": "2026-07-30T11:05:47.278148+00:00",
+        "end_time": "2026-07-30T20:10:15.478927+00:00",
+        "total_duration_minutes": 544,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260731_024537",
+        "start_time": "2026-07-31T02:45:37.257002+00:00",
+        "end_time": "2026-07-31T05:06:44.838863+00:00",
+        "total_duration_minutes": 141,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-07-20T18:44:23.011124",
-    "protocol_version": "9.10.2"
+    "last_updated": "2026-08-03T20:52:38.134052+00:00",
+    "protocol_version": "9.11.0"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",
@@ -20849,7 +20945,7 @@
       ],
       "metadata": {
         "created": "2025-12-31T00:00:00Z",
-        "protocol_version": "9.10.2",
+        "protocol_version": "9.11.0",
         "last_updated": "2026-06-17T00:00:00Z",
         "total_sessions_all_time": 1004
       }
@@ -21035,8 +21131,8 @@
         ]
       }
     ],
-    "last_updated": "2026-07-20T22:44:24.581927+00:00",
-    "last_event": "session-update",
+    "last_updated": "2026-08-01T23:10:25.212881+00:00",
+    "last_event": "session-end",
     "events": [
       {
         "event": "session-update",
@@ -21634,51 +21730,25 @@
             "duration_seconds": 0.422
           }
         ]
-      }
-    ],
-    "last_status_by_event": {
-      "session-update": {
-        "event": "session-update",
-        "finished_at": "2026-07-20T22:44:24.581927+00:00",
+      },
+      {
+        "event": "cortex-rebuild-full",
+        "finished_at": "2026-07-21T11:23:28.611593+00:00",
         "success": true,
         "status": "success",
         "fail_soft": true,
         "steps": [
           {
-            "name": "session-update",
+            "name": "cortex-high",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 1.25
-          },
-          {
-            "name": "cortex-medium",
-            "status": "launched",
-            "exit_code": null,
-            "duration_seconds": 0.032
-          },
-          {
-            "name": "custom-agent-list",
-            "status": "success",
-            "exit_code": 0,
-            "duration_seconds": 0.312
-          },
-          {
-            "name": "tier-status",
-            "status": "success",
-            "exit_code": 0,
-            "duration_seconds": 0.422
-          },
-          {
-            "name": "tier-statistics",
-            "status": "success",
-            "exit_code": 0,
-            "duration_seconds": 0.422
+            "duration_seconds": 22.969
           }
         ]
       },
-      "session-end": {
+      {
         "event": "session-end",
-        "finished_at": "2026-07-20T21:28:44.188144+00:00",
+        "finished_at": "2026-07-21T11:23:54.878369+00:00",
         "success": true,
         "status": "success",
         "fail_soft": true,
@@ -21687,10 +21757,253 @@
             "name": "session-end",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.969
+            "duration_seconds": 0.703
           },
           {
             "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.313
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.015
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.844
+          },
+          {
+            "name": "validation-refresh",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.609
+          }
+        ]
+      },
+      {
+        "event": "session-update",
+        "finished_at": "2026-07-28T21:03:19.393292+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.766
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.015
+          },
+          {
+            "name": "custom-agent-list",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.141
+          },
+          {
+            "name": "tier-status",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.234
+          },
+          {
+            "name": "tier-statistics",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.297
+          }
+        ]
+      },
+      {
+        "event": "session-end",
+        "finished_at": "2026-07-29T01:31:55.193764+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.766
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.328
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.015
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.281
+          },
+          {
+            "name": "validation-refresh",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.641
+          }
+        ]
+      },
+      {
+        "event": "session-transfer",
+        "finished_at": "2026-07-29T04:00:48.875629+00:00",
+        "success": false,
+        "status": "failure",
+        "fail_soft": false,
+        "steps": [
+          {
+            "name": "transfer-begin",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.906
+          },
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.25
+          },
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.484
+          },
+          {
+            "name": "handoff-write",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 10.422
+          },
+          {
+            "name": "end-snapshot",
+            "status": "failure",
+            "exit_code": 2,
+            "duration_seconds": 0.438
+          }
+        ]
+      },
+      {
+        "event": "session-transfer",
+        "finished_at": "2026-07-29T13:19:17.327133+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": false,
+        "steps": [
+          {
+            "name": "transfer-begin",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.562
+          },
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.766
+          },
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.75
+          },
+          {
+            "name": "handoff-write",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 7.656
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.297
+          },
+          {
+            "name": "transfer-finalize",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.594
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.015
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.828
+          },
+          {
+            "name": "validation-refresh",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.657
+          }
+        ]
+      },
+      {
+        "event": "session-transfer",
+        "finished_at": "2026-07-29T21:22:38.660375+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": false,
+        "steps": [
+          {
+            "name": "transfer-begin",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.578
+          },
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.797
+          },
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.734
+          },
+          {
+            "name": "handoff-write",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 7.656
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.297
+          },
+          {
+            "name": "transfer-finalize",
             "status": "success",
             "exit_code": 0,
             "duration_seconds": 0.562
@@ -21699,13 +22012,309 @@
             "name": "cortex-medium",
             "status": "launched",
             "exit_code": null,
-            "duration_seconds": 0.188
+            "duration_seconds": 0.016
           },
           {
             "name": "cortex-distill",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 1.297
+            "duration_seconds": 0.797
+          },
+          {
+            "name": "validation-refresh",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.703
+          }
+        ]
+      },
+      {
+        "event": "session-transfer",
+        "finished_at": "2026-07-29T22:12:09.032521+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": false,
+        "steps": [
+          {
+            "name": "transfer-begin",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.547
+          },
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.813
+          },
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.75
+          },
+          {
+            "name": "handoff-write",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 8.0
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.328
+          },
+          {
+            "name": "transfer-finalize",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.547
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.016
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.875
+          },
+          {
+            "name": "validation-refresh",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.734
+          }
+        ]
+      },
+      {
+        "event": "session-transfer",
+        "finished_at": "2026-07-30T20:10:25.866077+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": false,
+        "steps": [
+          {
+            "name": "transfer-begin",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.547
+          },
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.656
+          },
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.625
+          },
+          {
+            "name": "handoff-write",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 8.094
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.281
+          },
+          {
+            "name": "transfer-finalize",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.516
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.016
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.703
+          },
+          {
+            "name": "validation-refresh",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.656
+          }
+        ]
+      },
+      {
+        "event": "session-transfer",
+        "finished_at": "2026-07-31T05:06:54.312107+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": false,
+        "steps": [
+          {
+            "name": "transfer-begin",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.531
+          },
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.703
+          },
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.719
+          },
+          {
+            "name": "handoff-write",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 7.718
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.282
+          },
+          {
+            "name": "transfer-finalize",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.562
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.0
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.75
+          }
+        ]
+      },
+      {
+        "event": "session-end",
+        "finished_at": "2026-08-01T23:10:25.212881+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.891
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.453
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.063
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.203
+          }
+        ]
+      }
+    ],
+    "last_status_by_event": {
+      "session-update": {
+        "event": "session-update",
+        "finished_at": "2026-07-28T21:03:19.393292+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.766
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.015
+          },
+          {
+            "name": "custom-agent-list",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.141
+          },
+          {
+            "name": "tier-status",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.234
+          },
+          {
+            "name": "tier-statistics",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.297
+          }
+        ]
+      },
+      "session-end": {
+        "event": "session-end",
+        "finished_at": "2026-08-01T23:10:25.212881+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.891
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.453
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.063
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.203
           }
         ]
       },
@@ -21739,6 +22348,78 @@
             "status": "timeout",
             "exit_code": null,
             "duration_seconds": 60.031
+          }
+        ]
+      },
+      "cortex-rebuild-full": {
+        "event": "cortex-rebuild-full",
+        "finished_at": "2026-07-21T11:23:28.611593+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "cortex-high",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 22.969
+          }
+        ]
+      },
+      "session-transfer": {
+        "event": "session-transfer",
+        "finished_at": "2026-07-31T05:06:54.312107+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": false,
+        "steps": [
+          {
+            "name": "transfer-begin",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.531
+          },
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.703
+          },
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.719
+          },
+          {
+            "name": "handoff-write",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 7.718
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.282
+          },
+          {
+            "name": "transfer-finalize",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.562
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.0
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.75
           }
         ]
       }

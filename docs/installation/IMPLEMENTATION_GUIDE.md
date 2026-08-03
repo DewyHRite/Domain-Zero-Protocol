@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
-**Version**: 9.10.2
-**Last Updated**: 2026-07-20
+**Version**: 9.11.0
+**Last Updated**: 2026-08-03
 **Purpose**: Complete setup instructions for implementing Domain Zero Protocol with any AI assistant
 
 > **9.x note**: v9.x adds **DZP Cortex** (local semantic memory) and a consolidated
@@ -95,8 +95,8 @@ for the full option list and exit-code meanings.
 - Your project has NO existing `.protocol-state/` directory
 
 ```bash
-# macOS/Linux  (DZP_SRC = the unpacked release dir, e.g. DZP-v9.3.0)
-DZP_SRC=DZP-v9.3.0
+# macOS/Linux  (DZP_SRC = the unpacked release dir, e.g. DZP-vX.Y.Z)
+DZP_SRC=DZP-vX.Y.Z
 mkdir -p your-project/protocol your-project/.protocol-state
 cp -r "$DZP_SRC/protocol" your-project/
 cp -r "$DZP_SRC/.protocol-state" your-project/
@@ -105,7 +105,7 @@ cp "$DZP_SRC/requirements-dev.txt" your-project/
 cp "$DZP_SRC/README.md" your-project/DOMAIN_ZERO_README.md
 
 # Windows PowerShell
-$DzpSrc = "DZP-v9.3.0"
+$DzpSrc = "DZP-vX.Y.Z"
 New-Item -ItemType Directory -Force -Path "your-project\protocol", "your-project\.protocol-state"
 Copy-Item -Recurse "$DzpSrc\protocol" -Destination your-project\
 Copy-Item -Recurse "$DzpSrc\.protocol-state" -Destination your-project\
@@ -135,8 +135,8 @@ echo "✅ Backup created in: $BACKUP_DIR"
 
 #### Step 2: Sync Protocol Files ONLY (Safe to Overwrite)
 ```bash
-# DZP_SRC = the unpacked release dir, e.g. DZP-v9.3.0
-DZP_SRC=DZP-v9.3.0
+# DZP_SRC = the unpacked release dir, e.g. DZP-vX.Y.Z
+DZP_SRC=DZP-vX.Y.Z
 # These files are protocol artifacts - safe to overwrite
 mkdir -p your-project/protocol your-project/docs your-project/.dzp-killswitch your-project/.claude/commands
 cp -r "$DZP_SRC/protocol/"* your-project/protocol/
@@ -480,8 +480,8 @@ workflow:
    ```bash
    cd /your-project
    mkdir -p protocol
-   cp -r /path/to/DZP-v9.3.0/protocol/* ./protocol/
-   cp /path/to/DZP-v9.3.0/protocol.config.yaml ./
+   cp -r /path/to/DZP-vX.Y.Z/protocol/* ./protocol/
+   cp /path/to/DZP-vX.Y.Z/protocol.config.yaml ./
    ```
 
 2. **Create `.protocol-state` directory** (for state management):
@@ -577,8 +577,8 @@ Create `.protocol-state/project-state.json`:
 1. **Copy protocol files** to your repo:
    ```bash
    mkdir -p .github/domain-zero
-   cp -r /path/to/DZP-v9.3.0/protocol .github/domain-zero/
-   cp /path/to/DZP-v9.3.0/protocol.config.yaml .github/domain-zero/
+   cp -r /path/to/DZP-vX.Y.Z/protocol .github/domain-zero/
+   cp /path/to/DZP-vX.Y.Z/protocol.config.yaml .github/domain-zero/
    ```
 
 2. **Create agent instruction summaries** in `.github/copilot-instructions.md`:
@@ -685,7 +685,7 @@ Save this as `domain-zero-system-prompt.md`:
 ```markdown
 # Domain Zero Protocol System Prompt
 
-You are an AI assistant operating under the Domain Zero Protocol DZP-v9.3.0.
+You are an AI assistant operating under the Domain Zero Protocol DZP-vX.Y.Z.
 
 ## Agent System
 
@@ -794,7 +794,7 @@ Domain Zero includes `gojo.prompt.md`, a meta prompt that generates orchestrated
 Copy `gojo.prompt.md` to your project root:
 
 ```bash
-cp /path/to/DZP-v9.3.0/gojo.prompt.md your-project/
+cp /path/to/DZP-vX.Y.Z/gojo.prompt.md your-project/
 ```
 
 #### Step 2: Configure IDE AI
@@ -1179,8 +1179,8 @@ Read protocol.config.yaml and tell me:
 **Problem**: Agent references old version or features
 
 **Solutions**:
-1. Verify you're using DZP-v9.3.0 files
-2. Check `protocol.config.yaml` → `versioning.protocol_version` is "9.3.0" (not earlier versions)
+1. Verify you're using the DZP-vX.Y.Z files matching your intended release
+2. Check `protocol.config.yaml` → `versioning.protocol_version` matches that release (not an earlier version)
 3. Re-upload all protocol files
 4. Clear conversation and start fresh
 
@@ -1778,7 +1778,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent
 - INUMAKI (API & Communication): REST, GraphQL, WebSocket design
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, DZP-v9.3.0)
+- CLAUDE.md (main protocol, repository root, DZP-vX.Y.Z; `protocol/CLAUDE.md` is a compatibility pointer/stub since v9.11.0 that redirects here)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -1803,7 +1803,7 @@ The canonical source is: https://github.com/DewyHRite/Domain-Zero-Protocol
 Add to "What would you like ChatGPT to know about you?":
 
 ```
-I use the Domain Zero Protocol (DZP-v9.3.0) for development projects. This is a nine-agent AI development framework with specialized roles:
+I use the Domain Zero Protocol (DZP-vX.Y.Z) for development projects. The main protocol file is `CLAUDE.md` at the repository root (`protocol/CLAUDE.md` is a compatibility pointer/stub since v9.11.0 that redirects there). This is a nine-agent AI development framework with specialized roles:
 
 **Core Four:**
 - YUUJI: Implementation with test-first development
@@ -1817,7 +1817,7 @@ I use the Domain Zero Protocol (DZP-v9.3.0) for development projects. This is a 
 - PANDA: Build & integration specialist
 - INUMAKI: API & communication specialist
 
-When working on my projects, refer to protocol files at protocol/CLAUDE.md, protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md, and protocol/inumaki.agent.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
+When working on my projects, refer to protocol files at CLAUDE.md (repository root; `protocol/CLAUDE.md` is a compatibility pointer/stub since v9.11.0), protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md, and protocol/inumaki.agent.md. The protocol follows a three-tier workflow system (Rapid/Standard/Critical) and aims for zero-defect code.
 
 Important:
 - Use skills for common operations (saves tokens)
@@ -1849,7 +1849,7 @@ I use the Domain Zero Protocol for AI-assisted development. This is a nine-agent
 - INUMAKI (API & Communication): REST, GraphQL, WebSocket design
 
 The protocol files are located in my project at:
-- protocol/CLAUDE.md (main protocol, DZP-v9.3.0)
+- CLAUDE.md (main protocol, repository root, DZP-vX.Y.Z; `protocol/CLAUDE.md` is a compatibility pointer/stub since v9.11.0 that redirects here)
 - protocol/yuuji.agent.md (implementation agent)
 - protocol/megumi.agent.md (security agent)
 - protocol/nobara.agent.md (creative strategy agent)
@@ -1957,7 +1957,7 @@ ls protocol/skills/
 
 2. **Update protocol files** (pull latest from repo or copy from release):
    ```bash
-   cp -r DZP-v9.3.0/protocol/skills/* protocol/skills/
+   cp -r DZP-vX.Y.Z/protocol/skills/* protocol/skills/
    ```
 
 3. **Update project-state.json** (manual or via script):

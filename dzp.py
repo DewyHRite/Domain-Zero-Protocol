@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 dzp.py — DZP Script Orchestration Entry Point
-Domain Zero Protocol v9.10.2
+Domain Zero Protocol v9.11.0
 
 Thin entry point that resolves the repo root from its own __file__ location
 and delegates ALL logic to .protocol-state/script_coordinator.py.
@@ -95,7 +95,7 @@ from script_coordinator import (  # noqa: E402
 # absent) so `--help` can never crash. The single source of truth for a
 # working install is always the live registry via _registry_event_names().
 _STATIC_FALLBACK_EVENTS = [
-    "session-update", "session-end", "ts-start", "ts-complete",
+    "session-update", "session-end", "session-transfer", "ts-start", "ts-complete",
     "pre-protected-edit", "pre-release", "pre-publish", "toji-snapshot",
     "post-migration", "post-rotation", "cortex-compact", "cortex-rebuild-full",
 ]

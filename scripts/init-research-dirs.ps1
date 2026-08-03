@@ -1,4 +1,4 @@
-# Domain Zero Protocol - Research Directory Initializer (PowerShell)
+﻿# Domain Zero Protocol - Research Directory Initializer (PowerShell)
 # Version: 1.0.0
 #
 # Purpose: Properly create the research directory structure with correct path separators

@@ -45,7 +45,7 @@ class ForeignInstallError(Exception):
     ledger) and --force-foreign was not passed.
 
     Protects against an unrelated install accidentally wiping a shared brain that
-    it has never written to (the 'rhs-shared' root-cause scenario).
+    it has never written to (the generic ``<project>-shared`` root-cause scenario).
     """
 
 # PLAN-DESIGN-001 Phase 1 (v9.4.0): the highest Cortex storage schema this engine

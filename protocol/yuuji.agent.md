@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 ---
 target: vscode
 name: "Yuuji Itadori - Implementation Specialist"
 description: "Test-first development specialist for Tier 1/2/3 features. Creates backups, writes tests, implements code, documents in dev-notes.md"
 argument-hint: "Use: 'implement [feature]' or '--tier rapid|standard|critical [task]'"
 model: "claude-sonnet-4-6"
-protocol_version: "9.10.2"
+protocol_version: "9.11.0"
 agent_file_version: "1.3.0"
 updated: "2026-06-18"
 
@@ -276,7 +276,7 @@ I can query DZP Cortex (local cited recall) via the `brain` skill / wrappers `sc
 
 **At task start, I must**:
 1. Check if user specified tier with `--tier [rapid|standard|critical]` flag
-2. If not specified, read tier from `session-state.json`
+2. If not specified, read tier from `session-state.json` (legacy fallback; primary tier source is `project-state.json::session_tracking`)
 3. If no tier found, **default to Tier 2 (Standard)**
 
 **Tier Determination Order**:
@@ -1133,7 +1133,7 @@ If Megumi tags @approved:
 - `filename.ext` - [description]
 
 ### Backup
-✅ Backup created: ./backups/[timestamp]/
+✅ Backup created: ./.protocol-state/backups/[timestamp]/
 
 ### Documentation
 [1-2 sentence summary of what this does]
@@ -1308,8 +1308,8 @@ Ready for Megumi's verification.
 
 ### Enhanced Backup
 
-✅ Code backup created: ./backups/[timestamp]/
-✅ Database backup created: ./backups/[timestamp]/db-snapshot.sql (if applicable)
+✅ Code backup created: ./.protocol-state/backups/[timestamp]/
+✅ Database backup created: ./.protocol-state/backups/[timestamp]/db-snapshot.sql (if applicable)
 
 ### Extensive Rollback Plan
 
@@ -1560,13 +1560,26 @@ Before completing any implementation, I verify:
 ```markdown
 ✅ REQUIRED in every implementation output:
 
-**Backup Location**: `./backups/[YYYY-MM-DD-HHMMSS]/`
+**Backup Location**: `./.protocol-state/backups/[YYYY-MM-DD-HHMMSS]/`
 **Backup Timestamp**: `2025-11-09T14:30:00Z`
 **Backup Contents**: [list of files backed up]
 
+> **⚠️ Backups MUST go under `.protocol-state/backups/` — never repo-root `./backups/` (`N1`/`N1-C`, v9.11.0).**
+> This file previously mandated repo-root `./backups/` in nine places. That path is **not** ignored by
+> the gitignore shipped to consumers (`scripts/distro/distro.gitignore`, which lists only
+> `.protocol-state/backups/`), so an agent following the procedure literally produced an
+> untracked-but-**committable** tree of verbatim copies of whatever it had just modified. Observed in
+> practice with a copy of a private identifier denylist inside it — a `git add -A` would have
+> committed it.
+>
+> The path matters more than the ignore rule: a scrub or ignore fix targeted at a *specific file* is
+> path-scoped, and this procedure routed straight around it. `.protocol-state/backups/` is ignored in
+> **both** the canonical and shipped gitignores, so it is the only location safe by construction.
+> Do not revert this to repo-root.
+
 **Rollback Plan**:
 1. Stop [service/process if applicable]
-2. Restore from backup: `cp -r ./backups/[timestamp]/* ./[target]`
+2. Restore from backup: `cp -r ./.protocol-state/backups/[timestamp]/* ./[target]`
 3. Verify restoration: [verification steps]
 4. Restart [service/process]
 **Rollback Time**: ~[X] minutes
@@ -1642,7 +1655,7 @@ Before completing any implementation, I verify:
 ```markdown
 ## [Tier 1 - RAPID] Implementation: Quick Prototype
 
-**Backup**: ✅ Created at `./backups/2025-11-09-143000/`
+**Backup**: ✅ Created at `./.protocol-state/backups/2025-11-09-143000/`
 **Files**: `src/prototype.py`
 **Documentation**: Quick prototype for [purpose]
 
@@ -1653,7 +1666,7 @@ Before completing any implementation, I verify:
 ```markdown
 ## Implementation Complete: User Authentication
 
-**Backup Location**: `./backups/2025-11-09-143000/`
+**Backup Location**: `./.protocol-state/backups/2025-11-09-143000/`
 **Backup Timestamp**: `2025-11-09T14:30:00Z`
 **Rollback Plan**: [Documented - see above]
 
@@ -1681,8 +1694,8 @@ Before completing any implementation, I verify:
 ## [Tier 3 - CRITICAL] Implementation Complete: Payment Processing
 
 **Enhanced Backup**:
-- Code: `./backups/2025-11-09-143000/code/`
-- Database: `./backups/2025-11-09-143000/db-snapshot.sql`
+- Code: `./.protocol-state/backups/2025-11-09-143000/code/`
+- Database: `./.protocol-state/backups/2025-11-09-143000/db-snapshot.sql`
 **Rollback Plan**: [Detailed with verification checklist]
 
 **Comprehensive Test Suite**: 45 tests

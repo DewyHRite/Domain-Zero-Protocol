@@ -1,8 +1,11 @@
 # Gojo's Work Session Monitoring Implementation Guide
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 
 **Purpose:** Provide Gojo with ACTUAL implementation instructions for work session monitoring.
 **Context:** Sukuna's red team assessment (v8.7.0) identified that work session monitoring was prompt-based theater with zero enforcement. This guide provides the REAL implementation.
+
+**Superseded note (PATCH-STATE-001, v8.13.0):** primary session-tracking storage was consolidated into `project-state.json::session_tracking` via `ProjectStateManager`.
+`session-state.json` is retained as the legacy fallback (written only if the primary write path is unavailable) -- this guide's remaining bare references to `session-state.json` below describe that legacy fallback path, not the current primary store.
 
 ---
 
@@ -19,7 +22,7 @@
 
 **After (v8.8.0 - Sukuna's Fix):**
 - ✅ Real-time tracking via `session_monitor.py`
-- ✅ Persistent state in `session-state.json`
+- ✅ Persistent state in `session-state.json` (superseded by `project-state.json::session_tracking` at PATCH-STATE-001, v8.13.0; retained as legacy fallback)
 - ✅ Template rendering with actual data
 - ✅ Actual alert triggers based on time
 - ✅ High-risk operation blocking
@@ -132,7 +135,7 @@ else:
 
 ## 📊 Session State Schema
 
-The `session-state.json` file tracks:
+The legacy fallback `session-state.json` file (see superseded note above) tracks:
 
 ```json
 {
@@ -402,7 +405,7 @@ session_summary = monitor.get_session_summary()
 - High-risk operation blocks (command, reason)
 
 ### Where It's Logged:
-- `session-state.json` - Real-time state
+- `session-state.json` - legacy fallback real-time state (primary is `project-state.json::session_tracking`)
 - Passive Observer (if enabled) - Historical patterns
 - Trigger 19 reports - Strategic analysis
 
@@ -445,7 +448,8 @@ python .protocol-state/session_monitor.py check-and-record
 1. Checks current session duration against thresholds
 2. **IF alert needed**: Auto-increments `alert_count` and `alerts_issued` counters
 3. Renders alert text for presentation to user
-4. **IF no alert needed**: Returns "✅ No alert needed"
+4. **IF no alert needed**: Prints `[OK] No alert needed`. This is NOT silent when no session is
+   active (`IMPL-SESSIONMON-001`, 2026-08-03 UX-honesty fix) — see the no-session example below.
 
 **When to Use**: EVERY Gojo Mission Control activation (via session-check skill)
 
@@ -458,6 +462,18 @@ python .protocol-state/session_monitor.py check-and-record
 [Full alert text...]
 ```
 
+**Example Output (no alert needed, session active)**:
+```text
+[OK] No alert needed
+```
+
+**Example Output (no alert needed, NO active session)**:
+```text
+[OK] No alert needed
+[INFO] No active session - wellbeing tracking is idle. Start one for accurate
+duration/alert tracking: session start (or: python .protocol-state/session_monitor.py start)
+```
+
 ### New Command: `record-choice`
 
 **Purpose**: Record user's alert response choice
@@ -468,7 +484,7 @@ python .protocol-state/session_monitor.py record-choice <save_and_break|continue
 ```
 
 **What It Does**:
-1. Records user's choice in `session-state.json`
+1. Records user's choice in `session-state.json` (legacy fallback; primary is `project-state.json::session_tracking`)
 2. Increments appropriate counter (`breaks_chosen` OR `continues_chosen`)
 3. Updates escalation level (increases if `continue` chosen)
 4. Enables high-risk operation blocking if at 6+ hours with `continue`
@@ -517,13 +533,13 @@ python .protocol-state/session_monitor.py record-choice <user_choice>
 
 **Required Components**:
 - `.protocol-state/session_monitor.py` - Python 3.8+ session monitoring module
-- `.protocol-state/session-state.json` - Session state file (auto-created if missing)
+- `.protocol-state/session-state.json` - legacy fallback session state file (auto-created if missing; primary is `project-state.json::session_tracking`)
 - `protocol/skills/session-check.md` - Auto-invoked enforcement skill
 - `protocol/gojo.agent.md` - Gojo agent with mandatory invocation (lines 603-619)
 - Python 3.8+ available in PATH
 
 **Schema Requirements**:
-- session-state.json schema v2.0.0 (includes alert_count, escalation_level fields)
+- session-state.json (legacy fallback) schema v2.0.0 (includes alert_count, escalation_level fields)
 - Protocol version 8.8.0+ (session monitoring support)
 
 ---

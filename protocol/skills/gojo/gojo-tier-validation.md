@@ -45,7 +45,7 @@ This skill provides comprehensive tier validation, monitoring, and statistics tr
 **When briefing agents, I must**:
 1. Determine the current tier:
    - Check if user specified `--tier [rapid|standard|critical]` flag
-   - If not specified, read from `session-state.json`
+   - If not specified, read from `session-state.json` (legacy fallback; primary is `project-state.json::session_tracking`)
    - If no tier found, **default to Tier 2 (Standard)**
 2. Brief the agent on tier requirements:
    - Tier 1: "This is rapid prototyping - skip tests and security review"
@@ -250,7 +250,7 @@ python scripts/tier-statistics.py --report --format markdown
 **This skill requires**:
 - `protocol/tier-defaults.yaml` - Tier configuration profiles
 - `.protocol-state/project-state.json` - Tier statistics storage
-- `.protocol-state/session-state.json` - Current tier setting
+- `.protocol-state/session-state.json` - Current tier setting (legacy fallback; primary is `project-state.json::session_tracking`)
 - `scripts/tier-statistics.py` - Statistics utility (optional)
 
 ---

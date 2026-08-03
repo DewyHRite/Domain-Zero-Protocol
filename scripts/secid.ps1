@@ -32,26 +32,55 @@ if ($args.Count -gt 0 -and @("check", "list", "validate") -contains $args[0]) {
 # into the Python source string -- mirrors scripts/secid.sh's B6-style
 # convention (see scripts/brain-index-hook.sh) and scripts/brain-index-hook's
 # rationale: interpolation breaks on paths containing quotes/apostrophes.
+# INVARIANT (ISS-IDGOVPS-001) -- THE $SignScript HERE-STRING MUST CONTAIN ZERO
+# DOUBLE-QUOTE CHARACTERS. The writer name is passed as a DATA argument
+# (sys.argv[2]), exactly as $ScriptDir already was, and for the same reason.
+#
+# Windows PowerShell 5.1 -- and PowerShell 7.x running with
+# $PSNativeCommandArgumentPassing='Legacy' -- strip embedded `"` characters
+# while building a native command line. `identity.provision("<writer>")` then
+# reaches Python as `identity.provision(<writer>)`, a bare name, and raises
+# NameError. Every mint (`new`) and state transition (`state`) via this wrapper
+# failed closed on those hosts. PowerShell 7.x in its DEFAULT mode preserves
+# the quotes, which is why the defect survived review.
+#
+# DO NOT "FIX" A REGRESSION HERE BY ESCAPING THE QUOTES (\"). That repairs 5.1
+# and simultaneously BREAKS 7.3+ default mode, which passes the literal
+# backslash through to Python as a SyntaxError. With zero `"` characters there
+# is nothing for the legacy mangler to strip, so this is correct on 5.1, on 7.x
+# default, and on 7.x Legacy with no host detection or version branching.
+#
+# Machine-enforced by tests/test_ps1_sign_script_quote_invariant.py -- not
+# comment-enforced. Run it after touching this block.
 $SignScript = @'
 import secrets, sys
 sys.path.insert(0, sys.argv[1])
 from idgov import identity
-token_id = identity.provision("megumi")
+token_id = identity.provision(sys.argv[2])
 nonce = secrets.token_hex(16)
 sig = identity.sign(token_id, nonce)
 print(nonce)
 print(sig)
 '@
 
-$signOut = & python -c $SignScript $ScriptDir
+$signOut = & python -c $SignScript $ScriptDir 'megumi'
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "secid: failed to sign request (Megumi token provisioning/signing error)"
+    # BUG-IDGOVPS-001: stderr is written EXPLICITLY here, not through the
+    # Write-Error cmdlet. Under the $ErrorActionPreference = "Stop" set above, that
+    # cmdlet raises a TERMINATING error -- the script dies on that line and the
+    # `exit 2` below never runs, so every caller saw exit 1. The documented
+    # "signing failed = 2" contract had therefore never been observable on any host
+    # or engine (reproduced on both powershell 5.1 and pwsh 7, with a positive
+    # control). [Console]::Error.WriteLine() is a plain write with no error-action
+    # semantics, so the intended exit code is actually reached. Do not "tidy" this
+    # back; tests/test_ps1_mint_wrapper_exit_contract.py fails if you do.
+    [Console]::Error.WriteLine("secid: failed to sign request (Megumi token provisioning/signing error)")
     exit 2
 }
 
 $lines = @($signOut) | Where-Object { $_ -ne "" }
 if ($lines.Count -lt 2) {
-    Write-Error "secid: malformed signing output"
+    [Console]::Error.WriteLine("secid: malformed signing output")
     exit 2
 }
 $env:IDGOV_NONCE = $lines[0]

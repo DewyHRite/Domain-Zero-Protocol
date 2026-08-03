@@ -1,8 +1,9 @@
 #!/bin/sh
-# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.10.2)
+# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.11.0)
 # Combines: protected-records secret scan + publish-branch skip + append-only guard
 #           + agent/protected-file guard + validate-protocol.py state validation
-#           + issue-id registry gate (FEAT-IDGOV-001, Phase G1, INERT by default).
+#           + issue-id registry gate (FEAT-IDGOV-001, Phase G1, INERT by default)
+#           + Trigger 19-R public-edition sanitization gate (FEAT-TRIGGER19R-9.11.0-001).
 #
 # Run order:
 #   1. Secret scan           (SEC-001: protected records always scanned for secrets —
@@ -18,6 +19,11 @@
 #                              issue_governance.enabled=false, see that gate's
 #                              own docstring; the AUTHORITATIVE tier is CI --
 #                              .github/workflows/idgov-gate.yml, Phase G2)
+#   7. Trigger 19-R gate     (FEAT-TRIGGER19R-9.11.0-001: only runs when
+#                              docs/DESIGN-DECISIONS.md is staged; checks the
+#                              INDEX version; fail-closed EXCEPT for a
+#                              deliberately-absent checker, see DESIGN-001
+#                              note below, which loudly skips instead)
 #
 # Install via: scripts/install-git-hooks.sh  (or .ps1 on Windows/PowerShell)
 # Sanctioned overrides are printed on block.
@@ -233,7 +239,15 @@ if [ -n "$status" ]; then
         # mirrors the same security-critical engine scripts added to
         # protocol.config.yaml immutable_paths, so a degraded (python/yaml
         # unavailable) run of this hook still protects them.
+        # WP5b (Gojo-authorized, USER full-remediation directive, 2026-07-30):
+        # CLAUDE.md added alongside the engine scripts below -- same rationale
+        # (fallback must never be a WEAKER list than the config-driven path).
+        # See protocol.config.yaml immutable_paths for the full matcher-
+        # semantics writeup (prefix match; a bare filename entry needs no
+        # trailing slash, matches only the root file, not protocol/CLAUDE.md
+        # or nested docs/**/CLAUDE.md).
         DEFAULT_PATHS="protocol/
+CLAUDE.md
 .claude/agents/
 .protocol-state/custom-agent-registry.json
 .protocol-state/authorization/
@@ -329,7 +343,7 @@ PYEOF
                 printf '  2. Invoke Sukuna via Gojo for system / protocol updates.\n'
                 printf '  3. Override intentionally:  git commit --no-verify\n'
                 printf '  4. Override just this stage (keeps append-only + validation active): DZP_ALLOW_PROTOCOL_EDIT=1 git commit\n\n'
-                printf 'Reference: protocol/CLAUDE.md  (Cross-Agent Edit Restrictions)\n\n'
+                printf 'Reference: CLAUDE.md (root)  (Cross-Agent Edit Restrictions)\n\n'
                 exit 1
             fi
         fi
@@ -437,6 +451,81 @@ else
         echo "  Fix: restore the gate or reinstall via scripts/install-git-hooks.(sh|ps1)." >&2
         echo "  Authorized exception: DZP_ALLOW_MISSING_ISSUE_ID_GATE=1 git commit ..." >&2
         exit 1
+    fi
+fi
+
+# ============================================================================
+# 7. FEAT-TRIGGER19R-9.11.0-001: TRIGGER 19-R PUBLIC-EDITION SANITIZATION GATE
+# ============================================================================
+# docs/DESIGN-DECISIONS.md is the PUBLIC edition of the Sukuna
+# decision-provenance report, sourced from records that include the untracked
+# domain.record.md. It may never be committed unsanitized. Checks the INDEX
+# version (git show :path), the same staged-read convention stage 3's
+# append-only guard uses -- not the working-tree copy, which could differ from
+# what actually gets committed. Fail-closed: if the file is staged and the
+# checker script cannot be found, the commit is blocked. Deliberately NO new
+# DZP_ALLOW_* override here -- the break-glass is unstaging the file.
+#
+# --diff-filter=d excludes DELETED paths from the trigger (fix round 1,
+# FINDING 1a): `git diff --cached --name-only` without a filter also lists a
+# staged `git rm docs/DESIGN-DECISIONS.md`, and a deletion cannot leak
+# content -- there is nothing to sanitize, and it must not be blocked. Without
+# this filter, the unguarded `git show :docs/DESIGN-DECISIONS.md` below would
+# exit 128 (no such path in the index) and, under `set -eu`, abort the WHOLE
+# HOOK with a raw git fatal instead of this stage's branded message, leaking
+# the mktemp file in the process.
+if git diff --cached --name-only --diff-filter=d | grep -qx "docs/DESIGN-DECISIONS.md"; then
+    T19R_CHECKER="$ROOT/scripts/check_trigger19r_sanitization.py"
+    if [ ! -f "$T19R_CHECKER" ]; then
+        # DESIGN-001 (Toji v9.11.0 pre-release audit, MEDIUM): the checker is
+        # DELIBERATELY dev-only (publish-manifest.yaml classifies it
+        # completeness_dev_only) and never ships, while docs/DESIGN-DECISIONS.md
+        # and this hook DO ship to every consumer install. The prior behavior
+        # (hard `exit 1`, "reinstall via install-git-hooks") permanently
+        # blocked any commit touching the file on a consumer install, with a
+        # remediation that could never actually restore the missing checker
+        # (the installer only copies this hook file, never the checker) --
+        # trapping the operator with git commit --no-verify as the only
+        # escape, which also disables every OTHER stage in this hook.
+        # Fix: when the checker is genuinely absent, this is not a violation
+        # to block on -- it is an environment where the check cannot run by
+        # design. Skip loudly (never silently) and let the commit proceed, per
+        # the standing rule "a control that cannot cover a path must say so
+        # visibly, never silently" (CLAUDE.md). No new DZP_ALLOW_* override is
+        # introduced here: there is no risk decision for an operator to
+        # authorize per-commit, since the checker's absence is a deterministic,
+        # by-design property of the install, not a choice made at commit time.
+        # When the checker IS present (the canonical/dev repo), behavior below
+        # is completely unchanged from before this fix -- still fail-closed.
+        echo "[t19r-gate] NOT CHECKED: scripts/check_trigger19r_sanitization.py is not present in this install (dev-only tool, not shipped); docs/DESIGN-DECISIONS.md sanitization was NOT verified this commit." >&2
+    else
+        PYT=""
+        if command -v python3 >/dev/null 2>&1; then PYT=python3
+        elif command -v python >/dev/null 2>&1; then PYT=python
+        fi
+        if [ -z "$PYT" ]; then
+            echo "[trigger19r-gate] COMMIT BLOCKED: no Python runtime — Trigger 19-R sanitization gate cannot run." >&2
+            echo "  Fix: install Python 3. No override exists -- unstage the file to proceed." >&2
+            exit 1
+        fi
+        T19R_TMP="$(mktemp)"
+        # FINDING 1b (fix round 1): defensive guard even with --diff-filter=d
+        # above -- belt-and-suspenders against any other reason the index
+        # blob cannot be read (e.g. a corrupt index, a race with a
+        # concurrent git operation). Without this guard, a failing `git show`
+        # under `set -eu` aborts the ENTIRE hook script with a raw git fatal,
+        # skipping every later stage AND leaking $T19R_TMP.
+        git show :docs/DESIGN-DECISIONS.md > "$T19R_TMP" || {
+            rm -f "$T19R_TMP"
+            echo "[trigger19r-gate] COMMIT BLOCKED: cannot read staged docs/DESIGN-DECISIONS.md from the index." >&2
+            exit 1
+        }
+        if ! "$PYT" "$T19R_CHECKER" --public "$T19R_TMP" --repo-root "$ROOT"; then
+            rm -f "$T19R_TMP"
+            echo "[trigger19r-gate] COMMIT BLOCKED: staged docs/DESIGN-DECISIONS.md failed sanitization." >&2
+            exit 1
+        fi
+        rm -f "$T19R_TMP"
     fi
 fi
 

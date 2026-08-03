@@ -30,11 +30,12 @@ Usage:
 
 import ast
 import json
+import os
 import re
 import sys
 from collections import defaultdict, deque
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional, Any
+from typing import Dict, Iterator, List, Set, Tuple, Optional, Any
 
 # Fix Windows console encoding
 if sys.platform == 'win32':
@@ -436,21 +437,126 @@ class DependencyScanner:
     def scan_directory(self, directory: Path, pattern: str = "**/*") -> None:
         """Scan all files in a directory matching pattern.
 
-        BUG-TEST-9.10.1-001 (P3-tightened, 2026-07-20): skips any file under
-        this instance's <project_root>/.protocol-state/backups/ or
-        <project_root>/.protocol-state/rotated-files/ so historical archive
-        snapshots are never re-walked/re-parsed. Path-anchored, not a bare
-        directory-name match -- see _is_excluded_from_scan().
+        BUG-TEST-9.10.1-001 REOPENED (v9.10.2 fix was incomplete, closed
+        here in v9.10.3): the v9.10.2 fix filtered `directory.glob(pattern)`
+        RESULTS through `_is_excluded_from_scan()`, but `glob()` must WALK
+        the entire subtree (including `.protocol-state/backups/`) to
+        produce those results in the first place -- the exclusion check ran
+        AFTER the expensive part had already happened. Measured 2026-07-27:
+        6,176 paths / 20.1s to WALK `.protocol-state/**/*.py` alone (before
+        any filtering), of which 6,118 are under `backups/`; a pruned walk
+        that never descends into `backups/`/`rotated-files/` visits 58
+        paths in ~0.0s -- a ~648x speedup. This now delegates to
+        `_iter_scannable_files()`, which prunes excluded directories from
+        `os.walk()`'s traversal itself (never descends into them), so the
+        WALK cost is eliminated, not just the parse cost.
         """
-        for file_path in directory.glob(pattern):
-            if file_path.is_file() and not self._is_excluded_from_scan(file_path):
+        for file_path in self._iter_scannable_files(directory, pattern):
+            # Belt-and-braces: _iter_scannable_files() already prunes
+            # excluded directories at traversal time, but this per-file
+            # check keeps the contract intact even if a future caller
+            # bypasses the walker (e.g. passes `directory` == an excluded
+            # dir itself, whose own top-level files are not caught by
+            # dirname pruning) or calls scan_and_add() on a raw path list
+            # built some other way.
+            if not self._is_excluded_from_scan(file_path):
                 self.scan_and_add(file_path)
 
+    def _iter_scannable_files(self, directory: Path, pattern: str) -> Iterator[Path]:
+        """Yield files under `directory` matching `pattern` (a pathlib-glob-
+        style pattern supporting `**` as a recursive path-segment wildcard,
+        e.g. `"**/*.py"`, `"**/*"`, `"*.md"`), using `os.walk()` with
+        in-place `dirnames` pruning so `.protocol-state/backups/` and
+        `.protocol-state/rotated-files/` (per the SAME path-anchored rule as
+        `_is_excluded_from_scan()`) are never DESCENDED INTO -- not merely
+        filtered out of the results afterward. This is the actual fix for
+        BUG-TEST-9.10.1-001: `Path.glob()` offers no hook to prune its own
+        traversal, so it was structurally incapable of avoiding the walk
+        cost regardless of any post-hoc filter.
+
+        Deliberately uses `os.walk()` (stdlib, no third-party glob engine)
+        with a pattern translated to a compiled regex once per call (not
+        per file) -- no `Path.resolve()`, no repeated filesystem
+        round-trips beyond what `os.walk()` itself performs once per
+        directory.
+        """
+        directory = Path(directory)
+        pattern_re = self._compile_glob_pattern(pattern)
+
+        for root, dirnames, filenames in os.walk(directory):
+            root_path = Path(root)
+
+            # Prune BEFORE os.walk descends: any subdirectory whose path
+            # (relative to THIS instance's project_root) is
+            # .protocol-state/backups/ or .protocol-state/rotated-files/ is
+            # removed from dirnames in place, which is the documented
+            # os.walk() mechanism for suppressing descent into it.
+            dirnames[:] = [
+                d for d in dirnames
+                if not self._is_excluded_from_scan(root_path / d)
+            ]
+
+            for filename in filenames:
+                file_path = root_path / filename
+                try:
+                    rel_posix = file_path.relative_to(directory).as_posix()
+                except ValueError:
+                    continue
+                if pattern_re.match(rel_posix):
+                    yield file_path
+
+    @staticmethod
+    def _compile_glob_pattern(pattern: str) -> "re.Pattern[str]":
+        """Translate a pathlib-glob-style pattern into a compiled regex
+        matching POSIX-style relative path strings.
+
+        Supports `*` (any characters except `/`), `?` (single character
+        except `/`), and `**` as a whole path segment meaning "zero or more
+        full path segments" (recursive descent) -- e.g. `"**/*.py"` matches
+        `foo.py` and `a/b/foo.py` alike, while a bare `"*.py"` (no `**`)
+        only matches top-level files, mirroring `pathlib.Path.glob()`
+        semantics. Implemented manually (rather than relying on
+        `PurePath.match()`'s recursive-`**` support, which is Python
+        3.13+ only) to stay compatible with this project's Python 3.8+
+        baseline.
+        """
+        segments = pattern.split('/')
+        regex_parts: List[str] = []
+        for i, segment in enumerate(segments):
+            if segment == '**':
+                if i == len(segments) - 1:
+                    regex_parts.append('.*')
+                else:
+                    regex_parts.append('(?:.*/)?')
+            else:
+                segment_regex = ''.join(
+                    '[^/]*' if ch == '*' else '[^/]' if ch == '?' else re.escape(ch)
+                    for ch in segment
+                )
+                if i > 0 and segments[i - 1] != '**':
+                    regex_parts.append('/')
+                regex_parts.append(segment_regex)
+        return re.compile('^' + ''.join(regex_parts) + '$')
+
     def _is_excluded_from_scan(self, file_path: Path) -> bool:
-        """True if file_path lives under THIS instance's <project_root>/
-        .protocol-state/backups/ or <project_root>/.protocol-state/
-        rotated-files/. PATH-ANCHORED, not a name-anywhere-in-parts match --
-        a directory named "backups" or "rotated-files" that is NOT nested
+        """True if file_path (a file OR a candidate directory) lives under
+        THIS instance's <project_root>/.protocol-state/backups/ or
+        <project_root>/.protocol-state/rotated-files/.
+
+        This is the SINGLE SOURCE OF TRUTH for the anchored-exclusion
+        contract and is called from two places: (1) `_iter_scannable_files()`
+        uses it to PRUNE `os.walk()`'s `dirnames` in place -- the primary
+        fix, which stops the traversal from ever descending into the
+        excluded subtree; and (2) `scan_directory()` calls it again per
+        yielded file as a belt-and-braces check, so the contract holds even
+        for a start directory that is itself inside the excluded subtree
+        (dirname pruning only suppresses descent into a root's
+        *subdirectories*, so files sitting directly in an excluded root
+        passed in as the scan's own starting `directory` need this second
+        check to be caught).
+
+        PATH-ANCHORED, not a name-anywhere-in-parts match -- a directory
+        named "backups" or "rotated-files" that is NOT nested
         directly under THIS project's .protocol-state/ (e.g. a vendored
         dependency's own backups/ folder, or Sukuna's separate
         .protocol-state/system-update-framework/backups/ cascade archive)

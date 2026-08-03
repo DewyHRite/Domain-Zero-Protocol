@@ -113,7 +113,8 @@ def _cmd_new(args) -> int:
         args.registry, args.family, args.subsystem, args.title,
         version=args.version, tag=args.tag, reserved=args.reserved,
         reported_by=args.reported_by, signature=signature, nonce=nonce,
-        protocol_version=_protocol_version(), origin=ORIGIN, **audit,
+        protocol_version=_protocol_version(), origin=ORIGIN,
+        repo_root=REPO_ROOT, **audit,
     )
     print(new_id)
     return 0
@@ -169,7 +170,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "new", help="mint a new id (writer derived from IDGOV_SIG/IDGOV_NONCE, never a CLI flag)"
     )
     _add_registry_arg(p_new)
-    p_new.add_argument("family", help="family prefix, e.g. SEC/BUG/FEAT/IMPL/CODE/ISS/TEST/MF")
+    p_new.add_argument(
+        "family",
+        help="family prefix, e.g. SEC/BUG/FEAT/IMPL/CODE/ISS/TEST/MF/LL/SF "
+             "(idgov.grammar.FAMILIES is authoritative; unknown/unauthorized families are refused)",
+    )
     p_new.add_argument("--subsystem", required=True)
     p_new.add_argument("--title", required=True)
     p_new.add_argument("--version")

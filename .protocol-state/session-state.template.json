@@ -30,6 +30,7 @@
     "critical_session_minutes": 360,
     "max_continuous_minutes": 480,
     "late_night_hour": 22,
+    "late_night_end_hour": 6,
     "minimum_break_minutes": 15
   },
   "session_history": [],

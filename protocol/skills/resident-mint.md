@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Resident Mint Wrappers — Issue-ID Governance (Sukuna / Gojo / Yuuji)
 
 **Name:** resident-mint
@@ -74,8 +74,9 @@ directly (direct calls have no signature and are refused for `new`/`state`):
 scripts/residentid-sukuna.sh new FEAT --subsystem IDGOV --title "resident mint wrappers" --review-ref audits/2026-07-18-toji-dzp-9-10-0-audit.md
 scripts/residentid-sukuna.sh state BUG-SNAPSHOT-010 approved
 
-# Gojo — authorized for ISS
+# Gojo — authorized for ISS, LL
 scripts/residentid-gojo.sh new ISS --subsystem PROTOCOL --title "..."
+scripts/residentid-gojo.sh new LL --subsystem TRIGGER19 --title "..."
 
 # Yuuji — authorized for BUG, IMPL, TEST
 scripts/residentid-yuuji.sh new IMPL --subsystem CORTEX --title "..."
@@ -86,6 +87,7 @@ PowerShell parity (`.ps1` in place of `.sh`, identical arguments):
 ```powershell
 scripts/residentid-sukuna.ps1 new FEAT --subsystem IDGOV --title "..."
 scripts/residentid-gojo.ps1 new ISS --subsystem PROTOCOL --title "..."
+scripts/residentid-gojo.ps1 new LL --subsystem TRIGGER19 --title "..."
 scripts/residentid-yuuji.ps1 new IMPL --subsystem CORTEX --title "..."
 ```
 
@@ -101,11 +103,13 @@ sign (SEC-IDGOV-D-003 parity — no token provisioning side effect on a plain re
 | Family | Authorized minter(s) | Resident wrapper |
 |---|---|---|
 | `SEC`, `CODE`, `MF` | Megumi (sole) | `scripts/secid.{sh,ps1}` only |
+| `SF` (Security Framework, v9.11.0 `FEAT-IDGOV-003`) | Megumi (sole) | `scripts/secid.{sh,ps1}` only |
 | `TEST` | Megumi, Yuuji | `scripts/secid.{sh,ps1}` (Megumi) or `residentid-yuuji` |
 | `BUG` | Yuuji, Sukuna | `residentid-yuuji` or `residentid-sukuna` |
 | `FEAT` | Sukuna (sole) | `residentid-sukuna` |
 | `IMPL` | Sukuna, Yuuji | `residentid-sukuna` or `residentid-yuuji` |
 | `ISS` | Sukuna, Gojo | `residentid-sukuna` or `residentid-gojo` |
+| `LL` (Lessons Learned, v9.11.0 `FEAT-IDGOV-003`) | Gojo (sole) | `residentid-gojo` only |
 
 Minting/transitioning a family your wrapper is not authorized for fails closed with `error: <writer>
 not authorized for family <family>` (engine-enforced, exit `2`) — no wrapper pre-filters; the

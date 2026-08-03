@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.10.2 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
 # Gojo Operational Procedures - Detailed Reference
 
 **Version**: 8.10.0
@@ -27,7 +27,7 @@
    - Items awaiting remediation
    - Recent approvals
 
-4. Verify protocol/CLAUDE.md protection status
+4. Verify root CLAUDE.md protection status (FEAT-REQ-001 protects the root file only; `protocol/CLAUDE.md` is a compatibility stub outside that pattern)
    - Check violation_attempts from project-state.json
    - Verify last_backup date
    - confirm protection enabled

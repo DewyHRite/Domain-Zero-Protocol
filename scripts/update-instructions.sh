@@ -29,15 +29,15 @@ read -r -d '' PROTOCOL_SECTION << 'EOF' || true
 
 This project follows the Domain Zero Protocol for AI-assisted development.
 
-**Primary entrypoint**: [`protocol/CLAUDE.md`](protocol/CLAUDE.md)
+**Primary entrypoint**: [`CLAUDE.md`](CLAUDE.md) (root — the canonical source of truth since v8.13.0; `protocol/CLAUDE.md` is a compatibility stub since v9.11.0)
 
 **Workflow guidance**:
-- Mission Control & initialization: `protocol/GOJO.md`
-- Feature implementation: `protocol/YUUJI.md`
-- Security review: `protocol/MEGUMI.md`
+- Mission Control & initialization: `protocol/gojo.agent.md`
+- Feature implementation: `protocol/yuuji.agent.md`
+- Security review: `protocol/megumi.agent.md`
 - Tier selection guide: `protocol/TIER-SELECTION-GUIDE.md`
 
-For complete protocol details, read [`protocol/CLAUDE.md`](protocol/CLAUDE.md) - the canonical source of truth.
+For complete protocol details, read [`CLAUDE.md`](CLAUDE.md) - the canonical source of truth.
 
 ---
 EOF
@@ -242,7 +242,7 @@ fi
 if [[ "$APPLY" == "true" && $UPDATED_COUNT -gt 0 ]]; then
     echo -e "${GREEN}✓ Update complete!${RESET}"
     echo ""
-    echo "Modified files now point to protocol/CLAUDE.md as canonical source."
+    echo "Modified files now point to CLAUDE.md (root) as canonical source."
     echo "Backup files created (*.backup) - delete these when confirmed working."
     echo ""
 fi

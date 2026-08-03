@@ -1,4 +1,4 @@
-﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.10.2)
+﻿# Domain Zero Protocol - Unified Pre-commit Hook (FEAT-GUARD-001, v9.11.0)
 # PowerShell equivalent of scripts/git-hooks/pre-commit for PowerShell-driven git
 # hook setups.
 #
@@ -16,6 +16,11 @@
 #                              issue_governance.enabled=false, see that gate's
 #                              own docstring; the AUTHORITATIVE tier is CI --
 #                              .github/workflows/idgov-gate.yml, Phase G2)
+#   7. Trigger 19-R gate     (FEAT-TRIGGER19R-9.11.0-001: only runs when
+#                              docs/DESIGN-DECISIONS.md is staged; checks the
+#                              INDEX version; fail-closed EXCEPT for a
+#                              deliberately-absent checker, see DESIGN-001
+#                              note below, which loudly skips instead)
 #
 # DZP_ALLOW_PROTOCOL_EDIT=1 (v9.9.5+): scoped override for stage 4 ONLY (the
 # FEAT-REQ-001 protected-path guard). Mirrors DZP_ALLOW_PROTECTED_REWRITE
@@ -194,8 +199,15 @@ if ($status) {
         # mirrors the same security-critical engine scripts added to
         # protocol.config.yaml immutable_paths, so a degraded (python/yaml
         # unavailable) run of this hook still protects them.
+        # WP5b (Gojo-authorized, USER full-remediation directive, 2026-07-30):
+        # CLAUDE.md added alongside the engine scripts below -- same rationale
+        # (fallback must never be a WEAKER list than the config-driven path).
+        # See protocol.config.yaml immutable_paths for the full matcher-
+        # semantics writeup (prefix match via StartsWith; a bare filename
+        # entry needs no trailing slash, matches only the root file, not
+        # protocol/CLAUDE.md or nested docs/**/CLAUDE.md).
         $defaultPaths = @(
-            'protocol/', '.claude/agents/',
+            'protocol/', 'CLAUDE.md', '.claude/agents/',
             '.protocol-state/custom-agent-registry.json',
             '.protocol-state/authorization/', 'protocol.config.yaml',
             'scripts/git-hooks/',
@@ -283,7 +295,7 @@ except Exception:
                 Write-Host '  3. Override intentionally:  git commit --no-verify'
                 Write-Host '  4. Override just this stage (keeps append-only + validation active): DZP_ALLOW_PROTOCOL_EDIT=1 git commit'
                 Write-Host ''
-                Write-Host 'Reference: protocol/CLAUDE.md  (Cross-Agent Edit Restrictions)'
+                Write-Host 'Reference: CLAUDE.md (root)  (Cross-Agent Edit Restrictions)'
                 Write-Host ''
                 exit 1
             }
@@ -378,6 +390,96 @@ if (Test-Path $idgovGate) {
         [Console]::Error.WriteLine('  Fix: restore the gate or reinstall via scripts/install-git-hooks.(sh|ps1).')
         [Console]::Error.WriteLine('  Authorized exception: DZP_ALLOW_MISSING_ISSUE_ID_GATE=1 git commit ...')
         exit 1
+    }
+}
+
+# ============================================================================
+# 7. FEAT-TRIGGER19R-9.11.0-001: TRIGGER 19-R PUBLIC-EDITION SANITIZATION GATE
+# ============================================================================
+# docs/DESIGN-DECISIONS.md is the PUBLIC edition of the Sukuna
+# decision-provenance report, sourced from records that include the untracked
+# domain.record.md. It may never be committed unsanitized. Checks the INDEX
+# version (git show :path), the same staged-read convention stage 3's
+# append-only guard uses -- not the working-tree copy, which could differ from
+# what actually gets committed. Fail-closed: if the file is staged and the
+# checker script cannot be found, the commit is blocked. Deliberately NO new
+# DZP_ALLOW_* override here -- the break-glass is unstaging the file.
+# (Kept in parity with scripts/git-hooks/pre-commit, the POSIX equivalent.)
+#
+# --diff-filter=d excludes DELETED paths from the trigger (fix round 1,
+# FINDING 2): a staged `git rm docs/DESIGN-DECISIONS.md` cannot leak content
+# and must not be blocked. Distinct failure mode from the sh hook: on PS 5.1
+# a failing native command does NOT terminate under $ErrorActionPreference =
+# 'Stop', so without the explicit ExitCode check below a deletion (or any
+# other index-read failure) would write an EMPTY temp file, the checker would
+# "pass" on 0 bytes, and the commit would slip through SILENTLY.
+$stagedNames = & git diff --cached --name-only --diff-filter=d
+if ($stagedNames -contains 'docs/DESIGN-DECISIONS.md') {
+    $t19rChecker = Join-Path $root 'scripts/check_trigger19r_sanitization.py'
+    if (-not (Test-Path $t19rChecker)) {
+        # DESIGN-001 (Toji v9.11.0 pre-release audit, MEDIUM): the checker is
+        # DELIBERATELY dev-only (publish-manifest.yaml classifies it
+        # completeness_dev_only) and never ships, while docs/DESIGN-DECISIONS.md
+        # and this hook DO ship to every consumer install. The prior behavior
+        # (hard exit 1, "reinstall via install-git-hooks") permanently blocked
+        # any commit touching the file on a consumer install, with a
+        # remediation that could never actually restore the missing checker
+        # (the installer only copies this hook file, never the checker) --
+        # trapping the operator with git commit --no-verify as the only
+        # escape, which also disables every OTHER stage in this hook.
+        # Fix: when the checker is genuinely absent, this is not a violation
+        # to block on -- it is an environment where the check cannot run by
+        # design. Skip loudly (never silently) and let the commit proceed,
+        # per the standing rule "a control that cannot cover a path must say
+        # so visibly, never silently" (CLAUDE.md). No new DZP_ALLOW_*
+        # override is introduced here: there is no risk decision for an
+        # operator to authorize per-commit, since the checker's absence is a
+        # deterministic, by-design property of the install, not a choice made
+        # at commit time. When the checker IS present (the canonical/dev
+        # repo), behavior below is completely unchanged from before this fix
+        # -- still fail-closed. (Kept in parity with scripts/git-hooks/pre-commit.)
+        [Console]::Error.WriteLine('[t19r-gate] NOT CHECKED: scripts/check_trigger19r_sanitization.py is not present in this install (dev-only tool, not shipped); docs/DESIGN-DECISIONS.md sanitization was NOT verified this commit.')
+    } else {
+        $pyt = (Get-Command python3 -ErrorAction SilentlyContinue) ?? (Get-Command python -ErrorAction SilentlyContinue)
+        if (-not $pyt) {
+            [Console]::Error.WriteLine('[trigger19r-gate] COMMIT BLOCKED: no Python runtime — Trigger 19-R sanitization gate cannot run.')
+            [Console]::Error.WriteLine('  Fix: install Python 3. No override exists -- unstage the file to proceed.')
+            exit 1
+        }
+        # FINDING 3 (fix round 1): `git show ... | Out-File -Encoding utf8` on
+        # PS 5.1 prepends a UTF-8 BOM, so the checked bytes would differ from
+        # the actual index blob. Capture the child process's raw stdout BYTE
+        # STREAM directly via .NET Process + BaseStream.CopyTo -- no
+        # PowerShell text pipeline, no encoding conversion, no BOM --
+        # byte-identical to `git show`. This also sidesteps FINDING 2's
+        # native-failure trap structurally: the exit code is read from
+        # $t19rProc.ExitCode (a .NET property, unaffected by
+        # $ErrorActionPreference either way) rather than relying on
+        # PowerShell native-command error propagation.
+        $t19rTmp = [System.IO.Path]::GetTempFileName()
+        $t19rPsi = New-Object System.Diagnostics.ProcessStartInfo
+        $t19rPsi.FileName = 'git'
+        $t19rPsi.Arguments = 'show :docs/DESIGN-DECISIONS.md'
+        $t19rPsi.WorkingDirectory = $root
+        $t19rPsi.RedirectStandardOutput = $true
+        $t19rPsi.UseShellExecute = $false
+        $t19rProc = [System.Diagnostics.Process]::Start($t19rPsi)
+        $t19rOutStream = [System.IO.File]::Create($t19rTmp)
+        $t19rProc.StandardOutput.BaseStream.CopyTo($t19rOutStream)
+        $t19rOutStream.Close()
+        $t19rProc.WaitForExit()
+        if ($t19rProc.ExitCode -ne 0) {
+            Remove-Item -Path $t19rTmp -Force -ErrorAction SilentlyContinue
+            [Console]::Error.WriteLine('[trigger19r-gate] COMMIT BLOCKED: cannot read staged docs/DESIGN-DECISIONS.md from the index.')
+            exit 1
+        }
+        & $pyt.Source $t19rChecker --public $t19rTmp --repo-root $root
+        $t19rExit = $LASTEXITCODE
+        Remove-Item -Path $t19rTmp -Force -ErrorAction SilentlyContinue
+        if ($t19rExit -ne 0) {
+            [Console]::Error.WriteLine('[trigger19r-gate] COMMIT BLOCKED: staged docs/DESIGN-DECISIONS.md failed sanitization.')
+            exit 1
+        }
     }
 }
 

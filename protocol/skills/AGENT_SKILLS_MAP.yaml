@@ -5,7 +5,7 @@
 
 version: 5
 updated: 2025-12-29
-protocol_version: "9.10.2"
+protocol_version: "9.11.0"
 
 canonical_reference:
   overview: https://claude.com/blog/skills
@@ -53,11 +53,20 @@ agents:
       - file-rotate          # Rotate dev-notes/security-review
       - verify-auto-invoked  # CI/CD AUTO-INVOKED validation (v8.12.0)
       - validate-custom-agents  # Custom agent security validation
-      - verify-working-directory  # Tier system pwd validation
+      # - verify-working-directory  # SEC-SKILLREG-001 (v9.11.0): IMPLEMENTATION MISSING.
+      #   No skill doc and no script in the live tree. It DID exist and ship --
+      #   verify_working_directory.py survives in .protocol-state/backups/distro-publish_*/ --
+      #   then disappeared while this entry and the registry row outlived it. Disabled rather
+      #   than deleted so the loss stays visible. Restore from backup or deregister across all
+      #   referencing docs (CHANGELOG.md, VERSION.md, MIGRATION_v8.7_to_v8.8.md, SUKUNA-REPORT.md).
       - create-snapshot      # State snapshot creation
       - restore-snapshot     # State snapshot restoration
       - domain-record-rotate # Domain record archival
-      - memory-path-validator  # Memory tool path validation
+      # - memory-path-validator  # DEPRECATED v9.11.0 -- REMOVED from Gojo's active skills.
+      #   The module (scripts/memory_path_validator.py) had ZERO callers, never executed, and is
+      #   no longer shipped. Listing it here advertised a security capability that did not exist.
+      #   See protocol/skills/SKILL_REGISTRY.md deprecation note. Do NOT re-enable without a
+      #   live call site AND a test asserting the validator is actually reached.
 
   yuuji:
     role: "Implementation Specialist"
@@ -194,6 +203,7 @@ agents:
       - adversarial-review   # Challenge protocol changes
       - update-validation    # Validate system updates
       - protocol-stress-test # Test protocol under stress
+      - trigger19r           # Decision-provenance report (Trigger 19-R, FEAT-TRIGGER19R-9.11.0-001)
 
 policy:
   execution_risk:

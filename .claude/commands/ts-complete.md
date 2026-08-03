@@ -28,7 +28,7 @@ python .protocol-state/troubleshooting_tracker.py complete "$RESOLUTION"
 5. Session notes updated
 
 **Archives**:
-- Session moved to troubleshooting-history.json
+- Session moved to the legacy-fallback troubleshooting-history.json (primary storage is `project-state.json::troubleshooting`)
 - Session metrics calculated
 - Investigation notes preserved
 - Lessons learned documented
