@@ -19,7 +19,7 @@ keeps a pointer.
 When Gojo receives a medium- or high-complexity task, the following procedures are MANDATORY:
 
 ### 1. UPDATE DOMAIN RECORD
-- Record task details in `.protocol-state/domain-record.json`
+- Record task details in `.dzp-domain/domain.record.md` (append-only; Gojo + Sukuna access)
 - Log task type, complexity level, and timestamp
 - Document initial scope assessment
 

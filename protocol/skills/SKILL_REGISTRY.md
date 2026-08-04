@@ -69,7 +69,7 @@ These skills are from the official Anthropic repository: https://github.com/anth
 | file-rotate | 1.0.0 | gojo | Medium | Yes (Python) | **script** `scripts/file-rotate.py` | 2026-07-28 | gojo |
 | verify-auto-invoked | 1.0.0 | gojo | Low | Yes (Python) | **script** `scripts/verify-auto-invoked.py` | 2026-07-28 | gojo |
 | validate-custom-agents | 1.0.0 | gojo | Medium | Yes (Python) | **script** `scripts/validate-custom-agents.py` | 2026-07-28 | gojo |
-| ⚠️ verify-working-directory | 1.0.0 | gojo | Low | **NO — implementation MISSING** | ❌ **none in live tree** (see below) | 2026-07-28 | **none** |
+| ⚠️ verify-working-directory | 1.0.0 | gojo | Low | Yes (Python, imported module — no skill doc) | **script** `scripts/verify_working_directory.py` (live, shipped; see below) | 2026-08-03 | gojo (imported by tier-statistics.py, gojo-learn.py, sukuna-learn.py) |
 | create-snapshot | 1.0.0 | gojo | Medium | Yes (Python) | **script** `.protocol-state/create-snapshot.py` | 2026-07-28 | gojo |
 | restore-snapshot | 1.0.0 | gojo | High | Yes (Python) | **script** `.protocol-state/restore-snapshot.py` | 2026-07-28 | gojo |
 | domain-record-rotate | 1.0.0 | gojo | Low | Yes (Python) | **script** `scripts/domain-record-rotate.py` | 2026-07-28 | gojo |
@@ -77,25 +77,34 @@ These skills are from the official Anthropic repository: https://github.com/anth
 | megumi-secid | 1.0.0 | megumi | Medium | Yes (Python, mediated — Megumi has no Bash; a bash-capable resident executes `secid.{sh,ps1}` on her behalf per D9) | skill doc `megumi-secid.md` + wrapper `scripts/secid.{sh,ps1}` + engine `scripts/idgov/engine.py` | 2026-08-03 | megumi (mediated via gojo/yuuji) |
 | resident-mint | 1.0.0 | gojo/sukuna/yuuji | Medium | Yes (Python) | skill doc `resident-mint.md` + wrappers `scripts/residentid-{sukuna,gojo,yuuji}.{sh,ps1}` | 2026-08-03 | sukuna, gojo, yuuji |
 
-> **⚠️ MISSING IMPLEMENTATION — `verify-working-directory` (`SEC-SKILLREG-001`, v9.11.0).**
-> This row claimed an active `Code Execution: Yes (Python)` skill. It has **no skill document; the
-> underlying module remains live and imported by three scripts** (per Sukuna's 2026-07-29 Inc-3
-> review §7: the earlier "no script in the live tree" phrasing here was imprecise enough to read as
-> "the module is gone," which is false — `scripts/verify_working_directory.py` is tracked and
-> actively imported, see the next paragraph). It is not a row that was never implemented: `verify_working_directory.py`
-> (underscore form) is present in the June 2026 `distro-publish` backup trees under
-> `.protocol-state/backups/distro-publish_*/distro/scripts/`, so the implementation **existed and was
-> shipped, then disappeared** while this registry entry, the `AGENT_SKILLS_MAP.yaml` entry, and
-> references in `CHANGELOG.md` / `VERSION.md` / `MIGRATION_v8.7_to_v8.8.md` / `protocol/SUKUNA-REPORT.md`
-> all survived it.
+> **✅ CORRECTED — `verify-working-directory` (`SEC-SKILLREG-001`, v9.11.0; re-verified 2026-08-03
+> per CodeRabbit PR #115 finding #25, independently re-confirmed before applying — not taken on
+> the finding's word alone).**
+> This row previously claimed **"NO — implementation MISSING"** / **"none in live tree."** That
+> claim was **false** and is retracted here: `scripts/verify_working_directory.py` exists in the
+> live tree right now (not only in backup trees), is git-tracked, ships via
+> `publish-manifest.yaml` `include_scripts` (line 53), and is actively imported by
+> `tier-statistics.py`, `gojo-learn.py`, and `sukuna-learn.py` (re-verified 2026-08-03 via direct
+> `ls`/`grep` on the live tree). The prior partial correction (2026-07-29, Sukuna Inc-3 review §7)
+> fixed the "no script in the live tree" phrasing but left this paragraph's overall framing —
+> "existed and was shipped, then disappeared," "restore from the backup tree" — standing, and that
+> framing was **itself incorrect**: the implementation never disappeared from the live tree.
 >
-> **Marked non-invocable pending an owner decision** — restore from the backup tree, or deregister
-> across all referencing documents. Do NOT leave it advertised as available.
+> **The only artifact that is actually missing is a skill DOC.** There has never been a
+> `verify-working-directory.md` skill file that would let this be invoked directly as
+> `skill: "verify-working-directory"` — the underlying script exists solely as an imported module
+> used by the three scripts above, never as a standalone invocable skill.
 >
-> *Method note:* found by corroborating a negative. A single `Test-Path` reported simple absence;
-> the `UPSTREAM-003` rule (a negative result is not self-verifying) required a second method, and
-> `find` located the backup copies that reframed this from "never existed" to "was removed."
-> The rule earned its place on its first application.
+> **Status: no restoration or deregistration action required.** The row above is corrected to
+> reflect the live, shipped script and its three real importers. Writing a
+> `verify-working-directory.md` skill doc, if direct invocation is ever wanted, remains an open,
+> low-priority backlog item — a documentation gap, not an implementation gap.
+>
+> *Method note (retained):* the original 2026-07-28 finding was produced by corroborating a
+> negative — a single `Test-Path` reported simple absence, the `UPSTREAM-003` rule (a negative
+> result is not self-verifying) required a second method, and `find` located backup copies. That
+> earlier check evidently stopped at the backup trees without re-checking the live tree itself;
+> this correction closes that gap by checking the live tree directly.
 
 > **Deprecation note — `memory-path-validator` (v9.11.0).** `scripts/memory_path_validator.py`
 > declared itself `SECURITY CRITICAL` and this registry listed it as an active

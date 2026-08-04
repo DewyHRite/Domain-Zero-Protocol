@@ -53,12 +53,18 @@ agents:
       - file-rotate          # Rotate dev-notes/security-review
       - verify-auto-invoked  # CI/CD AUTO-INVOKED validation (v8.12.0)
       - validate-custom-agents  # Custom agent security validation
-      # - verify-working-directory  # SEC-SKILLREG-001 (v9.11.0): IMPLEMENTATION MISSING.
-      #   No skill doc and no script in the live tree. It DID exist and ship --
-      #   verify_working_directory.py survives in .protocol-state/backups/distro-publish_*/ --
-      #   then disappeared while this entry and the registry row outlived it. Disabled rather
-      #   than deleted so the loss stays visible. Restore from backup or deregister across all
-      #   referencing docs (CHANGELOG.md, VERSION.md, MIGRATION_v8.7_to_v8.8.md, SUKUNA-REPORT.md).
+      # - verify-working-directory  # SEC-SKILLREG-001 (v9.11.0), CORRECTED per CodeRabbit
+      #   PR #115 finding #25 (2026-08-03): the claim below that this script had "no script
+      #   in the live tree" was FALSE and is retracted. scripts/verify_working_directory.py
+      #   IS live in the tree today, is git-tracked, ships via publish-manifest.yaml
+      #   include_scripts (line 53), and is actively imported by tier-statistics.py,
+      #   gojo-learn.py, and sukuna-learn.py (grep-verified 2026-08-03). The implementation
+      #   never disappeared. The ONLY missing artifact is a skill DOC/wrapper -- there has
+      #   never been a verify-working-directory.md that would let it be invoked directly as
+      #   `skill: "verify-working-directory"`; it exists only as an imported module. Left
+      #   disabled here (not re-listed as an invocable skill) until that doc is written --
+      #   not because anything needs restoring or deregistering. See
+      #   protocol/skills/SKILL_REGISTRY.md for the full correction.
       - create-snapshot      # State snapshot creation
       - restore-snapshot     # State snapshot restoration
       - domain-record-rotate # Domain record archival

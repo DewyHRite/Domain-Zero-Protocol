@@ -59,9 +59,20 @@ run against a file you just downloaded from the internet:
 
 ```bash
 # 1. Download both files from the release's "Assets" section (same release page).
-# 2. Verify + extract in ONE step (never verify now and install later from a moved/copied
+# 2. Bootstrap the verifier itself. At this point you have only the zip + manifest --
+#    the verifier (scripts/verify-payload.py) lives INSIDE that unverified zip, so you
+#    cannot run it from there yet. Fetch it separately, pinned to the SAME release
+#    branch as the version you downloaded above, before running anything:
+curl -fsSL -o verify-payload.py \
+  https://raw.githubusercontent.com/DewyHRite/Domain-Zero-Protocol/DZP-v9.10.2/scripts/verify-payload.py
+# PowerShell: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/DewyHRite/Domain-Zero-Protocol/DZP-v9.10.2/scripts/verify-payload.py" -OutFile verify-payload.py
+#    Integrity caveat: this bootstrap download carries no independent signature of its
+#    own -- its trust rests on GitHub + TLS and on typing the canonical URL correctly.
+#    It comes from the same pinned canonical origin the verifier goes on to cross-check
+#    the zip's manifest against.
+# 3. Verify + extract in ONE step (never verify now and install later from a moved/copied
 #    file -- that reintroduces the exact time-of-check/time-of-use gap this flag exists to close):
-python scripts/verify-payload.py dzp-payload-v9.10.2.zip --extract-to DZP-v9.10.2
+python verify-payload.py dzp-payload-v9.10.2.zip --extract-to DZP-v9.10.2
 ```
 
 What this checks, in order, before it will extract anything: the zip's own hash matches its

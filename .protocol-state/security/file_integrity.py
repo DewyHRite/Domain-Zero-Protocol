@@ -229,13 +229,36 @@ def initialize_integrity_baseline(include_dev_only: bool = False) -> Dict[str, s
             + (" ..." if len(absent) > 10 else "")
         )
 
+    # CodeRabbit PR #115 REAL-FIX #1 (SEC-FILEINTEG-UNDERCOVER-001): extend the
+    # SEC-FILEINTEG-PENDING-A refusal above from "zero protected files found"
+    # to "ANY protected file missing at baseline-initialization time". The
+    # prior behavior here was warn-and-write: it wrote an under-covering
+    # baseline to disk and returned success to the caller.
+    # scripts/verify-installation.py --init-integrity then reported success
+    # (exit 0) -- but every SUBSEQUENT verify_file_integrity() call raises the
+    # "does not cover" RuntimeError from load_baseline_document() for the
+    # missing entries, permanently. A success signal immediately followed by
+    # permanent hard failures is exactly the defect class the empty-baseline
+    # refusal above already closed for total absence; this closes it for
+    # partial absence too. The caller (verify_file_integrity_gate() in
+    # scripts/verify-installation.py) already wraps this call in a
+    # try/except RuntimeError that prints [FAIL] and returns exit 1 -- no
+    # caller-side change is required for this fix to take effect.
     if absent:
-        print(
-            f"[WARN] Baseline covers {len(baseline)} of "
-            f"{len(_protected_files(include_dev_only))} protected files; "
-            f"{len(absent)} could not be found. verify_file_integrity() will "
-            "FAIL CLOSED on this baseline until the install is repaired and "
-            "--init-integrity is re-run."
+        raise RuntimeError(
+            f"CRITICAL: refusing to create an UNDER-COVERING integrity "
+            f"baseline at {INTEGRITY_FILE} -- {len(absent)} of "
+            f"{len(_protected_files(include_dev_only))} protected files could "
+            "not be found on disk. An under-covering baseline would report "
+            "success (exit 0) at creation time, then FAIL CLOSED on every "
+            "subsequent verification forever -- this almost always means "
+            "--init-integrity was run against a broken, incomplete, or wrong "
+            "directory tree. Repair the install (or correct "
+            "PROTECTED_FILES/DEV_ONLY_PROTECTED_FILES, if a listed file "
+            "legitimately does not ship here) before re-running "
+            "--init-integrity. Missing: "
+            + ", ".join(absent[:10])
+            + (" ..." if len(absent) > 10 else "")
         )
 
     # Store baseline using atomic write (temp file + rename)

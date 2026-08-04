@@ -167,18 +167,31 @@ dependencies required to run the verifier):
 # 1. Download BOTH dzp-payload-vX.Y.Z.zip and dzp-payload-vX.Y.Z.manifest.json from the
 #    release's "Assets" section on GitHub (same release page, same version).
 
-# 2. Verify + extract in ONE step (never verify now and install later from a
+# 2. Bootstrap the verifier itself. At this point you have only the zip + manifest --
+#    the verifier (scripts/verify-payload.py) lives INSIDE that unverified zip, so you
+#    cannot run it from there yet. Fetch it separately, pinned to the SAME release
+#    branch as the version you downloaded above, before running anything:
+curl -fsSL -o verify-payload.py \
+  https://raw.githubusercontent.com/DewyHRite/Domain-Zero-Protocol/DZP-vX.Y.Z/scripts/verify-payload.py
+# PowerShell: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/DewyHRite/Domain-Zero-Protocol/DZP-vX.Y.Z/scripts/verify-payload.py" -OutFile verify-payload.py
+#    Integrity caveat: this bootstrap download carries no independent signature of its
+#    own -- its trust rests on GitHub + TLS and on typing the canonical URL correctly.
+#    It is fetched from the same pinned canonical origin the script goes on to
+#    cross-check the zip's manifest against (see the trust-model note below), not from
+#    a third party.
+
+# 3. Verify + extract in ONE step (never verify now and install later from a
 #    moved/copied file -- that reintroduces the exact time-of-check/time-of-use gap
 #    this flag exists to close):
-python scripts/verify-payload.py dzp-payload-vX.Y.Z.zip --extract-to ./Domain-Zero-Protocol
+python verify-payload.py dzp-payload-vX.Y.Z.zip --extract-to ./Domain-Zero-Protocol
 
-# 3. Confirm the exit code is 0 before proceeding. Any non-zero exit means a check
+# 4. Confirm the exit code is 0 before proceeding. Any non-zero exit means a check
 #    FAILED -- do not install; read the printed reason (or see the exit-code table
 #    in scripts/verify-payload.py's module docstring) and, if it looks like tampering
 #    rather than a local/network issue, report it (see the notice above).
 echo $?   # POSIX: expect 0.  PowerShell: echo $LASTEXITCODE
 
-# 4. Read main protocol authority
+# 5. Read main protocol authority
 cd Domain-Zero-Protocol
 Read ./CLAUDE.md
 ```
