@@ -1,67 +1,47 @@
-# CodeRabbit configuration — Domain Zero Protocol
+# CodeRabbit configuration — DZP-v9.11.0-crbase HELPER BASE (release-PR plumbing ONLY)
 # Schema: https://coderabbit.ai/integrations/schema.v2.json
-# Purpose: formalize CodeRabbit as a MANDATORY review gate on every PR,
-# especially the DZP-vX.Y.Z distribution-release PRs (see
-# docs/guides/DISTRO_RELEASE_WORKFLOW.md).
+#
+# PURPOSE (DISTRO_RELEASE_WORKFLOW.md §5b): CodeRabbit reads path_filters from
+# the PR BASE branch. This branch exists solely to serve as the base for the
+# DZP-v9.12.0 release PR, whose file count trips the reviewer's 100-file cap
+# purely on version-stamp cascade churn (PR #116: 120 files, review auto-skipped).
+#
+# The filter list below is the dev branch's own list PLUS the four
+# stamp-cascade-only classes that are safe to skip FOR A RELEASE PR ONLY,
+# because the release process's other gates (version-stamp linter, distro
+# manifest/PII/identity audits, Megumi Tier-3 review of the feature work, Toji
+# release-gate audits) already cover them for that PR:
+#   protocol/modules/**, protocol/gojo-procedures/**, .claude/commands/**,
+#   slash-commands/** (per §5b these four must NEVER appear on dev/Main).
+#
+# This branch is never promoted, never a release artifact, never a dev PR base.
 language: en-US
 
 reviews:
-  # "Request changes" so an unaddressed review surfaces as a blocking state.
-  # Combine with a branch-protection rule on DZP-v* to hard-block merge.
   request_changes_workflow: true
-  # Path filters (USER-authorized 2026-07-19; narrowed 2026-07-20 per Toji
-  # AI-001, audits/2026-07-20-toji-recent-work-audit.md): exclude ONLY
-  # genuinely non-executable, no-logic content on THIS (dev/Main) branch's
-  # config, so ordinary PRs stay under the reviewer's file limit without ever
-  # skipping review of an AI control surface.
-  #
-  # Each surviving entry is pure prose/lore/formatting with NO procedural
-  # logic and NO effect on agent tool routing, permissions, or behavior:
-  #   - .protocol-state/jjk-character-reference/**  — character/personality
-  #     lore only (flavor text read for tone; grants no capability).
-  #   - .protocol-state/gojo-templates/**            — static CLI output
-  #     templates (display formatting only, e.g. OUTPUT_TEMPLATES.md).
-  #   - .protocol-state/sukuna-templates/**          — same, Sukuna's output
-  #     templates.
-  #
-  # REMOVED 2026-07-20 (Toji AI-001, HIGH): protocol/modules/**,
-  # protocol/gojo-procedures/**, .claude/commands/**, and slash-commands/**
-  # used to be excluded here too. Those four trees are executable AI
-  # instruction / control surfaces — protocol/modules/** carries the
-  # emergency-stop, safety, mask-mode, and mission-control-isolation
-  # behavioral modules; protocol/gojo-procedures/** carries custom-agent
-  # SECURITY enforcement + session-monitoring procedures; .claude/commands/**
-  # and slash-commands/** directly invoke coordinator/session-lifecycle/
-  # Cortex calls (confirmed by dev-notes.md 2026-06-17 entries). A
-  # content-agnostic exclusion here meant a normal PR could change agent
-  # behavior, safety gating, or tool routing with ZERO mandatory review. They
-  # are NEVER excluded on this branch again. All 4 stay in full CodeRabbit
-  # review scope on every dev/Main/feature PR.
-  #
-  # Release-only relief for those 4 (stamp-cascade noise, NOT reduced
-  # scrutiny) lives EXCLUSIVELY on the dedicated, provenance-tracked
-  # DZP-vX.Y.Z-crbase helper-base branches — see docs/guides/
-  # DISTRO_RELEASE_WORKFLOW.md §5b. Those branches are never dev/Main/feature
-  # PR bases, so ordinary review coverage here is unaffected.
-  #
-  # NOTE: CodeRabbit reads this file from the PR BASE branch ("Repository
-  # YAML (base)") — release PRs that need the extra relief use a base that
-  # carries it (helper branch DZP-vX.Y.Z-crbase pattern; the frozen
-  # DZP-vX.Y.Z artifact itself is never modified).
   path_filters:
+    # dev-branch baseline (pure prose/lore/output-template classes)
     - "!**/.protocol-state/jjk-character-reference/**"
     - "!**/.protocol-state/gojo-templates/**"
     - "!**/.protocol-state/sukuna-templates/**"
     - "!.protocol-state/jjk-character-reference/**"
     - "!.protocol-state/gojo-templates/**"
     - "!.protocol-state/sukuna-templates/**"
+    # crbase-only release-PR relief (stamp-cascade classes; §5b step 2)
+    - "!**/protocol/modules/**"
+    - "!**/protocol/gojo-procedures/**"
+    - "!**/.claude/commands/**"
+    - "!**/slash-commands/**"
+    - "!protocol/modules/**"
+    - "!protocol/gojo-procedures/**"
+    - "!.claude/commands/**"
+    - "!slash-commands/**"
   high_level_summary: true
   review_status: true
   poem: false
   auto_review:
     enabled: true
     drafts: false
-    # Review the release branches (and the dev integration branches) explicitly.
     base_branches:
       - "DZP-v.*"
       - "Main-v.*"
@@ -73,10 +53,6 @@ reviews:
         (internal-docs/, tests/, .dzp-domain/, registry, PATCH reports), and NO
         secrets. Flag any identity leakage, dev-only artifact, or version-stamp
         drift. The tree is generated from canonical via scripts/distro/publish-manifest.yaml.
-    - path: ".protocol-state/migrate_cortex_storage_9_4.py"
-      instructions: >
-        Data-mutating migration. Verify backup-first ordering, single BEGIN IMMEDIATE
-        atomicity, the parity gate runs before any DROP, and rollback fails closed.
 
 chat:
   auto_reply: true
