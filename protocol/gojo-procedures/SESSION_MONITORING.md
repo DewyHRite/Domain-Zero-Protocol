@@ -1,5 +1,5 @@
 # Gojo's Work Session Monitoring Implementation Guide
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 
 **Purpose:** Provide Gojo with ACTUAL implementation instructions for work session monitoring.
 **Context:** Sukuna's red team assessment (v8.7.0) identified that work session monitoring was prompt-based theater with zero enforcement. This guide provides the REAL implementation.
@@ -103,8 +103,15 @@ if user_choice == "save_and_break":
     # - Assist with commit
     # - Confirm break intention
 
-    # Record break when they return
-    monitor.record_break(duration_minutes=15)
+    # v9.12.0 (Toji audit 2026-08-06, SEC-002 HIGH fix): record_break() is now
+    # BREAK-INITIATION only -- call it immediately when the break STARTS, not
+    # after the user returns. A caller-supplied duration_minutes is a NOTE
+    # only; it no longer clears high_risk_operations_blocked or the
+    # work_streak protection window by itself. Clearance happens
+    # automatically inside the NEXT update_interaction() call, gated on the
+    # REAL elapsed (health-gated) time since this call meeting
+    # minimum_break_minutes -- never on the caller's claim.
+    monitor.record_break(duration_minutes=15)  # duration_minutes is advisory/note-only
 
 elif user_choice == "continue":
     # Escalate monitoring
@@ -303,9 +310,16 @@ python .protocol-state/session_monitor.py test
 This will render a test alert showing that placeholders are properly replaced.
 
 ### Full System Test
+
+**Note (v9.12.0, Toji release-train audit 2026-08-06, `security-review.md`
+2026-08-06T21:35:13Z entry)**: `start`, `check-and-record`, `status`, and `continue` are D5
+envelope boundaries — `--json` is their PRIMARY, provider-facing form (ADR D5.3; the bare form
+below is legacy/human-readable only, see the `check-and-record` section above at lines 449-538 in
+this same file). `update` and `end` are NOT D5 boundaries and stay bare.
+
 ```bash
 # Start session
-python .protocol-state/session_monitor.py start
+python .protocol-state/session_monitor.py start --json
 
 # Update (simulates interaction)
 python .protocol-state/session_monitor.py update
@@ -313,8 +327,8 @@ python .protocol-state/session_monitor.py update
 # Check session summary
 python .protocol-state/session_monitor.py summary
 
-# Test alert check
-python .protocol-state/session_monitor.py check
+# Test alert check + auto-record (MANDATORY auto-invoked path)
+python .protocol-state/session_monitor.py check-and-record --json
 
 # End session
 python .protocol-state/session_monitor.py end
@@ -439,19 +453,26 @@ session_summary = monitor.get_session_summary()
 
 **Purpose**: Check for alerts AND auto-record if detected (defense-in-depth)
 
-**Usage**:
+**Usage (v9.12.0 A4 + Toji audit 2026-08-06 `AI-001` HIGH direct fix, ADR D5.3 provider relay
+rule)**: `--json` is now the MANDATORY form for the auto-invoked Mission Control path — it emits
+the structured time envelope, which Claude/Codex MUST relay verbatim in any time-sensitive prose
+(never reconstruct timing from the session ID or their own clock). The bare form below is
+legacy/human-readable output only; see `protocol/skills/session-check.md` for the full contract.
 ```bash
-python .protocol-state/session_monitor.py check-and-record
+python .protocol-state/session_monitor.py check-and-record --json   # PRIMARY (auto-invoked path)
+python .protocol-state/session_monitor.py check-and-record          # legacy prose form
 ```
 
 **What It Does**:
 1. Checks current session duration against thresholds
 2. **IF alert needed**: Auto-increments `alert_count` and `alerts_issued` counters
-3. Renders alert text for presentation to user
-4. **IF no alert needed**: Prints `[OK] No alert needed`. This is NOT silent when no session is
+3. `--json`: emits the ADR D5 structured envelope. No `--json`: renders alert text for presentation
+   to user (legacy form) — identical side effects either way.
+4. **IF no alert needed**: Prints `[OK] No alert needed` (legacy form) or an envelope with
+   `alert.alert_needed: false` (`--json`). This is NOT silent when no session is
    active (`IMPL-SESSIONMON-001`, 2026-08-03 UX-honesty fix) — see the no-session example below.
 
-**When to Use**: EVERY Gojo Mission Control activation (via session-check skill)
+**When to Use**: EVERY Gojo Mission Control activation (via session-check skill), with `--json`
 
 **Example Output (alert detected)**:
 ```text
@@ -510,11 +531,11 @@ python .protocol-state/session_monitor.py record-choice continue
 **On EVERY Gojo Mission Control activation**:
 
 ```bash
-# STEP 1: Auto-check and record alerts
-python .protocol-state/session_monitor.py check-and-record
+# STEP 1: Auto-check and record alerts (--json is MANDATORY for this auto-invoked path, v9.12.0)
+python .protocol-state/session_monitor.py check-and-record --json
 
-# STEP 2: IF alert detected, present to user
-# (check-and-record outputs alert text)
+# STEP 2: IF alert detected, present to user using the envelope's relayed fields
+# (check-and-record outputs the structured time envelope)
 
 # STEP 3: Wait for user response
 # User chooses: save_and_break OR continue
@@ -532,11 +553,11 @@ python .protocol-state/session_monitor.py record-choice <user_choice>
 ### Dependencies
 
 **Required Components**:
-- `.protocol-state/session_monitor.py` - Python 3.8+ session monitoring module
+- `.protocol-state/session_monitor.py` - Python 3.9+ session monitoring module (IMPL-002, 2026-08-06 Toji audit: unconditionally imports the stdlib `zoneinfo` module, added in 3.9)
 - `.protocol-state/session-state.json` - legacy fallback session state file (auto-created if missing; primary is `project-state.json::session_tracking`)
 - `protocol/skills/session-check.md` - Auto-invoked enforcement skill
 - `protocol/gojo.agent.md` - Gojo agent with mandatory invocation (lines 603-619)
-- Python 3.8+ available in PATH
+- Python 3.9+ available in PATH
 
 **Schema Requirements**:
 - session-state.json (legacy fallback) schema v2.0.0 (includes alert_count, escalation_level fields)

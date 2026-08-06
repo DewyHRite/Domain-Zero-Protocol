@@ -156,7 +156,14 @@ def data_dir(repo_root: str | Path, config: dict | None = None, *, allow_unsafe:
 
     validate_data_dir(d, repo_root, allow_unsafe=allow_unsafe)
     d = d.resolve()
-    d.mkdir(parents=True, exist_ok=True)
+    # SEC-001 (CWE-732, Toji audit 2026-08-03, v9.12.0 Wave B2): owner-only
+    # directory creation (POSIX 0700 / Windows icacls best-effort), replacing
+    # the prior bare mkdir(parents=True, exist_ok=True) whose resulting mode
+    # depended entirely on the process umask. See recovery.ensure_owner_only_dir's
+    # docstring for the full primitive contract, including the existing-path
+    # (pre-existing broader-mode directory) gap deferred to Wave B4.
+    from . import recovery as _recovery
+    _recovery.ensure_owner_only_dir(d)
     return d
 
 
@@ -166,13 +173,15 @@ def db_path(repo_root: str | Path, config: dict | None = None, *, allow_unsafe: 
 
 def memories_dir(repo_root: str | Path, config: dict | None = None, *, allow_unsafe: bool = False) -> Path:
     d = data_dir(repo_root, config, allow_unsafe=allow_unsafe) / "memories"
-    d.mkdir(parents=True, exist_ok=True)
+    from . import recovery as _recovery
+    _recovery.ensure_owner_only_dir(d)
     return d
 
 
 def model_cache(repo_root: str | Path, config: dict | None = None, *, allow_unsafe: bool = False) -> Path:
     d = data_dir(repo_root, config, allow_unsafe=allow_unsafe) / "model-cache"
-    d.mkdir(parents=True, exist_ok=True)
+    from . import recovery as _recovery
+    _recovery.ensure_owner_only_dir(d)
     return d
 
 

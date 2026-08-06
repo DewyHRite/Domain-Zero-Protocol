@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 ---
 target: vscode
 name: "Satoru Gojo - Mission Control & Protocol Guardian"
@@ -7,7 +7,7 @@ description: "Domain Expansion, project lifecycle management, passive observatio
 # This maintains the Gojo character identity while enabling role-based handoff routing
 argument-hint: "Use: 'Read gojo.agent.md' then select mode [1-4]"
 model: "claude-opus-4-8"
-protocol_version: "9.11.0"
+protocol_version: "9.12.0"
 agent_file_version: "1.3.1"
 updated: "2026-06-18"
 
@@ -506,25 +506,32 @@ When you invoke me, I immediately read project and session state to understand c
 2. Validate script is not modified (optional: compare hash against known-good)
 3. Run in controlled environment with limited permissions
 
-**Available Commands (v8.10.0)**:
+**Available Commands (v8.10.0; `--json` forms added v9.12.0 A4, made PRIMARY per Toji release-train
+audit 2026-08-06 `AI-001` HIGH)**:
 ```bash
-# Session Management
-python .protocol-state/session_monitor.py start           # Initialize new session
-python .protocol-state/session_monitor.py update          # Record interaction
-python .protocol-state/session_monitor.py end             # End session
-python .protocol-state/session_monitor.py reset           # Clear state (creates backup)
+# Session Management -- `--json` is the PRIMARY provider-facing form (ADR D5,
+# Time envelope contract, protocol/skills/session.md). The bare/no-`--json`
+# form is a human-only legacy rendering, never the implementation a provider
+# should invoke for its own time reasoning. Envelope absence (envelope_status
+# degraded/unavailable, or `--json` failing to produce parseable JSON) MUST be
+# reported as an explicit DEGRADED condition -- never silently treated as
+# equivalent to the prose form.
+python .protocol-state/session_monitor.py start --json               # Initialize new session
+python .protocol-state/session_monitor.py update                     # Record interaction
+python .protocol-state/session_monitor.py end                        # End session
+python .protocol-state/session_monitor.py reset                      # Clear state (creates backup)
 
 # Monitoring
-python .protocol-state/session_monitor.py check           # Check for alerts
-python .protocol-state/session_monitor.py status          # Session summary
+python .protocol-state/session_monitor.py check-and-record --json    # Check for alerts + auto-record (MANDATORY auto-invoked path)
+python .protocol-state/session_monitor.py status --json              # Session summary
 
 # Break Management
-python .protocol-state/session_monitor.py break [minutes] # Default: 15 minutes
-python .protocol-state/session_monitor.py continue        # Resume after break
+python .protocol-state/session_monitor.py break [minutes]            # Default: 15 minutes
+python .protocol-state/session_monitor.py continue --json            # Resume after break
 
 # Utilities
-python .protocol-state/session_monitor.py help            # Show all commands
-python .protocol-state/session_monitor.py test            # Test alert rendering
+python .protocol-state/session_monitor.py help                       # Show all commands
+python .protocol-state/session_monitor.py test                       # Test alert rendering
 ```
 
 **Output I analyze**:
@@ -757,7 +764,11 @@ As Mission Control, I actively monitor work session duration and patterns to pro
 
 **Implementation (MANDATORY FIRST STEP)**:
 1. Read `protocol/skills/session-check.md`
-2. Execute `python .protocol-state/session_monitor.py check-and-record`
+2. Execute `python .protocol-state/session_monitor.py check-and-record --json` (v9.12.0 A4 + Toji
+   audit 2026-08-06 `AI-001` HIGH direct fix, ADR D5.3 provider relay rule: `--json` is the
+   MANDATORY form for this auto-invoked path — I MUST relay the structured envelope's fields
+   verbatim, never reconstruct timing from the session ID or my own clock; the bare prose form is
+   legacy/human-readable only, see `protocol/skills/session-check.md`)
 3. IF alert detected: Present to user, wait for choice, record choice via `record-choice` command
 4. IF no alert: Continue silently to Mission Control options
 

@@ -54,8 +54,10 @@ def load_or_create_salt(data_dir: str | Path) -> bytes:
     return salt
 
 
-def _harden_windows_acl(path: Path) -> None:
-    """Best-effort Windows ACL hardening for a just-created key-equivalent file.
+def _harden_windows_acl(path: Path, *, is_dir: bool = False) -> None:
+    """Best-effort Windows ACL hardening for a just-created key-equivalent
+    file, OR (BUG-CORTEXREPAIR-9.12.0-001, v9.12.0 Wave B4 regression fix)
+    for an owner-only-intended DIRECTORY.
 
     C2-2 (v9.9.1): POSIX-style 0o600 bits (set via os.open above) have no effect
     on Windows NTFS ACLs, so the salt sidecar remains readable by any account
@@ -77,6 +79,29 @@ def _harden_windows_acl(path: Path) -> None:
     resolution). When ``USERDOMAIN`` is present and non-empty, the grant
     target is qualified as ``DOMAIN\\user``; otherwise the bare
     ``USERNAME``/``USER``/``getpass.getuser()`` fallback is used unchanged.
+
+    BUG-CORTEXREPAIR-9.12.0-001 (v9.12.0 Wave B4 regression, discovered
+    during the same wave's `brain repair-perms` rollout and confirmed on the
+    live brain by Gojo investigation 2026-08-05): this primitive originated
+    for a FILE (the salt sidecar) and its grant — plain ``<principal>:F``,
+    with no ``(OI)(CI)`` object/container-inherit flags — is correct there.
+    `repair.py::_harden_existing` and `recovery.ensure_owner_only_dir` later
+    reused it UNCHANGED for DIRECTORIES that already have children relying
+    on inherited ACEs. Replacing a directory's DACL with a non-inheritable
+    grant (``/inheritance:r /grant:r principal:F``) triggers Windows'
+    automatic-inheritance propagation on every child whose ACE is marked
+    "inherited from this parent": the parent now publishes nothing
+    inheritable, so those children lose their inherited ACE and — if they
+    have no ACE of their own — end up with an EMPTY DACL, i.e. deny
+    everyone, including the object's own owner. `is_dir=True` selects the
+    directory-appropriate inheritable grant instead — ``principal:(OI)(CI)F``
+    (object-inherit + container-inherit, Full Control) — so existing
+    children keep receiving an equivalent owner-only ACE via inheritance
+    instead of losing theirs, and NEW children created after hardening also
+    inherit owner-only automatically. `is_dir` defaults to `False` so every
+    pre-existing FILE call site (the salt sidecar here, and
+    `recovery.write_owner_only`'s Windows branch which uses a different
+    primitive entirely) is unaffected.
     """
     if sys.platform != "win32":
         return
@@ -103,9 +128,14 @@ def _harden_windows_acl(path: Path) -> None:
     icacls_exe = os.path.join(
         os.environ.get("SystemRoot", r"C:\Windows"), "System32", "icacls.exe"
     )
+    # BUG-CORTEXREPAIR-9.12.0-001: directories need an INHERITABLE grant
+    # ((OI)(CI) = object-inherit + container-inherit) so existing/future
+    # children keep an equivalent owner-only ACE via inheritance; a plain
+    # grant is correct only for files (unchanged default behavior).
+    grant_rights = "(OI)(CI)F" if is_dir else "F"
     try:
         result = subprocess.run(
-            [icacls_exe, str(path), "/inheritance:r", "/grant:r", f"{principal}:F"],
+            [icacls_exe, str(path), "/inheritance:r", "/grant:r", f"{principal}:{grant_rights}"],
             capture_output=True,
             text=True,
             timeout=10,

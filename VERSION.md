@@ -1,11 +1,78 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.11.0
-**Release Date:** 2026-08-03
-**Release Type:** MINOR Release (Session Transfer + Trigger 19-R public-edition sanitization gate +
-prompt-weight reduction + standing docs content-currency review process + Issue-ID Governance
-extensions, plus a full 8-commit backlog-wave closure of the 2026-07-30 Toji recent-work audit)
+**Version:** 9.12.0
+**Release Date:** 2026-08-06
+**Release Type:** MINOR Release (Clock-authority foundations — work-streak/protection-window model,
+structured time envelope + alert reason codes, versioned time-schema migration with live execution,
+read-side schema gating, and a same-day Toji audit remediation wave closing all 11 P2+P3 findings)
+
+---
+
+## Release Summary — v9.12.0 (MINOR)
+
+v9.12.0 answers the 2026-08-01 Toji session-time-authority audit (9 findings, 2 HIGH, overall risk
+HIGH) that v9.11.0 deferred in full, per the USER's Phase-0 "Foundations release" scope ruling
+(clock-authority bundle + macOS/Linux portability wave; browser UI deferred to v9.13.0). Full
+narrative and finding-by-finding detail: `CHANGELOG.md` `[9.12.0]`.
+
+- **A1 Clock-Authority ADR** — the design contract for the release (`docs/superpowers/specs/
+  2026-08-04-clock-authority-adr.md`, revision 6). Yuuji draft → Megumi Tier-2 (1 P1 + 4 P2 + 4 P3,
+  2 re-review rounds) → Sukuna ratified WITH CONDITIONS (closed a P1-equivalent legacy-fallback
+  second door) → USER sign-off. 13 `SEC-CLOCKADR-9.12.0` rows, all closed `@approved`.
+- **A2 TimeProvider + timing-policy primitives** — single clock-authority module + unified
+  timing-policy loader; all 34 `datetime.now()` call sites in `session_monitor.py`/
+  `project_state_manager.py` migrated, 6 bare-astimezone sites eliminated.
+- **A3 work-streak/protection-window model** (gate 2) — rolling-streak authority + genuine two-phase
+  break resolution (initiation vs. health-gated clearance), folds in CRPR115 #13.
+- **A4 alert reason codes + structured time envelope** (ADR D5, gate 4) — machine-checkable
+  `AlertReason` codes (new `CLOCK_ANOMALY`) + a relayed-not-recomputed time envelope for AI callers.
+- **A5 versioned time-schema migrator** (gate 5) — `--dry-run`/`--execute`/`--rollback`, 3-bucket
+  classification (known-local/ambiguous/synthetic-benchmark), single-source default-timezone
+  resolution.
+- **Option B ADR D8.5 read-side gating** (`IMPL-TIMESCHEMA-9.12.0-002`) — fail-closed/loud-degrade
+  gating against un-migrated naive timestamps.
+- **C1 riders** — EOL-normalized deep-verify (payload cross-check) + fcntl platform-poisoning root
+  fix in test isolation.
+- **Hardening package** (4 findings, all `@approved`) — `SEC-CLOCKADR-9.12.0-026` (adjudication
+  bucket-scope refusal, the second `--execute` precondition), `SEC-STATE-9.12.0-001`/`-002`
+  (platform-idiom unification, lock-release missing-module survival), `SEC-PAYLOAD-9.12.0-001`
+  (binary-guard boundary, scoped/documented residual).
+- **B1/B2 POSIX portability** — shared `python3` probe (`scripts/lib/python-probe.sh`) adopted by 6
+  shipped `.sh` entry points; `BUG-PORTAB-9.12.0-001` (Windows cp1252 misdiagnosed as YAML syntax
+  error) fixed; Toji's `CODE-002` (missing version floor) closed same-day.
+- **B3 CI portability-matrix** — 4 required-green report-only lanes (Windows x64, Linux x64/arm64,
+  macOS Apple Silicon).
+- **B4 Cortex owner-only repair** (`brain repair-perms`) — symlink/junction/reparse-point rejection +
+  TOCTOU-safe re-verification; live repair executed (8 repaired, idempotent re-run 8/8 ok);
+  `BUG-CORTEXREPAIR-9.12.0-001` regression caught pre-live-run.
+- **Live time-schema migration executed 2026-08-06**: 5 known-local + 9 adjudicated rows converted,
+  2,000 synthetic rows permanently excluded, `time_schema=1`, D7.6 gating active, 0 TOCTOU
+  mismatches on post-hoc verification.
+- **Toji 2026-08-06 audit remediation wave** (`audits/2026-08-06-toji-v9-12-0-recent-work.md`, 13
+  findings, overall risk HIGH, "not ready") — all 11 P2+P3 findings closed (`SEC-001`, `SEC-002`,
+  `SEC-003`, `SEC-004` new, `DESIGN-001`..`-003`, `CODE-001`/`-002`, `IMPL-001`/`-002`, `AI-001`) +
+  C2 advisory rider. Megumi combined Tier-3 `@approved` 10/10 + focused `@re-review` 4/4. Toji's
+  delta re-review (`audits/2026-08-06-toji-v9-12-0-remediation-delta-rereview.md`, 4 findings)
+  **lifted its release hold**; 2 LOW/P4 items (`CODE-003`, `IMPL-003`) dispositioned in writing,
+  not fixed (append-only-history conflict; out-of-scope spec reconcile).
+- **Manifest completeness finding (Sukuna cascade review, fixed same-day)**: 3 new v9.12.0 files
+  (`time_envelope.py`, `migrate_time_schema_9_12.py`, `scripts/lib/python-probe.sh`) were absent from
+  `publish-manifest.yaml` and outside the completeness gate's 7 scanned scopes — most severely,
+  `session_monitor.py`'s unconditional import of `time_envelope` would have broken the MANDATORY
+  session-monitoring module on every shipped install. Fixed before publish.
+- **Deferred**: B3 remainder (report-only → gating), B4 remainder (keyring defined-failure, macOS
+  storage/README — lane-blocked), B5 script parity + C2/C3 riders, C4 idgov backfill (~1,190 rows),
+  A6 full cross-platform matrix, A7 full-scope close-out, browser control plane (design-only, spec
+  in tree). SGI spec (v9.13.0-prep) committed on this branch as a design artifact only, no v9.12.0
+  functional scope.
+- **Accepted residual (LOW/P3)**: content-digest fallback narrow false-negative window, benign in
+  practice.
+- **Sukuna adversarial ratification**: complete 21-commit branch scope (`9e3e87f`..`5ddc303`)
+  ratified 2026-08-06 — full trace in `.dzp-domain/domain.record.md`.
+- Test evidence: post-remediation full-tree sweep **3,553 passed / 139 skipped / 0 failed**;
+  `tests/brain/` 1,252 passed / 25 skipped / 0 failed.
+- Sukuna-implemented cascade (System Update Adversary), Gojo-coordinated, USER-approved.
 
 ---
 

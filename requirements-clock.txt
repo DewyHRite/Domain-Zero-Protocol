@@ -1,0 +1,129 @@
+# requirements-clock.txt -- Clock-Authority zone-resolution deps (v9.12.0, FEAT-CLOCKAUTHORITY-9.12.0-001)
+#
+# Governing contract: docs/superpowers/specs/2026-08-04-clock-authority-adr.md
+# (revision 6) decision D4.4. Backs `.protocol-state/time_provider.py`'s
+# `TimeProvider.resolve_user_zone()` OS-fallback tier (D4.1.3) and the
+# `zoneinfo.ZoneInfo(...)` resolution every tier (config/env/OS-fallback)
+# depends on for validation (D4.1.1/D4.1.2).
+#
+# Install with:
+#   pip install --require-hashes -r requirements-clock.txt
+#
+# SCOPE / WHY THIS IS A SEPARATE FILE: CPython's stdlib `zoneinfo` module
+# (3.9+, already this project's floor) needs an IANA tzdata SOURCE to resolve
+# a *known* zone name to UTC-offset rules. Most POSIX systems ship one at
+# `/usr/share/zoneinfo`; Windows does not ship one at all -- so on a fresh
+# Windows install, EVERY `zoneinfo.ZoneInfo("America/Detroit")`-style call
+# raises `ZoneInfoNotFoundError`, regardless of how correct the IANA name is
+# (verified during A2 implementation: a real Windows dev box with no
+# `tzdata` package installed rejects every valid IANA zone name it is asked
+# to resolve, including via `protocol.config.yaml::user.timezone`). This is
+# ADR D4.4 "problem 1". Separately, Windows does not natively expose an IANA
+# zone name for its OWN configured OS zone (D4.4 "problem 2") -- `tzlocal` is
+# the OS-zone-detection dependency the ADR names for that path, used ONLY by
+# `TimeProvider._detect_os_zone()`'s OS-fallback tier (D4.1.3), never by the
+# config/env tiers (which already carry a validated IANA name and only need
+# `tzdata`'s data, not `tzlocal`'s detection).
+#
+# THESE ARE CONSUMER-FACING RUNTIME DEPENDENCIES, not dev/CI-only tooling
+# (unlike requirements-test.txt, which is pytest-for-CI only and explicitly
+# excluded from the publish manifest -- see that file's own header). Every
+# consumer install that resolves a user-facing local time through
+# `TimeProvider` needs `zoneinfo` to actually find zone data, which on
+# Windows means needing `tzdata` installed. Both packages are therefore
+# listed in `scripts/distro/publish-manifest.yaml::include_files` alongside
+# `requirements-dev.txt`/`requirements-enc.txt` (added in the same commit
+# that introduces this file, per the ADR's A2 Definition-of-Done and this
+# repo's manifest-completeness lesson -- see CLAUDE.md's "Distro manifest
+# completeness" guidance and `distro-manifest-completeness` memory).
+#
+# `tzdata` is pinned WITHOUT a platform marker (installed on every platform,
+# not just Windows) even though POSIX hosts usually already have a system
+# zoneinfo tree, because "usually" is not "always" (minimal containers and
+# some POSIX distributions ship no system tzdata either) and the package is
+# a small, pure-data, zero-native-code, PSF-license-compatible dependency --
+# the defensive `try: import tzdata` gate in `time_provider.py` means its
+# presence is never assumed, only opportunistically used when installed via
+# this file.
+#
+# HASH-PIN POLICY: same convention as requirements-test.txt / requirements-enc.txt
+# (C2-5, v9.9.1, SEC-CORTEX-ENC-HASH-001 -- OWASP A06:2021 defense-in-depth).
+# Every requirement below is pinned to an EXACT version (==) with one
+# --hash=sha256:... entry per file (wheel + sdist) PyPI published for that
+# release. This enables `pip install --require-hashes -r requirements-clock.txt`,
+# which refuses to install anything whose downloaded artifact does not match
+# a pinned digest -- protection against a compromised/typosquatted package or
+# a tampered mirror.
+#
+# RE-VERIFICATION (2026-08-05T04:12:53Z, PROV-SEC-CLOCK-a2-001 remediation
+# pass, Yuuji): Megumi's Tier-3 review flagged the two tzlocal==5.4.4 hash
+# lines below as not matching what PyPI serves for that release. A fresh,
+# independent re-check was run against the on-disk file at the time of this
+# pass: (1) fetched https://pypi.org/pypi/tzlocal/5.4.4/json live and
+# compared `urls[].digests.sha256` for both the wheel and the sdist;
+# (2) separately ran `pip download tzlocal==5.4.4 --no-deps` (wheel) and
+# `--no-binary=:all:` (sdist) into a scratch dir and computed
+# `hashlib.sha256` over the downloaded bytes directly; (3) ran
+# `pip install --dry-run --require-hashes -r requirements-clock.txt` inside a
+# freshly created venv with neither package pre-installed (a global-env dry
+# run is NOT sufficient here -- pip reports "Requirement already satisfied"
+# and skips hash verification entirely for anything already importable).
+# All three methods agreed with EACH OTHER and with the two --hash values
+# already present below; the clean-venv dry-run completed with
+# "Would install tzdata-2026.3 tzlocal-5.4.4" and no hash-mismatch error.
+# The finding did not reproduce against this file's current content -- see
+# dev-notes.md (@re-review, PROV-SEC-CLOCK-a2-001) for the full evidence
+# trail, the neighboring-version digest comparison run to rule out a
+# cross-version mismatch, and root-cause discussion (most likely explanation:
+# this file's own CLOSURE-comment above already documents a same-day
+# "transcription-only pass produced a corrupted digest, caught by
+# --require-hashes and corrected" episode on 2026-08-04 -- Megumi's review
+# most plausibly captured that pre-correction intermediate state). No hash
+# value below was altered by this pass; only this provenance note was added.
+#
+# CLOSURE (verified 2026-08-04 via the PyPI JSON API `info.requires_dist` for
+# each package):
+#   tzdata==2026.3 requires: nothing (leaf package; pure IANA tzdata, no
+#     runtime requires_dist entries).
+#   tzlocal==5.4.4 requires: tzdata (platform_system == "Windows") -- already
+#     pinned unconditionally above as tzdata's own top-level entry, so no
+#     separate/duplicate marker-restricted line is added for it; pytest/
+#     pytest-mock/pytest-cov/check_manifest/pyroma/ruff/zest.releaser are all
+#     "extra ==" (testing/devenv extras) and excluded per this file's
+#     `pip install pkg` (never `pkg[extra]`) install contract.
+#
+# REGENERATING THIS FILE:
+#   1. Pick "latest version satisfying the constraint" for each top-level
+#      package (tzdata, tzlocal both float to latest on regeneration; no
+#      known CVE/security floor for either as of this pin).
+#   2. Recursively enumerate `info.requires_dist` for each package via the
+#      PyPI JSON API (https://pypi.org/pypi/<pkg>/<version>/json), excluding
+#      any requirement whose marker contains "extra ==", until the dependency
+#      closure stops growing.
+#   3. For each pinned package@version, fetch
+#      https://pypi.org/pypi/<pkg>/<version>/json and add one
+#      --hash=sha256:<digest> line per entry in `urls[].digests.sha256`
+#      (every wheel + the sdist).
+#   4. Verify: `pip install --dry-run --require-hashes -r requirements-clock.txt`
+#      (fall back to `python -m pip download --require-hashes -d <tmpdir> -r
+#      requirements-clock.txt` on pip versions without `install --dry-run`).
+#   5. If distro/requirements-clock.txt exists, update it identically
+#      (byte-for-byte).
+
+
+# IANA tzdata source for stdlib zoneinfo.ZoneInfo(...) resolution (ADR D4.4 problem 1).
+# Hashes computed directly from the downloaded artifacts (sha256sum of the
+# actual wheel/sdist bytes), not transcribed from a rendered/summarized view
+# of the PyPI JSON API response -- an initial transcription-only pass on
+# this file produced a corrupted digest that `pip install --require-hashes`
+# caught immediately (mismatched hash, install refused); every value below
+# is now `pip download --require-hashes`-verified against the real files.
+tzdata==2026.3 \
+    --hash=sha256:dc096730c87af6cab1b171c9d532be840741ff5d459015e7f6947bd7d7e54931 \
+    --hash=sha256:4a1518b8993086a7982523e071643f3c0e5f213e75b21318e78bcabfff9d1415
+
+# Cross-platform OS-zone-name -> IANA-name detection, used only by
+# TimeProvider._detect_os_zone()'s OS-fallback tier (ADR D4.1.3/D4.4 problem 2).
+tzlocal==5.4.4 \
+    --hash=sha256:aae09f0126a8a86fa736be266eb4a471380d26a0de3bc14844e7821fee3e2a15 \
+    --hash=sha256:8dbb8660838688a7b6ba4fed31d18dedf842afb4d47ca050d6d891c2c15f3be4

@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 ---
 target: vscode
 name: "Ryomen Sukuna - System Update Adversary"
 description: "Adversarial-but-aligned system update specialist invoked only through Gojo for controlled protocol and framework modifications."
 argument-hint: "Use via Gojo: request a system update plan and execution; non-Gojo agents must not call Sukuna directly."
 model: "claude-opus-4-8"
-protocol_version: "9.11.0"
+protocol_version: "9.12.0"
 agent_file_version: "1.3.1"
 updated: "2026-06-18"
 
@@ -36,7 +36,7 @@ handoffs:
 > **Character**: Ryomen Sukuna (両面宿儺) - "King of Curses"
 > **Character Wiki**: <https://jujutsu-kaisen.fandom.com/wiki/Ryomen_Sukuna>
 > **Local Reference**: `.protocol-state/jjk-character-reference/ryomen-sukuna.md`
-> **Protocol Version**: v9.11.0
+> **Protocol Version**: v9.12.0
 > **Last Updated**: 2026-06-17
 
 **JJK Trait Mapping**:

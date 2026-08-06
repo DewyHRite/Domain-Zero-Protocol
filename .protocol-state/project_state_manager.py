@@ -22,9 +22,8 @@ import json
 import os
 import sys
 import tempfile
-import platform
 import time
-from datetime import datetime, timezone
+from datetime import datetime as _datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
 from contextlib import contextmanager
@@ -36,6 +35,32 @@ try:
     _ATTESTATION_AVAILABLE = True
 except ImportError:
     _ATTESTATION_AVAILABLE = False
+
+# v9.12.0 A2 phase (b) (ADR D1, docs/superpowers/specs/2026-08-04-clock-
+# authority-adr.md): every persisted timestamp this module stamps MUST go
+# through the single TimeProvider.utc_now() authority instead of a bare
+# `datetime.now(timezone.utc)` read (CODE-001 closure). Deliberately the
+# bare `TimeProvider()` (default clock-health tolerances), NOT
+# `timing_policy.load_timing_policy()` -- this module has no need for the
+# YAML-config-resolved policy fields (thresholds, user zone); it only ever
+# stamps a fresh "now" instant, never a policy decision, so importing the
+# heavier config loader (and its `InvalidTimezoneConfigError` failure mode)
+# here would be an unjustified new coupling for a low-level, always-on
+# module every other subsystem depends on. Not fail-soft/optional like
+# attestation above: `time_provider.py` is a core v9.12.0 file, always
+# present alongside this one.
+from time_provider import TimeProvider
+
+# v9.12.0 A5 (ADR D6.1/D8.6, IMPL-004 full closure): `TIMING_POLICY_DEFAULTS`
+# is a PLAIN DICT of literal default values (no YAML parsing, no zoneinfo
+# resolution, no `InvalidTimezoneConfigError` failure mode) -- importing it
+# does NOT reintroduce the "heavier config loader" coupling the comment
+# above deliberately avoids for `TimeProvider`/`load_timing_policy()`. This
+# is the single source `_default_session_tracking()`'s `thresholds` dict
+# below now reads from, instead of a second, independently-hardcoded copy
+# of the same 7 literals (the exact four-independently-drifting-copies
+# pattern IMPL-004 named).
+from timing_policy import TIMING_POLICY_DEFAULTS
 
 # Lock configuration constants
 LOCK_TIMEOUT_SECONDS = 30
@@ -65,6 +90,12 @@ class ProjectStateManager:
         self.protocol_root = Path(protocol_root)
         self.state_dir = self.protocol_root / ".protocol-state"
 
+        # v9.12.0 A2 phase (b) (ADR D1): the sole clock-authority instance
+        # for every timestamp this manager stamps. See the module-level
+        # import comment for why this is a bare TimeProvider(), not the
+        # timing-policy-config-resolved variant.
+        self.time_provider = TimeProvider()
+
         # Primary unified state file
         self.project_state_file = self.state_dir / "project-state.json"
 
@@ -73,8 +104,54 @@ class ProjectStateManager:
         self.troubleshooting_history_file = self.state_dir / "troubleshooting-history.json"
         self.agent_invocation_file = self.state_dir / "agent-invocation-tracker.json"
 
-        # Platform detection
-        self.is_windows = platform.system() == "Windows"
+        # Platform detection (BUG-STATE-001, v9.12.0 C1): sourced from
+        # os.name, NOT platform.system() and NOT sys.platform. Both of the
+        # obvious alternatives have a real, DEMONSTRATED poisoning window on
+        # this exact code path; os.name has neither.
+        #
+        # 1) platform.system() calls platform.uname(), which lazily computes
+        #    its result on the FIRST call anywhere in the process and then
+        #    PERMANENTLY CACHES it in a module-level global
+        #    (platform._uname_cache) for every later call, regardless of what
+        #    changes afterward. On Windows, os.uname() does not exist, so
+        #    uname()'s fallback path seeds that one-time result from
+        #    sys.platform directly -- so if the FIRST call in the whole
+        #    process happens while something has temporarily spoofed
+        #    sys.platform (tests/test_create_snapshot_gate_validation.py's
+        #    isolated module load does exactly this, for an unrelated
+        #    reason), the wrong OS is cached PROCESS-WIDE forever, corrupting
+        #    every later ProjectStateManager instance even after sys.platform
+        #    is correctly restored. Originally fixed by switching to
+        #    sys.platform -- reverted below.
+        # 2) sys.platform == "win32" (the first fix attempted here) closes
+        #    (1) but reopens a DIFFERENT, equally real hole:
+        #    tests/test_session_monitor_envelope.py and
+        #    tests/test_session_monitor_json_flag_characterization.py
+        #    legitimately monkeypatch sys.platform = "linux" for the
+        #    DURATION of a real session_monitor.py CLI call (same win32
+        #    stdout-rewrap workaround, but scoped around actual execution,
+        #    not just an isolated import) -- and that CLI call genuinely
+        #    exercises ProjectStateManager locking while the monkeypatch is
+        #    active. Reading sys.platform live then correctly (mechanically)
+        #    took the fcntl branch, which correctly failed, because fcntl
+        #    genuinely does not exist on this real Windows host -- 11
+        #    previously-green tests broken, reproduced in total isolation
+        #    (single file, single process, nothing else involved) BEFORE
+        #    committing to this as the fix. Neither of the two obvious,
+        #    already-used-elsewhere-in-this-codebase idioms is actually safe
+        #    for a module instantiated to do REAL locking work (as opposed to
+        #    the one-shot cosmetic win32 stdout-rewrap checks in
+        #    attestation.py/create-snapshot.py/etc., which have no
+        #    comparable in-scope side effect to protect against).
+        #
+        # os.name is immune to BOTH: it is a plain string fixed once at
+        # interpreter startup ('nt' or 'posix'), never recomputed from
+        # sys.platform, never cached-on-first-call the way
+        # platform.uname() is, and is not a value any test in this
+        # repository spoofs (only sys.platform is a documented/idiomatic
+        # test-simulation target here) -- confirmed empirically immune to a
+        # live sys.platform monkeypatch in the same process.
+        self.is_windows = os.name == "nt"
 
         # Lock file for exclusive state access (SEC-016, SEC-019)
         self.lock_file_path = self.state_dir / ".state.lock"
@@ -212,7 +289,7 @@ class ProjectStateManager:
                         )
 
             # Write PID to lock file for debugging
-            lock_file.write(f"{os.getpid()}\n{datetime.now(timezone.utc).isoformat()}\n")
+            lock_file.write(f"{os.getpid()}\n{self.time_provider.utc_now().isoformat()}\n")
             lock_file.flush()
 
             yield
@@ -289,7 +366,7 @@ class ProjectStateManager:
                         )
 
             # Write migration info
-            lock_file.write(f"Migration started: {datetime.now(timezone.utc).isoformat()}\n")
+            lock_file.write(f"Migration started: {self.time_provider.utc_now().isoformat()}\n")
             lock_file.write(f"PID: {os.getpid()}\n")
             lock_file.flush()
 
@@ -525,7 +602,7 @@ class ProjectStateManager:
         with self._exclusive_lock():
             state = self._load_project_state_internal()
             state["session_tracking"] = session_data
-            state["session_tracking"]["last_updated"] = datetime.now(timezone.utc).isoformat()
+            state["session_tracking"]["last_updated"] = self.time_provider.utc_now().isoformat()
             self._atomic_write(state, self.project_state_file)
 
     def get_agent_invocation_tracking(self) -> Dict[str, Any]:
@@ -566,7 +643,7 @@ class ProjectStateManager:
         with self._exclusive_lock():
             state = self._load_project_state_internal()
             state["agent_invocation_tracking"] = invocation_data
-            state["agent_invocation_tracking"]["_last_updated"] = datetime.now(timezone.utc).isoformat()
+            state["agent_invocation_tracking"]["_last_updated"] = self.time_provider.utc_now().isoformat()
             self._atomic_write(state, self.project_state_file)
 
     def get_troubleshooting(self) -> Dict[str, Any]:
@@ -622,7 +699,7 @@ class ProjectStateManager:
             state = self._load_project_state_internal()
             state["troubleshooting"] = troubleshooting_data
             if "statistics" in troubleshooting_data:
-                state["troubleshooting"]["statistics"]["last_updated"] = datetime.now(timezone.utc).isoformat()
+                state["troubleshooting"]["statistics"]["last_updated"] = self.time_provider.utc_now().isoformat()
             self._atomic_write(state, self.project_state_file)
 
     def get_tier_tracking(self) -> Dict[str, Any]:
@@ -663,12 +740,147 @@ class ProjectStateManager:
         with self._exclusive_lock():
             state = self._load_project_state_internal()
             state["tier_tracking"] = tier_data
-            state["tier_tracking"]["last_updated"] = datetime.now(timezone.utc).isoformat()
+            state["tier_tracking"]["last_updated"] = self.time_provider.utc_now().isoformat()
             self._atomic_write(state, self.project_state_file)
 
     # =========================================================================
     # DEFAULT STRUCTURES
     # =========================================================================
+
+    # =========================================================================
+    # WORK STREAK (v9.12.0 A3 -- ADR docs/superpowers/specs/2026-08-04-
+    # clock-authority-adr.md decision D7, Toji gate 2; governing audit
+    # audits/2026-08-01-toji-session-time-authority-claude-codex.md finding
+    # SEC-001, HIGH). Durable rolling protected-work state that survives
+    # every session-lifecycle boundary -- see session_monitor.py's
+    # start_session()/_archive_session()/update_interaction()/record_break()
+    # for the read/write call sites; this class owns ONLY the D7.6
+    # fail-closed persistence contract.
+    # =========================================================================
+
+    _WORK_STREAK_SCHEMA_VERSION = 1
+
+    def _default_work_streak(self) -> Dict[str, Any]:
+        """ADR D7.2 default/empty work-streak record (no streak open yet).
+        Carries every field D7.2 names, plus `work_streak_schema` (D7.1) and
+        one internal bookkeeping field, `_streak_session_baseline_minutes`
+        -- NOT part of the ADR's normative field list. It records the
+        accumulated-minutes value inherited from BEFORE the currently
+        active session joined the streak, so session_monitor.py's
+        update_interaction()/_archive_session() can implement D7.7's
+        "flush the incremental delta on every recorded interaction" rule as
+        `baseline + this_session_elapsed` without re-summing session_history
+        on every call."""
+        return {
+            "work_streak_schema": self._WORK_STREAK_SCHEMA_VERSION,
+            "streak_start_utc": None,
+            "accumulated_protected_work_minutes": 0,
+            "last_qualifying_break_utc": None,
+            "last_qualifying_break_duration_minutes": None,
+            "high_risk_block_active": False,
+            "last_trusted_boundary_utc": None,
+            "_streak_session_baseline_minutes": 0,
+            "last_updated": None,
+        }
+
+    @staticmethod
+    def _parse_utc_or_none(value: Any) -> Optional[_datetime]:
+        """Local, dependency-light ISO-8601 parser used ONLY by the D7.6
+        internal-consistency check below. Deliberately NOT
+        session_monitor.py's `_parse_utc()` -- this module must stay
+        import-independent of session_monitor.py (session_monitor.py already
+        imports THIS module; the reverse would be circular)."""
+        if not isinstance(value, str) or not value:
+            return None
+        try:
+            normalized = value.strip()
+            if normalized.endswith("Z"):
+                normalized = normalized[:-1] + "+00:00"
+            return _datetime.fromisoformat(normalized)
+        except (ValueError, TypeError):
+            return None
+
+    def _work_streak_is_internally_consistent(self, record: Any) -> bool:
+        """D7.6's 'internal-consistency check': a negative accumulated
+        minutes value, an unparseable UTC-instant field, or a
+        work_streak_schema mismatch are each independently disqualifying --
+        any one of them means this record fails closed rather than being
+        trusted as-is."""
+        if not isinstance(record, dict):
+            return False
+        if record.get("work_streak_schema") != self._WORK_STREAK_SCHEMA_VERSION:
+            return False
+        minutes = record.get("accumulated_protected_work_minutes")
+        if not isinstance(minutes, (int, float)) or isinstance(minutes, bool) or minutes < 0:
+            return False
+        for key in ("streak_start_utc", "last_qualifying_break_utc", "last_trusted_boundary_utc"):
+            value = record.get(key)
+            if value is not None and self._parse_utc_or_none(value) is None:
+                return False
+        return True
+
+    def get_work_streak(self) -> Dict[str, Any]:
+        """ADR D7.6 fail-closed read contract.
+
+        - `time_schema` absent from the top-level state entirely (a
+          genuinely pre-migration file, or a fresh install that has never
+          run the A5 migration): the Migration Policy's `.get(..., default)`
+          tolerance applies -- an absent `work_streak` block is simply a
+          fresh, empty streak, exactly like any other consolidated
+          namespace's first read (session_tracking/tier_tracking
+          precedent). This is the ONLY case this tolerant fallback is
+          permitted to cover for `work_streak` (D7.6).
+        - `time_schema >= 1` (a migrated install) but `work_streak` is
+          absent, unparseable, or fails the internal-consistency check:
+          FAIL CLOSED -- never a silent default. Returns a record with
+          `high_risk_block_active=True`, every timestamp field left at its
+          conservative "streak still open" default (never fabricated as a
+          fresh boundary an anomalous read could exploit), a transient
+          `_fail_closed: True` marker (stripped by `update_work_streak()`,
+          never persisted), and a loud stderr diagnostic (never silent).
+        """
+        try:
+            state = self.load_project_state()
+        except FileNotFoundError:
+            # A genuinely fresh install (no project-state.json at all yet)
+            # is the same "no time_schema" tolerance case as an existing
+            # file that simply predates this namespace.
+            return self._default_work_streak()
+        time_schema = state.get("time_schema")
+        raw = state.get("work_streak")
+
+        if time_schema is None:
+            if isinstance(raw, dict) and self._work_streak_is_internally_consistent(raw):
+                return raw
+            return self._default_work_streak()
+
+        if isinstance(raw, dict) and self._work_streak_is_internally_consistent(raw):
+            return raw
+
+        print(
+            "[!] SEC-CLOCKADR-9.12.0-001: work_streak block is absent, "
+            "unparseable, or internally inconsistent on a migrated "
+            "(time_schema >= 1) state file. Failing CLOSED per ADR D7.6: "
+            "treating the protection window as still OPEN and enabling "
+            "high_risk_block_active -- never silently resetting to a fresh "
+            "streak.",
+            file=sys.stderr,
+        )
+        fail_closed = self._default_work_streak()
+        fail_closed["high_risk_block_active"] = True
+        fail_closed["_fail_closed"] = True
+        return fail_closed
+
+    def update_work_streak(self, work_streak_data: Dict[str, Any]) -> None:
+        """Atomic read-modify-write, same locking discipline as every other
+        namespace accessor in this module (SEC-019 precedent)."""
+        with self._exclusive_lock():
+            state = self._load_project_state_internal()
+            data = dict(work_streak_data)
+            data.pop("_fail_closed", None)  # transient read-time marker, never persisted
+            data["last_updated"] = self.time_provider.utc_now().isoformat()
+            state["work_streak"] = data
+            self._atomic_write(state, self.project_state_file)
 
     def _default_session_tracking(self) -> Dict[str, Any]:
         """Return default session tracking structure."""
@@ -685,7 +897,12 @@ class ProjectStateManager:
                 "escalation_level": 0,
                 "user_last_choice": None,
                 "break_acknowledged": False,
-                "high_risk_operations_blocked": False
+                "high_risk_operations_blocked": False,
+                # Toji audit 2026-08-06 (IMPL-001/SEC-002 direct fixes) --
+                # mirrors session_monitor.py's `_default_state()` shape.
+                "streak_contribution_start_time": None,
+                "pending_break_started_utc": None,
+                "pending_break_reported_minutes": None
             },
             "session_metrics": {
                 "total_duration_minutes": 0,
@@ -697,13 +914,22 @@ class ProjectStateManager:
                 "continues_chosen": 0,
                 "breaks_chosen": 0
             },
+            # v9.12.0 A5 (IMPL-004 full closure): sourced from the single
+            # `timing_policy.py` defaults map (`TIMING_POLICY_DEFAULTS`,
+            # imported above) instead of a second, independently-hardcoded
+            # copy of these literals -- this dict previously also lacked
+            # `late_night_end_hour` entirely, which is IMPL-004's direct
+            # symptom (project_state_manager.py's default-state shape could
+            # never represent the field session_monitor.py's in-memory
+            # fallback already resolved).
             "thresholds": {
-                "initial_alert_minutes": 240,
-                "escalated_alert_minutes": 45,
-                "critical_session_minutes": 360,
-                "max_continuous_minutes": 480,
-                "late_night_hour": 22,
-                "minimum_break_minutes": 15
+                "initial_alert_minutes": TIMING_POLICY_DEFAULTS["initial_alert_minutes"],
+                "escalated_alert_minutes": TIMING_POLICY_DEFAULTS["escalated_alert_minutes"],
+                "critical_session_minutes": TIMING_POLICY_DEFAULTS["critical_session_minutes"],
+                "max_continuous_minutes": TIMING_POLICY_DEFAULTS["max_continuous_minutes"],
+                "late_night_hour": TIMING_POLICY_DEFAULTS["late_night_hour"],
+                "late_night_end_hour": TIMING_POLICY_DEFAULTS["late_night_end_hour"],
+                "minimum_break_minutes": TIMING_POLICY_DEFAULTS["minimum_break_minutes"]
             },
             "session_history": [],
             "last_updated": None,
@@ -745,7 +971,7 @@ class ProjectStateManager:
         """Return default tier tracking structure."""
         return {
             "_comment": "Unified tier statistics - replaces tier_usage_statistics and tier_statistics",
-            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "last_updated": self.time_provider.utc_now().isoformat(),
             "total_features": 0,
             "tier_distribution": {
                 "tier_1": 0,

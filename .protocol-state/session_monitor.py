@@ -12,12 +12,15 @@ Usage:
     From verification scripts: Validate session health and issue alerts
 """
 
+import contextlib
+import io
 import json
 import os
 import re
 import shutil
 import sys
 import tempfile
+import zoneinfo
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -51,6 +54,32 @@ try:
 except ImportError:
     STATE_MANAGER_AVAILABLE = False
     # Silent fallback to legacy file I/O for backward compatibility
+
+# v9.12.0 A2 phase (b) (ADR docs/superpowers/specs/2026-08-04-clock-authority-adr.md,
+# governing audit audits/2026-08-01-toji-session-time-authority-claude-codex.md):
+# the D1-D4 clock-authority primitives, wired into every datetime.now()/bare
+# astimezone() call site below (CODE-001/DESIGN-001/IMPL-002). Deliberately
+# NOT wrapped fail-soft like ProjectStateManager/attestation above -- both
+# modules are core v9.12.0 files always present alongside this one, and
+# load_timing_policy() raising InvalidTimezoneConfigError on a genuinely
+# malformed `user.timezone` is the INTENDED behavior (ADR D4.1.1: a hard,
+# surfaced config error, never a silent fallback).
+from time_provider import TimeProvider  # noqa: E402
+from timing_policy import load_timing_policy  # noqa: E402
+
+# v9.12.0 A4 (ADR D5/D6.4/D6.5, Toji gate 4; governing audit findings AI-001
+# HIGH and IMPL-001 MEDIUM): the D5 time-envelope builder and the D6.5 alert
+# reason-code vocabulary. Same "always present, never fail-soft-wrapped"
+# posture as the time_provider/timing_policy imports above -- these are core
+# v9.12.0 files always present alongside this one.
+from time_envelope import (  # noqa: E402
+    ENVELOPE_SCHEMA_VERSION,
+    AlertReason,
+    EnvelopeStatus,
+    EnvelopeStatusReason,
+    SessionBoundary,
+    build_envelope_safe,
+)
 
 # ISS-083: local write-attestation (fail-soft; module lives alongside this
 # one in .protocol-state/). Absence must never break session monitoring.
@@ -128,16 +157,92 @@ def _parse_utc(timestamp: Optional[str]) -> Optional[datetime]:
     return dt
 
 
-def _local_now(utc_dt: datetime) -> datetime:
+def _timestamp_is_naive(timestamp: Optional[str]) -> bool:
+    """v9.12.0 A6 (ADR D8.5 read-side gating, SEC-CLOCKADR-9.12.0-021):
+    True iff `timestamp` is a non-empty, syntactically parseable ISO-8601
+    string with NO UTC offset (naive). A purely SYNTACTIC check -- it never
+    coerces or normalizes, unlike `_parse_utc()` -- so it can run BEFORE
+    that helper's own naive -> assume-UTC tolerance is applied, to decide
+    whether this specific value needs D8.5 anomaly treatment first. Returns
+    False (never naive) for missing/unparseable/'Z'-suffixed/explicit-offset
+    values -- 'Z' and an explicit offset are both aware by definition, and
+    an unparseable string is `_parse_utc()`'s own "no usable timestamp"
+    case, not a provenance question this gate is responsible for."""
+    if not timestamp:
+        return False
+    try:
+        normalized = timestamp.strip()
+        if normalized.endswith('Z'):
+            return False  # 'Z' is an explicit UTC designator -- aware.
+        dt = datetime.fromisoformat(normalized)
+    except (ValueError, TypeError):
+        return False
+    return dt.tzinfo is None
+
+
+def _is_d85_gated(timestamp: Optional[str], time_schema: Optional[int]) -> bool:
+    """v9.12.0 A6 (ADR D8.5 read-side gating, SEC-CLOCKADR-9.12.0-021,
+    per the read-side-gating design note's Option B,
+    docs/superpowers/specs/2026-08-05-timeschema-read-side-gating-design-note.md):
+    True iff `timestamp` is naive AND the enclosing project state has
+    already been migrated (`time_schema` present and >= 1).
+
+    Under a migrated file, ANY remaining naive value is either a
+    still-ambiguous pre-migration record (ADR D8.5: "MUST NOT feed
+    continuity classification, alerting, or work-streak accumulation") or a
+    new naive write from an unanticipated future code path -- both cases
+    receive the IDENTICAL conservative treatment here, deliberately: D8.5's
+    own text does not ask the two to be distinguished, only that neither is
+    silently trusted.
+
+    `time_schema` absent or falsy (a genuinely pre-migration file) ALWAYS
+    returns False -- today's tolerant "naive -> assume UTC" behavior is
+    UNCHANGED for that case, matching the Migration Policy's own
+    absent-vs-present tolerance precedent (ADR D8.1/D8.6, and the identical
+    precedent already established by
+    `ProjectStateManager.get_work_streak()`'s D7.6 fail-closed gate).
+
+    Callers at CONTINUITY-CRITICAL sites (feeding continuity classification,
+    the time envelope, or work-streak accumulation) MUST check this before
+    calling `_parse_utc()` and route a True result through their own
+    anomaly-handling branch -- NEVER simply treat it as an unparseable/
+    missing value, which for several call sites would silently take the
+    WRONG conservative direction (see the read-side-gating design note and
+    this increment's dev-notes.md call-site audit for why each gated site's
+    specific anomaly branch was chosen)."""
+    if not time_schema or time_schema < 1:
+        return False
+    return _timestamp_is_naive(timestamp)
+
+
+def _local_now(utc_dt: datetime, zone_info: Optional[zoneinfo.ZoneInfo] = None) -> datetime:
     """
     Convert an aware UTC datetime to local wall-clock time.
 
-    BUG-SESSION-005: extracted as its own function (rather than inlining
-    `utc_dt.astimezone()` at every call site) so tests can monkeypatch this
-    single seam and inject a deterministic local time, without depending on
-    the real system timezone of whatever machine runs the test suite.
+    v9.12.0 A2 phase (b) (DESIGN-001 closure, ADR D4): `zone_info` is the
+    caller's ADR D4-resolved user zone -- a `zoneinfo.ZoneInfo` built from
+    `SessionMonitor._user_zone_info`, itself derived from
+    `timing_policy.load_timing_policy()`'s `config > DZP_USER_TIMEZONE env >
+    OS-fallback > unresolved` precedence (D4.1). Previously this function
+    called the EXECUTION HOST's OS zone via a bare, no-argument
+    `utc_dt.astimezone()` unconditionally -- silently substituting host
+    locality for user locality, the exact DESIGN-001 defect the audit
+    identified. It no longer does so: omitting `zone_info` (or passing None
+    -- the D4.4 "unresolved" terminal state, reached only when config, env,
+    AND OS-fallback all fail to produce a validated IANA zone) now returns
+    `utc_dt` UNCHANGED (still UTC) rather than falling back to a bare
+    host-zone conversion. ADR D4.3 forbids that silent substitution, and
+    D4.4 requires the "unresolved" state to display UTC only, never a
+    guessed local time.
+
+    BUG-SESSION-005: kept as its own function (rather than inlining the
+    conversion at every call site) so tests can monkeypatch this single seam
+    and inject a deterministic local time/zone without depending on the real
+    system timezone of whatever machine runs the test suite.
     """
-    return utc_dt.astimezone()
+    if zone_info is None:
+        return utc_dt
+    return utc_dt.astimezone(zone_info)
 
 
 def _is_late_night(local_dt: datetime, thresholds: Dict) -> bool:
@@ -165,6 +270,32 @@ def _is_late_night(local_dt: datetime, thresholds: Dict) -> bool:
     return local_hour >= late_night_hour or local_hour < late_night_end_hour
 
 
+def _default_work_streak_shape() -> Dict:
+    """v9.12.0 A3 (ADR D7, Toji gate 2 / SEC-001 HIGH direct fix): the
+    default/empty work-streak record shape.
+
+    This mirrors `ProjectStateManager._default_work_streak()` field-for-field
+    -- the single normative shape lives there (it owns persistence). It is
+    duplicated here ONLY for the degenerate path where ProjectStateManager
+    itself is unavailable or raises (SessionMonitor._get_work_streak()),
+    per ADR D7.6's `-011` extension: that failure is treated IDENTICALLY to
+    an absent/corrupt work_streak block -- fail closed, never a silent
+    fallback to a legacy file (this namespace, introduced in v9.12.0, has
+    none to fall back to).
+    """
+    return {
+        "work_streak_schema": 1,
+        "streak_start_utc": None,
+        "accumulated_protected_work_minutes": 0,
+        "last_qualifying_break_utc": None,
+        "last_qualifying_break_duration_minutes": None,
+        "high_risk_block_active": False,
+        "last_trusted_boundary_utc": None,
+        "_streak_session_baseline_minutes": 0,
+        "last_updated": None,
+    }
+
+
 class SessionMonitor:
     """
     Work session monitoring with real time tracking and enforcement.
@@ -184,6 +315,28 @@ class SessionMonitor:
         self.template_file = self.protocol_root / ".protocol-state" / "work-session-alert.template.md"
         self.config_file = self.protocol_root / "protocol.config.yaml"
         self.invocation_tracker_file = self.protocol_root / ".protocol-state" / "agent-invocation-tracker.json"
+
+        # v9.12.0 A2 phase (b) (ADR D6.1, D6.2/IMPL-002 closure): the ONE
+        # resolved timing-policy object -- late-night window, session-
+        # continuation gap, clock-health tolerances, and the D4-resolved
+        # user zone, each with recorded provenance. This is the loader that
+        # makes `safety.boundaries.late_night_threshold` and
+        # `safety.session_tracking.session_continuation_threshold_minutes`
+        # (previously declared-but-unread) actually govern enforced
+        # behavior -- see _default_state()'s thresholds and
+        # start_session()'s continuation-gap check below. It does NOT
+        # replace `self.alert_thresholds`/`_load_alert_thresholds()` below,
+        # which already correctly reads the 4 duration-alert fields this
+        # loader also resolves (no bug there to fix) -- both loaders read
+        # the same config keys and agree by construction.
+        self.timing_policy = load_timing_policy(protocol_root=self.protocol_root)
+        # D1/D2: the sole clock-authority instance for this monitor,
+        # configured with the resolved clock-health tolerances (D3.1).
+        self.time_provider = self.timing_policy.make_time_provider()
+        # DESIGN-001 closure (D4): a concrete zoneinfo.ZoneInfo for
+        # _local_now() to convert into, or None in the D4.4 "unresolved"
+        # terminal state -- never a bare, unlabeled host-zone substitution.
+        self._user_zone_info = self._resolve_zoneinfo(self.timing_policy.user_zone)
 
         # FEAT-TRANSFER-9.11.0-001 (v9.11.0 Increment 2): /session transfer
         # handoff artifacts. Deliberately NOT protected documents (see
@@ -221,6 +374,31 @@ class SessionMonitor:
             True if invoked by Gojo (DZP_AGENT=gojo env var), False otherwise
         """
         return os.environ.get('DZP_AGENT', '').lower() == 'gojo'
+
+    @staticmethod
+    def _resolve_zoneinfo(zone_resolution) -> Optional[zoneinfo.ZoneInfo]:
+        """
+        v9.12.0 A2 phase (b) (DESIGN-001 closure, ADR D4): convert a
+        `time_provider.ZoneResolution` (already IANA-validated by
+        `TimeProvider.resolve_user_zone()`) into a concrete
+        `zoneinfo.ZoneInfo` for `_local_now()` to convert into.
+
+        Returns None for the D4.4 "unresolved" terminal state
+        (`zone_resolution.iana is None`) -- this is an EXPECTED, valid
+        result, not an error: `_local_now()` treats None as "no confirmed
+        zone, display UTC" rather than silently substituting the execution
+        host's zone (the exact DESIGN-001 defect). Also returns None (rather
+        than raising) on any unexpected `zoneinfo.ZoneInfo(...)` construction
+        failure here -- `resolve_user_zone()` already validated the name via
+        the same lookup, so this is a defense-in-depth guard, not the
+        primary validation path.
+        """
+        if zone_resolution.iana is None:
+            return None
+        try:
+            return zoneinfo.ZoneInfo(zone_resolution.iana)
+        except Exception:
+            return None
 
     def _load_high_risk_literals(self) -> List[str]:
         """
@@ -392,83 +570,40 @@ class SessionMonitor:
 
     def _load_alert_thresholds(self) -> Dict:
         """
-        Load alert threshold configuration from protocol.config.yaml.
+        Resolve alert threshold configuration.
 
-        v8.13.0 - Configuration Enhancement
-        Allows customization of when session alerts are issued.
+        v9.12.0 A5 (ADR D6.1, IMPL-004 full closure): this used to be an
+        entirely separate re-implementation of the same 4 duration fields
+        `self.timing_policy` (constructed earlier in `__init__`, ADR D6
+        unified loader) already resolves -- its own YAML parse, its own
+        range validation (2-12h/4-16h/6-24h/15-120min, IDENTICAL to
+        timing_policy.py's 120-720/240-960/360-1440/15-120-minute ranges),
+        its own "[!] Invalid ..." messages -- independently re-deriving
+        values that could only "agree by construction" (the exact
+        four-independently-drifting-copies pattern IMPL-004 named) rather
+        than by having one source of truth. Now delegates entirely to
+        `self.timing_policy`, which resolves these same 4 fields from the
+        same `safety.session_tracking.alert_thresholds.*` config keys. The
+        public return shape (exactly these 4 keys) is unchanged, so every
+        existing consumer (`_default_state()`, `check_alert_needed()`,
+        `get_session_summary()`) needs no changes --
+        tests/test_defaults_single_source_9_12.py locks in the equivalence.
 
         Returns:
             Dict with threshold values in minutes:
             {
                 'initial_alert_minutes': 240,      # 4 hours
                 'critical_session_minutes': 360,   # 6 hours
-                'max_continuous_minutes': 480,     # 8 hours
+                'max_continuous_minutes': 480,      # 8 hours
                 'escalated_alert_minutes': 45      # 45 minutes
             }
         """
-        # Default thresholds (fallback if config unavailable)
-        defaults = {
-            'initial_alert_minutes': 240,      # 4 hours
-            'critical_session_minutes': 360,   # 6 hours
-            'max_continuous_minutes': 480,     # 8 hours
-            'escalated_alert_minutes': 45      # 45 minutes
+        return {
+            'initial_alert_minutes': self.timing_policy.initial_alert_minutes,
+            'critical_session_minutes': self.timing_policy.critical_session_minutes,
+            'max_continuous_minutes': self.timing_policy.max_continuous_minutes,
+            'escalated_alert_minutes': self.timing_policy.escalated_alert_minutes,
         }
-
-        # Try to load from config file
-        if self.config_file.exists():
-            try:
-                import yaml
-                with open(self.config_file, 'r', encoding='utf-8') as f:
-                    config = yaml.safe_load(f)
-
-                safety_config = config.get('safety', {})
-                session_tracking = safety_config.get('session_tracking', {})
-                alert_thresholds = session_tracking.get('alert_thresholds', {})
-
-                if alert_thresholds:
-                    # Extract and validate each threshold
-                    result = {}
-
-                    # initial_alert_hours (2-12 range)
-                    initial_hours = alert_thresholds.get('initial_alert_hours', 4)
-                    if 2 <= initial_hours <= 12:
-                        result['initial_alert_minutes'] = initial_hours * 60
-                    else:
-                        print(f"[!] Invalid initial_alert_hours: {initial_hours}. Must be 2-12. Using default: 4")
-                        result['initial_alert_minutes'] = 240
-
-                    # critical_session_hours (4-16 range)
-                    critical_hours = alert_thresholds.get('critical_session_hours', 6)
-                    if 4 <= critical_hours <= 16:
-                        result['critical_session_minutes'] = critical_hours * 60
-                    else:
-                        print(f"[!] Invalid critical_session_hours: {critical_hours}. Must be 4-16. Using default: 6")
-                        result['critical_session_minutes'] = 360
-
-                    # max_continuous_hours (6-24 range)
-                    max_hours = alert_thresholds.get('max_continuous_hours', 8)
-                    if 6 <= max_hours <= 24:
-                        result['max_continuous_minutes'] = max_hours * 60
-                    else:
-                        print(f"[!] Invalid max_continuous_hours: {max_hours}. Must be 6-24. Using default: 8")
-                        result['max_continuous_minutes'] = 480
-
-                    # escalated_alert_minutes (15-120 range)
-                    escalated_mins = alert_thresholds.get('escalated_alert_minutes', 45)
-                    if 15 <= escalated_mins <= 120:
-                        result['escalated_alert_minutes'] = escalated_mins
-                    else:
-                        print(f"[!] Invalid escalated_alert_minutes: {escalated_mins}. Must be 15-120. Using default: 45")
-                        result['escalated_alert_minutes'] = 45
-
-                    return result
-
-            except Exception as e:
-                # Silent fallback to defaults
-                pass
-
-        # Default fallback
-        return defaults
 
     def _load_alert_customization(self) -> Dict:
         """
@@ -556,7 +691,14 @@ class SessionMonitor:
                 "escalation_level": 0,
                 "user_last_choice": None,
                 "break_acknowledged": False,
-                "high_risk_operations_blocked": False
+                "high_risk_operations_blocked": False,
+                # Toji audit 2026-08-06 (IMPL-001/SEC-002): see
+                # start_session()'s new-session literal for the full
+                # rationale. Defaulted here too so a freshly-reset/legacy
+                # state file always has these keys present.
+                "streak_contribution_start_time": None,
+                "pending_break_started_utc": None,
+                "pending_break_reported_minutes": None,
             },
             "session_metrics": {
                 "total_duration_minutes": 0,
@@ -573,17 +715,35 @@ class SessionMonitor:
                 "escalated_alert_minutes": self.alert_thresholds['escalated_alert_minutes'],
                 "critical_session_minutes": self.alert_thresholds['critical_session_minutes'],
                 "max_continuous_minutes": self.alert_thresholds['max_continuous_minutes'],
-                "late_night_hour": 22,
+                # v9.12.0 A2 phase (b) (IMPL-002 closure, ADR D6.2): previously
+                # hardcoded literals (22/6) that made
+                # `safety.boundaries.late_night_threshold` and the
+                # `late_night_end_hour` config key have NO EFFECT on enforced
+                # behavior no matter what they were edited to. Now sourced
+                # from the single timing_policy.py loader, which DOES read
+                # both keys -- editing either in protocol.config.yaml now
+                # changes this value.
+                "late_night_hour": self.timing_policy.late_night_hour,
                 # BUG-SESSION-005: midnight-wrap end of the late-night window
                 # (local hour < this counts as late night too). .get()'d with
                 # a fallback everywhere it's read, so legacy state files
                 # without this key are never broken -- see _is_late_night().
-                "late_night_end_hour": 6,
-                "minimum_break_minutes": 15
+                "late_night_end_hour": self.timing_policy.late_night_end_hour,
+                # SEC-CLOCKADR-9.12.0-016 (P2, CWE-1188, Megumi Tier-3 gate-2
+                # review): previously a hardcoded `15` -- the same class of
+                # IMPL-002 config-drift bug the two lines above this were
+                # already fixed for, in the exact same dict literal.
+                # record_break() reads this materialized value (never
+                # re-resolving self.timing_policy afterward), so under a
+                # non-default, STRICTER configured minimum_break_minutes the
+                # hardcoded 15 silently let record_break() close the
+                # work-streak protection window on a weaker break than the
+                # user configured. Now sourced from the same D6.1 loader.
+                "minimum_break_minutes": self.timing_policy.minimum_break_minutes
             },
             "session_history": [],
             # BUG-SESSION-002: Must be a string (ISO-8601), never null.
-            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "last_updated": self.time_provider.utc_now().isoformat(),
             "protocol_version": "8.13.0"
         }
 
@@ -620,7 +780,7 @@ class SessionMonitor:
         PATCH-STATE-001: Uses ProjectStateManager when available for unified state access.
         Falls back to legacy file I/O for backward compatibility.
         """
-        state['last_updated'] = datetime.now(timezone.utc).isoformat()
+        state['last_updated'] = self.time_provider.utc_now().isoformat()
 
         # PATCH-STATE-001: Use ProjectStateManager if available
         if self.state_manager:
@@ -708,6 +868,410 @@ class SessionMonitor:
                 file=sys.stderr,
             )
 
+    # -------------------------------------------------------------------
+    # v9.12.0 A3 -- work-streak / protection-window state (ADR D7, Toji
+    # gate 2; governing audit finding SEC-001, HIGH: "Session lifecycle
+    # reset bypasses rolling active-protection state"). Durable rolling
+    # protected-work state that survives start/end/transfer/archive/
+    # handoff/process-restart, and closes ONLY after a verified qualifying
+    # break. See docs/superpowers/specs/2026-08-04-clock-authority-adr.md
+    # D7 for the full normative spec this section implements.
+    # -------------------------------------------------------------------
+
+    def _get_time_schema(self) -> Optional[int]:
+        """v9.12.0 A6 (ADR D8.5 read-side gating, SEC-CLOCKADR-9.12.0-021):
+        the top-level `time_schema` stamp (ADR D8.1), read directly from the
+        FULL project-state.json.
+
+        Deliberately NOT `self.load_state()` -- that method (via
+        `ProjectStateManager.get_session_tracking()`) intentionally scopes
+        down to the `session_tracking` sub-namespace only, so it can never
+        see this sibling top-level key. Every `_is_d85_gated()` call site in
+        this class calls this method (or receives its result threaded
+        through) rather than trying to read `time_schema` off
+        `load_state()`'s return value, which would silently always resolve
+        to None (an unconditional false-negative on the gate) regardless of
+        the file's actual migration state.
+
+        Fail-soft: `ProjectStateManager` unavailable or raising, or the key
+        genuinely absent, all return None -- and `_is_d85_gated()` treats
+        None identically to "pre-migration file" (today's tolerant
+        behavior), matching `ProjectStateManager.get_work_streak()`'s own
+        D7.6 absent-`time_schema` tolerance precedent for the same field."""
+        if self.state_manager is None:
+            return None
+        try:
+            state = self.state_manager.load_project_state()
+        except Exception:
+            return None
+        return state.get("time_schema")
+
+    def _carry_work_streak_forward(self, work_streak: Dict) -> Dict:
+        """D7.5/D3.2 conservative-under-anomaly (shared by BOTH the
+        skew-suspected/rollback-detected clock-health branch in
+        `_classify_and_carry_work_streak()` below AND the v9.12.0 A6 ADR
+        D8.5 read-side gate on `last_trusted_boundary_utc` itself): an
+        anomalous or unconfirmed-provenance read can NEVER be used to CLOSE
+        the streak, only to leave it open. The streak carries FORWARD
+        unchanged; only this session's baseline is seeded."""
+        carried = dict(work_streak)
+        carried.pop("_fail_closed", None)
+        carried["_streak_session_baseline_minutes"] = carried.get("accumulated_protected_work_minutes") or 0
+        return carried
+
+    def _get_work_streak(self) -> Dict:
+        """ADR D7.6 read, routed through ProjectStateManager.get_work_streak()
+        (the fail-closed rule itself lives there). Per D7.6's `-011`
+        extension: if ProjectStateManager is unavailable or its accessor
+        raises, this is treated IDENTICALLY to an absent/corrupt
+        work_streak block -- fail closed, never a silent fallback to a
+        legacy file (this namespace has none)."""
+        if self.state_manager is not None:
+            try:
+                return self.state_manager.get_work_streak()
+            except Exception as e:
+                print(
+                    f"[!] SEC-CLOCKADR-9.12.0-001/-011: ProjectStateManager."
+                    f"get_work_streak() raised ({type(e).__name__}); failing "
+                    "CLOSED per ADR D7.6.",
+                    file=sys.stderr,
+                )
+        else:
+            print(
+                "[!] SEC-CLOCKADR-9.12.0-001/-011: ProjectStateManager "
+                "unavailable; failing CLOSED per ADR D7.6 (no legacy-file "
+                "fallback exists for work_streak).",
+                file=sys.stderr,
+            )
+        fail_closed = _default_work_streak_shape()
+        fail_closed["high_risk_block_active"] = True
+        fail_closed["_fail_closed"] = True
+        return fail_closed
+
+    def _update_work_streak(self, work_streak: Dict) -> None:
+        """Persist an updated work_streak record. Fail-soft in the sense
+        that a persistence failure never raises out to a caller mid
+        session-lifecycle-op (matching this module's existing save_state()
+        posture), but ALWAYS loud on stderr -- a discarded update must never
+        look identical to a successful one."""
+        if self.state_manager is None:
+            print(
+                "[!] SEC-CLOCKADR-9.12.0-001/-011: ProjectStateManager "
+                "unavailable; work_streak update DISCARDED (fail closed -- "
+                "no legacy-file fallback exists for this namespace).",
+                file=sys.stderr,
+            )
+            return
+        try:
+            self.state_manager.update_work_streak(work_streak)
+        except Exception as e:
+            print(
+                f"[!] SEC-CLOCKADR-9.12.0-001/-011: ProjectStateManager."
+                f"update_work_streak() raised ({type(e).__name__}); update "
+                "DISCARDED (fail closed).",
+                file=sys.stderr,
+            )
+
+    def _rolling_streak_minutes(self, work_streak: Dict, current_session_elapsed_minutes: float) -> float:
+        """ADR consequence (wellbeing alerts must consume the ROLLING
+        work-streak duration, not just the active session's own elapsed
+        time -- the directly observable effect of the SEC-001 fix).
+
+        Reduces to exactly `current_session_elapsed_minutes` whenever there
+        is no prior streak contribution (baseline 0 -- the first session
+        ever, or a streak that was just freshly opened/closed), so
+        single-session behavior is BYTE-FOR-BYTE unchanged from pre-A3.
+        """
+        baseline = work_streak.get("_streak_session_baseline_minutes") or 0
+        try:
+            baseline = float(baseline)
+        except (TypeError, ValueError):
+            baseline = 0.0
+        if baseline < 0:
+            baseline = 0.0
+        return baseline + current_session_elapsed_minutes
+
+    # -------------------------------------------------------------------
+    # Toji audit 2026-08-06 (CODE-001, MEDIUM): "Clock-health checks remain
+    # absent from primary safety-policy arithmetic." `evaluate_clock_health()`
+    # (ADR D2.2/D3.1/D3.2) was wired into exactly one call site
+    # (`_classify_and_carry_work_streak()` above). Every OTHER
+    # policy-bearing persisted-UTC subtraction in this module -- the
+    # continuation gap, the two `update_interaction()` durations, all three
+    # `check_alert_needed()` gaps, and `_archive_session()`'s final duration
+    # -- computed a raw `(later - earlier)` directly, trusting a future
+    # timestamp, a clock rollback, or an implausibly large gap without
+    # question. This ONE shared operation is now the single place every one
+    # of those call sites routes through; each call site still decides its
+    # OWN fail-closed behavior on an anomaly (D3.2 does not mandate one
+    # global policy), but none of them can skip the health check itself.
+    # -------------------------------------------------------------------
+
+    def _health_gated_minutes(
+        self,
+        earlier: Optional[datetime],
+        later: datetime,
+        *,
+        now: Optional[datetime] = None,
+    ):
+        """Evaluate `later - earlier` through `TimeProvider.evaluate_clock_health()`
+        and return `(minutes, health)`.
+
+        `minutes` is `None` whenever the pair is not clock-health `ok`
+        (D3.2: "consumers MUST NOT silently compute a duration ... from the
+        anomalous pair") -- this deliberately covers BOTH `skew-suspected`
+        and `rollback-detected`; only the caller's own fail-closed policy
+        decides what to do with a `None`. `minutes` is also `None` (with
+        `health` also `None`) when `earlier` itself is missing -- distinct
+        from an earlier that parsed but produced an anomalous gap.
+
+        Args:
+            earlier: The chronologically-earlier labeled instant, or None
+                if there is nothing to compare against yet.
+            later: The chronologically-later labeled instant (typically
+                `now`).
+            now: The authoritative current instant for the future-timestamp
+                rejection rule (D3.1). Defaults to `later` when omitted --
+                the common case where `later` itself IS "now".
+
+        Returns:
+            `(minutes: Optional[float], health: Optional[ClockHealthResult])`
+        """
+        if earlier is None:
+            return None, None
+        health = self.time_provider.evaluate_clock_health(
+            earlier=earlier, later=later, now=now if now is not None else later
+        )
+        if not health.is_ok:
+            return None, health
+        return health.gap_seconds / 60.0, health
+
+    def _classify_and_carry_work_streak(self, now: datetime, time_schema: Optional[int] = None) -> Dict:
+        """ADR D7.3/D7.4: run ONLY when a genuinely NEW session is about to
+        start (never on the "continue the still-active session" branch of
+        start_session(), which is a separate, shorter-fused DISPLAY/session-
+        level concept governed by session_continuation_threshold_minutes,
+        not this function).
+
+        Compares `now` against `work_streak.last_trusted_boundary_utc` --
+        the SEC-001 fix: NEVER against the just-reset/about-to-be-recreated
+        `current_session` object -- and decides whether the existing streak
+        carries forward unchanged, or a verified qualifying break closes it.
+
+        Args:
+            now: The authoritative current instant (D1).
+            time_schema: v9.12.0 A6 (ADR D8.5). The caller's already-resolved
+                `_get_time_schema()` result, threaded in rather than
+                re-fetched here so a single `start_session()` call only
+                reads the top-level state once. Defaults to None (treated as
+                "pre-migration/unknown" -- today's tolerant behavior) so
+                direct unit-test callers that don't care about D8.5 are
+                unaffected.
+
+        Returns the work_streak dict the caller must persist (via
+        `_update_work_streak()`) for the session about to start.
+        """
+        work_streak = self._get_work_streak()
+        last_boundary_raw = work_streak.get("last_trusted_boundary_utc")
+
+        if _is_d85_gated(last_boundary_raw, time_schema):
+            # v9.12.0 A6 (ADR D8.5, SEC-CLOCKADR-9.12.0-021): a naive
+            # `last_trusted_boundary_utc` in a migrated file is treated
+            # EXACTLY like a D3.2 clock-health anomaly, NOT like "no prior
+            # boundary at all" (the `last_boundary is None` branch below).
+            # Those two cases produce OPPOSITE outcomes: "no prior boundary"
+            # OPENS a fresh streak (resets accumulated_protected_work_minutes
+            # to 0), while an anomalous/unconfirmed boundary must CARRY the
+            # existing streak FORWARD unchanged (D7.5) -- silently routing
+            # through the "no prior boundary" branch here would have reset a
+            # real, currently-open wellbeing protection window purely
+            # because its provenance was unconfirmed, which is the opposite
+            # of the conservative direction D7.5/D3.2 require.
+            print(
+                "[!] SEC-CLOCKADR-9.12.0-021: work_streak.last_trusted_boundary_utc "
+                "is naive in a migrated (time_schema >= 1) state file -- ADR "
+                "D8.5 gate engaged. Treating as an unconfirmed-provenance "
+                "anomaly: streak carried FORWARD unchanged, never reset.",
+                file=sys.stderr,
+            )
+            return self._carry_work_streak_forward(work_streak)
+
+        last_boundary = _parse_utc(last_boundary_raw)
+
+        if last_boundary is None:
+            # No prior trusted boundary at all: first session ever (or a
+            # never-initialized/fail-closed record with no boundary to
+            # compare against) -- open a fresh streak starting now.
+            opened = _default_work_streak_shape()
+            opened["streak_start_utc"] = now.isoformat()
+            opened["last_trusted_boundary_utc"] = now.isoformat()
+            # D7.6 fail-closed carries high_risk_block_active=True forward
+            # even into a freshly-opened streak -- conservative, never
+            # silently cleared by the mere act of opening a new streak.
+            opened["high_risk_block_active"] = bool(work_streak.get("high_risk_block_active"))
+            return opened
+
+        health = self.time_provider.evaluate_clock_health(earlier=last_boundary, later=now, now=now)
+        minimum_break_minutes = self.timing_policy.minimum_break_minutes
+
+        if health.is_ok and health.gap_seconds is not None and (health.gap_seconds / 60) >= minimum_break_minutes:
+            # D7.4: a verified qualifying break -- close the window. Ending
+            # a session and IMMEDIATELY starting a new one (the exact
+            # SEC-001 exploit) produces a near-zero gap here, which is below
+            # minimum_break_minutes, so it does NOT reach this branch.
+            closed = _default_work_streak_shape()
+            closed["streak_start_utc"] = now.isoformat()
+            closed["last_trusted_boundary_utc"] = now.isoformat()
+            closed["last_qualifying_break_utc"] = now.isoformat()
+            closed["last_qualifying_break_duration_minutes"] = health.gap_seconds / 60
+            closed["high_risk_block_active"] = False
+            return closed
+
+        # D7.5/D3.2 conservative-under-anomaly: `skew-suspected` /
+        # `rollback-detected` fall here too -- an anomalous clock can NEVER
+        # be used to CLOSE the streak, only to leave it open. The streak
+        # carries FORWARD unchanged; only this session's baseline is seeded.
+        return self._carry_work_streak_forward(work_streak)
+
+    # -------------------------------------------------------------------
+    # v9.12.0 A4 -- ADR D5 time envelope (Toji gate 4; governing audit
+    # finding AI-001, HIGH: "Claude and Codex lack an authoritative user-time
+    # context"). One method assembles every input `time_envelope.py`'s pure
+    # builder needs from THIS monitor's own already-resolved state (the D1-D4
+    # TimeProvider/timing_policy from A2, the D7 work-streak record from A3)
+    # -- callers (the CLI `--json` branches in `main()`, below) never touch
+    # `time_envelope.py` directly.
+    # -------------------------------------------------------------------
+
+    def _build_envelope(
+        self,
+        boundary: str,
+        *,
+        session_id: Optional[str] = None,
+        previous_end_utc: Optional[datetime] = None,
+        current_start_utc: Optional[datetime] = None,
+        alert_needed: Optional[bool] = None,
+        alert_reasons: Optional[List[str]] = None,
+        is_late_night: Optional[bool] = None,
+        ambiguous_boundary_timestamp: bool = False,
+    ) -> Dict:
+        """Build one D5 time envelope for `boundary` (one of
+        `time_envelope.SessionBoundary.ALL`). Never raises -- any composition
+        failure degrades to the D5.6 `unavailable` stub via
+        `build_envelope_safe()`, exactly as a session-lifecycle command must
+        never fail SOLELY because the envelope could not be built.
+
+        `previous_end_utc`/`current_start_utc` are optional: pass both to
+        get a `gap`/`continuity` classification (e.g. `start`, comparing the
+        just-archived session's end against the new start); omit both for
+        boundaries with no meaningful boundary-gap concept (e.g. `status`,
+        `check` -- `continuity.class` then degrades to the documented
+        "no previous session boundary available" fresh_session default).
+
+        `ambiguous_boundary_timestamp`: v9.12.0 A6 (ADR D8.5 read-side
+        gating, SEC-CLOCKADR-9.12.0-021). The caller (currently only the
+        `start --json` CLI branch in `main()`) sets this True when it
+        withheld BOTH `previous_end_utc`/`current_start_utc` (passing both
+        None) specifically because the D8.5 gate (`_is_d85_gated()`) fired
+        on the raw value -- forwarded verbatim to `time_envelope.build_envelope()`,
+        which is what actually renders the distinct `ambiguous_timestamp`
+        status reason (see that function's docstring). This method never
+        evaluates the gate itself -- it has no access to the raw string,
+        only the caller's already-parsed-or-withheld `datetime` values.
+
+        SEC-CLOCKADR-9.12.0-017 (P1, A04:2021) remediation: `is_late_night`/
+        `alert_needed`/`alert_reasons` are `Optional` and default to `None`
+        (NOT `False`/`[]`) so this method can distinguish "the caller did not
+        supply a value" from "the caller computed False/[] explicitly" (e.g.
+        `check`'s CLI branch, which already has `check_alert_needed()`'s full
+        authoritative result including duration-based reasons that require
+        active-session state this method does not otherwise need). When
+        `is_late_night` is omitted, THIS method computes it itself --
+        `_is_late_night()` is a cheap, session-state-independent computation
+        needing only `now` + the resolved user zone + thresholds, all of
+        which this method already gathers below -- so EVERY boundary reports
+        the genuine value, never the prior hardcoded `False`/`[]` default
+        that made a `start --json` envelope at 2am affirmatively (and
+        `envelope_status: "complete"`-ly) claim "not late night, no alert."
+        Per ADR D6.4 ("late night... can set alert_needed = True on its
+        own"), when the (explicit-or-computed) `is_late_night` is true,
+        `alert_needed` is forced True and `"late_night"` is folded into
+        `alert_reasons` REGARDLESS of boundary or whether the caller already
+        included it (idempotent for `check`, which already includes it).
+        Duration-based reasons remain `check`/`check-and-record`-only --
+        computing those requires `check_alert_needed()`'s own active-session
+        arithmetic, which this method does not reproduce.
+        """
+        # D5.6: gathering these inputs (state load, work-streak read) can
+        # itself raise (e.g. a corrupt ProjectStateManager) -- that failure
+        # must degrade to the SAME "unavailable" stub build_envelope_safe()
+        # already produces for a composition-time failure, not propagate out
+        # of this method. build_envelope_safe() alone only guards exceptions
+        # raised INSIDE build_envelope() itself; input gathering happens
+        # BEFORE that call, so this method wraps BOTH steps in one guard.
+        try:
+            now = self.time_provider.utc_now()
+            state = self.load_state()
+            thresholds = state.get('thresholds', {})
+            late_night_hour = thresholds.get('late_night_hour', self.timing_policy.late_night_hour)
+            late_night_end_hour = thresholds.get('late_night_end_hour', self.timing_policy.late_night_end_hour)
+
+            # SEC-CLOCKADR-9.12.0-017: compute the genuine late-night state
+            # for THIS boundary's emission instant whenever the caller did
+            # not already supply it -- the direct fix for the 6-of-7-
+            # boundaries-hardcoded-false defect. Uses the SAME `now` passed
+            # to build_envelope_safe() below (not a second, potentially
+            # divergent `utc_now()` read) so `local_wall_time`/
+            # `authoritative_instant_utc` and `late_night.is_late_night`
+            # are always evaluated against one consistent instant.
+            if is_late_night is None:
+                late_night_thresholds = {
+                    'late_night_hour': late_night_hour,
+                    'late_night_end_hour': late_night_end_hour,
+                }
+                is_late_night = _is_late_night(_local_now(now, self._user_zone_info), late_night_thresholds)
+            if alert_reasons is None:
+                alert_reasons = []
+            if alert_needed is None:
+                alert_needed = False
+            # D6.4: late night is an independent trigger, regardless of
+            # boundary. Idempotent when the caller (e.g. `check`) already
+            # included it via check_alert_needed()'s own result.
+            if is_late_night:
+                alert_needed = True
+                if AlertReason.LATE_NIGHT not in alert_reasons:
+                    alert_reasons = list(alert_reasons) + [AlertReason.LATE_NIGHT]
+
+            return build_envelope_safe(
+                boundary=boundary,
+                time_provider=self.time_provider,
+                zone_resolution=self.timing_policy.user_zone,
+                user_zone_info=self._user_zone_info,
+                session_id=session_id,
+                now=now,
+                previous_end_utc=previous_end_utc,
+                current_start_utc=current_start_utc,
+                session_continuation_threshold_minutes=self.timing_policy.session_continuation_threshold_minutes,
+                work_streak=self._get_work_streak(),
+                late_night_hour=late_night_hour,
+                late_night_end_hour=late_night_end_hour,
+                is_late_night=is_late_night,
+                alert_needed=alert_needed,
+                alert_reasons=alert_reasons,
+                ambiguous_boundary_timestamp=ambiguous_boundary_timestamp,
+            )
+        except Exception:
+            try:
+                emitted_at_utc = self.time_provider.utc_now().isoformat()
+            except Exception:
+                emitted_at_utc = None
+            return {
+                "envelope_schema": ENVELOPE_SCHEMA_VERSION,
+                "envelope_status": EnvelopeStatus.UNAVAILABLE,
+                "envelope_status_reasons": [EnvelopeStatusReason.GENERATION_ERROR],
+                "emitted_at_utc": emitted_at_utc,
+            }
+
     def start_session(self, session_id: Optional[str] = None) -> Dict:
         """
         Start a new work session or continue existing one.
@@ -746,9 +1310,18 @@ class SessionMonitor:
         self._point_to_fresh_handoff_brief()
 
         state = self.load_state()
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
 
-        # Check if there's an active session from < 30 minutes ago
+        # v9.12.0 A2 phase (b) (IMPL-002 closure, ADR D6.2): previously a
+        # hardcoded `30` that made
+        # `safety.session_tracking.session_continuation_threshold_minutes`
+        # have NO EFFECT on enforced behavior no matter what it was edited
+        # to. Now sourced from the single timing_policy.py loader -- editing
+        # this key in protocol.config.yaml now changes the actual
+        # continuation boundary.
+        continuation_threshold_minutes = self.timing_policy.session_continuation_threshold_minutes
+
+        # Check if there's an active session from < continuation_threshold_minutes ago
         if state['current_session']['session_active']:
             # v9.10.2 item-5 carried note: normalize via _parse_utc (BUG-SESSION-001
             # precedent) instead of a bare datetime.fromisoformat(). A naive legacy
@@ -757,13 +1330,35 @@ class SessionMonitor:
             # a still-continuing legacy session instead of continuing it.
             last_time = _parse_utc(state['current_session']['last_interaction_time'])
             if last_time is not None:
-                gap_minutes = (now - last_time).total_seconds() / 60
+                # Toji audit 2026-08-06 (CODE-001, MEDIUM): route this
+                # policy-bearing subtraction through the shared health-gated
+                # operation instead of a raw `(now - last_time)`. Fail-closed
+                # choice for THIS consumer: an anomalous gap (future
+                # timestamp / rollback / implausible) must never be trusted
+                # to mean "still within the continuation window" -- treat it
+                # as expired. This routes the session through the SAME
+                # conservative-under-anomaly machinery
+                # `_classify_and_carry_work_streak()` already applies to an
+                # anomalous `last_trusted_boundary_utc` gap (D7.5: never
+                # closes the streak on an anomaly either) instead of a
+                # second, divergent anomaly policy for this specific gap.
+                gap_minutes, health = self._health_gated_minutes(last_time, now, now=now)
+                if gap_minutes is None:
+                    print(
+                        f"[!] CODE-001: continuation-gap clock health "
+                        f"{health.state if health else 'unknown'} "
+                        f"({health.reason if health else 'n/a'}) -- treating "
+                        "session as expired rather than trusting the "
+                        "anomalous gap.",
+                        file=sys.stderr,
+                    )
+                    gap_minutes = float('inf')
             else:
                 # Missing/unparseable timestamp - treat as expired session
                 print(f"[!] Invalid timestamp in session state. Starting new session.")
                 gap_minutes = float('inf')
 
-            if gap_minutes < 30:
+            if gap_minutes < continuation_threshold_minutes:
                 # Continue existing session
                 print(f"[STATUS] Continuing active session (gap: {gap_minutes:.1f} minutes)")
                 state['current_session']['last_interaction_time'] = now.isoformat()
@@ -772,7 +1367,31 @@ class SessionMonitor:
             else:
                 # Session expired, archive it
                 print(f"[PAUSED] Previous session expired ({gap_minutes:.1f} min gap). Starting new session.")
-                self._archive_session(state)
+                # Toji audit 2026-08-06 (DESIGN-001, HIGH direct fix, ADR
+                # D7.3-D7.5): pass the session's own last REAL measured
+                # interaction instant as the archive's trusted end boundary
+                # -- NOT a fresh observation instant. See
+                # `_archive_session()`'s `end_override` docstring for why:
+                # using `utc_now()` here (the pre-fix behavior) silently
+                # converted the entire idle gap into "work" AND erased it
+                # from ever being evaluated as a qualifying break. `last_time`
+                # is still the best available "last real activity" boundary
+                # even when the gap FROM it was itself just flagged
+                # health-anomalous above (that anomaly is about trusting the
+                # ELAPSED time, not about `last_time`'s own validity as an
+                # instant) -- the conservative D7.5 carry-forward machinery
+                # downstream handles a subsequently-anomalous boundary
+                # correctly either way.
+                self._archive_session(state, end_override=last_time)
+
+        # v9.12.0 A3 (ADR D7.3, SEC-001 direct fix): classify against the
+        # durable work_streak record -- NEVER against the just-reset/
+        # about-to-be-recreated current_session object below (that
+        # comparison is the SEC-001 defect itself). Runs for BOTH the
+        # "session expired, archive it" branch above and the "nothing was
+        # active at all" case that falls straight through to here.
+        work_streak = self._classify_and_carry_work_streak(now, time_schema=self._get_time_schema())
+        self._update_work_streak(work_streak)
 
         # Start new session
         session_id = session_id or f"session_{now.strftime('%Y%m%d_%H%M%S')}"
@@ -787,7 +1406,30 @@ class SessionMonitor:
             "escalation_level": 0,
             "user_last_choice": None,
             "break_acknowledged": False,
-            "high_risk_operations_blocked": False
+            # SEC-001 direct fix: restore the high-risk block across the
+            # session-lifecycle boundary from the durable work_streak record,
+            # instead of unconditionally resetting it to False as pre-A3
+            # code did (the exact defect the audit identified).
+            "high_risk_operations_blocked": bool(work_streak.get("high_risk_block_active")),
+            # Toji audit 2026-08-06 (IMPL-001, MEDIUM direct fix): this
+            # session's own streak-contribution baseline. Left None (NOT
+            # `now.isoformat()`) by design -- `update_interaction()`/
+            # `_archive_session()` fall back to the session's CURRENT
+            # `start_time` whenever this is None, which correctly tracks a
+            # `start_time` mutated after session creation (e.g. a
+            # continuation-threshold test backdating it). It is set to a
+            # concrete instant ONLY by `_resolve_pending_break()`, at the
+            # moment a qualifying break is verified -- from that point on,
+            # this session's streak contribution is measured from the break
+            # completion instant, never unconditionally from `start_time`
+            # again (the fix for "reaccumulation of all pre-break work").
+            "streak_contribution_start_time": None,
+            # SEC-002 direct fix: break-initiation/completion pair state.
+            # None until `record_break()` initiates a pending break;
+            # `_resolve_pending_break()` (called from `update_interaction()`)
+            # is the only place that resolves and clears it.
+            "pending_break_started_utc": None,
+            "pending_break_reported_minutes": None,
         }
 
         state['session_metrics'] = self._default_state()['session_metrics']
@@ -795,6 +1437,90 @@ class SessionMonitor:
         print(f"[OK] New session started: {session_id}")
         self.save_state(state)
         return state
+
+    def _resolve_pending_break(self, state: Dict, now: datetime) -> None:
+        """Toji audit 2026-08-06 (SEC-002, HIGH direct fix; ADR
+        D3.1/D7.4/D7.5's lifecycle-event contract: "the existing break ->
+        continue lifecycle is the natural pair"). Called at the top of
+        `update_interaction()` -- i.e. on every `continue`/`resume` and any
+        auto-started interaction -- to resolve a break `record_break()`
+        INITIATED but never itself completes.
+
+        `record_break()` no longer clears `high_risk_operations_blocked` /
+        the `work_streak` from a caller-REPORTED duration alone (that was
+        the SEC-002 defect: a claimed duration, with no elapsed-time
+        verification, immediately cleared protection). It only records
+        `pending_break_started_utc` -- the break-INITIATION instant. THIS
+        method is where the break actually QUALIFIES: it measures the REAL
+        elapsed gap between that instant and `now`, health-gated
+        (CODE-001), and clears protection ONLY when that measured gap is
+        itself clock-health `ok` and meets `minimum_break_minutes`.
+
+        On any other outcome -- no pending break, an unhealthy gap
+        (rollback-detected/skew-suspected), or a healthy-but-too-short gap
+        -- protection is PRESERVED (SEC-002's explicit requirement:
+        "Preserve the block on missing, future, rollback, implausible, or
+        incomplete break evidence"). The pending marker is always cleared
+        once evaluated -- a resolved question, answered either way -- so a
+        single `break` call is never silently re-evaluated against an
+        ever-growing gap on every future interaction indefinitely.
+
+        Also implements the IMPL-001 direct fix (ADR D7.2/D7.4): on a
+        VERIFIED qualifying break, `current_session.streak_contribution_
+        start_time` is advanced to `now` -- the explicit baseline
+        `update_interaction()` (below) measures this session's OWN streak
+        contribution from, instead of unconditionally re-measuring from the
+        session's original `start_time` and silently restoring all
+        pre-break work into the just-closed streak.
+
+        Mutates `state` in place. Never raises -- a broken pending-break
+        marker must never crash the interaction path that calls this.
+        """
+        pending_raw = state['current_session'].get('pending_break_started_utc')
+        if not pending_raw:
+            return
+
+        pending_started = _parse_utc(pending_raw)
+        minimum_break_minutes = state.get('thresholds', {}).get(
+            'minimum_break_minutes', self.timing_policy.minimum_break_minutes
+        )
+        break_minutes, health = self._health_gated_minutes(pending_started, now, now=now)
+
+        if break_minutes is not None and break_minutes >= minimum_break_minutes:
+            # SEC-002 direct fix: a VERIFIED (measured, health-gated)
+            # qualifying break -- clear protection now, for real.
+            state['current_session']['high_risk_operations_blocked'] = False
+            # IMPL-001 direct fix: explicit baseline at the qualifying-break
+            # boundary -- see docstring above.
+            state['current_session']['streak_contribution_start_time'] = now.isoformat()
+            closed = _default_work_streak_shape()
+            closed['streak_start_utc'] = now.isoformat()
+            closed['last_trusted_boundary_utc'] = now.isoformat()
+            closed['last_qualifying_break_utc'] = now.isoformat()
+            closed['last_qualifying_break_duration_minutes'] = break_minutes
+            closed['high_risk_block_active'] = False
+            self._update_work_streak(closed)
+            print(
+                f"[OK] SEC-002: qualifying break verified ({break_minutes:.1f} "
+                f"min measured, >= {minimum_break_minutes} min required) -- "
+                "protection cleared."
+            )
+        else:
+            if pending_started is None:
+                reason = "pending break start timestamp missing/unparseable"
+            elif health is not None:
+                reason = health.reason
+            else:
+                reason = "insufficient elapsed time"
+            print(
+                f"[!] SEC-002: break not verified as qualifying ({reason}) -- "
+                "protection status unchanged (preserved on missing/future/"
+                "rollback/implausible/incomplete break evidence).",
+                file=sys.stderr,
+            )
+
+        state['current_session']['pending_break_started_utc'] = None
+        state['current_session']['pending_break_reported_minutes'] = None
 
     def update_interaction(self, _retry_count: int = 0, _max_retries: int = 1) -> Dict:
         """
@@ -828,7 +1554,15 @@ class SessionMonitor:
             except Exception as e:
                 raise RuntimeError(f"Failed to start session: {e}")
 
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
+
+        # Toji audit 2026-08-06 (SEC-002/IMPL-001 direct fix): resolve any
+        # pending break BEFORE computing this call's durations -- a
+        # just-qualified break must already be reflected in both
+        # `high_risk_operations_blocked` and the streak-contribution
+        # boundary the flush below reads.
+        self._resolve_pending_break(state, now)
+
         state['current_session']['last_interaction_time'] = now.isoformat()
 
         # Calculate duration
@@ -853,8 +1587,25 @@ class SessionMonitor:
             except Exception as e:
                 raise RuntimeError(f"Failed to reset session (invalid start_time format): {e}")
 
-        duration_minutes = (now - start).total_seconds() / 60
-        state['session_metrics']['total_duration_minutes'] = int(duration_minutes)
+        # Toji audit 2026-08-06 (CODE-001, MEDIUM): health-gate this
+        # policy-bearing subtraction instead of a raw `(now - start)`.
+        # Fail-closed choice for THIS consumer: an anomalous gap must never
+        # silently produce a fabricated (possibly negative/inflated)
+        # duration -- retain the last PERSISTED value instead of trusting
+        # the anomalous one.
+        duration_minutes, duration_health = self._health_gated_minutes(start, now, now=now)
+        if duration_minutes is None:
+            print(
+                f"[!] CODE-001: session duration clock health "
+                f"{duration_health.state if duration_health else 'unknown'} "
+                f"({duration_health.reason if duration_health else 'n/a'}) -- "
+                "retaining last known total_duration_minutes rather than "
+                "trusting the anomalous gap.",
+                file=sys.stderr,
+            )
+            duration_minutes = float(state['session_metrics'].get('total_duration_minutes') or 0)
+        else:
+            state['session_metrics']['total_duration_minutes'] = int(duration_minutes)
 
         # Update continuous work time (time since last break)
         # v9.10.2 item-5 carried note: this branch previously had NO try/except
@@ -867,11 +1618,70 @@ class SessionMonitor:
             if last_break is None:
                 continuous_minutes = duration_minutes
             else:
-                continuous_minutes = (now - last_break).total_seconds() / 60
+                # CODE-001: same health-gated treatment as the total
+                # duration above.
+                continuous_gap, continuous_health = self._health_gated_minutes(last_break, now, now=now)
+                if continuous_gap is None:
+                    print(
+                        f"[!] CODE-001: continuous-work clock health "
+                        f"{continuous_health.state if continuous_health else 'unknown'} "
+                        f"({continuous_health.reason if continuous_health else 'n/a'}) "
+                        "-- retaining last known continuous_work_minutes "
+                        "rather than trusting the anomalous gap.",
+                        file=sys.stderr,
+                    )
+                    continuous_minutes = float(state['session_metrics'].get('continuous_work_minutes') or 0)
+                else:
+                    continuous_minutes = continuous_gap
         else:
             continuous_minutes = duration_minutes
 
         state['session_metrics']['continuous_work_minutes'] = int(continuous_minutes)
+
+        # v9.12.0 A3 (ADR D7.7) + Toji audit 2026-08-06 (IMPL-001, MEDIUM
+        # direct fix): flush the incremental accumulated-minutes delta on
+        # every recorded interaction, piggybacking on this function's
+        # existing last_interaction_time persistence path (D7.7's explicit
+        # mechanism) rather than only at end_session(). IMPL-001 fix: this
+        # session's OWN contribution to the streak is measured from
+        # `streak_contribution_start_time` (set to `start_time` at session
+        # start by `start_session()`, and advanced to the qualifying-break
+        # completion instant by `_resolve_pending_break()` above) -- NEVER
+        # from the session's original `start_time` unconditionally, which
+        # is what silently restored all pre-break work into a just-closed
+        # streak. `.get(...) or start_time` keeps this backward compatible
+        # with any already-active session predating this field.
+        contribution_start_raw = state['current_session'].get('streak_contribution_start_time')
+        contribution_start = _parse_utc(contribution_start_raw) if contribution_start_raw else None
+        if contribution_start is None or contribution_start < start:
+            # Not set (no qualifying break yet this session), unparseable,
+            # or somehow predating the session's own (possibly since-
+            # mutated) `start_time` -- fall back to `start` ITSELF, freshly
+            # parsed above from the session's CURRENT `start_time`. This
+            # correctly tracks a `start_time` that was mutated after session
+            # creation (e.g. backdated) -- exactly today's pre-IMPL-001
+            # behavior for a session with no qualifying break yet.
+            contribution_start = start
+
+        # CODE-001: health-gate the streak-flush subtraction too.
+        streak_minutes, streak_health = self._health_gated_minutes(contribution_start, now, now=now)
+        if streak_minutes is not None:
+            work_streak = self._get_work_streak()
+            baseline = work_streak.get('_streak_session_baseline_minutes') or 0
+            new_total = baseline + streak_minutes
+            if new_total > (work_streak.get('accumulated_protected_work_minutes') or 0):
+                work_streak['accumulated_protected_work_minutes'] = new_total
+                self._update_work_streak(work_streak)
+        elif streak_health is not None:
+            # CODE-001 fail-closed: never silently flush an anomalous gap
+            # into the safety-critical accumulated total -- skip this
+            # flush; the next healthy interaction catches up (D7.7's
+            # already-accepted bounded residual).
+            print(
+                f"[!] CODE-001: work-streak flush skipped this interaction "
+                f"-- clock health {streak_health.state} ({streak_health.reason}).",
+                file=sys.stderr,
+            )
 
         # Log to security review (EXTENSION 3: PATCH-SESSION-005)
         self._log_session_to_security_review('session_update', state)
@@ -901,7 +1711,7 @@ class SessionMonitor:
         if not state['current_session']['session_active']:
             return False, None, {}
 
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
         start_time = state['current_session'].get('start_time')
         if not start_time:
             print("[!] Session start_time is missing. Cannot check alert.")
@@ -914,7 +1724,33 @@ class SessionMonitor:
             print("[!] Invalid session start_time format. Cannot check alert.")
             return False, None, {}
 
-        duration_minutes = (now - start).total_seconds() / 60
+        # Toji audit 2026-08-06 (CODE-001, MEDIUM): health-gate the primary
+        # duration subtraction. Fail-closed choice for THIS consumer: a
+        # WELLBEING safety check must never silently UNDER-alert because a
+        # gap could not be trusted -- an anomaly forces an alert (with its
+        # own `clock_anomaly` reason code) rather than being ignored.
+        duration_minutes, duration_health = self._health_gated_minutes(start, now, now=now)
+        clock_anomaly = duration_minutes is None
+        if clock_anomaly:
+            print(
+                f"[!] CODE-001: session duration clock health "
+                f"{duration_health.state if duration_health else 'unknown'} "
+                f"({duration_health.reason if duration_health else 'n/a'}) -- "
+                "cannot trust elapsed duration for alert thresholds; forcing "
+                "an alert rather than silently under-alerting.",
+                file=sys.stderr,
+            )
+            duration_minutes = float(state['session_metrics'].get('total_duration_minutes') or 0)
+
+        # v9.12.0 A3 (ADR D7 consequence, SEC-001 direct fix): wellbeing
+        # alert thresholds MUST consume the ROLLING work-streak duration,
+        # not just this session's own elapsed time -- otherwise a rapid
+        # end+restart (SEC-001's exact exploit) resets the alert clock right
+        # alongside the state it bypassed. Reduces to duration_minutes
+        # exactly (rolling == current) whenever there is no prior streak
+        # contribution, so single-session behavior is unchanged.
+        work_streak = self._get_work_streak()
+        rolling_minutes = self._rolling_streak_minutes(work_streak, duration_minutes)
 
         # Debounce check (v8.13.0 - PATCH-SESSION-004)
         # Skip alert if last alert was too recent (prevents spam during rapid prototyping)
@@ -923,8 +1759,18 @@ class SessionMonitor:
 
         last_alert_dt = _parse_utc(last_alert_time)
         if last_alert_dt is not None:
-            minutes_since_last_alert = (now - last_alert_dt).total_seconds() / 60
-            if minutes_since_last_alert < debounce_threshold:
+            # CODE-001: same fail-closed direction as above -- an anomalous
+            # gap must never silently SUPPRESS a needed alert via debounce.
+            minutes_since_last_alert, debounce_health = self._health_gated_minutes(last_alert_dt, now, now=now)
+            if minutes_since_last_alert is None:
+                print(
+                    f"[!] CODE-001: debounce-gap clock health "
+                    f"{debounce_health.state if debounce_health else 'unknown'} "
+                    f"({debounce_health.reason if debounce_health else 'n/a'}) "
+                    "-- not suppressing via debounce.",
+                    file=sys.stderr,
+                )
+            elif minutes_since_last_alert < debounce_threshold:
                 # Alert debounced - too soon since last alert
                 return False, None, {}
 
@@ -934,11 +1780,23 @@ class SessionMonitor:
         # Determine if alert is needed
         alert_needed = False
         alert_level = "standard"
+        # v9.12.0 A4 (ADR D6.5, IMPL-001 direct fix): structured, combinable
+        # reason codes -- late-night and every duration threshold are each
+        # independently detectable, so a result can carry MULTIPLE
+        # simultaneous causes (e.g. ["duration_critical", "late_night"]),
+        # which a single `alert_level` string can never represent. The
+        # trigger CONDITIONS below are otherwise UNCHANGED from pre-A4
+        # (byte-for-byte non-regression) -- reason codes are appended
+        # alongside each existing `alert_needed = True` assignment; the one
+        # NEW independent trigger is late-night, appended after this block.
+        reasons: List[str] = []
 
-        # Check if first alert threshold reached (4 hours)
-        if duration_minutes >= thresholds['initial_alert_minutes'] and state['current_session']['alert_count'] == 0:
+        # Check if first alert threshold reached (4 hours) -- against the
+        # ROLLING streak duration (v9.12.0 A3), not just this session's own.
+        if rolling_minutes >= thresholds['initial_alert_minutes'] and state['current_session']['alert_count'] == 0:
             alert_needed = True
             alert_level = "standard"
+            reasons.append(AlertReason.DURATION_INITIAL)
 
         # Check if escalated alert needed (user chose continue + time passed)
         elif escalation_level > 0:
@@ -948,32 +1806,79 @@ class SessionMonitor:
             # check-and-record path, silently disabling the wellbeing safety alerts.
             escalation_last_alert = _parse_utc(state['current_session'].get('last_alert_time'))
             if escalation_last_alert is not None:
-                minutes_since_alert = (now - escalation_last_alert).total_seconds() / 60
+                # CODE-001: same fail-closed direction -- an anomalous gap
+                # must never silently SUPPRESS a due escalated alert.
+                minutes_since_alert, escalation_health = self._health_gated_minutes(
+                    escalation_last_alert, now, now=now
+                )
 
-                if minutes_since_alert >= thresholds['escalated_alert_minutes']:
+                if minutes_since_alert is None:
+                    print(
+                        f"[!] CODE-001: escalation-gap clock health "
+                        f"{escalation_health.state if escalation_health else 'unknown'} "
+                        f"({escalation_health.reason if escalation_health else 'n/a'}) "
+                        "-- treating escalated alert as due.",
+                        file=sys.stderr,
+                    )
                     alert_needed = True
                     alert_level = "escalated"
+                    reasons.append(AlertReason.DURATION_ESCALATED)
+                elif minutes_since_alert >= thresholds['escalated_alert_minutes']:
+                    alert_needed = True
+                    alert_level = "escalated"
+                    reasons.append(AlertReason.DURATION_ESCALATED)
 
-        # Check if critical threshold reached (6+ hours)
-        if duration_minutes >= thresholds['critical_session_minutes']:
+        # Check if critical threshold reached (6+ hours) -- rolling duration.
+        if rolling_minutes >= thresholds['critical_session_minutes']:
             alert_needed = True
             alert_level = "critical"
+            reasons.append(AlertReason.DURATION_CRITICAL)
 
-        # Check if maximum continuous work threshold reached (8+ hours)
-        # This is the absolute maximum - enforce stricter read-only mode
-        if duration_minutes >= thresholds['max_continuous_minutes']:
+        # Check if maximum continuous work threshold reached (8+ hours) --
+        # rolling duration. This is the absolute maximum - enforce stricter
+        # read-only mode.
+        if rolling_minutes >= thresholds['max_continuous_minutes']:
             alert_needed = True
             alert_level = "maximum"  # Highest severity level
+            reasons.append(AlertReason.DURATION_MAXIMUM)
 
-        # Build alert context
         # BUG-SESSION-005: is_late_night must be computed from LOCAL wall-clock
         # time (with midnight wrap), never from the UTC `now` above -- see
         # _is_late_night() for the single implementation and rationale.
+        #
+        # v9.12.0 A4 (ADR D6.4, IMPL-001 direct fix): late night is now an
+        # INDEPENDENT alert reason -- it can set alert_needed=True on its
+        # own, exactly as the duration thresholds already do, instead of
+        # only ever being attached to context as inert metadata. A fresh
+        # (0-minute) session starting at/after late_night_hour local now
+        # produces a checkpoint.
+        is_late = _is_late_night(_local_now(now, self._user_zone_info), thresholds)
+        if is_late:
+            alert_needed = True
+            reasons.append(AlertReason.LATE_NIGHT)
+
+        # Toji audit 2026-08-06 (CODE-001, MEDIUM): the primary duration gap
+        # was clock-health anomalous (see above) -- surface it as its own
+        # independent alert trigger, same pattern as late-night.
+        if clock_anomaly:
+            alert_needed = True
+            reasons.append(AlertReason.CLOCK_ANOMALY)
+
+        # Build alert context
         context = {
             "duration_minutes": int(duration_minutes),
+            # v9.12.0 A3: the ROLLING work-streak duration that actually
+            # drove the threshold comparisons above -- equals
+            # duration_minutes when there is no prior streak contribution.
+            "rolling_streak_minutes": int(rolling_minutes),
             "duration_formatted": self._format_duration(duration_minutes),
             "alert_level": alert_level,
-            "is_late_night": _is_late_night(_local_now(now), thresholds),
+            # v9.12.0 A4 (ADR D6.5): the combinable reason-code list. Never
+            # absent -- always a list (possibly empty), even when
+            # alert_needed is False, so a caller can safely iterate it
+            # without a None-guard.
+            "alert_reasons": reasons,
+            "is_late_night": is_late,
             "continuous_minutes": state['session_metrics']['continuous_work_minutes'],
             "alert_count": state['current_session']['alert_count']
         }
@@ -1058,13 +1963,13 @@ Template file not found at: {self.template_file}
         with open(self.template_file, 'r', encoding='utf-8') as f:
             template = f.read()
 
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
         state = self.load_state()
 
         # BUG-SESSION-005 (BUG C): {DATE} was rendering a bare, unlabeled UTC
         # timestamp into a user-facing alert. Label local+UTC, same pattern
         # as get_session_summary()'s Current Time/Started fields.
-        now_local = _local_now(now)
+        now_local = _local_now(now, self._user_zone_info)
         date_display = f"{now_local.strftime('%Y-%m-%d %H:%M %Z')} ({now.strftime('%Y-%m-%d %H:%M')} UTC)"
 
         # Build replacement values
@@ -1074,8 +1979,25 @@ Template file not found at: {self.template_file}
             '{PROJECT_NAME}': self._get_project_name(),
             '{LATE_NIGHT_FLAG}': '[LATE] YES - Late night work detected' if context.get('is_late_night') else '[DAY] No',
             '{CONTINUOUS_FLAG}': f"[!] {context.get('continuous_minutes', 0)} minutes without break" if context.get('continuous_minutes', 0) > 120 else '[OK] Recent breaks taken',
+            # v9.12.0 A4 (ADR D6.5): the combinable reason-code list built by
+            # check_alert_needed() (context['alert_reasons']), e.g.
+            # "duration_critical, late_night". `.get(..., [])` keeps this
+            # backward compatible with any pre-A4 caller/test fixture that
+            # constructs a context dict without the key -- renders as an
+            # empty string rather than raising.
+            '{ALERT_REASONS}': ', '.join(context.get('alert_reasons') or []),
             '{BREAK_RECOMMENDATION}': self._get_break_recommendation(context),
             '{LATE_NIGHT_THRESHOLD}': f"{state['thresholds']['late_night_hour']}:00",
+            # v9.12.0 A5 (IMPL-004 template-sync closure): the template's
+            # "wraps past midnight until early morning" phrasing previously
+            # had no parameterized end-hour to point at (only the START hour
+            # was ever substituted). `.get(..., self.timing_policy...)`
+            # mirrors the exact fallback pattern already established for
+            # `late_night_end_hour` everywhere else it is read (BUG-SESSION-005),
+            # so legacy state files predating this field are never broken.
+            '{LATE_NIGHT_END_THRESHOLD}': (
+                f"{state['thresholds'].get('late_night_end_hour', self.timing_policy.late_night_end_hour)}:00"
+            ),
             # FEAT-TRANSFER-9.11.0-001 (v9.11.0 Increment 2, USER scope addition):
             # every wellness checkpoint (standard/escalated/critical/maximum)
             # renders through this same template, so this placeholder appears
@@ -1117,7 +2039,7 @@ Template file not found at: {self.template_file}
             raise ValueError(f"Invalid choice '{choice}'. Must be 'save_and_break' or 'continue'.")
 
         state = self.load_state()
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
 
         state['current_session']['user_last_choice'] = choice
         state['current_session']['last_alert_time'] = now.isoformat()
@@ -1131,22 +2053,88 @@ Template file not found at: {self.template_file}
             state['session_metrics']['continues_chosen'] += 1
             state['current_session']['escalation_level'] += 1
 
-            # Enable high-risk blocking if in critical session
-            duration_minutes = state['session_metrics']['total_duration_minutes']
-            if duration_minutes >= state['thresholds']['critical_session_minutes']:
+            # Toji audit 2026-08-06 (SEC-001, HIGH direct fix, CWE-841):
+            # this branch used to compare the CACHED, per-current-session
+            # `session_metrics.total_duration_minutes` against the critical
+            # threshold -- a DIFFERENT authority than the one
+            # `check_alert_needed()` actually used to decide the critical
+            # alert that led here (the ROLLING work-streak duration, D7).
+            # That field can be near-zero right after a restart (SEC-001's
+            # own exploit) or simply stale within a long session, letting a
+            # user receive a genuine critical alert, choose "continue", and
+            # NOT have the block activate. Block activation now consumes
+            # the EXACT SAME rolling-streak authority `check_alert_needed()`
+            # consumes (`_rolling_streak_minutes()`), recomputed here from
+            # the current session's OWN measured elapsed time (health-gated,
+            # CODE-001) plus the durable streak baseline -- never the cached
+            # per-session counter alone.
+            work_streak = self._get_work_streak()
+            start_time = state['current_session'].get('start_time')
+            start = _parse_utc(start_time) if start_time else None
+            session_elapsed_minutes, _health = self._health_gated_minutes(start, now, now=now)
+            if session_elapsed_minutes is None:
+                # No usable session start, or a clock-health anomaly on it
+                # (CODE-001 fail-closed for this consumer): never let an
+                # untrusted/absent elapsed reading silently UNDERSTATE the
+                # rolling duration -- fall back to the durable streak's own
+                # already-accumulated baseline alone (0 additional minutes
+                # from this session), which is still the rolling authority,
+                # just without this session's (untrustworthy) contribution.
+                session_elapsed_minutes = 0.0
+            rolling_minutes = self._rolling_streak_minutes(work_streak, session_elapsed_minutes)
+
+            if rolling_minutes >= state['thresholds']['critical_session_minutes']:
                 state['current_session']['high_risk_operations_blocked'] = True
+                # v9.12.0 A3 (ADR D7.2's high_risk_block_active mirrors
+                # current_session.high_risk_operations_blocked, SEC-001
+                # direct fix): persist the block to the durable work_streak
+                # record too, so it survives the lifecycle boundary this
+                # local flag alone does not.
+                work_streak['high_risk_block_active'] = True
+                self._update_work_streak(work_streak)
 
         self.save_state(state)
         return state
 
     def record_break(self, duration_minutes: Optional[int] = None) -> Dict:
         """
-        Record that user took a break.
+        Record that a break STARTED.
+
+        Toji audit 2026-08-06 (SEC-002, HIGH direct fix; ADR D3.1/D7.4/D7.5's
+        lifecycle-event contract). Pre-fix, this method treated a
+        caller-SUPPLIED `duration_minutes` as sufficient, on its own, to
+        immediately clear both `current_session.high_risk_operations_blocked`
+        and the persisted `work_streak` protection window -- an unverified
+        CLAIM, not a measured elapsed-time pair. It no longer does either.
+
+        This is now purely the BREAK-INITIATION half of a two-instant
+        lifecycle pair (D7.4: "the existing break -> continue lifecycle is
+        the natural pair"): it records `pending_break_started_utc` (THIS
+        call's own authoritative instant) plus bookkeeping metrics (break
+        count/timestamp history, continuous-work-timer reset, escalation
+        reset), but makes NO protection decision. The COMPLETION half --
+        the actual qualification check, measured against two authoritative,
+        clock-health-gated instants -- happens the next time
+        `update_interaction()` runs (the `continue`/`resume` CLI command, or
+        any other interaction): see `_resolve_pending_break()`.
+
+        `duration_minutes` (the CLI's still-accepted `break [minutes]`
+        surface -- backward-compat requirement) is recorded ONLY as an
+        informational NOTE (`pending_break_reported_minutes`) -- it is NEVER
+        used to authorize clearing protection. Silence here (no protection
+        change) is deliberate: no decision is made until
+        `_resolve_pending_break()` later measures the real elapsed gap, so
+        the block is preserved on missing, future, rollback-detected,
+        implausible, or incomplete break evidence (SEC-002's explicit
+        requirement) by construction -- there is no "claim" code path left
+        to make that mistake.
 
         v8.13.0 - Respects enabled flag
 
         Args:
-            duration_minutes: Reported break duration (optional)
+            duration_minutes: Caller-REPORTED (unverified) break duration --
+                note-only; see docstring above. Never authorizes clearing
+                protection.
 
         Returns:
             Updated state, or default state if disabled
@@ -1156,7 +2144,7 @@ Template file not found at: {self.template_file}
             return self._default_state()
 
         state = self.load_state()
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
 
         state['session_metrics']['break_timestamps'].append(now.isoformat())
         state['session_metrics']['total_breaks'] += 1
@@ -1166,12 +2154,20 @@ Template file not found at: {self.template_file}
         # Reset continuous work timer
         state['session_metrics']['continuous_work_minutes'] = 0
 
-        # If break was sufficient, downgrade high-risk blocking
-        if duration_minutes and duration_minutes >= state['thresholds']['minimum_break_minutes']:
-            state['current_session']['high_risk_operations_blocked'] = False
+        # SEC-002 direct fix: INITIATE, never COMPLETE, the break here. The
+        # caller-reported duration is a NOTE ONLY (never authorization) --
+        # see `_resolve_pending_break()` for the actual measured
+        # qualification check.
+        state['current_session']['pending_break_started_utc'] = now.isoformat()
+        state['current_session']['pending_break_reported_minutes'] = duration_minutes
 
         # BUG-SESSION-005 (BUG C): label local+UTC instead of a bare unlabeled UTC time.
-        print(f"[OK] Break recorded at {_local_now(now).strftime('%H:%M %Z')} ({now.strftime('%H:%M')} UTC)")
+        print(
+            f"[OK] Break started at {_local_now(now, self._user_zone_info).strftime('%H:%M %Z')} "
+            f"({now.strftime('%H:%M')} UTC) -- SEC-002: protection clears only after a "
+            "VERIFIED qualifying break is measured on your next interaction "
+            "(e.g. 'continue'/'resume'), never from a reported duration alone."
+        )
         self.save_state(state)
         return state
 
@@ -1336,7 +2332,7 @@ Template file not found at: {self.template_file}
         # UTC value in parentheses for cross-reference.
         start_dt = _parse_utc(start_time)
         if start_dt is not None:
-            start_local = _local_now(start_dt)
+            start_local = _local_now(start_dt, self._user_zone_info)
             start_formatted = (
                 f"{start_local.strftime('%Y-%m-%d %H:%M %Z')} "
                 f"({start_dt.strftime('%Y-%m-%d %H:%M')} UTC)"
@@ -1350,8 +2346,8 @@ Template file not found at: {self.template_file}
         current_continuous = self._calculate_current_continuous_work(state)
         # BUG-SESSION-005 (BUG C): same local+UTC labeling as `start_formatted`
         # above -- previously this printed a bare, unlabeled UTC timestamp.
-        current_time_utc = datetime.now(timezone.utc)
-        current_time_local = _local_now(current_time_utc)
+        current_time_utc = self.time_provider.utc_now()
+        current_time_local = _local_now(current_time_utc, self._user_zone_info)
         current_time = (
             f"{current_time_local.strftime('%Y-%m-%d %H:%M %Z')} "
             f"({current_time_utc.strftime('%Y-%m-%d %H:%M')} UTC)"
@@ -1373,19 +2369,74 @@ Template file not found at: {self.template_file}
 """
         return summary.strip()
 
-    def _archive_session(self, state: Dict):
-        """Archive current session to history."""
+    def _archive_session(self, state: Dict, end_override: Optional[datetime] = None):
+        """Archive current session to history.
+
+        Args:
+            end_override: Toji audit 2026-08-06 (DESIGN-001, HIGH direct
+                fix, ADR D7.3-D7.5). When archiving is triggered by IDLE
+                EXPIRY (`start_session()`'s "session expired, archive it"
+                branch), the caller passes the session's own
+                `last_interaction_time` here -- the last REAL measured
+                activity -- instead of leaving this method read a fresh
+                `utc_now()` for BOTH the archived end AND the next
+                `last_trusted_boundary_utc`. Using a fresh observation
+                instant for both fields was the DESIGN-001 defect: it
+                silently converted the ENTIRE idle gap into "work" (the
+                fabricated end backdated the archived duration all the way
+                to observation time) AND erased the idle gap from ever
+                being evaluated as a qualifying break (the boundary this
+                method just wrote was ~0 seconds away from the very next
+                `start_session()` call that reads it). Passing the true
+                last-interaction instant here means: (1) the archived
+                `total_duration_minutes` reflects only genuinely measured
+                active time (start -> last_interaction), and (2)
+                `last_trusted_boundary_utc` is set to that SAME real
+                instant, so the next `_classify_and_carry_work_streak()`
+                call compares against it and evaluates the REAL idle
+                interval (now - last interaction) through clock health -- a
+                qualifying idle period can finally close the streak,
+                exactly as a qualifying inter-session gap already does.
+                Omitted (None, the default) for every other caller
+                (`end_session()`'s explicit end, and any other direct
+                `_archive_session()` call) -- those retain the EXISTING,
+                unflagged behavior of a fresh `utc_now()` observation
+                instant, unchanged.
+        """
         if state['current_session']['session_active']:
+            # Toji audit 2026-08-06 (CODE-001, MEDIUM): one fresh
+            # authoritative "now" read, reused for every clock-health
+            # evaluation in this method (never re-read mid-method, which
+            # could itself introduce a spurious skew between two calls).
+            health_now = self.time_provider.utc_now()
+
             # Calculate final duration from start to end (BUG FIX: PATCH-SESSION-005 - SESSION-002)
             # Fixes bug where archived sessions showed 0 minutes duration
             # v9.10.2 item-5 carried note: use _parse_utc (BUG-SESSION-001
             # precedent) so a naive legacy start_time computes the real elapsed
             # duration instead of silently falling back to the (possibly stale)
             # stored total_duration_minutes metric.
+            end = end_override if end_override is not None else health_now
             start = _parse_utc(state['current_session']['start_time'])
             if start is not None:
-                end = datetime.now(timezone.utc)
-                actual_duration = int((end - start).total_seconds() / 60)
+                # CODE-001: health-gate this policy-bearing subtraction
+                # instead of trusting a raw (end - start) unconditionally.
+                gap_minutes, health = self._health_gated_minutes(start, end, now=health_now)
+                if gap_minutes is not None:
+                    actual_duration = int(gap_minutes)
+                else:
+                    # Fail-closed for archival (CODE-001): an anomalous
+                    # start->end pair must never silently produce a
+                    # fabricated (possibly negative/inflated) duration.
+                    print(
+                        f"[!] CODE-001: archive duration clock health "
+                        f"{health.state if health else 'unknown'} "
+                        f"({health.reason if health else 'n/a'}) -- falling "
+                        "back to last known total_duration_minutes rather "
+                        "than trusting the anomalous gap.",
+                        file=sys.stderr,
+                    )
+                    actual_duration = state['session_metrics']['total_duration_minutes']
             else:
                 # Fallback to stored value if timestamp invalid (shouldn't happen)
                 actual_duration = state['session_metrics']['total_duration_minutes']
@@ -1393,7 +2444,7 @@ Template file not found at: {self.template_file}
             archived = {
                 "session_id": state['current_session']['session_id'],
                 "start_time": state['current_session']['start_time'],
-                "end_time": datetime.now(timezone.utc).isoformat(),
+                "end_time": end.isoformat(),
                 "total_duration_minutes": actual_duration,
                 "total_breaks": state['session_metrics']['total_breaks'],
                 "alerts_issued": state['session_metrics']['alerts_issued'],
@@ -1405,6 +2456,64 @@ Template file not found at: {self.template_file}
             # Keep only last 30 sessions
             if len(state['session_history']) > 30:
                 state['session_history'] = state['session_history'][-30:]
+
+            # v9.12.0 A3 (ADR D7 Lifecycle-event contract, SEC-001 direct
+            # fix): reconcile any residual delta since the last
+            # update_interaction() flush into accumulated_protected_work_minutes
+            # (D7.7), and record this trusted END boundary for the NEXT
+            # start_session()'s D7.3 comparison. Does NOT zero the streak --
+            # only a verified qualifying break (D7.4, evaluated at the NEXT
+            # start_session()) can do that.
+            #
+            # Toji audit 2026-08-06 (IMPL-001, MEDIUM direct fix, this
+            # method is a SECOND call site of the same defect
+            # `update_interaction()` already fixes): the residual reconciled
+            # here must ALSO be measured from `streak_contribution_start_time`
+            # (advanced past a mid-session qualifying break by
+            # `_resolve_pending_break()`), never from the full session
+            # `actual_duration` unconditionally -- otherwise a session that
+            # had a mid-session qualifying break would have its already
+            # correctly-limited accumulated total OVERWRITTEN, right here at
+            # archive time, with the full pre+post-break duration.
+            contribution_start_raw = state['current_session'].get('streak_contribution_start_time')
+            contribution_start = _parse_utc(contribution_start_raw) if contribution_start_raw else None
+            if contribution_start is None or (start is not None and contribution_start < start):
+                # Not set, unparseable, or predating `start` -- fall back to
+                # `start` itself (freshly parsed above from the CURRENT
+                # `start_time`), same reasoning as update_interaction()'s
+                # identical fallback.
+                contribution_start = start
+
+            work_streak = self._get_work_streak()
+            baseline = work_streak.get('_streak_session_baseline_minutes') or 0
+            if contribution_start is not None:
+                streak_gap_minutes, streak_health = self._health_gated_minutes(
+                    contribution_start, end, now=health_now
+                )
+            else:
+                streak_gap_minutes, streak_health = None, None
+
+            if streak_gap_minutes is not None:
+                # int()-truncated to match this method's pre-existing
+                # `actual_duration` precision (a sub-minute residual, e.g. an
+                # end()-called-immediately-after-start() test, must round to
+                # 0 here exactly as it always has -- a raw float would leak
+                # a non-zero fractional value into a field every other
+                # caller/test treats as whole minutes).
+                final_total = baseline + int(streak_gap_minutes)
+                if final_total > (work_streak.get('accumulated_protected_work_minutes') or 0):
+                    work_streak['accumulated_protected_work_minutes'] = final_total
+            elif streak_health is not None:
+                print(
+                    f"[!] CODE-001: final work-streak reconciliation skipped "
+                    f"-- clock health {streak_health.state} ({streak_health.reason}).",
+                    file=sys.stderr,
+                )
+            work_streak['last_trusted_boundary_utc'] = end.isoformat()
+            work_streak['high_risk_block_active'] = bool(
+                state['current_session'].get('high_risk_operations_blocked')
+            )
+            self._update_work_streak(work_streak)
 
             # Reset current session
             state['current_session'] = self._default_state()['current_session']
@@ -1448,7 +2557,7 @@ Template file not found at: {self.template_file}
         start = _parse_utc(start_time)
         if start is None:
             return 0  # Fallback on unparseable/missing timestamp
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
         return int((now - start).total_seconds() / 60)
 
     def _calculate_current_continuous_work(self, state: Dict) -> int:
@@ -1475,7 +2584,7 @@ Template file not found at: {self.template_file}
         if state['session_metrics']['break_timestamps']:
             last_break = _parse_utc(state['session_metrics']['break_timestamps'][-1])
             if last_break is not None:
-                now = datetime.now(timezone.utc)
+                now = self.time_provider.utc_now()
                 return int((now - last_break).total_seconds() / 60)
             return self._calculate_current_duration(state)
         else:
@@ -1605,7 +2714,7 @@ Template file not found at: {self.template_file}
             return tracker
 
         # Update invocation counts
-        now = datetime.now(timezone.utc).isoformat()
+        now = self.time_provider.utc_now().isoformat()
         agent_data = tracker['invocations'].get(agent_name_lower, {})
 
         agent_data['total_count'] = agent_data.get('total_count', 0) + 1
@@ -1635,7 +2744,7 @@ Template file not found at: {self.template_file}
                     # going blind on legacy state is itself a defect.
                     start_time = _parse_utc(start_time_str)
                     if start_time is not None:
-                        duration_minutes = int((datetime.now(timezone.utc) - start_time).total_seconds() / 60)
+                        duration_minutes = int((self.time_provider.utc_now() - start_time).total_seconds() / 60)
 
                         # Detect bypass if session is long-running (>= threshold)
                         threshold = tracker.get('bypass_detection', {}).get('threshold_minutes', 30)
@@ -1815,7 +2924,7 @@ Template file not found at: {self.template_file}
             return
 
         try:
-            now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+            now = self.time_provider.utc_now().strftime('%Y-%m-%d %H:%M:%S')
 
             if event_type == "session_update":
                 duration = self._calculate_current_duration(session_data)
@@ -1882,7 +2991,7 @@ Template file not found at: {self.template_file}
             if self.state_manager:
                 state = self.state_manager.load_project_state()
                 # Update last_updated timestamp
-                state['project_metadata']['last_updated'] = datetime.now(timezone.utc).isoformat()
+                state['project_metadata']['last_updated'] = self.time_provider.utc_now().isoformat()
                 self.state_manager.save_project_state(state)
                 results['documents_updated'].append('project-state.json')
                 print("[OK] project-state.json synced via ProjectStateManager")
@@ -2157,7 +3266,7 @@ Template file not found at: {self.template_file}
         if not filepath.exists():
             return None
 
-        timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
+        timestamp = self.time_provider.utc_now().strftime('%Y%m%d_%H%M%S')
         backup_dir = self.protocol_root / ".protocol-state" / "backups" / f"session-sync_{timestamp}"
         backup_dir.mkdir(parents=True, exist_ok=True)
         backup_file = backup_dir / filepath.name
@@ -2186,7 +3295,7 @@ Template file not found at: {self.template_file}
             return None
 
         state = self.load_state()
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
 
         # Calculate session duration
         start_time = state['current_session'].get('start_time')
@@ -2239,7 +3348,7 @@ Template file not found at: {self.template_file}
             return None
 
         state = self.load_state()
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
 
         # Calculate session duration
         start_time = state['current_session'].get('start_time')
@@ -2281,7 +3390,7 @@ Template file not found at: {self.template_file}
             print(f"[WARN] security-review.md not found at {security_review_file}")
             return None
 
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
 
         checkpoint_entry = f"""
 ---
@@ -2630,7 +3739,7 @@ Template file not found at: {self.template_file}
                     ),
                 }
 
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
         marker = {
             "_comment": (
                 "Domain Zero Protocol - Incomplete Session Transfer Marker "
@@ -2737,6 +3846,100 @@ Template file not found at: {self.template_file}
         except (IOError, OSError):
             pass
 
+    def _verify_end_snapshot_recorded(self, marker: Dict) -> Tuple[bool, str]:
+        """CRPR115 #13 (2026-08-03 PR#115 CodeRabbit round-1 triage, folded
+        into v9.12.0 A3 per the release plan): positively verify a real
+        end-snapshot exists in `.protocol-state/snapshots/snapshot-manifest.json`
+        BEFORE `transfer_finalize()` is allowed to mark the 'end-snapshot'
+        step complete.
+
+        Prior to this check, `transfer_finalize()` marked 'end-snapshot'
+        complete UNCONDITIONALLY -- sound on the normal coordinator path
+        (the step only runs after `create-snapshot.py` itself succeeded,
+        since session-transfer is fail-closed), but the manual
+        `transfer-finalize --session-id` retry path (M4) could forge
+        completion even after a snapshot that never ran or failed.
+
+        Looks for a manifest entry with `reason` (or the legacy `trigger`
+        key create-snapshot.py also emits) of `"session-transfer"`, whose
+        `created_at` is at or after the marker's own `start_time` (not a
+        stale leftover from some earlier, unrelated transfer), AND whose
+        `session_id` matches this marker's own `session_id` exactly.
+
+        SEC-CLOCKADR-9.12.0-015 (P2, CWE-346, Megumi Tier-3 gate-2 review):
+        the `reason`+`created_at` checks alone do not bind an entry to the
+        SPECIFIC transfer being finalized -- a different session's
+        session-transfer snapshot landing chronologically after this
+        transfer's `marker_start` would otherwise satisfy the check too
+        (cross-transfer forgery). `create-snapshot.py` now embeds the
+        active transfer's session id (read from the SAME `.INCOMPLETE`
+        marker this method receives) into the manifest entry when
+        `trigger == "session-transfer"`; this method requires that value to
+        equal `marker['session_id']` exactly.
+
+        Identity is FAIL-CLOSED by design: an entry with no `session_id` at
+        all (a pre-fix manifest, or a `create-snapshot.py` invocation with
+        no active transfer marker to read from) is NEVER treated as
+        verified, even if `reason`/`created_at` otherwise match. This does
+        NOT break the honest M4 manual-retry path -- `create-snapshot.py`'s
+        marker read succeeds for any REAL in-progress transfer (the marker
+        persists from `transfer_begin()` until `transfer_finalize()` itself
+        clears it, so it is still present throughout any retry), meaning a
+        legitimate retry always produces a `session_id`-bearing entry.
+        Tolerating an unbound entry instead would reopen the exact
+        ambiguity CRPR115 #13 was written to close, one layer removed.
+
+        Returns (True, "") if verified, else (False, <reason>). Never
+        raises -- a missing/corrupt manifest is treated as "not verified",
+        the same fail-closed posture as every other check in this method.
+        """
+        manifest_path = self.protocol_root / ".protocol-state" / "snapshots" / "snapshot-manifest.json"
+        if not manifest_path.exists():
+            return False, f"No snapshot manifest found at {manifest_path}."
+
+        try:
+            with open(manifest_path, 'r', encoding='utf-8') as f:
+                manifest = json.load(f)
+        except (IOError, OSError, json.JSONDecodeError) as e:
+            return False, f"Snapshot manifest at {manifest_path} is unreadable/corrupt: {e}."
+
+        entries = manifest.get('snapshots') if isinstance(manifest, dict) else None
+        if not isinstance(entries, list):
+            return False, f"Snapshot manifest at {manifest_path} has no 'snapshots' list."
+
+        marker_start = _parse_utc(marker.get('start_time'))
+        marker_session_id = marker.get('session_id')
+
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            reason = entry.get('reason') or entry.get('trigger')
+            if reason != "session-transfer":
+                continue
+            created_at = _parse_utc(entry.get('created_at'))
+            if created_at is None:
+                continue
+            if marker_start is not None and created_at < marker_start:
+                # A snapshot exists, but it predates THIS transfer's begin
+                # -- a stale leftover from an earlier, unrelated transfer,
+                # not evidence this transfer's own end-snapshot ran.
+                continue
+            # SEC-CLOCKADR-9.12.0-015: identity binding, fail-closed. Both
+            # sides must be truthy AND equal -- an absent marker_session_id
+            # (should not happen; transfer_finalize() already validated it
+            # before calling this method) never matches an absent entry
+            # session_id by accident.
+            if not marker_session_id or entry.get('session_id') != marker_session_id:
+                continue
+            return True, ""
+
+        return False, (
+            f"No verified end-snapshot found for this transfer (session_id="
+            f"{marker_session_id!r}) in {manifest_path} (no matching "
+            "'session-transfer' entry created at/after this transfer's "
+            "start AND bound to this exact session id -- SEC-CLOCKADR-9.12.0-015)."
+        )
+
     def transfer_finalize(self, session_id: Optional[str] = None) -> Dict:
         """IMPL-001 remediation (Toji audit 2026-07-29): the LAST step of the
         session-transfer required prefix (wired into script_dependencies.yaml
@@ -2784,6 +3987,20 @@ Template file not found at: {self.template_file}
                 "reason": (
                     f"Marker session_id {marker.get('session_id')!r} does not "
                     f"match {target_id!r}; refusing to finalize."
+                ),
+            }
+        # CRPR115 #13: positively verify a real end-snapshot exists BEFORE
+        # marking the step complete -- never forge completion (fail closed
+        # with a distinct, actionable error, not silent success).
+        snapshot_verified, snapshot_reason = self._verify_end_snapshot_recorded(marker)
+        if not snapshot_verified:
+            return {
+                "success": False,
+                "reason": (
+                    f"Refusing to mark 'end-snapshot' complete for {target_id!r}: "
+                    f"{snapshot_reason} Run: python .protocol-state/create-snapshot.py "
+                    "--auto --tier 2 --trigger session-transfer, then retry "
+                    "transfer-finalize (CRPR115 #13)."
                 ),
             }
         self._mark_transfer_step_complete(target_id, "end-snapshot")
@@ -3019,7 +4236,7 @@ Template file not found at: {self.template_file}
             return
         try:
             self.handoff_notes_archive_dir.mkdir(parents=True, exist_ok=True)
-            timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
+            timestamp = self.time_provider.utc_now().strftime('%Y%m%dT%H%M%S%fZ')
             archive_target = (
                 self.handoff_notes_archive_dir
                 / f"session-handoff-notes-{session_id}-{timestamp}.md"
@@ -3038,7 +4255,7 @@ Template file not found at: {self.template_file}
         section at the end, sourced from an optional staging file
         (`.protocol-state/session-handoff-notes.md`) so this method itself
         stays fully deterministic and testable."""
-        now = datetime.now(timezone.utc)
+        now = self.time_provider.utc_now()
         session_id = record.get('session_id', 'unknown')
         start_time = record.get('start_time')
         end_time = record.get('end_time')
@@ -3058,11 +4275,23 @@ Template file not found at: {self.template_file}
             if rec.get('session_id') == session_id:
                 idx = i
         prev_gap_minutes = None
+        prev_gap_gated = False
         if idx is not None and idx > 0:
-            prev_end = _parse_utc(history[idx - 1].get('end_time'))
-            this_start = _parse_utc(start_time)
-            if prev_end is not None and this_start is not None:
-                prev_gap_minutes = (this_start - prev_end).total_seconds() / 60
+            prev_end_raw = history[idx - 1].get('end_time')
+            time_schema = self._get_time_schema()
+            # v9.12.0 A6 (ADR D8.5, SEC-CLOCKADR-9.12.0-021): a naive
+            # session_history end/start timestamp in a migrated file is
+            # EXACTLY the field class the D8.5 gap this increment closes --
+            # never silently trusted into a "CONTINUATION" claim below. If
+            # EITHER side is gated, the whole comparison is withheld (a
+            # partial comparison would still assert a false confidence).
+            if _is_d85_gated(prev_end_raw, time_schema) or _is_d85_gated(start_time, time_schema):
+                prev_gap_gated = True
+            else:
+                prev_end = _parse_utc(prev_end_raw)
+                this_start = _parse_utc(start_time)
+                if prev_end is not None and this_start is not None:
+                    prev_gap_minutes = (this_start - prev_end).total_seconds() / 60
 
         branch = self._git_query(["git", "rev-parse", "--abbrev-ref", "HEAD"])
         head_sha = self._git_query(["git", "rev-parse", "--short", "HEAD"])
@@ -3112,7 +4341,20 @@ Template file not found at: {self.template_file}
             "### Cross-Session Continuity",
             "",
         ]
-        if prev_gap_minutes is not None:
+        if prev_gap_gated:
+            # v9.12.0 A6 (ADR D8.5): DISPLAYED (per D8.5's own "may still be
+            # displayed... labeled as unconfirmed provenance"), but NEVER
+            # feeding a CONTINUATION/fresh-start classification the way the
+            # trusted branch below does.
+            lines.append(
+                "- Gap since previous archived session's end: **unavailable** "
+                "-- a boundary timestamp has unconfirmed provenance under ADR "
+                "D8.5 (a still-ambiguous pre-migration record pending USER "
+                "adjudication, or a naive write from an unexpected code path). "
+                "Excluded from continuity classification; never silently "
+                "assumed."
+            )
+        elif prev_gap_minutes is not None:
             lines.append(f"- Gap since previous archived session's end: {prev_gap_minutes:.1f} minutes")
             if prev_gap_minutes < 30:
                 lines.append(
@@ -3289,7 +4531,19 @@ Template file not found at: {self.template_file}
             return
 
         state = self.load_state()
-        last_start = _parse_utc(state.get('current_session', {}).get('start_time'))
+        start_raw = state.get('current_session', {}).get('start_time')
+        # v9.12.0 A6 (ADR D8.5, SEC-CLOCKADR-9.12.0-021): one of Megumi's 3
+        # confirmed at-risk call sites. Gated explicitly (not just relying on
+        # `_parse_utc()`'s own tolerance) for auditability, even though the
+        # gated and ungated outcomes are IDENTICAL at this specific site --
+        # both a gated result and a genuinely-missing `start_time` fall to
+        # `last_start is None`, which already takes this method's single
+        # conservative branch (show the tip). Documented, not assumed: see
+        # this increment's dev-notes.md call-site audit.
+        if _is_d85_gated(start_raw, self._get_time_schema()):
+            last_start = None
+        else:
+            last_start = _parse_utc(start_raw)
         if last_start is None or mtime > last_start:
             print(f"[TIP] A session handoff brief is available: {self.handoff_file}")
             print("      Read it first for warm context from the prior session.")
@@ -3337,6 +4591,7 @@ def main():
         print("  check                      Check if alert is needed")
         print("  check --debounce=N         Check with custom debounce threshold (15-60 min)")
         print("  check-and-record           Check for alert AND auto-record if detected")
+        print("  check-and-record --json    Emit the ADR D5 structured envelope instead of prose (AI-001)")
         print("  record-choice <choice>     Record user's alert response (save_and_break|continue)")
         print("  status, summary            Show current session summary")
         print("")
@@ -3356,7 +4611,57 @@ def main():
     command = sys.argv[1].lower()
 
     if command == "start" or command == "new-session":
-        monitor.start_session()
+        # v9.12.0 A4 (ADR D5, Toji gate 4): `--json` emits the structured
+        # time envelope INSTEAD OF the default prose (never alongside it --
+        # a provider consuming the envelope must get exactly one parseable
+        # JSON document on stdout, per D5.3's relay-verbatim contract).
+        # Omitting `--json` leaves the existing prose output byte-for-byte
+        # unchanged (backward compatibility for existing consumers -- see
+        # tests/test_session_monitor_json_flag_characterization.py).
+        if "--json" in sys.argv:
+            with contextlib.redirect_stdout(io.StringIO()):
+                state = monitor.start_session()
+            # The most recently ARCHIVED session (history[-1], if any) is
+            # the one whose end_time compares against this new start -- NOT
+            # the current session itself, which is not (yet) in history.
+            # build_envelope() requires both boundary instants or neither
+            # (a partial pair raises -- see time_envelope.py), so only pass
+            # current_start_utc when a genuine previous boundary exists to
+            # pair it with.
+            history = state.get('session_history') or []
+            prev_end_raw = history[-1]['end_time'] if history else None
+            # v9.12.0 A6 (ADR D8.5, SEC-CLOCKADR-9.12.0-021): THE confirmed
+            # exploit path -- Megumi's review named this exact site as "the
+            # same class of field that caused the original July 30 incident."
+            # A naive `end_time` in a migrated file must NEVER silently feed
+            # `gap`/`continuity.class`, which D5.3 obligates Claude/Codex to
+            # relay verbatim. When gated, BOTH instants are withheld (never a
+            # partial pair -- `build_envelope()` requires both-or-neither
+            # anyway) and `ambiguous_boundary_timestamp=True` is forwarded so
+            # the envelope surfaces the anomaly explicitly instead of
+            # degrading to the neutral "no previous session boundary"
+            # default, which would understate what actually happened.
+            ambiguous_boundary = _is_d85_gated(prev_end_raw, monitor._get_time_schema())
+            if ambiguous_boundary:
+                previous_end_utc = None
+                current_start_utc = None
+            else:
+                previous_end_utc = _parse_utc(prev_end_raw) if history else None
+                current_start_utc = (
+                    _parse_utc(state.get('current_session', {}).get('start_time'))
+                    if previous_end_utc is not None
+                    else None
+                )
+            envelope = monitor._build_envelope(
+                SessionBoundary.START,
+                session_id=state.get('current_session', {}).get('session_id'),
+                previous_end_utc=previous_end_utc,
+                current_start_utc=current_start_utc,
+                ambiguous_boundary_timestamp=ambiguous_boundary,
+            )
+            print(json.dumps(envelope))
+        else:
+            monitor.start_session()
     elif command == "update":
         # Workstream B: 'update' is now the full-sync orchestrator.
         # --time-only flag preserves the OLD timestamp-only behaviour for fast/internal callers.
@@ -3402,14 +4707,31 @@ def main():
                 print("[!] Invalid --debounce format. Use: --debounce=15 or --debounce 15")
 
         needed, level, context = monitor.check_alert_needed(debounce_override=debounce_override)
-        if needed:
+        if "--json" in sys.argv:
+            # v9.12.0 A4: JSON mode never runs the prose render/format
+            # paths at all (no redirect_stdout needed here -- unlike
+            # 'start', check_alert_needed() itself is silent).
+            envelope = monitor._build_envelope(
+                SessionBoundary.CHECK,
+                session_id=monitor.load_state().get('current_session', {}).get('session_id'),
+                alert_needed=needed,
+                alert_reasons=context.get('alert_reasons'),
+                is_late_night=context.get('is_late_night'),
+            )
+            print(json.dumps(envelope))
+        elif needed:
             print(f"[!] Alert needed: {level}")
             print(monitor.render_alert(context))
         else:
             print(monitor.format_no_alert_message())
     elif command == "summary" or command == "status":
         # 'status' is an alias for 'summary' (industry standard expectation)
-        print(monitor.get_session_summary())
+        if "--json" in sys.argv:
+            session_id = monitor.load_state().get('current_session', {}).get('session_id')
+            envelope = monitor._build_envelope(SessionBoundary.STATUS, session_id=session_id)
+            print(json.dumps(envelope))
+        else:
+            print(monitor.get_session_summary())
     elif command == "end":
         monitor.end_session()
     elif command == "transfer-begin":
@@ -3420,6 +4742,11 @@ def main():
         if not result["success"]:
             print(f"[ERROR] {result['reason']}", file=sys.stderr)
             sys.exit(1)
+        if "--json" in sys.argv:
+            envelope = monitor._build_envelope(
+                SessionBoundary.TRANSFER_BEGIN, session_id=result.get("session_id")
+            )
+            print(json.dumps(envelope))
     elif command == "handoff":
         # FEAT-TRANSFER-9.11.0-001: regenerate the session-handoff brief.
         #   handoff                              -- auto mode: read expected
@@ -3453,6 +4780,9 @@ def main():
         if not result["success"]:
             print(f"[ERROR] {result['reason']}", file=sys.stderr)
             sys.exit(1)
+        if "--json" in sys.argv:
+            envelope = monitor._build_envelope(SessionBoundary.HANDOFF, session_id=result.get("session_id"))
+            print(json.dumps(envelope))
     elif command == "transfer-finalize":
         # IMPL-001 remediation (Toji audit 2026-07-29): final required step
         # of the session-transfer event, wired in immediately after
@@ -3479,6 +4809,11 @@ def main():
         if not result["success"]:
             print(f"[ERROR] {result['reason']}", file=sys.stderr)
             sys.exit(1)
+        if "--json" in sys.argv:
+            envelope = monitor._build_envelope(
+                SessionBoundary.TRANSFER_FINALIZE, session_id=result.get("session_id")
+            )
+            print(json.dumps(envelope))
     elif command == "break":
         # Record break with optional duration argument
         # PATCH-SEC-005: Validate duration to prevent DoS via infinite loops
@@ -3501,12 +4836,21 @@ def main():
         # Resume work after break (just update interaction timestamp)
         # PATCH-SEC-007 (SEC-004): Add error handling
         try:
-            state = monitor.update_interaction()
-            # BUG-SESSION-005 (BUG C): label local+UTC instead of a bare unlabeled UTC time.
-            timestamp_utc = datetime.now(timezone.utc)
-            timestamp = f"{_local_now(timestamp_utc).strftime('%H:%M %Z')} ({timestamp_utc.strftime('%H:%M')} UTC)"
-            print(f"[OK] Work resumed at {timestamp}")
-            print(f"    Total session time: {state['session_metrics']['total_duration_minutes']} minutes")
+            if "--json" in sys.argv:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    state = monitor.update_interaction()
+                envelope = monitor._build_envelope(
+                    SessionBoundary.RESUME,
+                    session_id=state.get('current_session', {}).get('session_id'),
+                )
+                print(json.dumps(envelope))
+            else:
+                state = monitor.update_interaction()
+                # BUG-SESSION-005 (BUG C): label local+UTC instead of a bare unlabeled UTC time.
+                timestamp_utc = monitor.time_provider.utc_now()
+                timestamp = f"{_local_now(timestamp_utc, monitor._user_zone_info).strftime('%H:%M %Z')} ({timestamp_utc.strftime('%H:%M')} UTC)"
+                print(f"[OK] Work resumed at {timestamp}")
+                print(f"    Total session time: {state['session_metrics']['total_duration_minutes']} minutes")
         except Exception as e:
             print(f"[ERROR] Failed to resume session: {e}", file=sys.stderr)
             print(f"        Try starting a new session with 'start' or 'new-session'", file=sys.stderr)
@@ -3517,7 +4861,7 @@ def main():
         if monitor.state_file.exists():
             try:
                 # Create timestamped backup
-                backup_timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
+                backup_timestamp = monitor.time_provider.utc_now().strftime('%Y%m%d_%H%M%S')
                 backup_filename = f"session-state.backup.{backup_timestamp}.json"
                 backup_path = monitor.state_file.parent / backup_filename
 
@@ -3589,21 +4933,52 @@ def main():
     elif command == "check-and-record":
         # PATCH-SESSION-003: Check for alert AND auto-record if detected
         # Provides defense-in-depth (alerts recorded even if user choice workflow fails)
+        #
+        # Toji audit 2026-08-06 (AI-001, HIGH direct fix): this is the
+        # MANDATORY auto-invoked safety path (protocol/skills/session-check.md
+        # Step 1, run on EVERY Gojo Mission Control activation) and, unlike
+        # 'check', previously had NO --json branch at all -- a provider
+        # following the documented default command could only ever receive
+        # prose, never the structured D5 envelope the binding provider relay
+        # rule depends on. `--json` emits the envelope INSTEAD OF the prose
+        # below (never alongside it, same one-parseable-document contract as
+        # every other `--json` boundary); side effects (counter increments)
+        # are unchanged either way.
         needed, level, context = monitor.check_alert_needed()
         if needed:
             # Auto-increment alert counters when alert detected
             state = monitor.load_state()
             state['current_session']['alert_count'] += 1
-            state['current_session']['last_alert_time'] = datetime.now(timezone.utc).isoformat()
+            state['current_session']['last_alert_time'] = monitor.time_provider.utc_now().isoformat()
             state['session_metrics']['alerts_issued'] += 1
             monitor.save_state(state)
 
-            print(f"[!] Alert detected and recorded: {level}")
-            print(f"    Alert count: {state['current_session']['alert_count']}")
-            print("")
-            print(monitor.render_alert(context))
+            if "--json" in sys.argv:
+                envelope = monitor._build_envelope(
+                    SessionBoundary.CHECK,
+                    session_id=state.get('current_session', {}).get('session_id'),
+                    alert_needed=needed,
+                    alert_reasons=context.get('alert_reasons'),
+                    is_late_night=context.get('is_late_night'),
+                )
+                print(json.dumps(envelope))
+            else:
+                print(f"[!] Alert detected and recorded: {level}")
+                print(f"    Alert count: {state['current_session']['alert_count']}")
+                print("")
+                print(monitor.render_alert(context))
         else:
-            print(monitor.format_no_alert_message())
+            if "--json" in sys.argv:
+                envelope = monitor._build_envelope(
+                    SessionBoundary.CHECK,
+                    session_id=monitor.load_state().get('current_session', {}).get('session_id'),
+                    alert_needed=needed,
+                    alert_reasons=context.get('alert_reasons'),
+                    is_late_night=context.get('is_late_night'),
+                )
+                print(json.dumps(envelope))
+            else:
+                print(monitor.format_no_alert_message())
     elif command == "record-invocation":
         # PATCH-SESSION-004 Component 5: Record agent invocation for bypass detection
         if len(sys.argv) < 3:
@@ -3678,6 +5053,7 @@ def main():
         print("  check                      Check if alert is needed")
         print("  check --debounce=N         Check with custom debounce threshold (15-60 min)")
         print("  check-and-record           Check for alert AND auto-record if detected")
+        print("  check-and-record --json    Emit the ADR D5 structured envelope instead of prose (AI-001)")
         print("  record-choice <choice>     Record user's alert response (save_and_break|continue)")
         print("  status, summary            Show current session summary")
         print("")

@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
 **Version:** v9.11.0

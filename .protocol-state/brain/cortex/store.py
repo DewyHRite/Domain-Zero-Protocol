@@ -140,7 +140,27 @@ class Store:
             if not isinstance(encryption_key, (bytes, bytearray)) or len(encryption_key) != 32:
                 raise CortexKeyUnavailableError("encryption key must be exactly 32 bytes")
         self._encryption_key: bytes | None = encryption_key
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        # SEC-001 (CWE-732, Toji audit 2026-08-03, v9.12.0 Wave B2): owner-only
+        # directory creation for the brain.db PARENT directory, replacing the
+        # prior bare mkdir(parents=True, exist_ok=True). On POSIX, a 0700
+        # directory already blocks other local accounts from reaching brain.db
+        # at all (opening any file requires search/execute permission on every
+        # ancestor directory), which is the practical read vector the audit
+        # describes. Deliberately does NOT also pre-create brain.db itself via
+        # recovery.ensure_owner_only_new_file(): Store(db_path) today never
+        # touches db_path (see _probe_fts5's own docstring -- it uses an
+        # in-memory DB specifically so __init__ never touches db_path), and
+        # two existing, tested invariants rely on that absence:
+        # _check_shared_brain_access's SEC-ACCESS-008 fail-open branch (whose
+        # own docstring names "DB does not exist (pre-creation state)" as a
+        # fail-OPEN case) and cortex/orphans.py's _is_stub_db/_has_foreign_ledger
+        # orphan-GC classifiers (INV-4/INV-7), which both treat "no brain.db"
+        # as an unambiguous immediate-stub signal. File-level hardening that
+        # preserves both invariants (e.g. applied inside connect() at the
+        # point brain.db is ACTUALLY first created, not here) is deferred to
+        # v9.12.0 Wave B4, not invented here.
+        from . import recovery as _recovery
+        _recovery.ensure_owner_only_dir(self.db_path.parent)
         # WI-6/WI-9 (PLAN-CORTEX-GRAPH-001 Phase 1a): single probe at __init__ time.
         # FTS5 is standard from SQLite 3.9+ but can be compiled out on some Linux distros.
         # If absent, BM25 component is gracefully disabled — all upsert/search still works

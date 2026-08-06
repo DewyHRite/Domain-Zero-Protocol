@@ -253,6 +253,24 @@ def _cross_process_lock(state_dir: Path) -> Iterator[bool]:
     lock acquisition itself is wrapped in fail-soft handling) so existing
     `except OSError` handling in `get_or_create_key()`/`record_write()`
     is unaffected.
+
+    SEC-STATE-9.12.0-002: self-defending, not caller-dependent. Two
+    independent hardenings, either of which alone would already close the
+    gap Megumi's finding described:
+      1. Platform detection uses `os.name == "nt"` (the BUG-STATE-001
+         project-wide precedent -- `project_state_manager.py`), not
+         `sys.platform == "win32"`. `os.name` is immune to a live
+         `sys.platform` monkeypatch around real lock work (the exact
+         Class-2 shape BUG-STATE-001 fixed), removing the live-spoof
+         surface entirely rather than merely widening the exception catch.
+      2. Both the acquire and release `try` blocks catch
+         `(OSError, ImportError)`, not `OSError` alone --
+         `ModuleNotFoundError` (raised by `import fcntl`/`import msvcrt`
+         when the module genuinely does not exist on the running platform)
+         is a subclass of `ImportError`, not `OSError`, and was previously
+         UNCAUGHT here. This module must never depend on every future
+         caller replicating `record_write()`'s own outer
+         `except Exception` to survive that class of failure.
     """
     state_dir = Path(state_dir)
     lock_path = state_dir / LOCK_FILENAME
@@ -268,7 +286,7 @@ def _cross_process_lock(state_dir: Path) -> Iterator[bool]:
         deadline = time.monotonic() + _LOCK_TIMEOUT_SECONDS
         while True:
             try:
-                if sys.platform == "win32":
+                if os.name == "nt":
                     import msvcrt
 
                     handle.seek(0)
@@ -279,7 +297,7 @@ def _cross_process_lock(state_dir: Path) -> Iterator[bool]:
                     fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
                 locked = True
                 break
-            except OSError:
+            except (OSError, ImportError):
                 if time.monotonic() >= deadline:
                     break
                 time.sleep(_LOCK_RETRY_DELAY_SECONDS)
@@ -290,7 +308,7 @@ def _cross_process_lock(state_dir: Path) -> Iterator[bool]:
         if handle is not None:
             if locked:
                 try:
-                    if sys.platform == "win32":
+                    if os.name == "nt":
                         import msvcrt
 
                         handle.seek(0)
@@ -299,7 +317,7 @@ def _cross_process_lock(state_dir: Path) -> Iterator[bool]:
                         import fcntl
 
                         fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
-                except OSError:
+                except (OSError, ImportError):
                     pass
             try:
                 handle.close()

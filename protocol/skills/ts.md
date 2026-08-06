@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # TS (Tier Shift) - Troubleshooting Tier Management
 ## Context-Aware Bug Resolution with Hybrid Escalation
 
@@ -37,7 +37,7 @@ Troubleshooting recalls prior bug patterns on entry and stores the resolution on
 - [ ] `troubleshooting` namespace initialized
 - [ ] `troubleshooting.active_session` is null (no active session)
 - [ ] `troubleshooting_tracker.py` script available in `.protocol-state/`
-- [ ] Python 3.8+ available (optional plan mode validation)
+- [ ] Python 3.9+ available (optional plan mode validation)
 - [ ] Gojo agent context (domain.record.md write access)
 
 **ESCAPE PATH**: If prerequisites fail, create minimal project-state.json with troubleshooting schemas. Skip Python validation if unavailable. Auto-fallback to legacy files when consolidated state missing. Continue with available features.

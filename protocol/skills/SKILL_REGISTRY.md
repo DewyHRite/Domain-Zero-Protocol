@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 ---
 title: "Skill Registry"
 version: "3.2.2"
-protocol_version: "9.11.0"
+protocol_version: "9.12.0"
 last_updated: "2026-07-18"
 status: "Production-Ready"
 ---
@@ -10,7 +10,7 @@ status: "Production-Ready"
 # Domain Zero Protocol - Skill Registry
 
 **Version**: 3.2.2
-**Protocol Version**: 9.11.0
+**Protocol Version**: 9.12.0
 **Last Updated**: 2026-07-18
 
 ---

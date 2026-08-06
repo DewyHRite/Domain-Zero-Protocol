@@ -9,6 +9,23 @@
 # This allows users to see all issues in a single run and fix them together.
 set -o pipefail
 
+# CODE-001 (Toji audit 2026-08-03, v9.12.0 Wave B1): resolve python3-first
+# (PEP 394-safe) via the shared probe. This script is the ORIGINAL source
+# the probe pattern was extracted from -- validate_yaml_syntax() below used
+# to embed its own duplicated python3-branch / python-branch copies of the
+# same validation logic; it now defers to scripts/lib/python-probe.sh for
+# interpreter resolution and keeps only ONE copy of the validation logic.
+# Best-effort only: this diagnostic tool degrades gracefully (yamllint
+# fallback, then a warning) rather than hard-exiting when no interpreter is
+# found or the lib is missing -- matching this script's pre-existing
+# behavior (see check_dependencies(), which already treats python3/python as
+# OPTIONAL tools, not required ones).
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/python-probe.sh
+if [ -f "$SCRIPT_DIR/lib/python-probe.sh" ]; then
+    . "$SCRIPT_DIR/lib/python-probe.sh"
+fi
+
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
@@ -324,11 +341,13 @@ validate_yaml_syntax() {
         return 1
     fi
 
-    # Try Python validation first
-    if command -v python3 &> /dev/null; then
-        write_info "Validating YAML syntax with Python..."
+    # Try Python validation first (python3-first via the shared probe --
+    # CODE-001, v9.12.0 Wave B1; this replaces the former duplicated
+    # python3-branch / python-branch copies of the same validation logic).
+    if command -v dzp_python_probe > /dev/null 2>&1 && dzp_python_probe; then
+        write_info "Validating YAML syntax with Python ($DZP_PYTHON)..."
         local validation_output
-        validation_output=$(python3 -c "import yaml; yaml.safe_load(open('protocol.config.yaml'))" 2>&1)
+        validation_output=$("$DZP_PYTHON" -c "import yaml; yaml.safe_load(open('protocol.config.yaml', encoding='utf-8'))" 2>&1)
         if [ $? -eq 0 ]; then
             write_pass "YAML syntax valid (verified with Python)"
             return 0
@@ -355,41 +374,19 @@ validate_yaml_syntax() {
             return 0
         fi
 
-        write_fail_with_context \
-            "Invalid YAML syntax in protocol.config.yaml" \
-            "Configuration file cannot be parsed" \
-            "Fix syntax errors using a YAML validator" \
-            "https://www.yamllint.com/"
-        CRITICAL_ERROR=true
-        return 1
-    elif command -v python &> /dev/null; then
-        write_info "Validating YAML syntax with Python..."
-        local validation_output
-        validation_output=$(python -c "import yaml; yaml.safe_load(open('protocol.config.yaml'))" 2>&1)
-        if [ $? -eq 0 ]; then
-            write_pass "YAML syntax valid (verified with Python)"
-            return 0
-        fi
-
-        if echo "$validation_output" | grep -q "ModuleNotFoundError: No module named 'yaml'"; then
-            write_warn "PyYAML not installed; skipping python-based YAML validation"
-            if command -v yamllint &> /dev/null; then
-                write_info "Falling back to yamllint for syntax validation..."
-                if yamllint -d relaxed protocol.config.yaml > /dev/null 2>&1; then
-                    write_pass "YAML syntax valid (verified with yamllint)"
-                    return 0
-                fi
-                write_fail_with_context \
-                    "Invalid YAML syntax in protocol.config.yaml" \
-                    "Configuration file has syntax errors" \
-                    "Run 'yamllint protocol.config.yaml' for details" \
-                    ""
-                CRITICAL_ERROR=true
-                return 1
-            fi
-
-            write_info "Install PyYAML or yamllint for syntax validation"
-            return 0
+        # BUG-PORTAB-9.12.0-001 (Gojo, v9.12.0 Wave B1 follow-up): a decode
+        # failure (e.g. a non-UTF-8-default Windows host hitting non-ASCII
+        # bytes -- emoji/em-dash -- in protocol.config.yaml) is NOT a YAML
+        # syntax error. Distinguish it so the reported failure matches its
+        # actual cause instead of always saying "Invalid YAML syntax".
+        if echo "$validation_output" | grep -q "UnicodeDecodeError"; then
+            write_fail_with_context \
+                "Cannot decode protocol.config.yaml (encoding error)" \
+                "Configuration file could not be read as UTF-8 by Python" \
+                "Re-run with --verbose to see the raw UnicodeDecodeError; verify the file is saved as UTF-8" \
+                ""
+            CRITICAL_ERROR=true
+            return 1
         fi
 
         write_fail_with_context \

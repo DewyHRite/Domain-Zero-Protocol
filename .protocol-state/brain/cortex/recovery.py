@@ -2,7 +2,7 @@
 DESIGN-001). The key_generation changes ONLY when key material changes (allocate),
 never on export/read. Allocation is lock-guarded and fail-closed."""
 from __future__ import annotations
-import hashlib, json, os, sys, tempfile, time
+import hashlib, json, os, sys, tempfile, time, warnings
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
@@ -287,8 +287,155 @@ def verify_owner_only(path: Path) -> bool:
                 if sid != user:
                     return False
                 allowed_count += 1
+            # BUG-CORTEXREPAIR-9.12.0-001: `ace_flags` (inheritance bits --
+            # OBJECT_INHERIT_ACE/CONTAINER_INHERIT_ACE/INHERITED_ACE etc.) is
+            # deliberately NOT inspected above. An ALLOW ace for the current
+            # user is owner-only-compliant whether it is explicit or carries
+            # (OI)(CI) inheritance flags -- directories hardened via
+            # crypto._harden_windows_acl(path, is_dir=True) publish an
+            # inheritable grant, and this function must still accept them.
             return allowed_count >= 1
         except Exception:
             return False
     import stat as _stat
     return (_stat.S_IMODE(path.stat().st_mode) & 0o077) == 0
+
+
+# ---------------------------------------------------------------------------
+# SEC-001 (CWE-732, Toji audit 2026-08-03, v9.12.0 Wave B2): directory/file
+# storage primitives for Cortex's PRIMARY (base, always-on) data locations --
+# data_dir/memories_dir/model_cache (cortex/paths.py) and the brain.db PARENT
+# directory (cortex/store.py). write_owner_only()/verify_owner_only() above
+# already cover single-shot RECOVERY artifacts (key-generation lock, escrow);
+# these two functions are the directory-shaped and umask-proof-new-file
+# counterparts for the base storage path.
+#
+# WINDOWS PRIMITIVE CHOICE (deliberate divergence from the pattern above):
+# write_owner_only() hardens via _set_windows_owner_only_dacl(), which
+# hard-imports pywin32 (win32security/ntsecuritycon/win32api). pywin32 is an
+# OPTIONAL, encryption-extras-only dependency (requirements-enc.txt, never
+# requirements-brain.txt) -- fine for write_owner_only()'s existing callers
+# (key-generation/escrow, already deep in an encryption/recovery flow that
+# presumes the extras are installed), but data_dir()/memories_dir()/
+# model_cache()/db_path.parent are on the BASE path every Store() touches,
+# encrypted or not. Hard-requiring pywin32 there would break every
+# unencrypted Windows install that never installed requirements-enc.txt.
+# crypto._harden_windows_acl (cortex/crypto.py) is the SAME class of
+# "existing primitive, reuse, don't invent new platform logic" (spec Sec
+# 22.4) already used for exactly this reason -- it hardens the encryption
+# salt sidecar file via subprocess+icacls.exe (bundled with every Windows
+# install, no pywin32 needed) and is explicitly documented as safe to call
+# "before the encryption extras... are installed." Reused here unchanged.
+# ---------------------------------------------------------------------------
+
+# NOISE CONTROL for the existing-path warning below: data_dir()/memories_dir()/
+# model_cache()/db_path.parent are called on EVERY Cortex operation, and EVERY
+# pre-v9.12.0 install's directories (created by the old bare mkdir, no
+# restrictive mode) will fail verify_owner_only() forever until an operator or
+# Wave B4's repair tooling fixes them. A per-CALL warnings.warn() was measured
+# during this fix's own test development to fire dozens of times per pytest
+# file (each test's tmp_path is a distinct never-before-seen "existing,
+# non-owner-only" directory) -- the same shape of flood would hit every real
+# command an upgrading user runs, forever. The repo's own standing rule
+# ("a control that cannot cover a path must say so visibly, never silently",
+# CLAUDE.md) requires VISIBLE, not requires REPEATED — this process-lifetime
+# flag caps the warning to its first occurrence per process, still guaranteeing
+# it is visible in the output of every run/session that hits the gap, without
+# drowning that run's other output.
+_unsafe_dir_warned_this_process = False
+
+
+def ensure_owner_only_dir(path: Path) -> None:
+    """Create `path` (and any missing parents) as an owner-only directory.
+
+    POSIX: os.makedirs(path, mode=0o700) at CREATION time. 0o700 has zero
+    group/other bits, so no umask value can leave the result broader than
+    owner-only (umask only ever SUBTRACTS bits from the requested mode) --
+    unlike write_owner_only()'s FILE case, no separate post-creation
+    verify+correct step is needed here for the POSIX branch.
+
+    Windows: delegates to crypto._harden_windows_acl(path, is_dir=True) (see
+    module-level comment above for why NOT _set_windows_owner_only_dacl).
+    The is_dir=True form grants an INHERITABLE owner-only ACE
+    ((OI)(CI) — object-inherit + container-inherit) rather than a plain,
+    non-inheritable grant, so files/subdirectories created inside `path`
+    afterward also inherit owner-only automatically instead of the token
+    default DACL (BUG-CORTEXREPAIR-9.12.0-001). Fail-soft by that function's
+    own design -- never raises, never blocks Cortex operation; on any
+    hardening failure it prints its own stderr warning.
+
+    EXISTING-PATH GAP (spec Sec 18.2, v9.12.0 Wave B4): if `path` already
+    exists, this function does NOT chmod/re-ACL it -- it only reports a
+    non-owner-only mode via warnings.warn() and returns. Auto-remediating a
+    live, possibly in-use data directory (deciding whether concurrent
+    readers/writers are safe to interrupt, whether content written under the
+    old mode also needs attention, etc.) is new machinery this function
+    deliberately does not invent; B4 owns that repair decision. This mirrors
+    validate_data_dir()'s existing warnings.warn() pattern in paths.py for
+    the analogous "detected but not silently overridden" unsafe-path case.
+
+    The warning fires at most ONCE per process (see the module-level
+    _unsafe_dir_warned_this_process flag and its comment above) -- every
+    Cortex operation calls this function, so an unrate-limited warning would
+    repeat on every single call for the lifetime of an un-repaired install.
+    """
+    global _unsafe_dir_warned_this_process
+    path = Path(path)
+    if path.exists():
+        if not verify_owner_only(path):
+            if not _unsafe_dir_warned_this_process:
+                _unsafe_dir_warned_this_process = True
+                warnings.warn(
+                    f"Cortex directory {path} (and possibly other Cortex "
+                    "directories in this session) exist with a non-owner-only "
+                    "mode; SEC-001 (CWE-732) hardening only applies at "
+                    "directory creation time -- pre-existing directories were "
+                    "NOT modified (v9.12.0 Wave B4 tracks the repair decision; "
+                    "see recovery.ensure_owner_only_dir's docstring). Further "
+                    "occurrences are not repeated this process."
+                )
+        return
+    os.makedirs(str(path), mode=0o700, exist_ok=True)
+    if sys.platform == "win32":  # pragma: no cover - Windows only
+        from .crypto import _harden_windows_acl
+        # BUG-CORTEXREPAIR-9.12.0-001: is_dir=True selects the inheritable
+        # (OI)(CI) grant so files created inside `path` afterward inherit an
+        # owner-only ACE instead of the token default DACL (owner +
+        # Administrators + SYSTEM). See crypto._harden_windows_acl's
+        # docstring for the full regression writeup.
+        _harden_windows_acl(path, is_dir=True)
+
+
+def ensure_owner_only_new_file(path: Path) -> None:
+    """Pre-create an EMPTY file at `path` with owner-only permissions, IF AND
+    ONLY IF `path` does not already exist. No-op (never chmods) when the path
+    already exists -- same existing-path posture as ensure_owner_only_dir
+    above (the repair decision for a pre-existing broader-mode file is
+    likewise deferred to v9.12.0 Wave B4, not invented here).
+
+    Companion for callers that must hand a FRESH, already-narrow-permission
+    path to a third-party library (e.g. sqlite3.connect()/sqlcipher3.connect())
+    that manages its own subsequent writes -- write_owner_only() above is
+    unsuitable there because it requires the complete byte content up front
+    and performs its own single O_EXCL-guarded write; this function only
+    pre-creates an EMPTY placeholder with the SAME umask-proof 0o600-request
+    reasoning, then hands control to the caller's own library.
+
+    CALLER CONTRACT: nothing in this repository currently calls this
+    function from a code path that also depends on the target path's
+    absence as a signal (see cortex/store.py's Store.__init__, which
+    deliberately does NOT call this for db_path -- see that file's own
+    comment for why). Any future caller must independently confirm the
+    target path's existence is not already a meaningful signal elsewhere.
+    """
+    path = Path(path)
+    if path.exists():
+        return
+    try:
+        fd = os.open(str(path), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        os.close(fd)
+    except FileExistsError:
+        return  # lost a creation race to a concurrent process; leave it alone
+    if sys.platform == "win32":  # pragma: no cover - Windows only
+        from .crypto import _harden_windows_acl
+        _harden_windows_acl(path)

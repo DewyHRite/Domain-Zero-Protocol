@@ -61,6 +61,13 @@ Exit codes:
      (e.g. `dzp_publish_core.DirtyGuardExecutionError`).
   7  `--deep-verify` requested and the cloned canonical commit's file
      contents differ from what the zip actually contains (see below).
+     By default this comparison is EOL-normalized (ISS-PAYLOAD-9.11.0-001:
+     a Windows-built payload zip carries the working tree's CRLF bytes for
+     text files, while a fresh clone used by --deep-verify may check the
+     same files out with LF only, depending on the cloning environment's
+     core.autocrlf/.gitattributes -- an EOL-only difference alone is not a
+     content mismatch). Pass --deep-verify-strict-eol for the OLD
+     byte-exact comparator, kept available as a cross-check.
   8  the zip looks like a zip-bomb / has an unsafe entry (path traversal,
      symlink, absolute path, or the uncompressed size/entry-count exceeds
      the safety caps, INCLUDING a running cap enforced against bytes
@@ -102,6 +109,19 @@ Threat-model notes (read before relying on this tool for anything beyond
     ref) closes this gap by directly byte-comparing every manifest file
     against the corresponding file in that clone. This is opt-in (cost:
     bandwidth + time), never the default.
+  - ISS-PAYLOAD-9.11.0-001: `--deep-verify`'s byte-compare is EOL-normalized
+    by default (CRLF and lone-CR line endings are collapsed to LF on BOTH
+    sides before comparing) -- a Windows-built payload zip legitimately
+    carries the working tree's CRLF bytes for text files, while the fresh
+    clone `--deep-verify` makes may check the identical file out with LF
+    only, purely as a function of the cloning environment's
+    core.autocrlf/.gitattributes. That is not tampering. `--deep-verify` on
+    its own therefore no longer reports every text file as mismatched
+    purely from an EOL difference. The OLD byte-exact comparator remains
+    available as an explicit cross-check via `--deep-verify-strict-eol`
+    (still opt-in, still requires `--deep-verify`); a genuine content
+    difference is caught either way, since EOL-normalization only collapses
+    line-ending bytes, never masks an actual edit.
   - TOCTOU between "verify" and "install": if you verify this zip now and
     install from a COPY or a LATER re-read of the same path, the file on
     disk could have been swapped in between. Use `--extract-to DIR` so
@@ -124,6 +144,8 @@ Usage::
     python scripts/verify-payload.py dzp-payload-v9.10.2.zip --extract-to ./dzp-install
     python scripts/verify-payload.py dzp-payload-v9.10.2.zip --skip-origin-check   # offline, LOUD warning
     python scripts/verify-payload.py dzp-payload-v9.10.2.zip --deep-verify         # strongest check, needs network+git
+    python scripts/verify-payload.py dzp-payload-v9.10.2.zip --deep-verify \\
+        --deep-verify-strict-eol   # cross-check: old byte-exact comparator (no EOL normalization)
     python scripts/verify-payload.py dzp-payload-v9.10.2.zip \\
         --allow-alternate-origin https://github.com/some-org/dzp-fork   # explicit, loud, trusted-fork opt-in only
 """
@@ -572,11 +594,77 @@ def verify_canonical_origin(manifest: dict, allow_alternate_origin: str = None) 
         )
 
 
-def deep_verify(manifest: dict, zf: zipfile.ZipFile, root: str) -> None:
+def _normalize_eol(data: bytes) -> bytes:
+    """Normalize line endings for cross-platform content comparison
+    (ISS-PAYLOAD-9.11.0-001): a Windows-built payload zip carries the
+    working tree's CRLF bytes for text files, while a fresh `git clone`
+    used by `--deep-verify` may check those same files out with LF only,
+    subject to the cloning environment's core.autocrlf/.gitattributes
+    configuration -- an EOL difference alone is not a content mismatch.
+    Collapses CRLF -> LF and lone CR -> LF (old Mac-style, for completeness)
+    so the byte-compare focuses on actual content changes. Applied to BOTH
+    sides of a compare (see `_content_matches`), so a genuine EOL-only
+    difference in either the zip or the canonical clone is correctly
+    treated as equivalent, never as tampering."""
+    return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+_BINARY_SNIFF_WINDOW = 8192  # bytes -- cheap, bounded probe, not a full-file scan
+
+
+def _is_binary(data: bytes) -> bool:
+    """SEC-PAYLOAD-9.12.0-001: cheap, dependency-free binary sniff. A NUL
+    byte anywhere in the first `_BINARY_SNIFF_WINDOW` bytes is treated as a
+    reliable binary indicator -- no genuine text file this payload ships
+    today (or plausibly ever would: `.md`, `.py`, `.ps1`, `.sh`, `.yaml`,
+    `.json`, docs -- confirmed against `publish-manifest.yaml`'s
+    `include_*` blocks) contains an embedded NUL, while essentially every
+    real binary format (PNG, a packaged `.db`, a nested zip, ...) does
+    within its first few bytes. Bounded to the sniff window rather than
+    scanning the whole file, matching this module's existing
+    streaming/capped-read philosophy elsewhere (e.g. `_READ_CHUNK_SIZE`,
+    the zip-bomb entry caps)."""
+    return b"\x00" in data[:_BINARY_SNIFF_WINDOW]
+
+
+def _content_matches(local_bytes: bytes, zip_bytes: bytes, *, strict_eol: bool = False) -> bool:
+    """True if two files' contents should be treated as matching for
+    `--deep-verify` purposes. Exact-byte-equal always matches. Otherwise,
+    unless `strict_eol=True` (the `--deep-verify-strict-eol` cross-check),
+    falls back to an EOL-normalized comparison so a CRLF-vs-LF-only
+    difference does not register as a mismatch -- a REAL content edit
+    still differs after normalization, since normalization only ever
+    collapses line-ending bytes, never masks other byte differences.
+
+    SEC-PAYLOAD-9.12.0-001: EOL-normalization is a TEXT-only convenience.
+    If EITHER side looks binary (`_is_binary()`), the fallback is never
+    consulted -- the comparison behaves exactly as `strict_eol=True` would,
+    regardless of the caller's own flag. This is a STRUCTURAL guard, not
+    merely a consequence of today's text-only manifest composition: it
+    holds even if a future binary file is added to `publish-manifest.yaml`,
+    without requiring any further code change at that point. Checked on
+    BOTH sides, since either the local clone's copy or the zip's copy could
+    independently be the binary one being compared."""
+    if local_bytes == zip_bytes:
+        return True
+    if strict_eol:
+        return False
+    if _is_binary(local_bytes) or _is_binary(zip_bytes):
+        return False
+    return _normalize_eol(local_bytes) == _normalize_eol(zip_bytes)
+
+
+def deep_verify(manifest: dict, zf: zipfile.ZipFile, root: str, *, strict_eol: bool = False) -> None:
     """Optional, stronger (network + real clone) check: shallow-clone the
     canonical repo at the recorded ref and byte-compare every manifest file
     against the corresponding file in that clone. Closes the gap the default
-    mode leaves open (see module docstring)."""
+    mode leaves open (see module docstring).
+
+    By default (`strict_eol=False`) the comparison is EOL-normalized
+    (ISS-PAYLOAD-9.11.0-001) via `_content_matches()`. Pass
+    `strict_eol=True` (wired to the `--deep-verify-strict-eol` CLI flag) to
+    use the OLD byte-exact comparator instead, kept available as an
+    explicit cross-check."""
     url = manifest["canonical_repo_url"]
     branch = manifest["release_branch"]
     commit = manifest["source_commit"]
@@ -610,15 +698,19 @@ def deep_verify(manifest: dict, zf: zipfile.ZipFile, root: str) -> None:
                 mismatched.append(f"{rel} (absent from canonical clone)")
                 continue
             zip_bytes = zf.read(f"{root}/{rel}")
-            if _sha256_bytes(local.read_bytes()) != _sha256_bytes(zip_bytes):
+            local_bytes = local.read_bytes()
+            if not _content_matches(local_bytes, zip_bytes, strict_eol=strict_eol):
                 mismatched.append(rel)
         if mismatched:
-            raise VerifyError(7, f"deep-verify content mismatch vs canonical clone: {mismatched}")
+            mode = "byte-exact, --deep-verify-strict-eol" if strict_eol else "EOL-normalized"
+            raise VerifyError(
+                7, f"deep-verify content mismatch vs canonical clone ({mode} comparison): {mismatched}"
+            )
 
 
 def verify(zip_path: Path, manifest_path: Path = None, skip_origin_check: bool = False,
            extract_to: Path = None, deep_verify_mode: bool = False,
-           allow_alternate_origin: str = None) -> dict:
+           allow_alternate_origin: str = None, deep_verify_strict_eol: bool = False) -> dict:
     """Run every check in fail-closed order. Returns the validated manifest
     dict on full success. Raises VerifyError(code, message) on any failure."""
     zip_path = Path(zip_path)
@@ -655,7 +747,7 @@ def verify(zip_path: Path, manifest_path: Path = None, skip_origin_check: bool =
             verify_canonical_origin(manifest, allow_alternate_origin=allow_alternate_origin)
 
         if deep_verify_mode:
-            deep_verify(manifest, zf, root)
+            deep_verify(manifest, zf, root, strict_eol=deep_verify_strict_eol)
 
         if extract_to is not None:
             safe_extract(zf, Path(extract_to), root)
@@ -672,6 +764,10 @@ def main(argv=None) -> int:
                      help="skip the git ls-remote canonical-origin cross-check (LOUD warning; offline use only)")
     ap.add_argument("--deep-verify", action="store_true",
                      help="also shallow-clone the canonical repo and byte-compare every file (network+time cost)")
+    ap.add_argument("--deep-verify-strict-eol", action="store_true",
+                     help="cross-check: use the OLD byte-exact --deep-verify comparator (no EOL "
+                          "normalization) instead of the default EOL-normalized comparison "
+                          "(ISS-PAYLOAD-9.11.0-001). Only meaningful together with --deep-verify.")
     ap.add_argument("--extract-to", type=Path, default=None,
                      help="if every check passes, safely extract into this directory (created if absent)")
     ap.add_argument("--allow-alternate-origin", type=str, default=None, metavar="URL",
@@ -686,6 +782,7 @@ def main(argv=None) -> int:
             skip_origin_check=args.skip_origin_check,
             extract_to=args.extract_to, deep_verify_mode=args.deep_verify,
             allow_alternate_origin=args.allow_alternate_origin,
+            deep_verify_strict_eol=args.deep_verify_strict_eol,
         )
     except VerifyError as exc:
         print(f"VERIFY FAILED (exit {exc.code}): {exc}", file=sys.stderr)
@@ -710,7 +807,8 @@ def main(argv=None) -> int:
               "commit's git tree (see 'Threat-model notes' in this script's module docstring); "
               "re-run with --deep-verify for that guarantee.")
     if args.deep_verify:
-        print("  deep-verify (canonical clone byte-compare): PASSED")
+        mode = "byte-exact cross-check, --deep-verify-strict-eol" if args.deep_verify_strict_eol else "EOL-normalized"
+        print(f"  deep-verify (canonical clone byte-compare): PASSED ({mode} comparison)")
     if args.extract_to:
         print(f"  extracted to: {args.extract_to}")
     return 0

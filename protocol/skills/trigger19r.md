@@ -1,9 +1,9 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Trigger 19-R — Release Intelligence: Decision Provenance Report
 ## Sukuna-Exclusive Report Generation Skill
 
 **Version**: 1.0.0
-**Protocol Version**: 9.11.0
+**Protocol Version**: 9.12.0
 **Agent(s)**: Sukuna ONLY (generation); Toji (standing read of both editions)
 **Category**: Reporting / Release
 **Risk Level**: Medium (sources include the untracked domain.record.md; mitigated by a fail-closed mechanical gate)

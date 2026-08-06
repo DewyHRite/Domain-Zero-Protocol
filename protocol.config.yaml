@@ -1,5 +1,5 @@
 # Domain Zero Protocol Configuration
-# Version: 9.11.0
+# Version: 9.12.0
 # This file serves as the canonical source of truth for all protocol parameters
 # Modify this file to customize Domain Zero for your project
 
@@ -8,8 +8,8 @@
 # ============================================================================
 canonical_repository:
   url: "https://github.com/DewyHRite/Domain-Zero-Protocol"
-  version: "v9.11.0"
-  release_branch: "DZP-v9.11.0"
+  version: "v9.12.0"
+  release_branch: "DZP-v9.12.0"
   commit: "<PINNED_SHA>"  # OPTIONAL: Replace with specific commit SHA for strict version pinning
                            # Leave as placeholder if tracking version tag instead
   auto_update:
@@ -160,6 +160,22 @@ safety:
     # Verification and self-check
     verify_time_access: true  # Gojo should verify it can access current time
     log_all_alerts: true  # Log every alert issued (for Trigger 19)
+
+    # Clock-health tolerances (v9.12.0 - FEAT-CLOCKAUTHORITY-9.12.0-001, ADR D3.1)
+    # Bounds used by TimeProvider.evaluate_clock_health() (.protocol-state/
+    # time_provider.py) to classify a UTC-instant gap as ok / skew-suspected /
+    # rollback-detected. See docs/superpowers/specs/2026-08-04-clock-authority-adr.md D3.1.
+    clock_health:
+      implausible_gap_days: 30        # gap beyond this => skew-suspected
+      skew_tolerance_seconds: 5       # monotonic-vs-wall divergence tolerance (same-process only)
+
+    # Additional timing thresholds (v9.12.0 - FEAT-CLOCKAUTHORITY-9.12.0-001)
+    # Loaded by .protocol-state/timing_policy.py's unified loader (ADR D6).
+    # NOTE: intentionally OUTSIDE `alert_thresholds` above (which is
+    # duration-only) -- late-night is a separate signal from duration
+    # (ADR D6.4/D6.5, wired into session_monitor.py at phase (b)/A3, not yet).
+    thresholds:
+      late_night_end_hour: 6          # local hour before which "late night" still applies (midnight wrap)
 
   # --------------------------------------------------------------------------
   # MIGRATION NOTICE: Breaking change in session tracking configuration (v8.7.0)
@@ -331,6 +347,20 @@ user:
   name: "YOUR_NAME"
   contact: "your.email@example.com"
   organization: "Domain Zero Protocol"
+
+  # ============================================================
+  # CLOCK-AUTHORITY USER ZONE (v9.12.0 - FEAT-CLOCKAUTHORITY-9.12.0-001)
+  # ============================================================
+  # IANA timezone identifier, e.g. "America/Detroit". null falls through to
+  # the DZP_USER_TIMEZONE environment variable, then OS-detected zone, then
+  # an explicit "unresolved" state (UTC-only display, no local-time claim).
+  # Resolved (with recorded provenance: config/env/os-fallback/unresolved)
+  # by .protocol-state/timing_policy.py's load_timing_policy() via
+  # .protocol-state/time_provider.py's TimeProvider.resolve_user_zone().
+  # See docs/superpowers/specs/2026-08-04-clock-authority-adr.md D4.
+  # An invalid value here is a HARD config error (D4.1.1) -- not a silent
+  # fallback -- surfaced the next time the timing-policy loader runs.
+  timezone: null
 
   # ============================================================
   # TECHNICAL LEVEL CONFIGURATION (v8.5.0+)
@@ -1727,9 +1757,9 @@ issue_governance:
 # VERSIONING
 # ============================================================================
 versioning:
-  protocol_version: "9.11.0"
+  protocol_version: "9.12.0"
   config_version: "2.11"
-  last_updated: "2026-08-03"
+  last_updated: "2026-08-06"
   changelog: "protocol/GOJO-UPDATES-PATCH.md"
 
 # ============================================================================

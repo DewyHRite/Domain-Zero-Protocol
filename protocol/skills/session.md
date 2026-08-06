@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Session Management Skill
 ## Unified Interface for Work Session Tracking
 
-**Version**: 2.4.1
+**Version**: 2.5.2
 **Agent(s)**: Gojo (Mission Control)
 **Category**: Session Management
 **Risk Level**: Medium (code execution via Python)
@@ -27,13 +27,68 @@ Provides unified skill interface for session_monitor.py operations with integrat
 - [ ] `.protocol-state/session_monitor.py` exists
 - [ ] `.protocol-state/project-state.json` exists (consolidated state - auto-created if missing)
 - [ ] **PATCH-STATE-001**: Uses consolidated `project-state.json::session_tracking` namespace (fallback to legacy `session-state.json` for backward compatibility)
-- [ ] Python 3.8+ available
+- [ ] Python 3.9+ available (IMPL-002, 2026-08-06 Toji audit: `session_monitor.py` unconditionally imports the stdlib `zoneinfo` module, added in 3.9 -- this is this project's real floor, matching `requirements-clock.txt`)
 - [ ] Gojo agent context (domain.record.md write access)
 
 **ESCAPE PATH**: If prerequisites fail:
 1. If session_monitor.py missing: Error with path to installation docs
 2. If Python unavailable: Suggest manual session tracking
 3. Continue with available commands (graceful degradation)
+
+---
+
+## Time envelope contract (v9.12.0 A4, ADR D5 — Toji gate 4)
+
+`docs/superpowers/specs/2026-08-04-clock-authority-adr.md` decision D5 defines a single, versioned,
+provider-neutral **time envelope** — closing `audits/2026-08-01-toji-session-time-authority-claude-codex.md`
+finding AI-001 (HIGH): Claude/Codex previously had no authoritative, structured time context and
+could misread a UTC-stamped session ID as local wall time (the 2026-07-30/31 incident this ADR
+answers).
+
+**Seven lifecycle boundaries emit it** — `start`, `status`, `check` (including the MANDATORY
+auto-invoked `check-and-record`, which shares the `check` boundary), `resume`/`continue`,
+`transfer-begin`, `transfer-finalize`, and `handoff` — via a `--json` flag on the corresponding
+`session_monitor.py` command (documented per-command below). **`--json` replaces the normal prose
+output entirely — it never appears alongside it** — one parseable JSON document on stdout, matching
+the ADR's `envelope_schema: 1` field table exactly (`envelope_status`/`envelope_status_reasons`,
+`session.session_id_is_opaque`, `user_zone`, `local_wall_time`, `gap`/`continuity`, `work_streak`,
+`late_night`, `alert.reasons`, `clock_health`). **Omitting `--json` leaves every command's existing
+prose output byte-for-byte unchanged** — this is deliberate backward compatibility for a human
+reading a terminal directly, proven by `tests/test_session_monitor_envelope.py::TestCliJsonFlag`.
+
+**`--json` is the DEFAULT/PRIMARY form for provider consumption, not an optional alternate (Toji audit
+2026-08-06, AI-001 HIGH direct fix)**: prior to this remediation, `check-and-record` — the MANDATORY
+auto-invoked path named by `protocol/skills/session-check.md`, run on EVERY Gojo Mission Control
+activation — had NO `--json` branch at all, so a provider following the documented default command
+could only ever receive prose, defeating the D5.3 relay rule below in the one place it is supposed to
+be unconditionally enforced. `check-and-record --json` now exists and MUST be the command Gojo/Claude/
+Codex actually invoke for this mandatory path; the plain-prose `check-and-record` (no `--json`) is a
+legacy/human-readable rendering, never the primary implementation.
+
+**Binding provider relay rule (ADR D5.3, direct AI-001 fix)**: Claude and Codex MUST invoke the
+`--json` form of every named lifecycle command (`start`, `status`, `check-and-record`, `resume`/
+`continue`, `transfer-begin`, `transfer-finalize`, `handoff`) and relay envelope fields verbatim in
+any prose that makes a time-sensitive claim (`local_wall_time.display`, `gap.formatted`,
+`continuity.class`, `late_night.is_late_night`, `alert.reasons`) — **never reconstruct, infer, or
+restate time from a session ID, prior-turn prose, or the model's own training-time/runtime notion of
+"now."** When `envelope_status` is `degraded` or `unavailable` — or `--json` fails to produce
+parseable JSON at all — this is an explicit DEGRADED condition: prose MUST say timing information is
+degraded/unavailable (citing `envelope_status_reasons` when present) rather than silently falling
+back to the prose-only command's output as if it were an equivalent substitute. When
+`user_zone.source == "os-fallback"`, local time MUST be qualified as unconfirmed. Session IDs remain
+**opaque** identifiers under this contract (`session.session_id_is_opaque: true` is always present as
+a standing reminder) — no consumer may parse wall time or elapsed time from one; the authoritative
+instant is always `authoritative_instant_utc` / the appropriate `session_boundaries.*` field.
+
+**Alert reason codes (ADR D6.4/D6.5, direct IMPL-001 fix)**: `check`'s alert result now carries a
+combinable **list** of reason codes (`context['alert_reasons']` / envelope `alert.reasons`) —
+`duration_initial`, `duration_escalated`, `duration_critical`, `duration_maximum`, `late_night` —
+instead of a single `alert_level` string. Late night is now an **independent** trigger: a fresh
+(0-minute) session starting at/after the configured late-night hour now produces a checkpoint on
+its own, even with zero duration-threshold contribution (previously `is_late_night` was inert
+context only — see `tests/test_alert_reason_codes.py` and the "FIXED (v9.12.0 A4)" note in
+`tests/test_session_monitor_time_characterization.py`). `alert_level` (the pre-existing single-value
+field) is retained unchanged for existing consumers.
 
 ---
 
@@ -50,8 +105,10 @@ Provides unified skill interface for session_monitor.py operations with integrat
 # high-value context in the tree (session_monitor.py start also warns loudly if a
 # session-handoff.INCOMPLETE marker exists, and names the keyed retry command)
 
-# Step 1: Start session monitoring (safety/session state is first)
-python .protocol-state/session_monitor.py start
+# Step 1 (PRIMARY, Toji audit 2026-08-06 AI-001 fix): Start session monitoring
+# (safety/session state is first) -- structured envelope, per this file's
+# "Time envelope contract" section above
+python .protocol-state/session_monitor.py start --json
 
 # Step 2: Mandatory-attempt Cortex-first RECALL (v9.1.0, fail-soft — per Cortex Integration Contract)
 #   scripts/brain.ps1 status          # POSIX: scripts/brain.sh status
@@ -64,7 +121,17 @@ python .protocol-state/session_monitor.py start
 Read CLAUDE.md
 ```
 
-**Output**:
+**Legacy/human-readable form (NOT the primary implementation)**: `python .protocol-state/session_monitor.py start`
+(no `--json`) still produces the pre-A4 prose byte-for-byte unchanged, for a human reading a terminal
+directly. A provider consuming output for its own time reasoning MUST still obtain the authoritative
+fields via `--json` per the relay rule above.
+
+**Output** (`--json` form): the ADR D5 envelope (`boundary: "start"`) — see "Time envelope contract"
+section above. Relay per D5.3; never reconstruct time from the session ID. Envelope absence
+(`envelope_status != "complete"`, or `--json` failing to produce parseable JSON) is an explicit
+degraded condition, never silently treated as equivalent to the prose form.
+
+**Output** (legacy prose form):
 - Session ID and start timestamp
 - Full DZP protocol activation (all agent rules, restrictions, workflows)
 - Cortex recall of recent open work (best-effort; omitted if Cortex unavailable)
@@ -86,12 +153,28 @@ Read CLAUDE.md
 
 **Action**: Display current session summary
 
+**Structured time envelope is the DEFAULT/PRIMARY form (v9.12.0 A4, ADR D5 — Toji gate 4; Toji
+audit 2026-08-06 `AI-001` HIGH direct fix, closing the "status still bypasses the envelope"
+finding)**: `status --json` emits the ADR D5 envelope (`boundary: "status"`) — see "Time envelope
+contract" section above. Providers (Claude, Codex) MUST invoke `status --json` and relay envelope
+fields verbatim; never reconstruct local time, elapsed time, or session freshness from the session
+ID. Envelope absence (`envelope_status` `degraded`/`unavailable`, or `--json` failing to produce
+parseable JSON) is an explicit DEGRADED condition — state that timing information is
+degraded/unavailable rather than silently falling back to the legacy prose form below as if it
+were an equivalent substitute.
+
 **Implementation**:
+```bash
+python .protocol-state/session_monitor.py status --json
+```
+
+**Legacy/human-readable form (NOT the primary implementation)**: omitting `--json` still produces
+the pre-A4 prose byte-for-byte unchanged, for a human directly reading a terminal.
 ```bash
 python .protocol-state/session_monitor.py status
 ```
 
-**Output**:
+**Output** (legacy prose form):
 - Session duration
 - Continuous work time
 - Breaks taken
@@ -196,21 +279,42 @@ post-detach liveness assertion in `cortex_trigger.py`, not by an exit code.
 
 ### /session break [minutes]
 
-**Action**: Record break duration
+**Action**: Record that a break STARTED (break INITIATION only)
+
+**Toji audit 2026-08-06 (SEC-002, HIGH direct fix, ADR D3.1/D7.4/D7.5's lifecycle-event contract)**:
+this command previously treated a caller-supplied `[minutes]` as sufficient, on its own, to
+immediately clear both `current_session.high_risk_operations_blocked` and the durable `work_streak`
+protection window — an unverified CLAIM, not a measured elapsed-time pair. It no longer does either.
+
+`break [minutes]` is now purely the **break-initiation** half of a two-instant lifecycle pair ("the
+existing break → continue lifecycle is the natural pair", ADR D7.4): it records
+`current_session.pending_break_started_utc` (this call's own authoritative instant) plus bookkeeping
+(break count/timestamp history, continuous-work-timer reset, escalation reset), but makes **no**
+protection decision. `[minutes]` is recorded ONLY as an informational note
+(`pending_break_reported_minutes`) — it is **never** used to authorize clearing protection.
+
+The **completion** half — the actual qualification check, measured against two authoritative,
+clock-health-gated instants (`pending_break_started_utc` and the later `continue`/interaction
+instant) — happens the next time `update_interaction()` runs: `/session continue` (below), or any
+other recorded interaction. Protection is preserved on missing, future, rollback-detected,
+implausible, or incomplete break evidence.
 
 **Implementation**:
 ```bash
-# Default: 15 minutes
+# Default: 15 minutes (note-only -- does NOT by itself clear protection)
 python .protocol-state/session_monitor.py break 15
 
-# Custom duration
+# Custom duration (still note-only)
 python .protocol-state/session_monitor.py break 30
 ```
 
-**Validation**: Duration must be 1-480 minutes (8 hours)
+**Validation**: Duration must be 1-480 minutes (8 hours) — validated as before; only its
+AUTHORIZATION role changed (SEC-002).
 
-**State Updates** (PATCH-STATE-001):
-- `project-state.json::session_tracking`: Adds break timestamp, resets escalation
+**State Updates** (PATCH-STATE-001 + SEC-002):
+- `project-state.json::session_tracking`: Adds break timestamp, resets escalation, resets continuous
+  work timer, sets `current_session.pending_break_started_utc` + `pending_break_reported_minutes`
+- Protection is **NOT** touched here — see `/session continue` below
 - Backward compatible: Falls back to `session-state.json` if needed
 - `domain.record.md`: Logs break (Gojo only)
 
@@ -218,17 +322,49 @@ python .protocol-state/session_monitor.py break 30
 
 ### /session continue
 
-**Action**: Resume work after break
+**Action**: Resume work after break — this is also where a pending break is VERIFIED and protection
+is actually cleared (SEC-002)
+
+**Structured time envelope is the DEFAULT/PRIMARY form (v9.12.0 A4, ADR D5 — Toji gate 4; Toji
+audit 2026-08-06 `AI-001` HIGH direct fix, closing the "resume still bypasses the envelope"
+finding)**: `continue --json` (alias `resume --json`) emits the ADR D5 envelope (`boundary:
+"resume"`) — see "Time envelope contract" section above. Providers (Claude, Codex) MUST invoke
+`continue --json` and relay envelope fields verbatim; never reconstruct local time, elapsed time,
+or session freshness from the session ID. Envelope absence is an explicit DEGRADED condition —
+state that timing information is degraded/unavailable rather than silently falling back to the
+legacy prose form below as if it were an equivalent substitute.
+
+**Toji audit 2026-08-06 (SEC-002 completion half)**: if `current_session.pending_break_started_utc`
+is set (from a prior `/session break`), this command measures the health-gated elapsed gap between
+that instant and now. Only when that gap is clock-health `ok` AND meets `minimum_break_minutes` does
+protection actually clear (`high_risk_operations_blocked = false`, the durable `work_streak` closes).
+Otherwise the pending marker is cleared (resolved either way) but protection is **preserved** — a
+break immediately followed by continue (near-zero real elapsed time, the exact SEC-002 exploit shape)
+does NOT qualify, regardless of the `[minutes]` claimed at `break` time.
 
 **Implementation**:
+```bash
+python .protocol-state/session_monitor.py continue --json
+```
+
+**Legacy/human-readable form (NOT the primary implementation)**: omitting `--json` still produces
+the pre-A4 prose byte-for-byte unchanged, for a human directly reading a terminal.
 ```bash
 python .protocol-state/session_monitor.py continue
 ```
 
-**Output**: Resume timestamp and total session time
+**Output** (legacy prose form): Resume timestamp and total session time; if a pending break was
+verified as qualifying, an additional `[OK] SEC-002: qualifying break verified (... min measured,
+>= ... min required) -- protection cleared.` line; if a pending break did NOT qualify, a `[!]
+SEC-002: break not verified as qualifying (...)` line to stderr (protection status unchanged).
 
-**State Updates** (PATCH-STATE-001):
+**State Updates** (PATCH-STATE-001 + SEC-002/IMPL-001):
 - `project-state.json::session_tracking`: Updates last interaction timestamp
+- Resolves any pending break (see above) — clears `pending_break_started_utc`
+- IMPL-001: on a VERIFIED qualifying break, advances
+  `current_session.streak_contribution_start_time` to the verification instant, so subsequent work-
+  streak accumulation measures only POST-break minutes — never re-accumulating the pre-break work
+  the qualifying break just closed
 - Backward compatible: Falls back to `session-state.json` if needed
 
 ---
@@ -331,6 +467,14 @@ Best-effort: on any Cortex error, log and continue — session end is never bloc
 **Problem it solves**: `/session end` + `/session start` technically transfers state, but the next session gets the state FILES, not a BRIEF. Reconstructing "what was I doing and why" costs the first twenty minutes of every resume. A long session can also degrade before it hits any wellbeing threshold — the per-session duration counter resets to zero at every `/session start`, so it structurally cannot see cross-session continuity (e.g. a 5h05m session ending at 01:58 followed by a new session starting at 02:02 looks, to the counter, like two unrelated sessions rather than one continuous 5h09m stretch).
 
 **Wellness alerts now point here (v9.11.0)**: every wellness checkpoint (4h initial, 6h critical, 8h maximum, and escalated re-alerts) additionally recommends `/session transfer` alongside the existing save-and-break / continue recommendations — see `render_alert()` / `{SESSION_TRANSFER_TIP}` in `.protocol-state/work-session-alert.template.md`.
+
+**Structured time envelope (v9.12.0 A4)**: each of the three CLI steps directly reachable by name
+below — `transfer-begin`, `handoff`, `transfer-finalize` — accepts its own `--json` flag, emitting
+the ADR D5 envelope for that boundary (`transfer_begin`/`handoff`/`transfer_finalize` respectively)
+instead of its normal `[OK]`/`[ERROR]` prose. The coordinator-driven `python dzp.py event
+session-transfer` path (below) is unaffected — envelope emission is an additional manual/diagnostic
+capability on the underlying commands, not wired into the coordinator event itself in this
+increment.
 
 **Implementation**:
 ```bash
@@ -554,6 +698,29 @@ args: "start"
 ---
 
 ## Changelog
+
+### 2.5.2 (2026-08-06)
+- **Toji v9.12.0 release-train audit `AI-001` (HIGH) remediation**: `/session status` and `/session
+  continue` were still prose-primary — the CLI already supported `--json` for both boundaries
+  (`session_monitor.py` ~4727-4734, ~4835-4846), but this skill presented the bare command as each
+  boundary's implementation and introduced `--json` only afterward as an optional alternative. Both
+  sections now mirror the pattern already applied to `/session start`: `--json` is the PRIMARY
+  provider-facing implementation, the bare command is relabeled "Legacy/human-readable form (NOT the
+  primary implementation)", and each section restates the D5.3 relay rule (relay envelope fields
+  verbatim; envelope absence is an explicit degraded condition, never silently equivalent to prose).
+  `/session transfer`'s `transfer-begin`/`handoff`/`transfer-finalize` notes were reviewed and left
+  unchanged — they already describe `--json` as an additional manual/diagnostic capability on the
+  underlying commands, not a prose-primary default. Drafted by Yuuji under Gojo authorization
+
+### 2.5.1 (2026-08-05)
+- **SEC-CLOCKADR-9.12.0-019 (P3) remediation**: "Time envelope contract" section fixed a boundary
+  miscount — "Six lifecycle boundaries emit it" listed seven (`transfer-begin`/`transfer-finalize`
+  are two distinct boundaries, not one joined by a slash) — corrected to "Seven". Filed by Megumi's
+  v9.12.0 A4 gate-4 review (`.protocol-state/security-review.md`); applied by Yuuji under Gojo
+  authorization
+
+### 2.5.0 (2026-08-05)
+- **v9.12.0 A4 (`docs/superpowers/specs/2026-08-04-clock-authority-adr.md` decision D5/D6.4/D6.5, Toji gate 4)**: added the "Time envelope contract" section documenting the new ADR D5 structured time envelope (`--json` flag on `start`/`status`/`check`/`continue`(`resume`)/`transfer-begin`/`transfer-finalize`/`handoff`, replacing prose output entirely when passed, never alongside it) and the D6.4/D6.5 alert reason-code model (`alert_reasons` list; late night is now an independent trigger, direct fix for audit finding IMPL-001). Per-command `--json` notes added to `/session start`, `/session status`, `/session continue`, and `/session transfer`. Backward compatibility (no `--json`) is byte-for-byte unchanged — see `tests/test_session_monitor_envelope.py::TestCliJsonFlag`. Drafted by Yuuji under Gojo authorization
 
 ### 2.4.1 (2026-07-31)
 - **IMPL-002 remediation (Toji audit `audits/2026-07-30-toji-main-v9-11-0-completed-work.md`, MEDIUM; tracked as `BUG-COORD-9.11.0-001`)**: the `/session transfer` contract section was resynced to the implemented nine-step state machine — `transfer-finalize` documented as the sole marker-clearer (`handoff-write` explicitly does NOT clear the marker), `validation-refresh` documented as step 8 with `terminal_validator: true` (runs strictly after the coordinator's own event-result write, per IMPL-001), and the single retry command replaced with the 3-way marker-state recovery matrix mirroring `session_monitor.py`'s `_warn_if_transfer_incomplete()`. Drafted by Yuuji, applied by Gojo under USER authorization; parity-guarded by `tests/test_session_transfer.py::TestIMPL002ContractParity`

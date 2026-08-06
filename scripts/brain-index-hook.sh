@@ -1,12 +1,24 @@
 #!/usr/bin/env bash
 set +e
+# CODE-001 (Toji audit 2026-08-03, v9.12.0 Wave B1): resolve python3-first
+# (PEP 394-safe) rather than bare `python`. This hook is fail-soft by design
+# (never blocks session end -- see the header comment at the end of this
+# file), so an absent interpreter degrades to the SAME "skip, don't block"
+# behavior it already had: DZP_PYTHON stays empty, the python-dependent
+# steps below are skipped rather than attempted with an empty command.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/python-probe.sh
+if [ -f "$SCRIPT_DIR/lib/python-probe.sh" ]; then
+  . "$SCRIPT_DIR/lib/python-probe.sh"
+  dzp_python_probe
+fi
 repo="$(git rev-parse --show-toplevel 2>/dev/null)"
 log_root="${LOCALAPPDATA:-$HOME/.local/share}/dzp-cortex"
-if [ -n "$repo" ]; then
+if [ -n "$repo" ] && [ -n "${DZP_PYTHON:-}" ]; then
   # B6: pass $repo as a DATA argument (sys.argv[1]) rather than interpolating
   # it into the Python source string.  Interpolation breaks on paths that
   # contain apostrophes and can alter the snippet being executed.
-  data_dir="$(python -c 'import sys; from pathlib import Path; repo=Path(sys.argv[1]).resolve(); sys.path.insert(0, str(repo/".protocol-state"/"brain")); from cortex import config, paths; cfg=config.load(repo); print(paths.data_dir(repo, cfg))' "$repo" 2>/dev/null)"
+  data_dir="$("$DZP_PYTHON" -c 'import sys; from pathlib import Path; repo=Path(sys.argv[1]).resolve(); sys.path.insert(0, str(repo/".protocol-state"/"brain")); from cortex import config, paths; cfg=config.load(repo); print(paths.data_dir(repo, cfg))' "$repo" 2>/dev/null)"
   if [ -n "$data_dir" ]; then
     log_root="$data_dir"
   fi
@@ -57,11 +69,13 @@ else
   fi
 fi
 trap '[ "$lock_acquired" = "1" ] && rm -f "$lock" 2>/dev/null' EXIT
-if [ -n "$repo" ]; then
+if [ -n "$repo" ] && [ -n "${DZP_PYTHON:-}" ]; then
   if command -v timeout >/dev/null 2>&1; then
-    timeout 30 python "$repo/.protocol-state/brain/brain.py" --repo "$repo" index --incremental >/dev/null 2>>"$log_root/index.log"
+    timeout 30 "$DZP_PYTHON" "$repo/.protocol-state/brain/brain.py" --repo "$repo" index --incremental >/dev/null 2>>"$log_root/index.log"
   else
-    python "$repo/.protocol-state/brain/brain.py" --repo "$repo" index --incremental >/dev/null 2>>"$log_root/index.log"
+    "$DZP_PYTHON" "$repo/.protocol-state/brain/brain.py" --repo "$repo" index --incremental >/dev/null 2>>"$log_root/index.log"
   fi
+elif [ -n "$repo" ]; then
+  printf '%s %s\n' "$(date -Iseconds 2>/dev/null)" "index hook skipped; no python3/python interpreter found on PATH" >>"$log_root/index.log" 2>/dev/null
 fi
 exit 0

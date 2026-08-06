@@ -107,6 +107,18 @@ def _protocol_version() -> str:
     return m.group(1)
 MEMORIES_DIR = PROJECT_ROOT / "memories"
 
+# SEC-CLOCKADR-9.12.0-015 (P2, CWE-346, v9.12.0 A3 Megumi Tier-3 gate-2
+# remediation): the FEAT-TRANSFER-9.11.0-001 incomplete-transfer marker
+# session_monitor.py's SessionMonitor writes at
+# `self.protocol_root / ".protocol-state" / "session-handoff.INCOMPLETE"`.
+# Hardcoded here (rather than importing SessionMonitor, which would pull in
+# the full timing-policy/config-loading stack for a one-field read) --
+# mirrors this file's existing VALID_TRIGGERS "MUST mirror EXACTLY" contract
+# with protocol/validation-rules.yaml: the two files agree on this path by
+# documented convention, machine-checked by
+# tests/test_session_transfer.py's CRPR115 #13 identity-binding tests.
+_TRANSFER_MARKER_FILE = STATE_DIR / "session-handoff.INCOMPLETE"
+
 # PATCH-STATE-001: Initialize ProjectStateManager
 if STATE_MANAGER_AVAILABLE:
     _state_manager = ProjectStateManager(PROJECT_ROOT)
@@ -180,6 +192,42 @@ VALID_TRIGGERS = [
 # =============================================================================
 # Snapshot Manifest Management
 # =============================================================================
+
+def _transfer_marker_session_id() -> Optional[str]:
+    """SEC-CLOCKADR-9.12.0-015 remediation: read the session id
+    FEAT-TRANSFER-9.11.0-001's incomplete-transfer marker names, so a
+    `trigger="session-transfer"` snapshot's manifest entry can be bound to
+    the SPECIFIC transfer it belongs to.
+
+    Deliberately reads the MARKER file, not `current_session` in
+    project-state.json: by the time this script runs as the "end-snapshot"
+    step (`script_dependencies.yaml` always places it AFTER "session-end" in
+    the session-transfer chain), the session has already been archived and
+    `current_session.session_id` has already been reset to `None`. The
+    marker is written by `transfer_begin()` BEFORE any of that happens and
+    persists until `transfer_finalize()` clears it -- exactly the identity
+    `session_monitor.py`'s own `_verify_end_snapshot_recorded()` compares
+    against (the SAME marker, the SAME field), which is also why this does
+    not break the honest M4 manual-retry path: the marker is still present
+    for any REAL in-progress transfer, first attempt or retry alike.
+
+    Fail-soft: any read failure (missing/corrupt marker, or this script
+    invoked with no active transfer at all -- e.g. a manual, non-transfer
+    `--trigger session-transfer` run) returns `None`. The manifest entry
+    then simply carries no `session_id` -- the documented, fail-CLOSED
+    "absent" case `_verify_end_snapshot_recorded()` handles explicitly.
+    Must never raise or block snapshot creation.
+    """
+    try:
+        if not _TRANSFER_MARKER_FILE.exists():
+            return None
+        with open(_TRANSFER_MARKER_FILE, 'r', encoding='utf-8') as f:
+            marker = json.load(f)
+        session_id = marker.get("session_id") if isinstance(marker, dict) else None
+        return session_id if isinstance(session_id, str) and session_id else None
+    except Exception:
+        return None
+
 
 def load_manifest() -> Dict[str, Any]:
     """
@@ -478,6 +526,16 @@ def create_snapshot(
     }
     if description is not None:
         manifest_entry["description"] = description
+    # SEC-CLOCKADR-9.12.0-015: additive, optional key -- only ever set for
+    # trigger="session-transfer", and only when an active transfer marker
+    # can actually be read (see _transfer_marker_session_id()'s own
+    # fail-soft contract). Never breaking for any other trigger/manifest
+    # consumer; the snapshot-manifest schema has no `additionalProperties:
+    # false` restriction, so this is backward-compatible by construction.
+    if trigger == "session-transfer":
+        transfer_session_id = _transfer_marker_session_id()
+        if transfer_session_id:
+            manifest_entry["session_id"] = transfer_session_id
     manifest["snapshots"].append(manifest_entry)
 
     save_manifest(manifest)

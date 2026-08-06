@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Session Check Skill
 ## Automatic Work Session Alert Enforcement
 
@@ -28,7 +28,8 @@
 
 - [ ] `.protocol-state/session_monitor.py` exists
 - [ ] `.protocol-state/project-state.json` exists with `session_tracking` namespace (PATCH-STATE-001 consolidated; auto-created if missing; legacy `session-state.json` supported as fallback only)
-- [ ] Python 3.8+ available
+- [ ] Python 3.9+ available (unified floor, v9.12.0 `IMPL-002` — `session_monitor.py` performs an
+  unconditional `import zoneinfo`, stdlib 3.9+)
 - [ ] Gojo agent context (auto-invocation capability)
 
 **ESCAPE PATH**: If prerequisites fail:
@@ -43,13 +44,25 @@
 
 **Trigger**: EVERY Gojo Mission Control activation (user says "Read protocol/gojo.agent.md")
 
+**Structured time envelope is the DEFAULT/PRIMARY form (v9.12.0 A4 + Toji audit 2026-08-06,
+AI-001 HIGH direct fix, ADR D5)**: `check-and-record` is the MANDATORY auto-invoked safety path
+named by this skill, and is therefore bound by the ADR D5.3 provider relay rule in full. Providers
+(Claude, Codex) MUST invoke it with `--json` and relay `local_wall_time.display`, `gap.formatted`,
+`continuity.class`, `late_night.is_late_night`, `alert.reasons`, `envelope_status`, and
+`envelope_status_reasons` VERBATIM in any prose that makes a time-sensitive claim — never
+reconstruct local time, elapsed time, or session freshness from the session ID or the model's own
+clock. **Envelope absence is an explicit DEGRADED condition**, not a silent fallback: if
+`envelope_status` is `degraded` or `unavailable` (or the command fails to produce parseable JSON at
+all), the provider MUST say timing information is degraded/unavailable rather than presenting the
+plain-prose form as equivalent.
+
 **Implementation**:
 ```bash
-# STEP 1: Check for alerts AND auto-record if detected
-python .protocol-state/session_monitor.py check-and-record
+# STEP 1 (PRIMARY): Check for alerts AND auto-record if detected -- structured envelope
+python .protocol-state/session_monitor.py check-and-record --json
 
-# STEP 2: If alert detected, present to user
-# (check-and-record outputs alert text if needed)
+# STEP 2: If envelope["alert"]["alert_needed"] is true, present the alert to the user
+# using the envelope's relayed fields (never recompute from the session ID/prior prose)
 
 # STEP 3: Wait for user response (if alert shown)
 # User chooses: save_and_break OR continue
@@ -58,7 +71,16 @@ python .protocol-state/session_monitor.py check-and-record
 # python .protocol-state/session_monitor.py record-choice <user_choice>
 ```
 
-**Output (if alert detected)**:
+**Legacy/human-readable form (prose, NOT the primary implementation)**: omitting `--json` still
+produces the pre-A4 prose output byte-for-byte unchanged, for a human directly reading a terminal or
+a caller that has not yet adopted the envelope. Providers relaying output to the USER (not consuming
+it for their own time reasoning) MAY still show this rendered form, but MUST still have obtained the
+authoritative fields via `--json` first per the D5.3 relay rule above.
+```bash
+python .protocol-state/session_monitor.py check-and-record
+```
+
+**Output (if alert detected, legacy prose form)**:
 ```text
 ⚠️  Alert detected and recorded: standard
    Alert count: 1
@@ -91,15 +113,21 @@ Please select an option:
 
 ### Step 1: Auto-Detection and Recording
 
-**Command**: `python .protocol-state/session_monitor.py check-and-record`
+**Command (PRIMARY)**: `python .protocol-state/session_monitor.py check-and-record --json`
+**Command (legacy prose form)**: `python .protocol-state/session_monitor.py check-and-record`
 
-**What it does**:
+**What it does** (identical side effects either way -- `--json` only changes the OUTPUT shape, never
+the auto-recording behavior):
 1. Checks current session duration against thresholds
 2. **IF alert needed**: Auto-increments `alert_count` and `alerts_issued` counters
-3. Renders alert text for presentation to user
-4. **IF no alert needed**: Prints `[OK] No alert needed`. This is NOT silent when no session is
-   active (`IMPL-SESSIONMON-001`, 2026-08-03 UX-honesty fix): if there is no active session, the
-   tool ALSO appends an `[INFO] No active session - wellbeing tracking is idle...` line pointing to
+3. `--json`: emits the ADR D5 structured envelope (`envelope_schema`, `session.boundary: "check"`,
+   `alert.alert_needed`, `alert.reasons`, `local_wall_time`, `gap`, `continuity`, `clock_health`,
+   `envelope_status`) INSTEAD OF prose. No `--json`: renders alert text for presentation to user
+   (legacy form).
+4. **IF no alert needed**: `--json` emits an envelope with `alert.alert_needed: false`. No `--json`
+   prints `[OK] No alert needed`. This is NOT silent when no session is active
+   (`IMPL-SESSIONMON-001`, 2026-08-03 UX-honesty fix): if there is no active session, the prose form
+   ALSO appends an `[INFO] No active session - wellbeing tracking is idle...` line pointing to
    `session start`, so an idle Gojo invocation is never mistaken for "actively monitoring, nothing to
    report."
 
@@ -288,9 +316,9 @@ rm slash-commands/session-check.md
 
 ---
 
-**Protocol Version**: 9.11.0
+**Protocol Version**: 9.12.0
 **Created**: 2025-12-29
-**Last Updated**: 2026-07-04
+**Last Updated**: 2026-08-06
 **Status**: ACTIVE
 
 ---

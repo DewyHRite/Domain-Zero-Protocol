@@ -524,6 +524,27 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
 
+    # v9.12.0 Wave B4 (SEC-CORTEXSTOR-9.12.0-001): brain repair-perms — sanctioned
+    # one-shot owner-only repair for PRE-EXISTING Cortex storage (the existing-path
+    # gap Wave B2's creation-time-only hardening deliberately left unrepaired; see
+    # cortex/recovery.py's ensure_owner_only_dir docstring, "EXISTING-PATH GAP").
+    p_repair = sub.add_parser(
+        "repair-perms",
+        help=(
+            "Repair owner-only permissions on a PRE-EXISTING Cortex data dir "
+            "(SEC-CORTEXSTOR-9.12.0-001). Writes a pre-repair manifest, then "
+            "hardens each path, then re-verifies. Idempotent. Advisory: run "
+            "when no other Cortex process holds an active connection to this "
+            "data dir (untested under concurrent access)."
+        ),
+    )
+    p_repair.add_argument(
+        "--dry-run",
+        action="store_true",
+        dest="dry_run",
+        help="Report what would change without modifying anything (no manifest written)",
+    )
+
     args = parser.parse_args(argv)
     try:
         repo = Path(args.repo).resolve()
@@ -587,6 +608,14 @@ def main(argv: list[str] | None = None) -> int:
         # Dispatch early — opens brain.db directly (no Store construction).
         if args.cmd == "recover":
             return _recover_cmd(repo, cfg, args, allow_unsafe=allow_unsafe)
+
+        # v9.12.0 Wave B4 (SEC-CORTEXSTOR-9.12.0-001): repair-perms — dispatch early,
+        # same reasoning as recover/memory-export above: this command's entire job is
+        # inspecting/repairing filesystem permissions on data_dir's own contents, so it
+        # must not go through Store construction (which itself only creation-time-hardens,
+        # never repairs an existing unsafe path — that would defeat the point of the tool).
+        if args.cmd == "repair-perms":
+            return _repair_perms_cmd(repo, cfg, args, allow_unsafe=allow_unsafe)
 
         # R1c C1 (v9.9.x): brain input — builds its own Store+Embedder via
         # _build_query_store so it can surface the locked/unavailable state before
@@ -1864,6 +1893,75 @@ def _recover_cmd(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> 
     print("  8c. brain recover --reset-high-water       — re-baseline high-water after a legit compaction")
     print("  9. brain reset --scope self                — preserving rebuild (verified snapshot first)")
     print(" 10. brain reset --scope self --unrecoverable --acknowledge-permanent-memory-loss — last resort (F8)")
+    return 0
+
+
+def _repair_perms_cmd(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False) -> int:
+    """v9.12.0 Wave B4 (SEC-CORTEXSTOR-9.12.0-001): sanctioned one-shot owner-only
+    repair for PRE-EXISTING Cortex storage. See cortex/repair.py for the full
+    record -> apply -> verify pipeline and per-path inventory rationale.
+
+    Exit code: 0 on full success (including --dry-run and the "nothing present"
+    case), 1 if any path FAILED to harden or re-verify (fail-closed — the v9.9.x
+    write_owner_only precedent: a partial failure must be loud and reflected in
+    the exit code, never silently continued past).
+    """
+    from cortex import repair as _repair
+
+    data_dir = paths.data_dir(repo, cfg, allow_unsafe=allow_unsafe)
+    dry_run = bool(getattr(args, "dry_run", False))
+
+    results, manifest_path = _repair.run_repair(data_dir, dry_run=dry_run)
+
+    present = [r for r in results if r.existed]
+    if not present:
+        print(f"repair-perms: no Cortex storage artifacts found under {data_dir}; nothing to repair.")
+        return 0
+
+    if manifest_path is not None:
+        print(f"pre-repair manifest written: {manifest_path}")
+
+    for r in results:
+        if not r.existed:
+            continue
+        print(f"  {r.outcome:<28} [{r.kind}] {r.path}")
+
+    failed = sum(1 for r in present if r.outcome.startswith("FAILED"))
+
+    if dry_run:
+        would = sum(1 for r in present if r.outcome == "WOULD-REPAIR")
+        already_ok = sum(1 for r in present if r.outcome == "ALREADY-OK")
+        print(
+            f"\nrepair-perms --dry-run: {would} path(s) would be repaired, "
+            f"{already_ok} already owner-only. No changes made."
+        )
+        return 0
+
+    repaired = sum(1 for r in present if r.outcome == "REPAIRED")
+    already_ok = sum(1 for r in present if r.outcome == "ALREADY-OK")
+    print(f"\nrepair-perms: {repaired} repaired, {already_ok} already owner-only, {failed} FAILED.")
+    if failed:
+        print(
+            "repair-perms: one or more paths FAILED to harden — see FAILED-<reason> lines above.",
+            file=sys.stderr,
+        )
+        # SEC-004 (LOW/P3, CWE-778, 2026-08-06 combined Toji-remediation review):
+        # FAILED-link-rejected is a materially stronger signal than an ordinary
+        # harden/verify failure -- it means scan()/apply_repairs() refused to
+        # touch a path because it (or an ancestor) resolves outside data_dir,
+        # which can indicate another local principal has planted a symlink/
+        # junction inside this Cortex data directory. Fold it into the generic
+        # summary above AND surface it separately, loudly, so it is never lost
+        # among ordinary chmod/ACL failures.
+        link_rejected = sum(1 for r in present if r.outcome == "FAILED-link-rejected")
+        if link_rejected:
+            print(
+                f"repair-perms: {link_rejected} path(s) rejected as symlinks/junctions/reparse "
+                "points -- this may indicate another local principal has planted a link inside "
+                "your Cortex data directory. Investigate before re-running.",
+                file=sys.stderr,
+            )
+        return 1
     return 0
 
 

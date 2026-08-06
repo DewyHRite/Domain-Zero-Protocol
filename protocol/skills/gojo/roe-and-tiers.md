@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Gojo Rules of Engagement (ROE) + Tier System Reference
 ## Relocated from root CLAUDE.md (v9.11.0 Increment 3 — prompt-weight reduction)
 

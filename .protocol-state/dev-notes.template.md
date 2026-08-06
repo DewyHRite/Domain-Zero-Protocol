@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # DEVELOPMENT NOTES
 <!-- ╔═ DZP CORTEX POINTER (v9.1.0) ═══════════════════════════════════════════════
      PROTECTED PROJECT DOCUMENT — append-only, canonical source of truth.

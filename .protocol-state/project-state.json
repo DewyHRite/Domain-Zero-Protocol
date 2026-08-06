@@ -1,5 +1,5 @@
 {
-  "protocol_version": "9.11.0",
+  "protocol_version": "9.12.0",
   "compaction_recovery": {
     "last_recovery_timestamp": "2026-07-29T14:38:41Z",
     "recovery_count": 1,
@@ -87,7 +87,7 @@
     "name": "YOUR_PROJECT_NAME",
     "description": "Your project description",
     "created": "2025-12-25T00:00:00Z",
-    "last_updated": "2026-07-31T05:06:44.155413+00:00"
+    "last_updated": "2026-08-06T11:41:02.211367+00:00"
   },
   "mission_status": {
     "yuuji_briefed": false,
@@ -286,7 +286,7 @@
     "last_updated": null
   },
   "tier_tracking": {
-    "last_updated": "2025-12-31T11:55:12.272333",
+    "last_updated": "2025-12-31T16:55:12.272333+00:00",
     "total_features": 1,
     "tier_distribution": {
       "tier_1": 0,
@@ -332,10 +332,10 @@
   "session_tracking": {
     "_comment": "Domain Zero Protocol - Work Session State Tracking (v8.11.0)",
     "current_session": {
-      "session_id": "session_20260803_205237",
+      "session_id": "session_20260806_150639",
       "session_active": true,
-      "start_time": "2026-08-03T20:52:37.945163+00:00",
-      "last_interaction_time": "2026-08-03T20:52:37.945163+00:00",
+      "start_time": "2026-08-06T15:06:39.613991+00:00",
+      "last_interaction_time": "2026-08-06T15:06:39.613991+00:00",
       "last_alert_time": null,
       "alert_count": 0,
       "escalation_level": 0,
@@ -359,13 +359,14 @@
       "critical_session_minutes": 360,
       "max_continuous_minutes": 480,
       "late_night_hour": 22,
-      "minimum_break_minutes": 15
+      "minimum_break_minutes": 15,
+      "late_night_end_hour": 6
     },
     "session_history": [
       {
         "session_id": null,
-        "start_time": "2025-12-29T09:03:54.890208",
-        "end_time": "2025-12-29T14:14:36.229596",
+        "start_time": "2025-12-29T14:03:54.890208+00:00",
+        "end_time": "2025-12-29T19:14:36.229596+00:00",
         "total_duration_minutes": 0,
         "total_breaks": 1,
         "alerts_issued": 0,
@@ -373,8 +374,8 @@
       },
       {
         "session_id": "session_20251229_141436",
-        "start_time": "2025-12-29T10:04:46.352190",
-        "end_time": "2025-12-31T12:11:18.031762",
+        "start_time": "2025-12-29T15:04:46.352190+00:00",
+        "end_time": "2025-12-31T17:11:18.031762+00:00",
         "total_duration_minutes": 3006,
         "total_breaks": 0,
         "alerts_issued": 1,
@@ -382,8 +383,8 @@
       },
       {
         "session_id": "bench_1767201078",
-        "start_time": "2025-12-31T12:11:18.031762",
-        "end_time": "2025-12-31T12:11:21.689907",
+        "start_time": "2025-12-31T17:11:18.031762+00:00",
+        "end_time": "2025-12-31T17:11:21.689907+00:00",
         "total_duration_minutes": 0,
         "total_breaks": 0,
         "alerts_issued": 0,
@@ -595,10 +596,46 @@
         "total_breaks": 0,
         "alerts_issued": 0,
         "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260803_205237",
+        "start_time": "2026-08-03T20:52:37.945163+00:00",
+        "end_time": "2026-08-04T02:26:52.639979+00:00",
+        "total_duration_minutes": 334,
+        "total_breaks": 0,
+        "alerts_issued": 1,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260804_025527",
+        "start_time": "2026-08-04T02:55:27.547954+00:00",
+        "end_time": "2026-08-05T03:12:23.932442+00:00",
+        "total_duration_minutes": 1456,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260805_031223",
+        "start_time": "2026-08-05T03:12:23.932442+00:00",
+        "end_time": "2026-08-05T13:59:03.672252+00:00",
+        "total_duration_minutes": 646,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
+      },
+      {
+        "session_id": "session_20260805_140001",
+        "start_time": "2026-08-05T14:00:01.147494+00:00",
+        "end_time": "2026-08-06T11:41:03.221888+00:00",
+        "total_duration_minutes": 1301,
+        "total_breaks": 0,
+        "alerts_issued": 0,
+        "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-08-03T20:52:38.134052+00:00",
-    "protocol_version": "9.11.0"
+    "last_updated": "2026-08-06T15:06:39.702157+00:00",
+    "protocol_version": "9.12.0"
   },
   "troubleshooting": {
     "_comment": "Troubleshooting session tracking - consolidated",
@@ -648,7 +685,7 @@
       "manual_escalation_count": 0,
       "most_common_escalation_path": null,
       "total_tests_added": 0,
-      "last_updated": "2026-01-05T23:32:06.052642"
+      "last_updated": "2026-01-06T04:32:06.052642+00:00"
     },
     "history": {
       "sessions": [
@@ -20859,14 +20896,14 @@
           "active": false,
           "bug_description": "Benchmark test",
           "affected_files": [],
-          "started_at": "2025-12-31T12:11:31.115131",
-          "completed_at": "2025-12-31T12:11:31.599106",
+          "started_at": "2025-12-31T17:11:31.115131+00:00",
+          "completed_at": "2025-12-31T17:11:31.599106+00:00",
           "resolution": "Benchmark complete",
           "attempts_count": 1,
           "escalations": [],
           "progress_notes": [
             {
-              "timestamp": "2025-12-31T12:11:31.210037",
+              "timestamp": "2025-12-31T17:11:31.210037+00:00",
               "note": "Benchmark progress"
             }
           ],
@@ -20945,7 +20982,7 @@
       ],
       "metadata": {
         "created": "2025-12-31T00:00:00Z",
-        "protocol_version": "9.11.0",
+        "protocol_version": "9.12.0",
         "last_updated": "2026-06-17T00:00:00Z",
         "total_sessions_all_time": 1004
       }
@@ -20956,7 +20993,7 @@
     "_purpose": "Track agent invocation patterns to detect session monitoring bypass (10-15% coverage gap)",
     "_usage": "python session_monitor.py record-invocation <agent_name>",
     "_version": "1.0.0",
-    "_last_updated": "2026-06-13T20:33:39.451431",
+    "_last_updated": "2026-06-14T00:33:39.451431+00:00",
     "tracking_enabled": true,
     "invocations": {
       "gojo": {
@@ -20968,7 +21005,7 @@
         "total_count": 2,
         "direct_invocations": 1,
         "routed_invocations": 1,
-        "last_invocation": "2025-12-29T14:30:21.563202",
+        "last_invocation": "2025-12-29T19:30:21.563202+00:00",
         "description": "Implementation Specialist (should be routed via @implementation)"
       },
       "megumi": {
@@ -21025,7 +21062,7 @@
       "threshold_minutes": 30,
       "bypass_alerts": [
         {
-          "timestamp": "2025-12-29T14:30:10.726647",
+          "timestamp": "2025-12-29T19:30:10.726647+00:00",
           "agent": "yuuji",
           "session_duration_minutes": 265,
           "message": "Direct yuuji invocation during 265-minute session (bypasses Gojo monitoring)"
@@ -21131,8 +21168,8 @@
         ]
       }
     ],
-    "last_updated": "2026-08-01T23:10:25.212881+00:00",
-    "last_event": "session-end",
+    "last_updated": "2026-08-06T11:41:14.620645+00:00",
+    "last_event": "session-transfer",
     "events": [
       {
         "event": "session-update",
@@ -22243,6 +22280,129 @@
             "duration_seconds": 1.203
           }
         ]
+      },
+      {
+        "event": "session-end",
+        "finished_at": "2026-08-04T02:26:53.855741+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.671
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.297
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.0
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.781
+          }
+        ]
+      },
+      {
+        "event": "session-end",
+        "finished_at": "2026-08-05T13:59:05.038193+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": true,
+        "steps": [
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.812
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.297
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.016
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.906
+          }
+        ]
+      },
+      {
+        "event": "session-transfer",
+        "finished_at": "2026-08-06T11:41:14.620645+00:00",
+        "success": true,
+        "status": "success",
+        "fail_soft": false,
+        "steps": [
+          {
+            "name": "transfer-begin",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.828
+          },
+          {
+            "name": "session-update",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.171
+          },
+          {
+            "name": "session-end",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.172
+          },
+          {
+            "name": "handoff-write",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 8.532
+          },
+          {
+            "name": "end-snapshot",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.453
+          },
+          {
+            "name": "transfer-finalize",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 0.843
+          },
+          {
+            "name": "cortex-medium",
+            "status": "launched",
+            "exit_code": null,
+            "duration_seconds": 0.047
+          },
+          {
+            "name": "cortex-distill",
+            "status": "success",
+            "exit_code": 0,
+            "duration_seconds": 1.188
+          }
+        ]
       }
     ],
     "last_status_by_event": {
@@ -22287,7 +22447,7 @@
       },
       "session-end": {
         "event": "session-end",
-        "finished_at": "2026-08-01T23:10:25.212881+00:00",
+        "finished_at": "2026-08-05T13:59:05.038193+00:00",
         "success": true,
         "status": "success",
         "fail_soft": true,
@@ -22296,25 +22456,25 @@
             "name": "session-end",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.891
+            "duration_seconds": 0.812
           },
           {
             "name": "end-snapshot",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.453
+            "duration_seconds": 0.297
           },
           {
             "name": "cortex-medium",
             "status": "launched",
             "exit_code": null,
-            "duration_seconds": 0.063
+            "duration_seconds": 0.016
           },
           {
             "name": "cortex-distill",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 1.203
+            "duration_seconds": 0.906
           }
         ]
       },
@@ -22368,7 +22528,7 @@
       },
       "session-transfer": {
         "event": "session-transfer",
-        "finished_at": "2026-07-31T05:06:54.312107+00:00",
+        "finished_at": "2026-08-06T11:41:14.620645+00:00",
         "success": true,
         "status": "success",
         "fail_soft": false,
@@ -22377,52 +22537,64 @@
             "name": "transfer-begin",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.531
+            "duration_seconds": 0.828
           },
           {
             "name": "session-update",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.703
+            "duration_seconds": 1.171
           },
           {
             "name": "session-end",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.719
+            "duration_seconds": 1.172
           },
           {
             "name": "handoff-write",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 7.718
+            "duration_seconds": 8.532
           },
           {
             "name": "end-snapshot",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.282
+            "duration_seconds": 0.453
           },
           {
             "name": "transfer-finalize",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.562
+            "duration_seconds": 0.843
           },
           {
             "name": "cortex-medium",
             "status": "launched",
             "exit_code": null,
-            "duration_seconds": 0.0
+            "duration_seconds": 0.047
           },
           {
             "name": "cortex-distill",
             "status": "success",
             "exit_code": 0,
-            "duration_seconds": 0.75
+            "duration_seconds": 1.188
           }
         ]
       }
     }
-  }
+  },
+  "work_streak": {
+    "work_streak_schema": 1,
+    "streak_start_utc": "2026-08-06T15:06:39.613991+00:00",
+    "accumulated_protected_work_minutes": 0,
+    "last_qualifying_break_utc": "2026-08-06T15:06:39.613991+00:00",
+    "last_qualifying_break_duration_minutes": 205.60653505,
+    "high_risk_block_active": false,
+    "last_trusted_boundary_utc": "2026-08-06T15:06:39.613991+00:00",
+    "_streak_session_baseline_minutes": 0,
+    "last_updated": "2026-08-06T15:06:39.638989+00:00"
+  },
+  "time_schema": 1
 }

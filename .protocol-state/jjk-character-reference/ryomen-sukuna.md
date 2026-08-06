@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 
 # Ryomen Sukuna - JJK Character Reference
 **Source**: Jujutsu Kaisen Fandom Wiki
 **URL**: <https://jujutsu-kaisen.fandom.com/wiki/Ryomen_Sukuna>
 **Downloaded**: 2025-12-01
-**Protocol Version**: v9.11.0
+**Protocol Version**: v9.12.0
 
 ---
 

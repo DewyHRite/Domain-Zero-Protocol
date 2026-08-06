@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.11.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Domain Zero Protocol - Implementation Guide
 ## Step-by-Step Setup for Claude, GitHub Copilot, and Any AI Assistant
 
@@ -33,7 +33,7 @@
 **Prerequisites**:
 - Downloaded the latest `DZP-v9.x` release package
 - Access to Claude.ai, Claude Code, GitHub Copilot, or another AI assistant
-- Python 3.8+ (for state tooling and DZP Cortex)
+- Python 3.9+ (for state tooling and DZP Cortex; `session_monitor.py` requires the stdlib `zoneinfo` module, added in 3.9 -- see requirements-clock.txt)
 
 ---
 

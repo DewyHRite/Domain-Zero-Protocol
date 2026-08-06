@@ -517,8 +517,11 @@ class DependencyScanner:
         only matches top-level files, mirroring `pathlib.Path.glob()`
         semantics. Implemented manually (rather than relying on
         `PurePath.match()`'s recursive-`**` support, which is Python
-        3.13+ only) to stay compatible with this project's Python 3.8+
-        baseline.
+        3.13+ only) to stay compatible with this project's Python 3.9+
+        baseline (IMPL-002, 2026-08-06 Toji audit: unified from a
+        previously-advertised-but-never-actually-usable 3.8 floor --
+        session_monitor.py requires the stdlib `zoneinfo` module, added
+        in 3.9).
         """
         segments = pattern.split('/')
         regex_parts: List[str] = []

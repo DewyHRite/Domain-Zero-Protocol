@@ -266,6 +266,30 @@ schemas:
             type: boolean
             description: "Whether high-risk operations are blocked due to extended session (safety feature)"
 
+          # Toji audit 2026-08-06 (IMPL-001/SEC-002 direct fixes). Neither is
+          # in `required:` above -- both are additive, `.get(...)`-tolerant
+          # fields so an already-active legacy session predating this
+          # remediation is never rejected by validation.
+          streak_contribution_start_time:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: "null"
+            description: "IMPL-001: this session's own baseline for work_streak accumulation -- session start_time initially, advanced to a verified qualifying-break completion instant by _resolve_pending_break()"
+
+          pending_break_started_utc:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: "null"
+            description: "SEC-002: break-initiation instant recorded by record_break(); resolved (and cleared) by the next update_interaction() call via _resolve_pending_break()"
+
+          pending_break_reported_minutes:
+            oneOf:
+              - type: integer
+              - type: "null"
+            description: "SEC-002: caller-reported break duration -- informational NOTE ONLY, never authorization to clear protection"
+
       session_metrics:
         type: object
         description: "Cumulative session metrics and user response tracking"
@@ -330,6 +354,7 @@ schemas:
           - critical_session_minutes
           - max_continuous_minutes
           - late_night_hour
+          - late_night_end_hour
           - minimum_break_minutes
         properties:
           initial_alert_minutes:
@@ -361,6 +386,29 @@ schemas:
             minimum: 20
             maximum: 23
             description: "Hour (24h format) when late-night alerts trigger (default: 22:00)"
+
+          # v9.12.0 A5 (IMPL-004 full closure, ADR D8.6): promoted from an
+          # allowed-but-optional property (A2 phase (b)) to `required:`
+          # above. `.protocol-state/timing_policy.py`'s single loader
+          # (`_DEFAULTS`/`_RANGES`, now also exported publicly as
+          # `TIMING_POLICY_DEFAULTS`) resolves this field -- default 6,
+          # range 0-23 -- from
+          # `safety.session_tracking.thresholds.late_night_end_hour` in
+          # protocol.config.yaml. `project_state_manager.py`'s
+          # `_default_session_tracking()` now also sources it from the same
+          # shared `TIMING_POLICY_DEFAULTS` map (previously a second,
+          # independently-hardcoded default-state shape entirely missing
+          # this field), and `.protocol-state/work-session-alert.
+          # template.md` now renders it via the new
+          # `{LATE_NIGHT_END_THRESHOLD}` placeholder. All four IMPL-004
+          # surfaces (session_monitor.py, project_state_manager.py, this
+          # schema, the alert template) now agree by construction, not by
+          # coincidence -- see tests/test_defaults_single_source_9_12.py.
+          late_night_end_hour:
+            type: integer
+            minimum: 0
+            maximum: 23
+            description: "Local hour (24h format) before which late-night still applies -- midnight-wrap end of the late-night window (default: 6, i.e. 06:00)"
 
           minimum_break_minutes:
             type: integer
