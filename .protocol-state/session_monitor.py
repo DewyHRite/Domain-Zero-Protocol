@@ -1297,7 +1297,15 @@ class SessionMonitor:
                 alert_reasons=alert_reasons,
                 ambiguous_boundary_timestamp=ambiguous_boundary_timestamp,
             )
-        except Exception:
+        except Exception as e:
+            # Fail-soft, but never silently: type name only (matching this
+            # file's redaction pattern -- never str(e)), so a degraded
+            # envelope is diagnosable in the field (CodeRabbit PR #116 r2).
+            print(
+                f"[!] _build_envelope: composition failed ({type(e).__name__}) -- "
+                "degrading to unavailable stub.",
+                file=sys.stderr,
+            )
             try:
                 emitted_at_utc = self.time_provider.utc_now().isoformat()
             except Exception:
@@ -1545,6 +1553,16 @@ class SessionMonitor:
         else:
             if pending_started is None:
                 reason = "pending break start timestamp missing/unparseable"
+            elif break_minutes is not None:
+                # Healthy-but-short: break_minutes is only non-None when clock
+                # health passed, so the honest reason is the measured shortfall
+                # -- not health.reason, which describes a HEALTHY result here
+                # (CodeRabbit PR #116 round-2: this branch was unreachable
+                # behind `health is not None`, misreporting short breaks).
+                reason = (
+                    f"insufficient elapsed time ({break_minutes:.1f} min measured, "
+                    f">= {minimum_break_minutes} min required)"
+                )
             elif health is not None:
                 reason = health.reason
             else:
