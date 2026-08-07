@@ -74,10 +74,9 @@ reported for Megumi to rate rather than presented as a full fix. See
 `tests/brain/test_repair_perms.py::test_apply_repairs_rejects_replacement_after_final_validation_before_harden`
 for the regression proving the POSIX close.
 
-**Windows interim follow-up (2026-08-06, Megumi review finding 3, [SEC-ID pending
-mint -- CORTEXREPAIR subsystem; family SEC is Megumi-sole, Yuuji's
-`residentid-yuuji.sh new SEC ...` attempt failed closed with `error: yuuji not
-authorized for family SEC`, routed to Gojo/Megumi to mint])**: `apply_repairs()`'s
+**Windows interim follow-up (2026-08-06, Megumi review finding 3,
+SEC-CORTEXREPAIR-9.12.0-003, accepted-p3 -- minted by Gojo on Megumi's
+documented recommendation)**: `apply_repairs()`'s
 Windows branch now ALSO re-`lstat()`s immediately AFTER `_harden_existing()`
 returns and compares against the pre-harden lstat, reporting
 `FAILED-identity-changed-during-harden` (never `REPAIRED`) on a mismatch. This
@@ -768,6 +767,44 @@ def apply_repairs(
 # ---------------------------------------------------------------------------
 
 
+# CodeRabbit round-1 (PR #116): every non-dry-run `brain repair-perms` run
+# writes a new manifest with no retention limit, so repeated runs leave an
+# unbounded set of files in data_dir (mirrors the gap `Store.backup_db()`
+# already closes for its own backups/ output via `retention_count`). Scoped
+# down from the review's own "consider a dedicated subdirectory" suggestion
+# -- moving these into a new `_FIXED_DIR_NAMES` entry would also require
+# touching `inventory()`/`scan()`'s own TOCTOU/symlink-safety hardening,
+# which is a larger, higher-risk change than this accumulation issue
+# warrants on its own. Pruning old manifests directly in data_dir, after
+# writing, closes the actual "unbounded" complaint with the smallest
+# possible change to this security-sensitive module.
+_MANIFEST_RETENTION_COUNT = 10
+
+
+def _prune_old_repair_manifests(data_dir: "str | Path", *, retention_count: int = _MANIFEST_RETENTION_COUNT) -> None:
+    """Keep at most `retention_count` `repair-perms-*.manifest.json` files in
+    `data_dir`, deleting the oldest first. The timestamped filename format
+    (`%Y%m%dT%H%M%SZ`) sorts lexicographically = chronologically, exactly
+    like `Store.backup_db()`'s `brain-*.db` pruning. Fail-soft: a prune
+    failure (e.g. a permissions race) must never fail the repair run that
+    triggered it -- only the accumulation cleanup is skipped, loudly."""
+    if retention_count <= 0:
+        return
+    all_manifests = sorted(Path(data_dir).glob("repair-perms-*.manifest.json"))
+    excess = len(all_manifests) - retention_count
+    if excess <= 0:
+        return
+    for old in all_manifests[:excess]:
+        try:
+            old.unlink()
+        except OSError as e:
+            print(
+                f"[!] repair-perms: could not prune old manifest {old} ({e}) "
+                "-- continuing.",
+                file=sys.stderr,
+            )
+
+
 def write_repair_manifest(data_dir: "str | Path", results: list[PathResult]) -> Path:
     """Write the full PRE-repair snapshot (prior mode/ACL state) to a
     timestamped report inside data_dir, itself owner-only via
@@ -779,6 +816,12 @@ def write_repair_manifest(data_dir: "str | Path", results: list[PathResult]) -> 
     prior state worth recording). Called with the PENDING (pre-apply)
     results from `scan()` -- callers must call this BEFORE `apply_repairs()`
     so the manifest reflects state as observed, not post-mutation.
+
+    CodeRabbit round-1 (PR #116): prunes old manifests (retention count
+    `_MANIFEST_RETENTION_COUNT`) AFTER writing the new one -- same ordering
+    `Store.backup_db()` uses, so a prune failure can never prevent this
+    run's own manifest (the rollback knowledge for THIS repair) from being
+    written first.
     """
     ts = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
     manifest_path = Path(data_dir) / f"repair-perms-{ts}.manifest.json"
@@ -801,6 +844,7 @@ def write_repair_manifest(data_dir: "str | Path", results: list[PathResult]) -> 
         indent=2,
     ).encode("utf-8")
     recovery.write_owner_only(manifest_path, payload)
+    _prune_old_repair_manifests(data_dir)
     return manifest_path
 
 

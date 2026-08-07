@@ -470,7 +470,7 @@ When you invoke me, I immediately read project and session state to understand c
 **Project State Schema** (Consolidated):
 ```json
 {
-  "protocol_version": "9.8.1",
+  "protocol_version": "9.12.0",
   "schema_version": "2.0.0",
   "session_tracking": { /* Consolidated from session-state.json */ },
   "troubleshooting": { /* Consolidated from troubleshooting-history.json */ },

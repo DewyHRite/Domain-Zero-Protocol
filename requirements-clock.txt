@@ -57,38 +57,36 @@
 #
 # RE-VERIFICATION (2026-08-05T04:12:53Z, PROV-SEC-CLOCK-a2-001 remediation
 # pass, Yuuji): Megumi's Tier-3 review flagged the two tzlocal==5.4.4 hash
-# lines below as not matching what PyPI serves for that release. A fresh,
-# independent re-check was run against the on-disk file at the time of this
-# pass: (1) fetched https://pypi.org/pypi/tzlocal/5.4.4/json live and
-# compared `urls[].digests.sha256` for both the wheel and the sdist;
-# (2) separately ran `pip download tzlocal==5.4.4 --no-deps` (wheel) and
-# `--no-binary=:all:` (sdist) into a scratch dir and computed
-# `hashlib.sha256` over the downloaded bytes directly; (3) ran
-# `pip install --dry-run --require-hashes -r requirements-clock.txt` inside a
-# freshly created venv with neither package pre-installed (a global-env dry
-# run is NOT sufficient here -- pip reports "Requirement already satisfied"
-# and skips hash verification entirely for anything already importable).
-# All three methods agreed with EACH OTHER and with the two --hash values
-# already present below; the clean-venv dry-run completed with
-# "Would install tzdata-2026.3 tzlocal-5.4.4" and no hash-mismatch error.
-# The finding did not reproduce against this file's current content -- see
-# dev-notes.md (@re-review, PROV-SEC-CLOCK-a2-001) for the full evidence
-# trail, the neighboring-version digest comparison run to rule out a
-# cross-version mismatch, and root-cause discussion (most likely explanation:
-# this file's own CLOSURE-comment above already documents a same-day
-# "transcription-only pass produced a corrupted digest, caught by
-# --require-hashes and corrected" episode on 2026-08-04 -- Megumi's review
-# most plausibly captured that pre-correction intermediate state). No hash
-# value below was altered by this pass; only this provenance note was added.
+# lines then in this file as not matching what PyPI serves for that release.
+# A fresh, independent re-check confirmed the pinned hashes were correct for
+# 5.4.4 at the time -- see dev-notes.md (@re-review, PROV-SEC-CLOCK-a2-001)
+# for the full evidence trail. That pin has since been superseded; see the
+# VERSION DOWNGRADE note immediately below.
 #
-# CLOSURE (verified 2026-08-04 via the PyPI JSON API `info.requires_dist` for
-# each package):
+# VERSION DOWNGRADE (CodeRabbit PR #116 round-1 triage, Yuuji, 2026-08-06):
+# `tzlocal==5.4.4`'s PyPI `requires_python` is `>=3.10` (confirmed live via
+# https://pypi.org/pypi/tzlocal/5.4.4/json), which is incompatible with this
+# project's documented and enforced Python 3.9+ floor
+# (`docs/installation/IMPLEMENTATION_GUIDE.md`'s Quick Start prerequisites,
+# `protocol/skills/session-check.md`'s Prerequisites, and
+# `scripts/lib/python-probe.sh`'s `DZP_PYTHON_MIN_MINOR=9` floor check,
+# v9.12.0 `CODE-002`). Rather than raise the project-wide floor to 3.10 for a
+# single OS-fallback-only dependency, the pin was downgraded to
+# `tzlocal==5.3.1` -- the latest release whose PyPI `requires_python` is
+# `>=3.9`, matching this project's floor exactly. Both hash lines below were
+# regenerated directly from `https://pypi.org/pypi/tzlocal/5.3.1/json`
+# `urls[].digests.sha256` (wheel + sdist). `tzlocal`'s own `requires_dist` is
+# unchanged across this downgrade (`tzdata; platform_system == "Windows"`
+# only), so no other line in this file is affected.
+#
+# CLOSURE (re-verified 2026-08-06 via the PyPI JSON API `info.requires_dist`
+# for each pinned package, at the downgraded `tzlocal==5.3.1`):
 #   tzdata==2026.3 requires: nothing (leaf package; pure IANA tzdata, no
 #     runtime requires_dist entries).
-#   tzlocal==5.4.4 requires: tzdata (platform_system == "Windows") -- already
+#   tzlocal==5.3.1 requires: tzdata (platform_system == "Windows") -- already
 #     pinned unconditionally above as tzdata's own top-level entry, so no
 #     separate/duplicate marker-restricted line is added for it; pytest/
-#     pytest-mock/pytest-cov/check_manifest/pyroma/ruff/zest.releaser are all
+#     pytest-mock/pytest-cov/check_manifest/zest.releaser are all
 #     "extra ==" (testing/devenv extras) and excluded per this file's
 #     `pip install pkg` (never `pkg[extra]`) install contract.
 #
@@ -124,6 +122,9 @@ tzdata==2026.3 \
 
 # Cross-platform OS-zone-name -> IANA-name detection, used only by
 # TimeProvider._detect_os_zone()'s OS-fallback tier (ADR D4.1.3/D4.4 problem 2).
-tzlocal==5.4.4 \
-    --hash=sha256:aae09f0126a8a86fa736be266eb4a471380d26a0de3bc14844e7821fee3e2a15 \
-    --hash=sha256:8dbb8660838688a7b6ba4fed31d18dedf842afb4d47ca050d6d891c2c15f3be4
+# Pinned at 5.3.1, not the latest 5.4.4, because 5.4.4 requires Python >=3.10
+# -- incompatible with this project's Python 3.9+ floor. See the VERSION
+# DOWNGRADE note above.
+tzlocal==5.3.1 \
+    --hash=sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d \
+    --hash=sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd

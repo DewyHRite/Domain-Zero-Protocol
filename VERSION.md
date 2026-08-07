@@ -52,7 +52,11 @@ narrative and finding-by-finding detail: `CHANGELOG.md` `[9.12.0]`.
 - **Toji 2026-08-06 audit remediation wave** (`audits/2026-08-06-toji-v9-12-0-recent-work.md`, 13
   findings, overall risk HIGH, "not ready") — all 11 P2+P3 findings closed (`SEC-001`, `SEC-002`,
   `SEC-003`, `SEC-004` new, `DESIGN-001`..`-003`, `CODE-001`/`-002`, `IMPL-001`/`-002`, `AI-001`) +
-  C2 advisory rider. Megumi combined Tier-3 `@approved` 10/10 + focused `@re-review` 4/4. Toji's
+  C2 advisory rider. **These `DESIGN-001`..`-003` IDs are local to this specific audit report and
+  are unrelated to the still-OPEN `DESIGN-001` (git-clone cryptographic provenance, 2026-07-27
+  supply-chain audit) documented in `SECURITY.md`** — Toji's per-audit finding IDs restart from
+  `-001` each report and are not globally unique across audits. Megumi combined Tier-3 `@approved`
+  10/10 + focused `@re-review` 4/4. Toji's
   delta re-review (`audits/2026-08-06-toji-v9-12-0-remediation-delta-rereview.md`, 4 findings)
   **lifted its release hold**; 2 LOW/P4 items (`CODE-003`, `IMPL-003`) dispositioned in writing,
   not fixed (append-only-history conflict; out-of-scope spec reconcile).

@@ -282,9 +282,24 @@ def _default_work_streak_shape() -> Dict:
     an absent/corrupt work_streak block -- fail closed, never a silent
     fallback to a legacy file (this namespace, introduced in v9.12.0, has
     none to fall back to).
+
+    CodeRabbit round-1 (PR #116): the FIELD LIST above is the justified
+    duplication (documented "ProjectStateManager unavailable" path). The
+    SCHEMA VERSION NUMBER is different -- it is read from
+    `ProjectStateManager._WORK_STREAK_SCHEMA_VERSION` (the normative owner)
+    through the SAME `STATE_MANAGER_AVAILABLE` optional-import guard that
+    already gates `ProjectStateManager` itself, so a future schema bump
+    there does not silently leave this fallback shape emitting a stale
+    `1` (which `_work_streak_is_internally_consistent()` would then reject
+    as inconsistent). The literal `1` below is kept ONLY as the
+    last-resort value for the genuinely-unavailable case this function
+    exists for in the first place.
     """
+    schema_version = (
+        ProjectStateManager._WORK_STREAK_SCHEMA_VERSION if STATE_MANAGER_AVAILABLE else 1
+    )
     return {
-        "work_streak_schema": 1,
+        "work_streak_schema": schema_version,
         "streak_start_utc": None,
         "accumulated_protected_work_minutes": 0,
         "last_qualifying_break_utc": None,
@@ -1005,6 +1020,28 @@ class SessionMonitor:
     # of those call sites routes through; each call site still decides its
     # OWN fail-closed behavior on an anomaly (D3.2 does not mandate one
     # global policy), but none of them can skip the health check itself.
+    #
+    # SCOPE NOTE (CodeRabbit round-1, PR #116): "every OTHER policy-bearing
+    # subtraction" above is deliberately scoped to the CODE-001 finding's
+    # own enumerated call sites, not a claim that ALL raw `(now - start)`
+    # arithmetic in this module was migrated. `_calculate_current_duration()`
+    # and `_calculate_current_continuous_work()` (below) still compute a
+    # raw duration -- a REVIEWED, not accidental, omission: they answer "how
+    # long has the live wall-clock session been running RIGHT NOW" for
+    # human-facing display (`get_session_summary()`) and for
+    # `should_block_operation()`'s `max_continuous_minutes` gate, where
+    # `_health_gated_minutes()` returning `None` on ANY clock anomaly would
+    # either blank a status display outright or (for the blocking gate)
+    # remove the one signal `should_block_operation()` uses -- it already
+    # takes `max(live_duration, stored_duration)` specifically so a clock
+    # rollback cannot LOWER the reported duration below the last persisted
+    # metric, and a future-dated `start_time` only ever OVER-blocks, never
+    # under-blocks. Gating these two would trade a working fail-SAFE
+    # (over-block on anomaly) for a fail-BLANK (skip the block on anomaly)
+    # in the one path where erring toward MORE blocking, not less, is the
+    # correct direction. See
+    # tests/test_work_streak.py::TestLiveDurationHelpersDeliberatelyUngated
+    # for the direct regression proof of this reasoning.
     # -------------------------------------------------------------------
 
     def _health_gated_minutes(
@@ -2534,6 +2571,13 @@ Template file not found at: {self.template_file}
 
         PATCH-SESSION-005 (BUG FIX: SESSION-001)
         Calculates duration on-the-fly from start_time instead of reading stale metrics.
+
+        CodeRabbit round-1 (PR #116): deliberately NOT routed through
+        `_health_gated_minutes()` -- see the SCOPE NOTE on that method's
+        own docstring block for the full reasoning (this is a live
+        wall-clock read for display + `should_block_operation()`'s
+        fail-SAFE blocking gate, where gating on anomaly would remove the
+        blocking signal rather than strengthen it).
 
         Args:
             state: Session state dictionary
@@ -4738,11 +4782,28 @@ def main():
         # FEAT-TRANSFER-9.11.0-001 (v9.11.0 Increment 2): step 0 of the
         # session-transfer coordinator event. Writes the .INCOMPLETE marker
         # BEFORE session-update/session-end run.
-        result = monitor.transfer_begin()
+        #
+        # CodeRabbit round-1 (PR #116): `transfer_begin()` prints its own
+        # "[OK] Transfer marker written..." prose BEFORE returning --
+        # `start`/`resume` already guard their own lifecycle call the same
+        # way for exactly this reason (see those branches above). Without
+        # it, `--json` mode's stdout was that prose line followed by the
+        # envelope -- `json.loads(stdout)` fails, breaking the "exactly one
+        # parseable JSON document on stdout" contract this module states
+        # (see the `start`/`--json` comment above) and
+        # `protocol/skills/session.md` restates. The prose itself is
+        # unaffected in non-`--json` mode (see
+        # test_transfer_begin_without_json_flag_still_prints_prose).
+        _json_mode = "--json" in sys.argv
+        if _json_mode:
+            with contextlib.redirect_stdout(io.StringIO()):
+                result = monitor.transfer_begin()
+        else:
+            result = monitor.transfer_begin()
         if not result["success"]:
             print(f"[ERROR] {result['reason']}", file=sys.stderr)
             sys.exit(1)
-        if "--json" in sys.argv:
+        if _json_mode:
             envelope = monitor._build_envelope(
                 SessionBoundary.TRANSFER_BEGIN, session_id=result.get("session_id")
             )
@@ -4776,11 +4837,19 @@ def main():
             else:
                 i += 1
 
-        result = monitor.handoff_write(session_id=explicit_session_id, expect_session_id=expect_session_id)
+        # CodeRabbit round-1 (PR #116): same prose-before-envelope gap as
+        # transfer-begin above -- `handoff_write()` prints its own
+        # "[OK] Session handoff brief written..." line before returning.
+        _json_mode = "--json" in sys.argv
+        if _json_mode:
+            with contextlib.redirect_stdout(io.StringIO()):
+                result = monitor.handoff_write(session_id=explicit_session_id, expect_session_id=expect_session_id)
+        else:
+            result = monitor.handoff_write(session_id=explicit_session_id, expect_session_id=expect_session_id)
         if not result["success"]:
             print(f"[ERROR] {result['reason']}", file=sys.stderr)
             sys.exit(1)
-        if "--json" in sys.argv:
+        if _json_mode:
             envelope = monitor._build_envelope(SessionBoundary.HANDOFF, session_id=result.get("session_id"))
             print(json.dumps(envelope))
     elif command == "transfer-finalize":
@@ -4805,11 +4874,19 @@ def main():
             else:
                 i += 1
 
-        result = monitor.transfer_finalize(session_id=explicit_session_id)
+        # CodeRabbit round-1 (PR #116): same prose-before-envelope gap as
+        # transfer-begin/handoff above -- `transfer_finalize()` prints its
+        # own "[OK] Session transfer finalized..." line before returning.
+        _json_mode = "--json" in sys.argv
+        if _json_mode:
+            with contextlib.redirect_stdout(io.StringIO()):
+                result = monitor.transfer_finalize(session_id=explicit_session_id)
+        else:
+            result = monitor.transfer_finalize(session_id=explicit_session_id)
         if not result["success"]:
             print(f"[ERROR] {result['reason']}", file=sys.stderr)
             sys.exit(1)
-        if "--json" in sys.argv:
+        if _json_mode:
             envelope = monitor._build_envelope(
                 SessionBoundary.TRANSFER_FINALIZE, session_id=result.get("session_id")
             )

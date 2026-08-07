@@ -544,6 +544,19 @@ def main(argv: list[str] | None = None) -> int:
         dest="dry_run",
         help="Report what would change without modifying anything (no manifest written)",
     )
+    p_repair.add_argument(
+        "--yes",
+        action="store_true",
+        dest="yes",
+        help=(
+            "Required to APPLY permission changes (CodeRabbit round-1, PR #116 -- "
+            "matches 'reset'/'encrypt's existing explicit-confirmation pattern). "
+            "Without it, repair-perms runs as a dry run. The pre-repair manifest "
+            "records each path's prior_mode_octal/prior_owner_only for manual "
+            "rollback (chmod the recorded octal value back on POSIX; there is no "
+            "automated restore command -- see the manifest path printed below)."
+        ),
+    )
 
     args = parser.parse_args(argv)
     try:
@@ -1905,11 +1918,28 @@ def _repair_perms_cmd(repo: Path, cfg: dict, args, *, allow_unsafe: bool = False
     case), 1 if any path FAILED to harden or re-verify (fail-closed — the v9.9.x
     write_owner_only precedent: a partial failure must be loud and reflected in
     the exit code, never silently continued past).
+
+    CodeRabbit round-1 (PR #116): every OTHER mutating subcommand this
+    parser defines gates itself explicitly (`reset` requires `--yes`,
+    `encrypt` requires `--execute`, `reset --scope orphans` requires both)
+    -- `repair-perms` previously applied chmod/ACL changes on the DEFAULT
+    invocation with only `--dry-run` as an opt-OUT. `--yes` is now required
+    to APPLY; its absence (and no `--dry-run` either) degrades to a dry
+    run, loudly, rather than mutating permissions unannounced.
     """
     from cortex import repair as _repair
 
     data_dir = paths.data_dir(repo, cfg, allow_unsafe=allow_unsafe)
-    dry_run = bool(getattr(args, "dry_run", False))
+    requested_dry_run = bool(getattr(args, "dry_run", False))
+    confirmed = bool(getattr(args, "yes", False))
+    dry_run = requested_dry_run or not confirmed
+    if dry_run and not requested_dry_run:
+        print(
+            "repair-perms: no --yes given -- running as a DRY RUN (no changes "
+            "made). Re-run with --yes to apply, or --dry-run to make this "
+            "explicit.",
+            file=sys.stderr,
+        )
 
     results, manifest_path = _repair.run_repair(data_dir, dry_run=dry_run)
 

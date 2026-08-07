@@ -92,14 +92,23 @@ _DEFAULTS: Dict[str, object] = {
 # already uses (ADR config-object-spec item 2: "reusing the existing
 # per-field range-check pattern"). (min, max) inclusive.
 _RANGES: Dict[str, tuple] = {
-    "initial_alert_minutes": (120, 720),          # 2-12 hours, matches existing hours-based validation
-    "escalated_alert_minutes": (15, 120),
-    "critical_session_minutes": (240, 960),        # 4-16 hours
-    "max_continuous_minutes": (360, 1440),         # 6-24 hours
-    "late_night_hour": (0, 23),
+    # CodeRabbit round-1 (PR #116): these 5 bounds MUST stay a subset of
+    # `protocol/validation-rules.yaml::schemas.session-state.properties.
+    # thresholds.properties.*`'s (minimum, maximum) -- a value this loader
+    # accepts but the schema then rejects lets a user write a "valid per the
+    # loader" config value into persisted state that fails the very next
+    # `validate-protocol.py --check`. See
+    # tests/test_timing_policy_config.py::TestRangesAgreeWithSessionStateSchema,
+    # which cross-checks this table against the schema field-by-field so this
+    # comment cannot silently go stale again.
+    "initial_alert_minutes": (60, 480),            # schema: 1-8 hours
+    "escalated_alert_minutes": (30, 120),
+    "critical_session_minutes": (180, 720),        # schema: 3-12 hours
+    "max_continuous_minutes": (360, 1440),         # 6-24 hours; schema allows 240-1440, this is a subset
+    "late_night_hour": (20, 23),
     "late_night_end_hour": (0, 23),
     "session_continuation_threshold_minutes": (1, 1440),  # 1 minute .. 24h (MAX_SESSION_DURATION parity)
-    "minimum_break_minutes": (1, 480),             # 1 minute .. 8h (MAX_BREAK_DURATION parity)
+    "minimum_break_minutes": (5, 60),              # schema: 5 minutes .. 1h
     "clock_health_implausible_gap_days": (1, 3650),  # 1 day .. 10 years
     "clock_health_skew_tolerance_seconds": (0, 300),  # 0 .. 5 minutes
 }

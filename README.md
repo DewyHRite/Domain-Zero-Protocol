@@ -217,7 +217,10 @@ repository can present this exact same three-command flow, and you would have no
 difference before running it. Use this ONLY if you are a contributor working against dev history, or
 you have already independently verified the source.
 
-> **Honest limitation (Toji audit finding `DESIGN-001`, open/unmitigated):** DZP releases are
+> **Honest limitation (Toji audit finding `DESIGN-001`, 2026-07-27 supply-chain audit
+> `audits/2026-07-27-toji-public-posture-supply-chain.md`, open/unmitigated — distinct from the
+> unrelated, same-numbered `DESIGN-001` closed in the 2026-08-06 v9.12.0 audit; per-audit finding
+> IDs are not globally unique):** DZP releases are
 > currently promoted by repointing the canonical repository's default branch to the new release
 > branch, not by publishing an immutable, cryptographically signed tag. A plain `git clone`
 > therefore carries **no cryptographic provenance guarantee whatsoever** — there is currently no

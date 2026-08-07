@@ -537,7 +537,7 @@ class ProjectStateManager:
         except FileNotFoundError:
             # Fresh install - create default state structure
             return {
-                "protocol_version": "8.12.0",
+                "protocol_version": "9.12.0",
                 "session_tracking": {},
                 "troubleshooting": {"sessions": [], "metadata": {"total_sessions_all_time": 0}},
                 "agent_invocation_tracking": {},
@@ -933,7 +933,7 @@ class ProjectStateManager:
             },
             "session_history": [],
             "last_updated": None,
-            "protocol_version": "8.12.0"
+            "protocol_version": "9.12.0"
         }
 
     def _default_agent_invocation_tracking(self) -> Dict[str, Any]:

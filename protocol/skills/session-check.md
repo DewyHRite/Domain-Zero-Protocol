@@ -72,10 +72,14 @@ python .protocol-state/session_monitor.py check-and-record --json
 ```
 
 **Legacy/human-readable form (prose, NOT the primary implementation)**: omitting `--json` still
-produces the pre-A4 prose output byte-for-byte unchanged, for a human directly reading a terminal or
-a caller that has not yet adopted the envelope. Providers relaying output to the USER (not consuming
-it for their own time reasoning) MAY still show this rendered form, but MUST still have obtained the
-authoritative fields via `--json` first per the D5.3 relay rule above.
+produces the pre-A4 prose output unchanged for every case that previously produced output, for a
+human directly reading a terminal or a caller that has not yet adopted the envelope. **Exception**:
+when no session is active, the prose form now ALSO appends an `[INFO] No active session` line
+(`IMPL-SESSIONMON-001`, 2026-08-03 UX-honesty fix — see Step 1 below) that did not exist pre-A4;
+this is an intentional, documented addition to the previously-silent no-alert-no-session case, not a
+byte-for-byte-unchanged case. Providers relaying output to the USER (not consuming it for their own
+time reasoning) MAY still show this rendered form, but MUST still have obtained the authoritative
+fields via `--json` first per the D5.3 relay rule above.
 ```bash
 python .protocol-state/session_monitor.py check-and-record
 ```

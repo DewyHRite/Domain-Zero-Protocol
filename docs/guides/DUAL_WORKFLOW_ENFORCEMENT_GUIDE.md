@@ -841,7 +841,8 @@ Please start with Yuuji, and I'll be invoked through his prompts when ready."
 
 ## ✅ FINAL VERIFICATION
 
-Before deploying v7.1.0 with mandatory dual workflow:
+Before deploying with mandatory dual workflow (originally shipped in v7.1.0; this guide now
+documents Domain Zero Protocol v9.12.0):
 
 - [ ] All agent files (YUUJI.md, MEGUMI.md, GOJO.md) updated
 - [ ] Protocol documentation (CLAUDE.md, README.md) updated

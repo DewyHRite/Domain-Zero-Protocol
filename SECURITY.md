@@ -37,12 +37,12 @@ We provide security updates for the following versions:
 
 | Version | Supported          | Status |
 | ------- | ------------------ | ------ |
-| 9.10.x  | :white_check_mark: | Current stable release (security + bug fixes) |
-| < 9.10.0 | :x:               | End of life (EOL) — upgrade to the latest 9.10.x release |
+| 9.12.x  | :white_check_mark: | Current stable release (security + bug fixes) |
+| < 9.12.0 | :x:               | End of life (EOL) — upgrade to the latest 9.12.x release |
 
-**Support Policy**: Only the **latest minor release line (currently 9.10.x)** receives security updates. All earlier versions are end-of-life.
+**Support Policy**: Only the **latest minor release line (currently 9.12.x)** receives security updates. All earlier versions are end-of-life.
 
-**Upgrade Recommendation**: Users on any version below the current 9.10.x line should upgrade to the latest release immediately. See `VERSION.md` for the current version.
+**Upgrade Recommendation**: Users on any version below the current 9.12.x line should upgrade to the latest release immediately. See `VERSION.md` for the current version.
 
 ---
 
@@ -78,7 +78,12 @@ the module's own docstring for the complete threat-model discussion.
 
 ### `git clone` Has No Cryptographic Provenance Guarantee (Open, Unmitigated)
 
-**Toji audit finding `DESIGN-001`, currently OPEN.** DZP releases are promoted by repointing the
+**Toji audit finding `DESIGN-001` (2026-07-27 public-posture/supply-chain audit,
+`audits/2026-07-27-toji-public-posture-supply-chain.md`), currently OPEN.** This is a distinct
+finding from the unrelated, same-numbered `DESIGN-001` in the 2026-08-06 v9.12.0 audit
+(`audits/2026-08-06-toji-v9-12-0-recent-work.md`, closed same-day) — Toji's per-audit finding IDs
+restart from `-001` each report and are not globally unique; always disambiguate by audit report
+filename, never by ID alone. DZP releases are promoted by repointing the
 canonical repository's default branch to the new release branch — not by publishing an immutable,
 cryptographically signed tag. A plain `git clone` therefore has **no cryptographic anchor to verify
 against, even in principle**: nothing about the clone itself lets you confirm you received the
@@ -386,8 +391,8 @@ When reporting, please indicate:
 
 This security policy is versioned alongside the Domain Zero Protocol:
 
-- **Current Version**: 1.6.0 (matches Domain Zero Protocol v9.11.0)
-- **Last Updated**: August 3, 2026
+- **Current Version**: 1.6.0 (matches Domain Zero Protocol v9.12.0)
+- **Last Updated**: August 6, 2026
 - **Next Review**: Upon the next minor/major protocol update
 
 Changes to this policy will be documented in `CHANGELOG.md` and announced via GitHub releases.

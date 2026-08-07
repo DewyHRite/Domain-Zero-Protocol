@@ -392,7 +392,13 @@ def ensure_owner_only_dir(path: Path) -> None:
                     "directory creation time -- pre-existing directories were "
                     "NOT modified (v9.12.0 Wave B4 tracks the repair decision; "
                     "see recovery.ensure_owner_only_dir's docstring). Further "
-                    "occurrences are not repeated this process."
+                    "occurrences are not repeated this process.",
+                    # CodeRabbit round-1 (PR #116, Ruff B028): attribute the
+                    # warning to the CALLER (paths.data_dir(), Store.__init__,
+                    # etc.), not to this line inside recovery.py -- the
+                    # once-per-process rate-limiting above makes WHICH caller
+                    # triggered it useful information to preserve.
+                    stacklevel=2,
                 )
         return
     os.makedirs(str(path), mode=0o700, exist_ok=True)
@@ -432,7 +438,17 @@ def ensure_owner_only_new_file(path: Path) -> None:
     if path.exists():
         return
     try:
-        fd = os.open(str(path), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        # CodeRabbit round-1 (PR #116): O_NOFOLLOW for consistency with
+        # write_owner_only()'s flag set above -- O_EXCL already refuses an
+        # EXISTING symlink at this path on POSIX, so the added exposure is
+        # narrow, but both owner-only-file primitives in this module should
+        # use the same defence-in-depth flags. No-op on Windows, where the
+        # flag is absent (getattr default 0), same as write_owner_only().
+        fd = os.open(
+            str(path),
+            os.O_CREAT | os.O_EXCL | os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0),
+            0o600,
+        )
         os.close(fd)
     except FileExistsError:
         return  # lost a creation race to a concurrent process; leave it alone

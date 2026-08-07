@@ -41,8 +41,9 @@ ratified the complete branch (`9e3e87f`..`5ddc303`, 21 commits) as part of this 
   (D5.6) pulled forward from a deferred future-revision idea into the initial implementation, per
   Sukuna's recommendation that the machine-checkable defense for `AI-001` (HIGH, the actual July 30
   incident this ADR exists to prevent recurrence of) not wait for a later schema revision. 13
-  `SEC-CLOCKADR-9.12.0` rows minted across the review chain; all 13 closed `@approved` by the end of
-  the wave (including the later hardening-package item, `-026`, below).
+  `SEC-CLOCKADR-9.12.0` rows (`-001`..`-013`) minted across the review chain; together with the later
+  hardening-package item (`-026`, below), 14 rows total, all closed `@approved` by the end of the
+  wave.
 - **A2 — TimeProvider + timing-policy primitives** (`.protocol-state/time_provider.py`,
   `.protocol-state/timing_policy.py`, ADR D1-D4/D6): a single clock-authority module (UTC-instant
   authority, monotonic elapsed time, clock-health evaluation, user-zone resolution) and a unified
@@ -183,7 +184,7 @@ before any writer was active, per the authorization's own next-session condition
 
 #### Security
 
-Full remediation ledger this release (all Megumi `@approved`): 13× `SEC-CLOCKADR-9.12.0-*`
+Full remediation ledger this release (all Megumi `@approved`): 14× `SEC-CLOCKADR-9.12.0-*`
 (`-001`..`-013`, `-026`), `SEC-CORTEXSTOR-9.12.0-001` (accepted-P3, live-dir half closed by B4),
 `SEC-PORTABCI-9.12.0-001`..`-005`, `SEC-STATE-9.12.0-001`/`-002`, `SEC-PAYLOAD-9.12.0-001`,
 `BUG-STATE-001`, `BUG-CORTEXREPAIR-9.12.0-001`, `BUG-PORTAB-9.12.0-001`, and the Toji 2026-08-06

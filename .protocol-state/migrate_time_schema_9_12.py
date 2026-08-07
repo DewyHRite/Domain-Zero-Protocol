@@ -166,9 +166,12 @@ except ImportError:  # pragma: no cover
     sys.exit(1)
 
 try:
-    from timing_policy import load_timing_policy
+    from timing_policy import load_timing_policy, TIMING_POLICY_DEFAULTS
 except ImportError:  # pragma: no cover
     load_timing_policy = None  # zone resolution degrades to "no zone" below
+    TIMING_POLICY_DEFAULTS = {"late_night_end_hour": 6}  # last-resort literal,
+    # matches timing_policy._DEFAULTS -- only used if timing_policy.py itself
+    # cannot be imported at all (see _backfill_late_night_end_hour below).
 
 
 TIME_SCHEMA_VERSION = 1
@@ -400,10 +403,29 @@ def _git_first_introduction_utc(
 # ---------------------------------------------------------------------------
 
 def _iter_naive_timestamps(obj: Any, path: str = ""):
-    """Depth-first walk yielding (path, value) for every string value that
-    looks like a naive ISO-8601 datetime (no offset)."""
+    r"""Depth-first walk yielding (path, value) for every string value that
+    looks like a naive ISO-8601 datetime (no offset).
+
+    CodeRabbit round-1 (PR #116): `_set_by_path()`/`_get_by_path()`
+    re-tokenize a dotted/bracketed path with
+    `re.findall(r"[^.\[\]]+|\[\d+\]", path)`, which cannot round-trip a
+    dict key that itself contains `.`, `[`, or `]` -- such a key would
+    collapse into multiple tokens and address the WRONG value. Not a live
+    corruption path today (DESIGN-002's source_state_digest binding fails
+    closed with RecordIdentityMismatchError long before an ambiguous path
+    could be written back), but the invariant is cheap to make explicit
+    here rather than relying on that later, unrelated safety net."""
     if isinstance(obj, dict):
         for k, v in obj.items():
+            if any(c in k for c in ".[]"):
+                print(
+                    f"[!] Skipping key {k!r} under {path!r}: the key contains a "
+                    "path-separator character ('.', '[', or ']') and cannot be "
+                    "addressed unambiguously by this migration's dotted-path "
+                    "notation.",
+                    file=sys.stderr,
+                )
+                continue
             yield from _iter_naive_timestamps(v, f"{path}.{k}" if path else k)
     elif isinstance(obj, list):
         for i, v in enumerate(obj):
@@ -715,11 +737,28 @@ class TimeSchemaMigrator:
         self.state_dir = self.protocol_root / ".protocol-state"
         self.migrations_dir = self.state_dir / "migrations"
         self.manager = manager or ProjectStateManager(self.protocol_root)
-        self._git_lookup = git_lookup or (
-            lambda v: _git_first_introduction_utc(
-                self.protocol_root, PROJECT_STATE_RELATIVE, v
-            )
-        )
+        if git_lookup is None:
+            # CodeRabbit round-1 (PR #116): the DEFAULT git_lookup shells
+            # out to a full-history `git log -S` scan (30s timeout) per
+            # call. classify_all() calls it once per naive-timestamp
+            # record; the live dataset's ~2000 synthetic rows share only a
+            # couple of distinct literal values, so the unmemoized default
+            # re-ran the same expensive scan roughly 1000x per value. Only
+            # the DEFAULT (git_lookup=None) is memoized here -- an
+            # explicitly-injected git_lookup (every test in this suite, and
+            # any future caller with its own caching/instrumentation needs)
+            # is passed through completely unwrapped, exactly as before.
+            _git_lookup_cache: Dict[str, Optional[datetime]] = {}
+
+            def _cached_git_lookup(v: str) -> Optional[datetime]:
+                if v not in _git_lookup_cache:
+                    _git_lookup_cache[v] = _git_first_introduction_utc(
+                        self.protocol_root, PROJECT_STATE_RELATIVE, v
+                    )
+                return _git_lookup_cache[v]
+
+            git_lookup = _cached_git_lookup
+        self._git_lookup = git_lookup
         self._user_zone: Optional[ZoneInfo] = self._resolve_user_zone()
 
     # -- zone resolution -----------------------------------------------
@@ -728,18 +767,47 @@ class TimeSchemaMigrator:
         """D4-consistent zone resolution for interpreting known-local naive
         values. Degrades to None (never converts known-local records) if
         the loader is unavailable or the zone cannot be resolved -- this
-        module never silently substitutes the execution host's zone."""
+        module never silently substitutes the execution host's zone.
+
+        CodeRabbit round-1 (PR #116): each of the three distinct
+        None-returning conditions below (loader unavailable, loader raised,
+        zone unusable) prints its OWN diagnostic once, here, at resolution
+        time -- previously all three were silent, and the only visible
+        consequence was a much-later, cause-less per-record "no user zone is
+        resolved" warning. A malformed protocol.config.yaml therefore used
+        to disable every known-local conversion with zero indication why.
+        """
         if load_timing_policy is None:
+            print(
+                "[!] timing_policy loader unavailable -- known-local records "
+                "will be left untouched.",
+                file=sys.stderr,
+            )
             return None
         try:
             policy = load_timing_policy(protocol_root=self.protocol_root)
-        except Exception:
+        except Exception as e:
+            print(
+                f"[!] Could not load timing policy ({e}) -- known-local records "
+                "will be left untouched.",
+                file=sys.stderr,
+            )
             return None
         if policy.user_zone.iana is None:
+            print(
+                "[!] No user timezone resolved -- known-local records will be "
+                "left untouched.",
+                file=sys.stderr,
+            )
             return None
         try:
             return ZoneInfo(policy.user_zone.iana)
-        except Exception:
+        except Exception as e:
+            print(
+                f"[!] Resolved zone {policy.user_zone.iana!r} is not usable "
+                f"({e}) -- known-local records will be left untouched.",
+                file=sys.stderr,
+            )
             return None
 
     # -- classification ---------------------------------------------------
@@ -1282,7 +1350,39 @@ class TimeSchemaMigrator:
                 seeded["last_updated"] = self.manager.time_provider.utc_now().isoformat()
                 state["work_streak"] = seeded
 
+            # CodeRabbit round-1 (PR #116): `late_night_end_hour` was
+            # promoted from optional to `required:` on
+            # `session-state.thresholds` in v9.12.0 A5 (IMPL-004 full
+            # closure), but a pre-A5 `project-state.json` can carry a
+            # `thresholds` block that predates the field entirely --
+            # `validate-protocol.py --check` would then fail on the very
+            # next run for a field this migration never classifies as a
+            # naive-timestamp record (it's an integer, not a timestamp, so
+            # `_iter_naive_timestamps()` never visits it). Backfill it here,
+            # additively only -- an existing value (default or
+            # USER-customized) is never overwritten.
+            session_tracking = state.get("session_tracking")
+            if isinstance(session_tracking, dict):
+                thresholds = session_tracking.get("thresholds")
+                if isinstance(thresholds, dict) and "late_night_end_hour" not in thresholds:
+                    thresholds["late_night_end_hour"] = TIMING_POLICY_DEFAULTS["late_night_end_hour"]
+
             self.manager._atomic_write(state, self.manager.project_state_file)
+
+        # CodeRabbit round-1 (PR #116): persist `override_audit` next to the
+        # backup, not just in the return value -- `main()` previously
+        # discarded execute()'s return value entirely, so a refused or
+        # explicitly-applied non-ambiguous override survived only as a
+        # stderr print the caller may not have captured. The docstring
+        # above (SEC-CLOCKADR-9.12.0-026) describes this as a durable
+        # per-record audit trail; only written when non-empty, so an
+        # ordinary run (no overrides encountered) gains no new file.
+        override_audit_path = None
+        if override_audit:
+            override_audit_path = backup_dir / "override_audit.json"
+            with open(override_audit_path, "w", encoding="utf-8") as f:
+                json.dump(override_audit, f, indent=2)
+            print(f"Override audit trail: {override_audit_path}")
 
         print("=== Time-Schema Migration: EXECUTE complete ===")
         print(f"  known-utc converted:   {applied['known_utc']}")
@@ -1301,6 +1401,10 @@ class TimeSchemaMigrator:
             # non-ambiguous-bucket decision encountered (refused or
             # explicitly overridden). Empty on an ordinary run.
             "override_audit": override_audit,
+            # CodeRabbit round-1 (PR #116): where that same data was
+            # persisted to disk, if anywhere -- None when override_audit is
+            # empty (nothing to persist).
+            "override_audit_path": str(override_audit_path) if override_audit_path else None,
         }
 
     # -- rollback ---------------------------------------------------------
@@ -1385,6 +1489,33 @@ class TimeSchemaMigrator:
         #    migration; (3) verify the committed result while still holding
         #    the lock. ------------------------------------------------------
         with self.manager._migration_lock():
+            # CodeRabbit round-1 (PR #116): preserve the PRE-rollback live
+            # state before it is overwritten, so an unintended/mistaken
+            # rollback (wrong backup selected, `--rollback` run by accident)
+            # is itself recoverable -- rollback was previously a one-way
+            # door once the atomic write below committed. Written into the
+            # SAME backup_dir being restored from (never the live path),
+            # under the lock so it reflects exactly what is about to be
+            # overwritten, with no window for a concurrent writer to race
+            # between this copy and the restore. Best-effort: a failure here
+            # must not block a rollback the USER already explicitly
+            # requested (at the CLI layer -- see main()'s confirmation
+            # gate), only degrade its own recoverability, so it is
+            # try/except-guarded and loud, never silently swallowed.
+            if self.manager.project_state_file.exists():
+                pre_rollback_path = backup_dir / "project-state.pre-rollback.json"
+                try:
+                    shutil.copy2(self.manager.project_state_file, pre_rollback_path)
+                    print(f"[i] Pre-rollback state saved to: {pre_rollback_path}")
+                except OSError as e:
+                    print(
+                        f"[!] Could not save pre-rollback safety copy to "
+                        f"{pre_rollback_path} ({e}) -- proceeding with rollback "
+                        "anyway, but the pre-rollback state will not be "
+                        "recoverable if this rollback turns out to be a mistake.",
+                        file=sys.stderr,
+                    )
+
             self.manager._atomic_write(backup_state, self.manager.project_state_file)
 
             with open(self.manager.project_state_file, "r", encoding="utf-8") as f:
@@ -1404,6 +1535,35 @@ class TimeSchemaMigrator:
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
+
+class _ConfirmationDeclinedError(Exception):
+    """Raised (never a bare sys.exit()) when a CLI destructive-operation
+    confirmation prompt is declined, so main()'s own tests can assert on it
+    without needing to intercept a process exit."""
+
+
+def _confirm_destructive_cli_operation(action: str, detail: str, *, assume_yes: bool) -> None:
+    """CodeRabbit round-1 (PR #116): explicit confirmation gate for the CLI
+    entry points of `--execute` and `--rollback` -- both mutate live
+    project state. Scoped to `main()` ONLY: `TimeSchemaMigrator.execute()`
+    and `.rollback()` themselves are UNCHANGED and remain callable
+    programmatically (tests, other scripts, a future orchestrator) with no
+    prompt, exactly as before -- adding an interactive gate to the library
+    methods themselves would block any non-interactive/automated caller
+    (see the existing test suite, which calls both directly). `--yes`
+    (`assume_yes`) is the non-interactive escape hatch for scripted use.
+    """
+    if assume_yes:
+        return
+    print(f"[!] --{action} {detail}")
+    try:
+        reply = input(f"    Type '{action}' to continue: ").strip()
+    except EOFError:
+        reply = ""
+    if reply != action:
+        print("[i] Cancelled. Nothing was changed.")
+        raise _ConfirmationDeclinedError(action)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -1430,6 +1590,12 @@ def main() -> None:
         "--adjudication", type=str,
         help="Path to a USER adjudication JSON file (only used with --execute).",
     )
+    parser.add_argument(
+        "--yes", action="store_true",
+        help="Skip the interactive confirmation prompt for --execute/--rollback "
+             "(for scripted/non-interactive use). Ignored by --dry-run, which "
+             "never prompts (it mutates nothing).",
+    )
 
     args = parser.parse_args()
 
@@ -1446,9 +1612,26 @@ def main() -> None:
     if args.dry_run:
         migrator.dry_run()
     elif args.execute:
+        try:
+            _confirm_destructive_cli_operation(
+                "execute",
+                "will apply the time-schema migration to "
+                f"{migrator.manager.project_state_file}. A pre-execute backup is "
+                "created automatically, but this still mutates live state.",
+                assume_yes=args.yes,
+            )
+        except _ConfirmationDeclinedError:
+            sys.exit(0)
         adjudication_path = Path(args.adjudication).resolve() if args.adjudication else None
         try:
-            migrator.execute(adjudication_path=adjudication_path)
+            # CodeRabbit round-1 (PR #116): retain the result -- previously
+            # discarded -- so a persisted override-audit path (when
+            # non-empty; see execute()'s own persistence above) is
+            # discoverable from the CLI, not only from a library caller
+            # that captures the return value itself.
+            result = migrator.execute(adjudication_path=adjudication_path)
+            if result.get("override_audit_path"):
+                print(f"[i] Non-ambiguous override decisions recorded: {result['override_audit_path']}")
         except (MigrationNotReadyError, UnboundMigrationReportError) as e:
             # DESIGN-002: UnboundMigrationReportError and its subclasses
             # (LegacyReportMissingDigestError, StateDriftError,
@@ -1458,6 +1641,18 @@ def main() -> None:
             print(f"[ERROR] {e}")
             sys.exit(1)
     elif args.rollback:
+        try:
+            _confirm_destructive_cli_operation(
+                "rollback",
+                f"will OVERWRITE {migrator.manager.project_state_file} with the "
+                "contents of the most recent time-schema-migration backup. The "
+                "current (post-migration) state will be replaced -- a "
+                "pre-rollback safety copy is saved automatically, but this is "
+                "still a live-state overwrite.",
+                assume_yes=args.yes,
+            )
+        except _ConfirmationDeclinedError:
+            sys.exit(0)
         try:
             migrator.rollback()
         except (FileNotFoundError, BackupIntegrityError) as e:
