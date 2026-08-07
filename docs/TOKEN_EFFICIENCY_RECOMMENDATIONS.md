@@ -3,7 +3,8 @@
 
 > **Classification:** CORE FILE
 > **Version:** 9.12.0
-> **Last Updated:** 2026-07-19
+> **Last Updated:** 2026-08-07 (TOJI-DOCS-9.12.0-014: replaced stale `v8.5.1` example version
+> string with a generic `vX.Y.Z` placeholder in §4.1)
 > **Purpose:** Formal guidelines for maintaining token efficiency while preserving full protocol behavior
 
 ## Scope
@@ -125,7 +126,7 @@ When an Extended agent is needed, prefer this pattern:
   - Long-lived sessions (Claude Code, IDE plugins): Let the environment maintain context; just say for example:
     - `"Read protocol/yuuji.agent.md and implement [feature]"` once per feature or per logical work chunk.
   - Short sessions: Reference protocol by name and version instead of inlining the entire file:
-    - "Follow Domain Zero Protocol v8.5.1 (already loaded) and use Yuuji for implementation."
+    - "Follow Domain Zero Protocol vX.Y.Z (already loaded) and use Yuuji for implementation."
 
 ### 4.2 Be Specific with Tasks
 

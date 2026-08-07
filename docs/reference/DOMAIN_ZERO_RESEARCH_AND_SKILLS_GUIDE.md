@@ -85,6 +85,16 @@ Recommendations for reuse:
 
 ## 4) Claude Skills – Canonical Reference and Integration
 
+> **Historical note (added v9.12.0)**: Sections 4-6 below describe the *original proposal* for
+> Skills integration (2025-11-22), including a "Phase B" plan to author custom skills in a
+> separate private repo. That plan has since been **executed, in-repo** rather than in a separate
+> private repo: the current, shipped skill set lives under `protocol/skills/` (session lifecycle,
+> troubleshooting tiers, `brain`/Cortex, `dzp-roe`, `megumi-secid`, `resident-mint`, `skill-builder`,
+> and more) and is installed as native Claude Code slash commands. **The current source of truth
+> for what has shipped is `protocol/skills/SKILL_REGISTRY.md`.** Research Mode itself (§1 above)
+> remains current and is separately specified in `protocol/RESEARCH_MODE.md`. Sections 4-6 are
+> retained below for historical/design-rationale reference only.
+
 Authoritative references:
 
 - Overview: https://claude.com/blog/skills
@@ -192,3 +202,7 @@ Gojo (Mission Control & Protocol Guardian)
 Changelog:
 
 - 1.0 (2025-11-22): Initial guide, research activation, skills mapping, governance policies.
+- 1.1 (2026-08-07, TOJI-DOCS-9.12.0-010): Added a historical-note disclaimer to §4-6 — the
+  Skills action plan has since shipped in-repo under `protocol/skills/`; that tree and
+  `protocol/skills/SKILL_REGISTRY.md` are now the current source of truth, not this document's
+  original private-repo proposal.

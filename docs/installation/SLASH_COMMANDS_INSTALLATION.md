@@ -4,7 +4,7 @@
 > **Protocol Version**: v9.12.0
 > **Purpose**: Set up `.claude/commands/` for quick agent invocation
 > **Target Environment**: Claude Code CLI
-> **Last Updated**: 2026-07-13
+> **Last Updated**: 2026-08-07
 
 ---
 
@@ -12,7 +12,13 @@
 
 Domain Zero Protocol agents can be invoked via **slash commands** in Claude Code. Instead of typing full `"Read protocol/gojo.agent.md and..."` commands, you can use shortcuts like `/gojo` directly.
 
-This guide shows you how to set up `.claude/commands/` for all 8 Domain Zero agents.
+This guide shows you how to set up `.claude/commands/` for the Domain Zero Protocol command set:
+**9 resident-agent shortcuts** (`/gojo`, `/yuuji`, `/megumi`, `/nobara`, `/todo`, `/maki`,
+`/panda`, `/inumaki`, `/sukuna`) plus **~21 session-lifecycle, troubleshooting-tier, and utility
+commands** (`/session-start`, `/dzp-roe`, `/brain`, `/ts-tier1`, etc.) — **30 commands total**.
+(Toji, the 10th/external auditor agent, has no slash command by design — Toji is external to the
+Domain Zero hierarchy and is invoked via a direct instruction rather than a shortcut, per
+`protocol/toji.agent.md` and the root `CLAUDE.md` agent roster.)
 
 ---
 
@@ -26,7 +32,10 @@ mkdir -p .claude/commands
 cp -r slash-commands/* .claude/commands/
 ```
 
-That's it! All 9 commands are now ready to use.
+That's it! All 30 commands are now ready to use. For the complete, current command list (grouped
+by agent shortcuts vs. session/troubleshooting/utility commands), see
+**[`slash-commands/README.md`](../../slash-commands/README.md)** — it is maintained as the
+authoritative list of all 30 commands and is the list this guide summarizes below.
 
 ---
 
@@ -43,7 +52,9 @@ mkdir -p .claude/commands
 
 ### Step 2: Create Command Files
 
-Create these 8 files in `.claude/commands/`:
+Create these 9 agent-shortcut files in `.claude/commands/` (this is the resident-agent subset
+only — see the note below the table for the ~21 additional session/utility/troubleshooting
+commands):
 
 | Agent | File | Shortcut |
 |-------|------|----------|
@@ -55,6 +66,16 @@ Create these 8 files in `.claude/commands/`:
 | **Maki** (Performance) | `.claude/commands/maki.md` | `/maki` |
 | **Panda** (Build/CI) | `.claude/commands/panda.md` | `/panda` |
 | **Inumaki** (API) | `.claude/commands/inumaki.md` | `/inumaki` |
+| **Sukuna** (System Update Adversary, Gojo-invoked only) | `.claude/commands/sukuna.md` | `/sukuna` |
+
+**Beyond the 9 agent shortcuts**, the shipped set also includes session-lifecycle commands
+(`/session-start`, `/session-status`, `/session-update`, `/session-break`, `/session-continue`,
+`/session-end`, `/session-transfer`, `/session-check`), troubleshooting-tier commands
+(`/ts-tier1` through `/ts-tier4`, `/ts-codered`, `/ts-status`, `/ts-escalate`, `/ts-complete`,
+`/ts-history`), and utility commands (`/dzp-roe`, `/brain`, `/input`, `/sys-update`) — **30
+commands in total**. If you're doing Manual Setup instead of the Quick Setup copy above, create
+these the same way (content mirrors each file in `slash-commands/`); see
+`slash-commands/README.md` for the full, current table.
 
 ### Step 3: Add Content to Each File
 
@@ -132,6 +153,21 @@ description: Invoke Inumaki (API & Communication Specialist) for REST/GraphQL/We
 Read protocol/inumaki.agent.md and
 ```
 
+#### `.claude/commands/sukuna.md`
+```markdown
+---
+description: Invoke Sukuna (System Update Adversary) for protocol updates and adversarial red-team reviews — Gojo-invoked only
+---
+
+Read protocol/sukuna.agent.md and
+```
+
+> Sukuna's own protocol file enforces that he is not to be invoked directly for ordinary tasks —
+> route system-update work through Gojo (`/gojo engage sukuna to ...`). See
+> `slash-commands/README.md` for the session/troubleshooting/utility command files, which follow
+> the same one-line pattern (`Read protocol/skills/<skill>.md and` for skills, or a direct
+> instruction for coordinator events).
+
 ---
 
 ## Usage Examples
@@ -202,7 +238,9 @@ Usage:
 
 ## Directory Structure
 
-After setup, your project should have:
+After setup, your project should have (the 9 agent shortcuts shown; the ~21 session/
+troubleshooting/utility command files sit alongside them — see `slash-commands/README.md`
+for the complete list):
 
 ```text
 your-project/
@@ -215,7 +253,9 @@ your-project/
 │       ├── todo.md
 │       ├── maki.md
 │       ├── panda.md
-│       └── inumaki.md
+│       ├── inumaki.md
+│       ├── sukuna.md
+│       └── ... (session-*.md, ts-*.md, brain.md, dzp-roe.md, input.md, sys-update.md)
 ├── protocol/
 │   ├── CLAUDE.md
 │   ├── gojo.agent.md
@@ -225,7 +265,8 @@ your-project/
 │   ├── todo.agent.md
 │   ├── maki.agent.md
 │   ├── panda.agent.md
-│   └── inumaki.agent.md
+│   ├── inumaki.agent.md
+│   └── sukuna.agent.md
 └── ...
 ```
 

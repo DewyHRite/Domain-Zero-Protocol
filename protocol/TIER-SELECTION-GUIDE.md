@@ -1,7 +1,18 @@
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # TIER SELECTION QUICK REFERENCE
 ## Domain Zero v6.0 - Adaptive Workflow Complexity
 
 **Choose the right workflow tier for your feature**
+
+> **Superseded (relocated in v9.11.0 Increment 3)**: this file's tier decision tree, tier
+> characteristics, and invocation examples are historical — they duplicate content that now
+> lives authoritatively in **`protocol/skills/gojo/roe-and-tiers.md`**, the confirmed-current
+> home of the ROE and Tier System prose since v9.11.0 (root `CLAUDE.md` carries only a pointer +
+> quick rule: Tier 2 is the default; Tier 3 for sensitive data/operations; Tier 1 for prototypes
+> only). This document is retained for historical reference (mirrors the still-live v6.0
+> tier mechanics accurately as of this review) and is NOT updated going forward. If this guide
+> and `roe-and-tiers.md` ever disagree, `roe-and-tiers.md` wins — read that file for current
+> tier guidance.
 
 ---
 

@@ -71,8 +71,12 @@ safety:
   session_tracking:
     enabled: true  # Master enable for session monitoring system
 
-    # State file location
-    state_file: ".protocol-state/session-state.json"
+    # State file location (informational — no code reads this key; session state
+    # actually lives in the consolidated project-state.json::session_tracking
+    # namespace since PATCH-STATE-001/v8.13.0, with session-state.json as the
+    # legacy automatic fallback. Aligned 2026-08-07 with the corrected
+    # IMPLEMENTATION_GUIDE.md example, TOJI-DOCS-9.12.0-008 rider.)
+    state_file: ".protocol-state/project-state.json"
 
     # Session continuation threshold (minutes)
     # If gap between interactions < this value, session continues

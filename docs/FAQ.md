@@ -1,8 +1,8 @@
 <!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Domain Zero Protocol - Frequently Asked Questions (FAQ)
 
-**Version:** v9.11.0
-**Last Updated:** 2026-08-03
+**Version:** v9.12.0
+**Last Updated:** 2026-08-07
 
 ---
 
@@ -41,6 +41,9 @@ Domain Zero is a nine-agent AI development framework that provides specialized e
 **Special Agent (v8.5.1+):**
 - **SUKUNA** - System Update Agent (adversarial-but-aligned, Gojo-invoked only)
 
+**External Auditor (non-resident, v8.13.0+):**
+- **TOJI** - Domain Zero External Auditor (report-only, zero execution privileges, reports to the protocol owner exclusively — not governed by Gojo or Sukuna)
+
 The protocol uses a three-tier workflow system (Rapid/Standard/Critical) to balance speed and rigor.
 
 ---
@@ -50,8 +53,8 @@ The protocol uses a three-tier workflow system (Rapid/Standard/Critical) to bala
 **Quick Start (2 minutes):**
 1. Configure `protocol.config.yaml` with your project details
 2. Copy protocol files to your project
-3. Read `protocol/GOJO.md` and choose "New Project Initialization"
-4. Start implementing with `protocol/YUUJI.md`
+3. Read `protocol/gojo.agent.md` and choose "New Project Initialization"
+4. Start implementing with `protocol/yuuji.agent.md`
 
 **Detailed Guide:** See `PROTOCOL_QUICKSTART.md`
 
@@ -222,12 +225,12 @@ Is this production code?
 
 **Standard Invocation:**
 ```text
-Read protocol/YUUJI.md
+Read protocol/yuuji.agent.md
 ```
 
 **With Context:**
 ```text
-Read protocol/MEGUMI.md - review the authentication changes in auth.py
+Read protocol/megumi.agent.md - review the authentication changes in auth.py
 ```
 
 **Agent Handoff:** Agents prompt for handoff to each other:
@@ -243,7 +246,7 @@ Read protocol/MEGUMI.md - review the authentication changes in auth.py
 1. **Review all changes** before accepting
 2. **Request corrections:** "This doesn't handle edge case X, please fix"
 3. **Reject changes:** "This approach won't work, let's try Y instead"
-4. **Escalate:** Call Gojo for second opinion: `"Read protocol/GOJO.md - assess this implementation"`
+4. **Escalate:** Call Gojo for second opinion: `"Read protocol/gojo.agent.md - assess this implementation"`
 
 **Protocol Requirement:** YOU must approve all code before it's considered complete.
 
@@ -392,7 +395,7 @@ project:
 
 **How to Access:**
 ```text
-Read protocol/GOJO.md - Trigger 19
+Read protocol/gojo.agent.md - Trigger 19
 ```
 
 ---
@@ -428,7 +431,7 @@ Read protocol/GOJO.md - Trigger 19
   run: |
     # Use AI API to run Megumi's security review
     curl -X POST https://api.anthropic.com/v1/complete \
-      -d "prompt=Read protocol/MEGUMI.md - review changes in $(git diff HEAD~1)"
+      -d "prompt=Read protocol/megumi.agent.md - review changes in $(git diff HEAD~1)"
 ```
 
 **Note:** Requires AI API access and careful prompt engineering.
@@ -471,13 +474,13 @@ Read protocol/GOJO.md - Trigger 19
 
 **Causes:**
 1. **Tier 1 selected:** Security review is optional in Tier 1
-2. **MEGUMI.md not found:** Verify file exists in `protocol/` directory
-3. **Manual invocation needed:** Say `"Read protocol/MEGUMI.md - review changes"`
+2. **megumi.agent.md not found:** Verify file exists in `protocol/` directory
+3. **Manual invocation needed:** Say `"Read protocol/megumi.agent.md - review changes"`
 
 **Prompted Handoff Only Works:**
 - In Tier 2 and Tier 3
 - When Yuuji outputs prompt for Megumi invocation
-- When MEGUMI.md is present
+- When megumi.agent.md is present
 
 ---
 
@@ -548,10 +551,10 @@ Runs only critical checks (dependencies, files, config, yaml)
 ### Can I customize agent prompts?
 
 **Yes!** Edit the protocol files directly:
-- `protocol/YUUJI.md` - Customize implementation approach
-- `protocol/MEGUMI.md` - Adjust security checklist
-- `protocol/NOBARA.md` - Modify UX principles
-- `protocol/GOJO.md` - Change project management style
+- `protocol/yuuji.agent.md` - Customize implementation approach
+- `protocol/megumi.agent.md` - Adjust security checklist
+- `protocol/nobara.agent.md` - Modify UX principles
+- `protocol/gojo.agent.md` - Change project management style
 
 **Agents will re-read automatically.**
 
@@ -591,17 +594,22 @@ Runs only critical checks (dependencies, files, config, yaml)
 
 ---
 
-### How do I migrate from v6.x to v7.x (future major version)?
+### How do I migrate to a newer major/minor version?
 
-**When v7.0.0 is released:**
-1. Read `MIGRATION_GUIDE_v6_to_v7.md` (will be provided)
-2. Review breaking changes in CHANGELOG
-3. Create git branch for migration
-4. Update protocol files incrementally
-5. Run verification scripts
-6. Test thoroughly before switching
+The v6.x→v7.x transition described in earlier editions of this FAQ shipped long ago — current
+protocol version is v9.12.0. The general practice established since then:
 
-**Migration guides will be provided** for all major version updates.
+1. Review `CHANGELOG.md` and `VERSION.md` for the full narrative of what changed between your
+   installed version and the target version.
+2. Check `docs/reference/DEPENDENCY_SCANNER_GUIDE.md` §"Impact Analysis" if you want to assess
+   blast radius before updating custom protocol files.
+3. Re-sync your local protocol files against the canonical source (see CLAUDE.md's "📍 CANONICAL
+   SOURCE" section) rather than hand-patching individual files.
+4. Run `./scripts/verify-protocol.(ps1|sh)` after updating to confirm canonical alignment.
+5. Test thoroughly before relying on the new version in production work.
+
+**Point-release migration guides** (e.g. `docs/migration/`) are produced selectively, not for
+every release — check `CHANGELOG.md` first; it is the canonical record of every version's changes.
 
 ---
 
@@ -685,6 +693,6 @@ python scripts/domain-record-rotate.py --rotate
 
 ---
 
-**Last Updated:** August 3, 2026
-**Protocol Version:** v9.11.0
+**Last Updated:** August 7, 2026
+**Protocol Version:** v9.12.0
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol

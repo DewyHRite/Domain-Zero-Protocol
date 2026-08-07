@@ -1,14 +1,43 @@
-<!--CORE FILE - Domain Zero Protocol v6.2.4 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Tier Transition Guide
 
-**Version:** v6.2.4
-**Last Updated:** November 7, 2025
+**Version:** v9.12.0
+**Last Updated:** 2026-08-07
+
+> **Authority note (content refreshed 2026-08-07)**: this guide's *procedure* (how/when to
+> transition tiers mid-feature) is current. The tier system's *authoritative* rules — the
+> decision tree, tier characteristics, and the enforcement model summarized below — live in
+> **`protocol/skills/gojo/roe-and-tiers.md`** (relocated there in v9.11.0 Increment 3; root
+> `CLAUDE.md` carries only a pointer + quick rule). If this guide and that file ever disagree,
+> `roe-and-tiers.md` wins.
 
 ---
 
 ## Overview
 
 This guide explains **how and when to change tiers** during a Domain Zero Protocol workflow. Tier transitions allow you to adjust the rigor and oversight level based on evolving requirements.
+
+### Current enforcement model (v8.10.0+, confirmed current in v9.11.0's `roe-and-tiers.md`)
+
+The tier system is **ADVISORY + STATISTICS TRACKING**, not a technical hard block:
+
+- Tier guidelines are recommendations. Gojo prompts for compliance, challenges risky
+  downgrades, and explains consequences — but **User authority governs every tier decision**.
+- Every deviation from the recommended tier (upgrade or downgrade, approved or overridden) is
+  **logged in tier statistics** for transparency and pattern analysis (surfaced in Trigger 19
+  intelligence reports), regardless of whether Gojo agreed with it.
+- There is no code-level mechanism that refuses to proceed once the User has stated a decision.
+  "Denied," "rejected," and "approved" below describe Gojo's **recommendation and pushback**, not
+  an enforced gate — the User can always override, and Gojo will proceed while noting the
+  deviation.
+- **Sensitive categories** (authentication, payments, credentials, medical, legal, financial
+  data) should default to Tier 3 per the decision tree in `roe-and-tiers.md`; Gojo treats a
+  request to run these below Tier 3 as the highest-friction case it pushes back on, but the same
+  advisory principle applies — User choice governs, and the override is logged.
+
+Keep this in mind throughout the rest of this guide: every "Gojo denies" / "Gojo approves"
+exchange below is Gojo **exercising its advisory role**, not a system that can technically block
+you. If you state your decision after hearing the pushback, Gojo proceeds and logs it.
 
 ---
 
@@ -68,22 +97,22 @@ This guide explains **how and when to change tiers** during a Domain Zero Protoc
 
 ---
 
-### Invalid Reasons (Do NOT Transition)
+### Reasons Gojo Will Push Back On (advisory, not a hard block)
 
 ❌ **Time Pressure:**
 - "Deadline is tomorrow, skip security review"
 - "Just get it working, we'll fix it later"
-- **Gojo will reject these requests**
+- **Gojo will push back on these requests, explain the risk, and log the override if you proceed**
 
 ❌ **Inconvenience:**
 - "Tests take too long"
 - "Security review is annoying"
-- **Protocol exists for a reason**
+- **Protocol exists for a reason — Gojo will say so, but the decision is yours**
 
 ❌ **Overconfidence:**
 - "I'm sure it's secure"
 - "This is simple, no need for tests"
-- **Confidence ≠ Correctness**
+- **Confidence ≠ Correctness — Gojo flags this, then respects your call**
 
 ---
 
@@ -193,11 +222,11 @@ Gojo: "Acknowledged. Direct upgrade Tier 1 → Tier 3. This is a major increase 
 
 **Process:**
 1. Say: **"Downgrade to Tier 2 - we removed password handling"**
-2. Gojo **assesses risk** and **challenges** your reasoning
+2. Gojo **assesses risk** and **asks clarifying questions** (advisory, not a gate)
 3. Gojo asks: "Why is Tier 3 no longer needed?"
 4. YOU provide justification
-5. Gojo **approves or denies**
-6. If approved: Continue with Tier 2 standards
+5. Gojo **records the decision** (recommends for/against, but proceeds either way once you confirm)
+6. Continue with Tier 2 standards; the deviation (if Gojo disagreed) is logged in tier statistics
 
 **Example:**
 ```
@@ -207,7 +236,7 @@ Gojo: "Request to downgrade Tier 3 → Tier 2 received. Please confirm:
        - No handling of user credentials or sessions?
        - No access to sensitive user data?"
 User: "Confirmed. Feature now only displays public data."
-Gojo: "Downgrade approved. Continuing with Tier 2 (Standard) requirements.
+Gojo: "Downgrade acknowledged. Continuing with Tier 2 (Standard) requirements.
        Note: Security review still required per Tier 2."
 ```
 
@@ -226,28 +255,29 @@ Gojo: "Downgrade approved. Continuing with Tier 2 (Standard) requirements.
 
 **Process:**
 1. Say: **"Downgrade to Tier 1 - this is now a prototype only"**
-2. Gojo **heavily challenges** this request
+2. Gojo **strongly pushes back** on this request and explains the risk
 3. Gojo warns about risks
-4. YOU must provide strong justification
-5. Gojo **rarely approves** (high bar)
-6. If approved: Continue with Tier 1 (no review)
+4. YOU state your justification
+5. Gojo **proceeds once you confirm**, but logs this as a notable deviation (high bar for
+   agreement, though it cannot block you)
+6. Continue with Tier 1 (no review)
 
 **Example:**
 ```
 User: "This approach isn't working. Downgrade to Tier 1 while I experiment."
 Gojo: "⚠️ WARNING: Downgrade Tier 2 → Tier 1 removes security review and tests.
-       This is ONLY acceptable for:
+       This is ONLY recommended for:
        - Throwaway code that will be deleted
        - Experiments not going to production
        - Internal tools with no user exposure
 
        Confirm this code will NOT go to production?"
 User: "Confirmed. This is experimental only, will be deleted."
-Gojo: "Downgrade approved with conditions:
+Gojo: "Proceeding, with these conditions noted:
        - Code marked as experimental in dev-notes.md
        - Separate branch created (not main)
        - Clear deletion timeline documented
-       Proceeding with Tier 1 (Rapid) - no security review."
+       Proceeding with Tier 1 (Rapid) - no security review. Deviation logged in tier statistics."
 ```
 
 **Time Saved:** ~30-45 minutes (no tests or review)
@@ -256,26 +286,26 @@ Gojo: "Downgrade approved with conditions:
 
 ### Tier 3 → Tier 1 (Direct Drop - RARE)
 
-**When:** Almost never. Gojo will strongly resist.
+**When:** Almost never. Gojo will strongly push back.
 
 **Process:**
 1. Say: **"Drop to Tier 1 - abandoning this feature"**
-2. Gojo **interrogates** your reasoning
-3. Gojo requires **proof** feature is being abandoned
-4. Gojo may require **deletion** instead of downgrade
-5. If approved: Mark as abandoned, no further work
+2. Gojo **asks pointed questions** about your reasoning
+3. Gojo asks for evidence the feature is being abandoned
+4. Gojo may suggest **deletion** instead of downgrade
+5. Gojo proceeds once you confirm your decision; mark as abandoned if that's the direction taken
 
 **Example:**
 ```
 User: "This authentication approach failed. Drop to Tier 1."
-Gojo: "❌ DENIED. Tier 3 → Tier 1 direct drop is not recommended.
+Gojo: "⚠️ STRONGLY DISCOURAGED. Tier 3 → Tier 1 direct drop is not recommended.
 
        Alternative options:
        1. ABANDON: Delete code entirely and document decision
        2. RESTART: Begin new Tier 1 prototype with different approach
        3. CONTINUE: Stay Tier 3 and try different implementation
 
-       Which do you prefer?"
+       Which do you prefer? (If you still want the direct drop, I'll proceed and log it.)"
 User: "Let's abandon and restart with a new approach."
 Gojo: "Recommended. Creating abandonment record in dev-notes.md.
        Ready to begin new Tier 1 prototype when you are."
@@ -320,22 +350,22 @@ When upgrading, Gojo ensures previous tier requirements are met:
 
 ### Validating Downgrade (Downgrade)
 
-When downgrading, Gojo validates the justification:
+When downgrading, Gojo asks questions to inform its recommendation (not to gate the decision):
 
-**Gojo's Validation Questions:**
+**Gojo's Questions:**
 1. "Why is the higher tier no longer needed?"
 2. "What changed in requirements or scope?"
 3. "Are you certain this code won't handle [sensitive data/auth/payments]?"
 4. "Will this code remain in a non-production environment?"
 5. "Have you documented this decision in dev-notes.md?"
 
-**Approval Criteria:**
+**Gojo Recommends In Favor When:**
 - ✅ Legitimate scope reduction
 - ✅ Removal of sensitive data handling
 - ✅ Demotion to internal-only tool
 - ✅ Code marked as experimental/throwaway
 
-**Rejection Criteria:**
+**Gojo Pushes Back (but still proceeds if you confirm) When:**
 - ❌ Time pressure
 - ❌ Convenience
 - ❌ "We'll fix it later"
@@ -410,19 +440,19 @@ User: "This 'temporary' fix from 6 months ago is still running. We should
        probably upgrade to Tier 2 and make it official."
 Gojo: "⚠️ ALERT: Code running in production for 6 months without Tier 2 review.
 
-       IMMEDIATE ACTIONS REQUIRED:
+       RECOMMENDED IMMEDIATE ACTIONS:
        1. Upgrade to Tier 2 NOW
        2. Backfill tests immediately
        3. Security review ASAP
        4. Document as technical debt in dev-notes.md
 
-       Proceeding with emergency Tier 2 upgrade..."
+       Proceeding with Tier 2 upgrade..."
 Yuuji: "Writing tests for production code (should have been done 6 months ago)..."
 Megumi: "Performing overdue security review..."
 Gojo: "Tier 2 requirements now met. Recommend preventing this in future:
-       - All production code must start at Tier 2 minimum
-       - 'Temporary' fixes require sunset dates
-       - Monthly audit of Tier 1 code in production"
+       - All production code should start at Tier 2 minimum
+       - 'Temporary' fixes should carry sunset dates
+       - Periodic audit of Tier 1 code in production"
 ```
 
 ---
@@ -433,15 +463,15 @@ Gojo: "Tier 2 requirements now met. Recommend preventing this in future:
 
 1. **Upgrade Early:** If in doubt, upgrade to higher tier
 2. **Document Decisions:** Record tier changes in dev-notes.md
-3. **Trust Gojo's Judgment:** Gojo is trained to assess risk
+3. **Weigh Gojo's Judgment:** Gojo is trained to assess risk, even though the final call is yours
 4. **Be Transparent:** Explain why you're requesting downgrade
 5. **Plan Ahead:** Consider tier when starting feature
 
 ### Don'ts ❌
 
-1. **Don't Skip Tiers:** Don't jump Tier 3 → Tier 1 without excellent reason
-2. **Don't Downgrade Under Pressure:** Deadlines are not justification
-3. **Don't Override Gojo Without Reason:** Gojo's rejections are protective
+1. **Don't Skip Tiers Casually:** Jumping Tier 3 → Tier 1 without a solid reason gets logged as a notable deviation
+2. **Don't Downgrade Under Pressure:** Deadlines are a weak justification Gojo will flag
+3. **Don't Dismiss Gojo's Pushback Without Reason:** Gojo's warnings are protective, even though they're advisory
 4. **Don't Hide Requirements:** Tell Gojo if you discover auth/payment needs
 5. **Don't Assume Lower is Faster:** Bugs from skipped reviews cost more time
 
@@ -450,36 +480,41 @@ Gojo: "Tier 2 requirements now met. Recommend preventing this in future:
 ## Gojo's Role in Transitions
 
 ### Upgrade Requests
-- **Always Approves:** Increasing rigor is always allowed
-- **Facilitates Backfill:** Ensures previous requirements met
+- **Always Supports:** Increasing rigor is always welcomed
+- **Facilitates Backfill:** Ensures previous tier requirements met
 - **Updates State:** Records tier change in project-state.json
 
 ### Downgrade Requests
-- **Challenges Reasoning:** Acts as safety check
-- **Asks Questions:** Validates justification
-- **May Deny:** Rejects unsafe downgrades
+- **Advises, Doesn't Gate:** Acts as a safety check via recommendation, not a technical block
+- **Asks Questions:** Surfaces the justification for the record
+- **May Push Back Hard:** Strongly discourages unsafe downgrades and logs the deviation if you proceed
 - **Proposes Alternatives:** Suggests better approaches
 
-### Gojo's Decision Framework
+### Gojo's Decision Framework (advisory — the return value is a recommendation, not a gate)
 
 ```python
 def assess_downgrade_request(current_tier, requested_tier, justification):
+    # NOTE: every branch below is what Gojo RECOMMENDS and LOGS.
+    # None of them technically block the User from proceeding —
+    # the final decision, and whether it's logged as a deviation,
+    # always belongs to the User (v8.10.0+ advisory model).
+
     if "deadline" in justification or "time pressure" in justification:
-        return "DENIED - Time pressure not valid reason"
+        return "STRONGLY DISCOURAGED - time pressure not a strong reason (logged if overridden)"
 
     if handles_sensitive_data():
-        return "DENIED - Security requirements unchanged"
+        return "STRONGLY DISCOURAGED - security requirements unchanged (logged if overridden)"
 
     if production_code() and requested_tier == 1:
-        return "DENIED - Production code requires minimum Tier 2"
+        return "STRONGLY DISCOURAGED - production code should stay at minimum Tier 2 (logged if overridden)"
 
     if justification_unclear():
         return "REQUEST CLARIFICATION"
 
     if legitimate_scope_reduction():
-        return "APPROVED with conditions"
+        return "RECOMMENDED, with conditions noted"
 
-    return "DENIED - Insufficient justification"
+    return "DISCOURAGED - insufficient justification (logged if overridden)"
 ```
 
 ---
@@ -499,7 +534,7 @@ def assess_downgrade_request(current_tier, requested_tier, justification):
 - [ ] No sensitive data handling remains
 - [ ] Prepared justification for Gojo
 - [ ] Considered alternatives (abandon, restart)
-- [ ] Ready to defend decision if challenged
+- [ ] Ready to explain your decision if Gojo pushes back
 
 ### After Transition (Either Direction)
 
@@ -515,14 +550,16 @@ def assess_downgrade_request(current_tier, requested_tier, justification):
 **Tier transitions are safety mechanisms, not obstacles.**
 
 - **Upgrades:** Always welcome, ensure quality and security
-- **Downgrades:** Rarely needed, require strong justification
-- **Gojo:** Acts as guardrail, not gatekeeper
+- **Downgrades:** Rarely needed, work best with strong justification
+- **Gojo:** Acts as an advisory guardrail, not a technical gatekeeper — User authority always
+  governs, and every deviation is logged for transparency
 - **Goal:** Right level of rigor for each feature
 
 **When in doubt: Upgrade. Better safe than sorry.**
 
 ---
 
-**Version:** v6.2.4
-**Last Updated:** November 7, 2025
+**Version:** v9.12.0
+**Last Updated:** 2026-08-07
 **Canonical Source:** https://github.com/DewyHRite/Domain-Zero-Protocol
+**Tier system authority:** `protocol/skills/gojo/roe-and-tiers.md` (v9.11.0+)

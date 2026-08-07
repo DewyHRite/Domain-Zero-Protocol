@@ -997,7 +997,13 @@ safety:
 
   session_tracking:
     enabled: true
-    state_file: ".protocol-state/session-state.json"
+    # PATCH-STATE-001 (v8.13.0+): session_tracking lives in the consolidated
+    # .protocol-state/project-state.json under the `session_tracking` namespace.
+    # The standalone session-state.json below is the LEGACY pre-consolidation
+    # file, preserved only as an automatic fallback if the consolidated state
+    # is unavailable -- it is not the primary state target for a fresh install.
+    state_file: ".protocol-state/project-state.json"  # session_tracking namespace
+    # legacy_fallback_file: ".protocol-state/session-state.json"  # auto-fallback only
     session_continuation_threshold_minutes: 30
     auto_archive_on_end: true
     block_high_risk_when_fatigued: true

@@ -1,20 +1,47 @@
 <!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Memory Tool Configuration Guide
-## Enabling Claude Memory Tool Beta for DZP v8.12.0
+## Configuring Anthropic's Claude Memory Tool — and What DZP Actually Does With It
 
-**Version**: 8.12.0
-**Purpose**: Instructions for enabling Claude Memory Tool API (beta) for persistent cross-session memory
-**Required For**: DZP v8.12.0 validation framework and agent memory persistence
+**Version**: 9.12.0
+**Purpose**: Reference for enabling Anthropic's Claude Memory Tool API (beta) for persistent
+cross-session memory, and an explicit statement of what Domain Zero Protocol does and does not do
+with it.
+**Status**: Reference document. DZP's own persistent cross-session memory system is
+**[DZP Cortex](../guides/DZP_CORTEX.md)**, not the Memory Tool described below.
+
+---
+
+> **READ THIS FIRST.** DZP contains **no Memory Tool code path** and performs **no** integration
+> with, or path validation for, the `/memories/` mechanism described in this document. Everything
+> below `## Configuration by Platform` documents Anthropic's **generic** Memory Tool API/beta —
+> useful if you are configuring the Memory Tool for your own use, or building an integration on top
+> of DZP — but it is **not** a description of DZP's own current behavior. Historically (pre-v9.11.0)
+> this document stated the opposite (that DZP automatically validated paths and orchestrated
+> migrations); that was incorrect and is corrected throughout, not just in the security section
+> below. If you are looking for DZP's actual persistent memory system, see
+> **[docs/guides/DZP_CORTEX.md](../guides/DZP_CORTEX.md)** — DZP Cortex is a local, cited semantic
+> recall layer with its own storage, CLI (`brain`), and session-lifecycle integration, and is
+> unrelated to the Anthropic Memory Tool.
 
 ---
 
 ## Overview
 
-The Memory Tool enables DZP agents to persist information across conversations through client-side file operations. This provides:
-- Persistent agent memory across sessions
+The Memory Tool is a beta Anthropic API capability that lets a client persist information across
+conversations through client-side file operations under a `/memories/` namespace. In general, this
+can provide:
+- Persistent memory across sessions, for whatever client wires it up
 - Context snapshots that survive context clears
 - Learned patterns and successful strategies
-- Validation metrics and state tracking
+- Arbitrary state tracking, defined entirely by the integration that uses it
+
+**None of the above is DZP's own behavior.** DZP does not call the Memory Tool, does not read or
+write `/memories/`, and does not depend on it being available. DZP's actual state persistence is:
+- **Session/project state**: `.protocol-state/project-state.json` (consolidated namespaces since
+  PATCH-STATE-001, v8.13.0 — see root `CLAUDE.md`'s "State Consolidation" section), with automatic
+  fallback to legacy per-purpose files if the consolidated state is unavailable.
+- **Cross-session semantic memory**: [DZP Cortex](../guides/DZP_CORTEX.md), a separate, local,
+  on-device system with its own storage layer, unrelated to the Memory Tool.
 
 **API Status**: Beta (as of December 2025)
 **Required Models**: Claude Sonnet 4.5, Opus 4.5, Haiku 4.5 (or newer)
@@ -22,6 +49,9 @@ The Memory Tool enables DZP agents to persist information across conversations t
 ---
 
 ## Configuration by Platform
+
+*(This section describes Anthropic's Memory Tool generically. It is accurate as platform/API
+documentation; it does not describe anything DZP itself invokes.)*
 
 ### Claude Code (VS Code Extension)
 
@@ -35,13 +65,16 @@ Memory Tool is **automatically available** in Claude Code when using supported m
 **Verification**:
 ```javascript
 // Check if Memory Tool is available
-// In Claude Code, invoke any agent and it will automatically have access to:
+// In Claude Code, any agent invoked with a supported model automatically has access to:
 // - view /memories/path
 // - create /memories/path {content}
 // - str_replace /memories/path old new
 // - insert /memories/path line {text}
 // - delete /memories/path
 // - rename /memories/old /memories/new
+//
+// DZP agents do NOT call any of these operations as part of their normal workflow —
+// availability of the tool is not the same as DZP using it.
 ```
 
 ---
@@ -54,8 +87,8 @@ Memory Tool is **automatically available** in Claude.ai web interface when using
 
 **Verification**:
 - Start a conversation with Claude Sonnet 4.5 or Opus 4.5
-- Invoke a DZP agent (e.g., "Read gojo.agent.md")
-- The agent will automatically have access to Memory Tool operations
+- The Memory Tool operations become available to the model generically
+- DZP agent invocations (e.g., "Read gojo.agent.md") do not themselves use Memory Tool operations
 
 ---
 
@@ -133,7 +166,7 @@ const message = await client.messages.create({
 
 ## Memory Tool Operations
 
-Once enabled, DZP agents have access to six Memory Tool operations:
+Once enabled (by the *client*, not by DZP), the Memory Tool exposes six generic operations:
 
 | Operation | Syntax | Description |
 |-----------|--------|-------------|
@@ -146,9 +179,12 @@ Once enabled, DZP agents have access to six Memory Tool operations:
 
 ---
 
-## DZP Memory Directory Structure
+## A Hypothetical Memory Directory Structure (Integrator Reference Only)
 
-DZP v8.11.0 uses this standardized memory structure:
+DZP does **not** create, read, or maintain any `/memories/` directory structure. The layout below
+is an **illustrative example** of how an integrator building a Memory Tool bridge on top of DZP
+*could* choose to organize agent-scoped memory, if they wanted to mirror DZP's own agent/namespace
+boundaries. It has never been implemented by DZP itself, at any version:
 
 ```text
 /memories/
@@ -195,7 +231,9 @@ DZP v8.11.0 uses this standardized memory structure:
 > DZP contains no Memory Tool code path and performs **no** path validation of
 > its own. The statement is corrected here rather than quietly deleted, because
 > anyone who read the previous version may have skipped validation work on the
-> strength of it.
+> strength of it. (v9.12.0: this correction is no longer an isolated island in
+> the document — the rest of this file has been rewritten to agree with it; see
+> the banner at the top of this document.)
 
 **What actually enforces the `/memories/` boundary**
 
@@ -236,34 +274,30 @@ Do not assume any layer beneath you has already done this.
 
 ---
 
-## Verification & Testing
+## Verification & Testing (Generic Memory Tool, Not DZP-Specific)
+
+The tests below verify that the **Memory Tool itself** is available and working for your client —
+they are not DZP tests, and DZP does not perform any of these checks itself.
 
 ### Test 1: Check Memory Tool Availability
 
-Start a DZP agent and verify Memory Tool access:
-
 ```text
-User: "Read gojo.agent.md"
-Gojo: [Gojo should be able to view /memories/agents/gojo/]
+User: "Create a test memory file at /memories/test.txt with content 'Hello'"
 ```
 
-If Memory Tool is working, Gojo will check `/memories/agents/gojo/` on startup.
+Expected: File created successfully with no errors. This confirms the Memory Tool is enabled and
+working for your client/platform — it does not mean DZP has done anything with it, because DZP
+never invokes this operation itself.
 
-### Test 2: Create Test Memory File
-
-```text
-User: "Create a test memory file at /memories/test.txt with content 'Hello DZP'"
-```
-
-Expected: File created successfully with no errors.
-
-### Test 3: View Memory Directory
+### Test 2: View Memory Directory
 
 ```text
 User: "View /memories/ directory"
 ```
 
-Expected: Should see directory listing with agents/, validation/, project/ subdirectories.
+Expected: Should see whatever directory listing your own integration (if any) has created. A fresh
+DZP installation with no integrator-built Memory Tool bridge will show nothing DZP-related here,
+because DZP never wrote anything there.
 
 ---
 
@@ -277,10 +311,14 @@ Expected: Should see directory listing with agents/, validation/, project/ subdi
 2. If using Anthropic API directly, add beta header: `anthropic-beta: context-management-2025-06-27`
 3. Check tool definition includes `type: "memory_20250818"`
 
+This affects only the generic Memory Tool availability — it has no bearing on DZP's own operation,
+since DZP does not require or use the Memory Tool.
+
 ### Error: "Path validation failed"
 
-**Cause**: Path doesn't start with `/memories/`
-**Solution**: All DZP memory operations must use paths starting with `/memories/`
+**Cause**: Path doesn't start with `/memories/` (a constraint enforced by the Memory Tool's own
+client/runtime, not by DZP — see the Security & Path Validation section above)
+**Solution**: All Memory Tool operations must use paths starting with `/memories/`.
 
 **Correct**:
 ```text
@@ -295,31 +333,30 @@ view ../memories/  # Directory traversal not allowed
 
 ### Error: "Directory not found"
 
-**Cause**: Memory directory structure not initialized
-**Solution**: DZP v8.11.0 automatically initializes `/memories/` on first run. If seeing this error:
-1. Invoke Gojo: "Read gojo.agent.md"
-2. Enable validation when prompted
-3. Gojo will initialize `/memories/` structure
+**Cause**: No `/memories/` directory structure exists yet for your client/integration.
+**Solution**: DZP does **not** automatically initialize any `/memories/` structure — there is no
+DZP-side "first run" behavior for this at all. If you are building your own Memory Tool
+integration, your integration's own initialization code is responsible for creating whatever
+structure it needs.
 
 ---
 
-## Performance Considerations
+## Performance Considerations (Generic Memory Tool API, Illustrative Only)
 
-Memory Tool operations add minimal latency:
+These are illustrative, platform-level latency figures for the Memory Tool API itself — not
+measurements of anything DZP does, since DZP does not call these operations:
 - `view`: ~50-100ms
 - `create/str_replace`: ~100-200ms
 - `delete/rename`: ~50ms
 
-**DZP Optimization**:
+If you build your own Memory Tool integration on top of DZP, general optimization advice applies:
 - Lazy loading (only read when needed)
 - Batch operations (combine multiple updates)
 - Caching (keep frequently accessed data in-context)
 - Selective persistence (only write changed fields)
 
-**Target Performance** (DZP v8.11.0):
-- Memory read on startup: <200ms
-- Memory update on change: <300ms
-- Session state persistence: <500ms total
+DZP's own state I/O (`.protocol-state/project-state.json` reads/writes, and DZP Cortex's local
+vector store) has its own independent performance characteristics, unrelated to the numbers above.
 
 ---
 
@@ -327,11 +364,14 @@ Memory Tool operations add minimal latency:
 
 **Memory Tool + Context Editing**:
 
-When context approaches limits, Claude automatically:
-1. Preserves critical info to `/memories/`
-2. Clears old tool results
-3. Reads back from `/memories/` to restore context
-4. Continues work indefinitely
+When context approaches limits, a client that has wired up the Memory Tool can automatically:
+1. Preserve critical info to `/memories/`
+2. Clear old tool results
+3. Read back from `/memories/` to restore context
+4. Continue work indefinitely
+
+This is a capability of the Memory Tool + context-editing combination generically — it is not
+something DZP configures or relies on.
 
 **Configuration** (optional, for custom integrations):
 ```json
@@ -363,114 +403,54 @@ For enterprise deployments, you can implement custom Memory Tool backends:
 **Implementation**:
 See Anthropic's Memory Tool documentation for subclassing `BetaAbstractMemoryTool` (Python) or `betaMemoryTool` (TypeScript).
 
-**DZP Compatibility**: Custom backends must maintain `/memories/` directory structure for compatibility with DZP v8.11.0.
+**Compatibility note**: this is entirely about the Memory Tool's own backend abstraction — it has no
+DZP compatibility requirement, because DZP does not consume `/memories/` at all. If you build a
+custom backend as part of your own Memory Tool integration on top of DZP, keep whatever
+`/memories/` directory structure *your own integration* expects.
 
 ---
 
-## Migration Guide: Local State → Memory Tool
+## A Hypothetical Migration Guide: Local State → A Memory Tool Integration
 
-**Purpose**: Migrate existing DZP state files from `.protocol-state/` to `/memories/` for cross-session persistence.
+**This entire section is illustrative, for integrators only. DZP does not perform, orchestrate, or
+support this migration in any form — there is no "migrate my state files to Memory Tool" command,
+and Gojo does not have any code path that reads `.protocol-state/`, writes `/memories/`, or checks
+Memory Tool availability.** It is retained here as a worked example of *how you would build such a
+bridge yourself*, since the underlying operations (view/create/etc.) and DZP's real state file
+layout are both accurate and may be useful reference material.
 
-**Migration Status**: **OPTIONAL** - DZP v8.11.0 maintains backward compatibility with local `.protocol-state/` files.
+**If you actually want persistent, queryable cross-session memory for DZP today**, use
+**[DZP Cortex](../guides/DZP_CORTEX.md)** instead — it already exists, is already wired into the
+`/session` lifecycle, and requires no custom integration work.
 
-**When to Migrate**:
-- ✅ You want persistent memory across sessions
-- ✅ You use context editing and need to preserve state
-- ✅ You have Claude Sonnet 4.5+ / Opus 4.5+ / Haiku 4.5+
-- ❌ Don't migrate if Memory Tool not available on your platform
+### What you would need to build
 
----
+- A migration script or agent instruction set that:
+  1. Reads DZP's real, current state files (see below — not the pre-consolidation layout)
+  2. Writes their content into `/memories/` using the Memory Tool's `create` operation
+  3. Verifies the write succeeded
+  4. Leaves DZP's own `.protocol-state/` files untouched (DZP always reads from there; it has no
+     fallback-to-Memory-Tool logic, so removing `.protocol-state/` files would break DZP)
 
-### Migration Prerequisites
+### DZP's actual current state file layout (as of PATCH-STATE-001, v8.13.0+)
 
-### Step 1: Verify Memory Tool Availability
+Do **not** use the historical, pre-consolidation per-purpose files below as a migration *source* —
+they no longer hold the canonical data:
 
-Test Memory Tool access before migrating:
 ```text
-User: "View /memories/ directory"
+# Current, canonical source for a hypothetical migration:
+.protocol-state/project-state.json   # consolidated: session_tracking, troubleshooting,
+                                      # tier_tracking, agent_invocation_tracking namespaces
+                                      # → e.g. /memories/project/project-state.json
+
+# Legacy, pre-PATCH-STATE-001 per-purpose files (session-state.json,
+# troubleshooting-history.json, agent-invocation-tracker.json) are preserved
+# only as automatic FALLBACK files if the consolidated state is unavailable —
+# they are not the live source of truth and should not be treated as such by
+# a migration script written today.
 ```
 
-Expected: Directory listing or empty directory (no error).
-
-If you get "Memory Tool not available", see troubleshooting section above.
-
-### Step 2: Check Existing State Files
-
-Identify files to migrate in `.protocol-state/`:
-```bash
-# Common DZP state files:
-.protocol-state/project-state.json         # → /memories/project/project-state.json
-.protocol-state/session-state.json         # → /memories/agents/gojo/session-state.json
-.protocol-state/validation/validation-state.json # → /memories/validation/validation-state.json
-.protocol-state/agents/gojo/observations.json    # → /memories/agents/gojo/observations.json
-# ... and other agent state files
-```
-
-### Step 3: Create Backup
-
-**CRITICAL**: Always backup before migration.
-
-```bash
-# Create timestamped backup
-cp -r .protocol-state .protocol-state.backup-$(date +%Y%m%d-%H%M%S)
-```
-
----
-
-### Step-by-Step Migration
-
-#### Platform: Claude Code / Claude.ai
-
-**Migration Process** (via agent invocation):
-
-1. **Invoke Gojo for Migration**:
-```text
-User: "Read gojo.agent.md and migrate my state files to Memory Tool"
-```
-
-2. **Gojo will**:
-   - Check Memory Tool availability
-   - Read existing `.protocol-state/` files
-   - Create `/memories/` directory structure
-   - Write state files to `/memories/`
-   - Validate migration success
-   - Rename old files to `.backup` (not deleted)
-
-3. **Verify Migration**:
-```text
-User: "View /memories/ directory structure"
-```
-
-Expected output:
-```text
-/memories/
-├── agents/
-│   └── gojo/
-│       ├── project-state.json
-│       └── session-state.json
-├── validation/
-│   └── validation-state.json
-└── project/
-    └── tier-config.yaml
-```
-
-4. **Test Memory Persistence**:
-```text
-User: "Read gojo.agent.md and check if my project state persisted"
-```
-
-Gojo should read from `/memories/` and display current project state.
-
-5. **Cleanup** (after verification):
-```text
-User: "Remove .protocol-state/ backup files after confirming migration successful"
-```
-
----
-
-#### Platform: Anthropic API (Python)
-
-**Manual Migration Script**:
+### Illustrative Python sketch (untested, for reference only)
 
 ```python
 import anthropic
@@ -479,20 +459,18 @@ from pathlib import Path
 
 client = anthropic.Anthropic(api_key="your-api-key")
 
-# Enable Memory Tool beta
 headers = {
     "anthropic-version": "2023-06-01",
     "anthropic-beta": "context-management-2025-06-27"
 }
 
 def migrate_state_file(local_path: str, memory_path: str):
-    """Migrate a single state file to Memory Tool"""
-
-    # 1. Read existing state
+    """Illustrative only — copies one local JSON file's content into the
+    Memory Tool via `create`. Not part of DZP; you would run this yourself as
+    part of your own integration, against DZP's real project-state.json."""
     with open(local_path, 'r') as f:
         state_data = json.load(f)
 
-    # 2. Create in Memory Tool
     message = client.messages.create(
         model="claude-sonnet-4-5-20251022",
         max_tokens=4096,
@@ -503,294 +481,28 @@ def migrate_state_file(local_path: str, memory_path: str):
             "content": f"create {memory_path} {json.dumps(state_data)}"
         }]
     )
-
-    print(f"✓ Migrated: {local_path} → {memory_path}")
+    print(f"Copied: {local_path} -> {memory_path}")
     return message
 
-# Migration mapping
+# Illustrative mapping against DZP's REAL, current (post-consolidation) state file:
 migrations = [
     (".protocol-state/project-state.json", "/memories/project/project-state.json"),
-    (".protocol-state/session-state.json", "/memories/agents/gojo/session-state.json"),
-    (".protocol-state/validation/validation-state.json", "/memories/validation/validation-state.json"),
 ]
 
-# Execute migrations
 for local_path, memory_path in migrations:
     if Path(local_path).exists():
         migrate_state_file(local_path, memory_path)
-
-        # Backup (don't delete yet)
-        backup_path = f"{local_path}.backup"
-        Path(local_path).rename(backup_path)
-        print(f"✓ Backed up: {local_path} → {backup_path}")
-
-print("\n✓ Migration complete. Verify before removing backups.")
+        # DZP's own .protocol-state/ files are NEVER renamed or removed by this
+        # sketch -- DZP always reads from .protocol-state/ directly and has no
+        # Memory Tool fallback logic.
 ```
 
-**Verification Script**:
-
-```python
-def verify_migration(memory_path: str, expected_keys: list):
-    """Verify migrated file has expected structure"""
-
-    message = client.messages.create(
-        model="claude-sonnet-4-5-20251022",
-        max_tokens=4096,
-        extra_headers=headers,
-        tools=[{"type": "memory_20250818", "name": "memory"}],
-        messages=[{
-            "role": "user",
-            "content": f"view {memory_path}"
-        }]
-    )
-
-    # Parse response and check for expected keys
-    content = message.content[0].text
-    data = json.loads(content)
-
-    for key in expected_keys:
-        assert key in data, f"Missing key: {key}"
-
-    print(f"✓ Verified: {memory_path}")
-
-# Verify migrations
-verify_migration("/memories/project/project-state.json",
-                ["project_metadata", "protocol_version", "tier_settings"])
-verify_migration("/memories/agents/gojo/session-state.json",
-                ["session_id", "started_at", "active_tier"])
-```
-
----
-
-#### Platform: Anthropic API (TypeScript)
-
-**Manual Migration Script**:
-
-```typescript
-import Anthropic from '@anthropic-ai/sdk';
-import * as fs from 'fs/promises';
-
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
-interface Migration {
-  localPath: string;
-  memoryPath: string;
-}
-
-async function migrateStateFile(localPath: string, memoryPath: string): Promise<void> {
-  // 1. Read existing state
-  const stateData = await fs.readFile(localPath, 'utf-8');
-  const state = JSON.parse(stateData);
-
-  // 2. Create in Memory Tool
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-5-20251022',
-    max_tokens: 4096,
-    extra_headers: {
-      'anthropic-version': '2023-06-01',
-      'anthropic-beta': 'context-management-2025-06-27',
-    },
-    tools: [{ type: 'memory_20250818', name: 'memory' }],
-    messages: [{
-      role: 'user',
-      content: `create ${memoryPath} ${JSON.stringify(state)}`,
-    }],
-  });
-
-  console.log(`✓ Migrated: ${localPath} → ${memoryPath}`);
-}
-
-async function migrate() {
-  const migrations: Migration[] = [
-    {
-      localPath: '.protocol-state/project-state.json',
-      memoryPath: '/memories/project/project-state.json',
-    },
-    {
-      localPath: '.protocol-state/session-state.json',
-      memoryPath: '/memories/agents/gojo/session-state.json',
-    },
-    {
-      localPath: '.protocol-state/validation/validation-state.json',
-      memoryPath: '/memories/validation/validation-state.json',
-    },
-  ];
-
-  for (const { localPath, memoryPath } of migrations) {
-    try {
-      await migrateStateFile(localPath, memoryPath);
-
-      // Backup (don't delete yet)
-      await fs.rename(localPath, `${localPath}.backup`);
-      console.log(`✓ Backed up: ${localPath} → ${localPath}.backup`);
-    } catch (error) {
-      console.error(`✗ Failed to migrate ${localPath}:`, error);
-    }
-  }
-
-  console.log('\n✓ Migration complete. Verify before removing backups.');
-}
-
-migrate();
-```
-
----
-
-### Rollback Procedures
-
-If migration fails or causes issues, rollback to local `.protocol-state/`:
-
-**Option 1: Restore from Backup** (if backups exist)
-
-```bash
-# Remove Memory Tool files (optional)
-# DZP will fall back to local files automatically
-
-# Restore from backup
-mv .protocol-state/project-state.json.backup .protocol-state/project-state.json
-mv .protocol-state/session-state.json.backup .protocol-state/session-state.json
-mv .protocol-state/validation/validation-state.json.backup .protocol-state/validation/validation-state.json
-
-# Verify restoration
-ls -la .protocol-state/
-```
-
-**Option 2: Disable Memory Tool** (use local files only)
-
-DZP v8.11.0 automatically falls back to `.protocol-state/` if Memory Tool is unavailable.
-
-**No configuration needed** - just ensure `.protocol-state/` files exist.
-
-**Option 3: Hybrid Mode** (keep both)
-
-DZP v8.11.0 supports hybrid mode:
-- If `/memories/` files exist → use Memory Tool
-- If `/memories/` files missing → fall back to `.protocol-state/`
-
-You can keep both for redundancy during transition period.
-
----
-
-### Validation Steps
-
-**After migration, verify success**:
-
-### Test 1: Memory Tool Read
-```text
-User: "Read gojo.agent.md and show me my current project state"
-```
-
-Expected: Gojo reads from `/memories/project/project-state.json` and displays state.
-
-### Test 2: Memory Tool Write
-```text
-User: "Read gojo.agent.md and update my project name to 'Test Migration'"
-```
-
-Expected: Gojo updates `/memories/project/project-state.json`.
-
-### Test 3: Session Persistence
-```text
-# Session 1:
-User: "Read gojo.agent.md and create test memory: /memories/test-migration.txt with content 'Session 1'"
-
-# Close session, restart Claude
-
-# Session 2:
-User: "Read gojo.agent.md and read /memories/test-migration.txt"
-```
-
-Expected: Session 2 successfully reads content created in Session 1.
-
-### Test 4: Data Integrity
-```text
-User: "Read gojo.agent.md and verify all my project metadata migrated correctly"
-```
-
-Expected: Gojo confirms all expected fields present in migrated files.
-
----
-
-### Common Migration Issues
-
-#### Issue: "Memory Tool path validation failed"
-
-**Cause**: Attempted to access path outside `/memories/`
-
-**Solution**: All migrated files MUST be under `/memories/` prefix.
-
-**Correct**:
-- `/memories/project/project-state.json` ✅
-- `/memories/agents/gojo/session-state.json` ✅
-
-**Incorrect**:
-- `/project-state.json` ❌
-- `/.protocol-state/project-state.json` ❌
-
-#### Issue: "JSON parse error after migration"
-
-**Cause**: Data format mismatch or corrupted during transfer
-
-**Solution**:
-1. Restore from `.backup` files
-2. Verify local file is valid JSON: `cat .protocol-state/project-state.json | jq .`
-3. Re-run migration with validated file
-
-#### Issue: "Old state files still being used"
-
-**Cause**: DZP falls back to local files if Memory Tool read fails
-
-**Solution**:
-1. Verify Memory Tool working: `view /memories/`
-2. Check Memory Tool beta enabled (if using API directly)
-3. Rename old files to force Memory Tool usage: `mv .protocol-state .protocol-state.OLD`
-
-#### Issue: "Permission denied writing to /memories/"
-
-**Cause**: Memory Tool not properly enabled or filesystem permissions
-
-**Solution**:
-- **Claude Code**: Verify using supported model (Sonnet 4.5+, Opus 4.5+, Haiku 4.5+)
-- **Claude.ai**: Refresh session, re-invoke agent
-- **Anthropic API**: Verify beta header: `anthropic-beta: context-management-2025-06-27`
-
-#### Issue: "Data lost after session restart"
-
-**Cause**: Files written to local `.protocol-state/` instead of `/memories/`
-
-**Solution**:
-1. Verify migration completed: `view /memories/project/`
-2. Check for `.backup` files (may indicate incomplete migration)
-3. Re-run migration procedure
-
----
-
-### Post-Migration Checklist
-
-After successful migration:
-
-- [ ] All state files accessible via `/memories/` paths
-- [ ] Memory Tool read/write operations working
-- [ ] Session persistence verified (test across sessions)
-- [ ] Data integrity confirmed (all fields present)
-- [ ] Backups created (`.protocol-state.backup-*` exists)
-- [ ] Old files renamed to `.backup` (safety net)
-- [ ] Test rollback procedure (verify you can restore)
-- [ ] Remove backups after 1-2 weeks of stable operation (optional)
-
----
-
-### Migration Benefits
-
-After migration to Memory Tool:
-
-✅ **Cross-Session Persistence**: State survives session restarts, context clears, client crashes
-✅ **Context Editing Support**: Critical state preserved during automatic context editing
-✅ **Multi-Agent Coordination**: Agents share persistent state via `/memories/`
-✅ **Reduced Setup Time**: No need to re-initialize state each session
-✅ **Future-Proof**: Positioned for DZP v9.0+ features (cross-project memory, cloud sync)
+### Rollback
+
+There is nothing to roll back on DZP's side — DZP never stopped reading `.protocol-state/`, because
+it never started reading `/memories/` in the first place. If you built your own integration on top
+of this sketch, rolling back means simply stopping your integration's writes to `/memories/`; DZP's
+behavior is completely unaffected either way.
 
 ---
 
@@ -800,24 +512,26 @@ After migration to Memory Tool:
 - Anthropic Memory Tool Docs: https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool
 
 **DZP Documentation**:
-- Memory Tool Integration Reference: `docs/reference/MEMORY_TOOL_INTEGRATION.md`
-- Validation Framework Guide: `docs/guides/VALIDATION_FRAMEWORK_GUIDE.md`
+- **DZP's actual persistent memory system**: [docs/guides/DZP_CORTEX.md](../guides/DZP_CORTEX.md)
 - Implementation Guide: `docs/installation/IMPLEMENTATION_GUIDE.md`
 
 ---
 
 ## Support
 
-**Issues with Memory Tool**:
+**Issues with the (generic) Memory Tool**:
 - Check model compatibility (Sonnet 4.5+, Opus 4.5+, Haiku 4.5+)
 - Verify beta header if using Anthropic API directly
 - Review Anthropic Memory Tool beta status/updates
 
-**Issues with DZP Memory Integration**:
+**Issues with DZP itself** (which does not use the Memory Tool):
 - Report at: https://github.com/DewyHRite/Domain-Zero-Protocol/issues
 - Include: DZP version, Claude model, platform (Claude Code/Claude.ai/API)
 
 ---
 
-**Last Updated**: 2025-12-26 (v8.11.0)
-**Status**: Production-Ready
+**Last Updated**: 2026-08-07 (v9.12.0) — full-document currency rewrite resolving the
+self-contradiction between the v9.11.0 correction and the rest of this document
+(`TOJI-DOCS-9.12.0-007`).
+**Status**: Reference document (generic Memory Tool API) + explicit non-integration statement.
+DZP's real memory system is [DZP Cortex](../guides/DZP_CORTEX.md).

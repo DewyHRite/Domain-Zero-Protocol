@@ -1,9 +1,9 @@
 <!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 ---
 title: "Instruction Confirmation Protocol"
-version: "1.0.0"
+version: "1.0.1"
 protocol_version: "9.12.0"
-last_updated: "2025-11-26"
+last_updated: "2026-08-07"
 status: "Production-Ready"
 ---
 
@@ -11,7 +11,7 @@ status: "Production-Ready"
 
 ## Domain Zero Protocol v9.12.0
 
-**Version**: 1.0.0
+**Version**: 1.0.1
 **Created**: November 24, 2025
 **Status**: Production-Ready
 **Purpose**: Eliminate ambiguous scopes by requiring explicit confirmation before work begins
@@ -30,8 +30,11 @@ The Instruction Confirmation Protocol ensures that every agent restates and conf
 
 This protocol applies to:
 
-- **All Domain Zero Protocol agents**: Yuuji, Megumi, Nobara, Gojo
-- **Domain Zero Agents (DZA)**: All 8 character agents in the Full JJK Edition
+- **All nine resident Domain Zero Protocol agents**: Yuuji, Megumi, Nobara, Gojo (Core Four),
+  Todo, Maki, Panda, Inumaki (Extended Four), and Sukuna (System Update Agent, Gojo-invoked only)
+- **Toji (external auditor)**: Not governed by Gojo/Sukuna and outside the confirmation-loop
+  chain of command, but follows the same restate-and-confirm discipline for any owner-directed
+  audit scope per `protocol/toji.agent.md`
 - **Derivative/custom agents**: Any agent built from DZP templates
 
 ---
@@ -486,6 +489,9 @@ instruction_confirmation:
 
 ## Version History
 
+- **1.0.1** (2026-08-07, TOJI-DOCS-9.12.0-011): Corrected the "Applicability" section's stale
+  4-agent / "8 character agents, Full JJK Edition" roster to the current nine-resident-agent
+  model (Core Four + Extended Four + Sukuna) plus Toji as external auditor.
 - **1.0.0** (2025-11-24): Initial specification for v8.3.1
 
 ---

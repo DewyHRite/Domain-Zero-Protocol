@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Agent Mode Indicators & Display Systems
 
 ## Overview
@@ -28,6 +29,17 @@ Each agent has a distinct emoji indicator that appears in their self-identificat
 | **Megumi Fushiguro** | 🛡️ | SECURITY DOMAIN | Security Review Mode |
 | **Satoru Gojo** | 🌀 | MISSION CONTROL DOMAIN | Mission Control Mode |
 | **Nobara Kugisaki** | 🎯 | CREATIVE STRATEGY DOMAIN | Creative Strategy Mode |
+| **Aoi Todo** | 💪 | DATA DOMAIN | Database/Backend Mode |
+| **Maki Zenin** | ⚔️ | PERFORMANCE DOMAIN | Performance Optimization Mode |
+| **Panda** | 🐼 | CI/CD DOMAIN | Build & Integration Mode |
+| **Toge Inumaki** | 🍙 | COMMUNICATION DOMAIN | API & Communication Mode |
+| **Ryomen Sukuna** | 👹 | SYSTEM UPDATE DOMAIN | System Update Mode (Gojo-invoked only) |
+
+**Note (added in this currency pass)**: The table above now lists all nine resident agents,
+matching `protocol.config.yaml → self_identification.agents`. It previously listed only the
+Core Three + Gojo. **Toji Fushiguro** (external auditor) is intentionally absent — Toji is
+non-resident, outside Domain Zero's agent hierarchy, and has no configured self-identification
+banner.
 
 ---
 
@@ -150,7 +162,30 @@ self_identification:
       emoji: "🎯"
       domain_name: "CREATIVE STRATEGY DOMAIN"
       subtitle: "User Insight, Narrative, and Delight"
+    todo:
+      emoji: "💪"
+      domain_name: "DATA DOMAIN"
+      subtitle: "Boogie Woogie, Seamless Data Transformation"
+    maki:
+      emoji: "⚔️"
+      domain_name: "PERFORMANCE DOMAIN"
+      subtitle: "Heavenly Restriction, Zero-Overhead Optimization"
+    panda:
+      emoji: "🐼"
+      domain_name: "CI/CD DOMAIN"
+      subtitle: "Multi-Core Build System, Versatile Configurations"
+    inumaki:
+      emoji: "🍙"
+      domain_name: "COMMUNICATION DOMAIN"
+      subtitle: "Cursed Speech, Declarative API Contracts"
+    sukuna:
+      emoji: "👹"
+      domain_name: "SYSTEM UPDATE DOMAIN"
+      subtitle: "Adversarial Precision, Collaborative Safety"
 ```
+
+**Note**: The example above is the full nine-agent set as currently defined in the live
+`protocol.config.yaml`. Prior revisions of this doc showed only the Core Three + Gojo.
 
 ---
 
@@ -166,6 +201,11 @@ For environments where emoji display is inconsistent or inaccessible:
 | 🛡️ | `[SEC]` | `<SEC>` |
 | 🌀 | `[MC]` | `<MC>` |
 | 🎯 | `[UX]` | `<UX>` |
+| 💪 | `[DATA]` | `<DATA>` |
+| ⚔️ | `[PERF]` | `<PERF>` |
+| 🐼 | `[CI]` | `<CI>` |
+| 🍙 | `[API]` | `<API>` |
+| 👹 | `[SYS]` | `<SYS>` |
 | 🚀 | `[T1-RAPID]` | `<T1>` |
 | ⚖️ | `[T2-STD]` | `<T2>` |
 | 🔒 | `[T3-CRIT]` | `<T3>` |
@@ -180,14 +220,14 @@ For environments where emoji display is inconsistent or inaccessible:
 
 ## Version Information
 
-**Document Version**: 1.0
-**Protocol Version: 6.2.3
-**Last Updated**: 2025-11-06
-**Status**: Active
+**Document Version**: 1.1
+**Protocol Version**: 9.12.0
+**Last Updated**: 2026-08-07
+**Status**: Active (content-currency review: extended-agent table + config example added; footer version corrected, was stale at 6.2.3 and had a malformed bold marker)
 
 ---
 
 **See Also**:
 - [`AGENT_SELF_IDENTIFICATION_STANDARD.md`](AGENT_SELF_IDENTIFICATION_STANDARD.md) - Complete self-ID specification
-- [`CLAUDE.md`](CLAUDE.md) - Main protocol file
+- [`CLAUDE.md`](../CLAUDE.md) - Main protocol file (repository root; `protocol/CLAUDE.md` is a compatibility stub since v9.11.0)
 - [`protocol.config.yaml`](../protocol.config.yaml) - Configuration reference

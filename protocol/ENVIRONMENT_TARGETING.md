@@ -1,3 +1,4 @@
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Environment Targeting Guide
 ## Target Field Specification for .agent.md Format
 
@@ -196,7 +197,7 @@ target: vscode
 name: "Yuuji Itadori - Implementation Specialist"
 description: "Test-first development, MCP-enabled"
 argument-hint: "Use: 'Read yuuji.agent.md and implement [feature]'"
-model: "claude-3-5-sonnet-20241022"
+model: "claude-sonnet-4-6"
 
 tools:
   - read
@@ -680,7 +681,7 @@ if (environment === "claude-code" || environment === "vscode") {
 }
 ```
 
-**Status**: Proposed for v8.1.0 (not yet implemented)
+**Status**: Proposed (not yet implemented as of v9.12.0)
 
 ---
 

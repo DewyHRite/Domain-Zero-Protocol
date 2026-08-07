@@ -1,8 +1,15 @@
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # Dependency Scanner Guide
 
 **Version**: 1.0.0
 **Created**: 2025-12-06
-**Part of**: DZP v8.8.0 Validation Framework - Phase 3
+**Content verified current**: 2026-08-07 (TOJI-DOCS-9.12.0-013) — CLI flags (`--scan`,
+`--analyze`, `--check-cycles`, `--agent-matrix`, `--export`) and blast-radius risk thresholds
+cross-checked directly against `scripts/dependency-scanner.py` and confirmed accurate as of
+v9.12.0.
+**Part of**: DZP Validation Framework, introduced in v8.8.0 Phase 3 (tool itself is stable and
+unchanged since; this guide's content currency is now tracked independently of that origin
+version via the `[CORE FILE]` stamp above)
 
 ## Overview
 

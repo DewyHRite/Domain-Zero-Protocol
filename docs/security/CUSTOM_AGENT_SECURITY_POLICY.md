@@ -1,8 +1,13 @@
-# Custom Agent Security Policy (v8.8.0)
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+# Custom Agent Security Policy
 
 **Domain Zero Protocol - Custom Agent Security Policy**
-**Version**: 8.8.0
+**Version**: 8.8.0 (policy content unchanged since initial release; see Version History)
 **Effective Date**: 2025-12-06
+**Content verified current**: 2026-08-07 (TOJI-DOCS-9.12.0-013) — CUST-CRIT security requirements,
+tool-permission tiers, and `protocol.config.yaml` settings cross-checked against
+`protocol/gojo-procedures/CUSTOM_AGENT_SECURITY.md` (the more detailed enforcement guide) and
+`scripts/validate-custom-agents.py`; confirmed accurate as of v9.12.0.
 **Status**: ACTIVE
 
 ---
@@ -376,6 +381,10 @@ Format:
 
 ## Version History
 
+- **2026-08-07** (TOJI-DOCS-9.12.0-013): Added `[CORE FILE]` stamp banner (this file previously
+  had none, making it invisible to the mechanical docs-currency linter) and verified policy
+  content is still accurate against the current enforcement implementation. No policy content
+  changed.
 - **v8.8.0** (2025-12-06): Initial security policy
   - Implemented namespace protection
   - Implemented tool permission control

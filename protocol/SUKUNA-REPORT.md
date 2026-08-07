@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.9.4 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.9.4
+**Version**: 9.12.0
 **Status**: Production
-**Last Updated**: 2026-07-09
+**Last Updated**: 2026-08-07
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -47,6 +47,362 @@ This file serves as the **living patch manifest** for Domain Zero Protocol. AI a
 3. Sukuna reviews findings and adds to SUKUNA-REPORT.md
 4. AI agents automatically apply patches on next upgrade/setup
 ```
+
+---
+
+## 📋 ACCUMULATION POLICY (clarified 2026-08-07, closes TOJI-DOCS-9.12.0-012)
+
+**Finding**: `audits/2026-08-07-toji-v9-12-0-shipping-docs-currency.md` finding TOJI-DOCS-9.12.0-012
+found this file stamped v9.9.4 (2026-07-09) while root `CLAUDE.md`'s "Recent Version History" showed
+5 subsequent releases (v9.10.0 through v9.12.0). Sukuna's own audit of the gap, conducted while
+closing this finding, found it was actually **wider**: 8 releases shipped genuine patches with zero
+SUKUNA-REPORT.md entries — v9.9.5, v9.9.6, v9.9.7, v9.10.0, v9.10.1, v9.10.2, v9.11.0, v9.12.0. This
+is a real lapse of the root `CLAUDE.md` mandatory checklist item ("Document patches in
+`protocol/SUKUNA-REPORT.md`"), not merely a stale-stamp cosmetic issue.
+
+**Root cause**: no written scope existed for what belongs in this file. The pre-v9.8.0 practice of a
+dedicated `CASCADE-VXXX-001` entry per release (a full per-file stamp-cascade diff table — see
+`CASCADE-V950-001` .. `CASCADE-V972-001` near the end of this file) was correctly abandoned after
+v9.7.2 in favor of `git` history / `CHANGELOG.md` as canonical for routine, logic-free version
+cascades — a 100+ line file-by-file table every release does not scale and duplicates
+`CHANGELOG.md`. But no replacement rule was ever written down for what SHOULD still land here, so the
+file drifted from "living patch manifest" to "whatever the last contributor remembered to add."
+v9.9.4's own entry (immediately below) is itself evidence the intent was right — three real patch
+bundles, condensed — the practice just silently stopped being followed afterward.
+
+**Policy, effective this entry (decided by Sukuna as file owner, per Toji's disposition option (b),
+combined with a one-time retroactive catch-up per option (a))**:
+
+1. **This file logs PATCHES, not cascades.** A release that is a pure version-stamp cascade with no
+   security fix, bugfix, or new capability does not get a dedicated entry — this already matches
+   actual practice (no cascade-only entry has been added since `CASCADE-V972-001`, v9.7.2, and that
+   was correct).
+2. **Every release that ships any genuine patch** (security-finding remediation, bugfix, new
+   subsystem/capability, or a Toji-audit remediation wave) **gets a condensed entry here**, added as
+   part of that release's own Sukuna version-cascade step — never batched retroactively. "Condensed"
+   means: what shipped, priority/SEC-ID references, files touched by category (not an exhaustive
+   per-file table), a validation pointer, and a rollback pointer. The exhaustive narrative remains
+   `CHANGELOG.md` (canonical) — this file is the self-service AI-patch-application index, not a
+   duplicate of it.
+3. **The header stamp (`[CORE FILE]` line, `**Version**`, `**Last Updated**`) tracks the version of
+   the most recently *added entry***, not the current protocol version by default. If a release adds
+   no entry under rule 1, the header legitimately stays behind, and that alone is not a staleness
+   finding — provided this policy note is present and rule 2 was correctly applied for that release.
+   This is consistent with, and now explains, this file's pre-existing listing in
+   `scripts/distro/check_version_stamps.py`'s `_EXCLUDED_FILENAMES` ("patch manifest with historical
+   lines"): per-entry version labels are historical attribution, not a whole-document currency claim.
+4. **Enforcement gap, disclosed**: unlike `[CORE FILE]` stamp currency (mechanically checked by the
+   Type-13/14 linter) or protected-record append-only (mechanically checked by FEAT-GUARD-001), rule 2
+   above has **no mechanical enforcement** — it is a checklist item a release can still silently skip,
+   exactly as happened for 8 consecutive releases. No mechanism is proposed in this entry; a
+   machine-checked control (e.g., a release-gate step confirming a SUKUNA-REPORT.md section header
+   matching the target version whenever `CHANGELOG.md` gains a `#### Fixed`/`#### Security` section for
+   that version) is left as an explicitly open follow-up, not silently assumed solved by writing this
+   policy down.
+5. **Catch-up below**: the 8-release gap (v9.9.5 → v9.12.0) is closed once, retroactively, by the 8
+   entries immediately following this note — condensed, sourced from `CHANGELOG.md`. This is the last
+   retroactive catch-up; rule 2 governs every release from v9.12.0 onward.
+
+---
+
+## v9.12.0 PATCH MANIFEST (2026-08-06): Clock-Authority Foundations (`ISS-TIMEAUTH-9.12.0-001`) + Toji 2026-08-06 Audit Remediation
+
+**Applies To**: v9.11.0 installations
+**Priority**: P1 (Toji `SEC-001`/`SEC-002`/`DESIGN-001`/`DESIGN-002`/`AI-001`, all HIGH) + supporting P2/P3
+**Category**: Security / Reliability / New Subsystem (session time-authority)
+**Status**: APPLIED (shipped v9.12.0, already in canonical HEAD)
+**Required For**: Upgrades wanting rolling work-streak session tracking, versioned time-schema
+migration, and the Toji 2026-08-06 audit's 11 P2+P3 closures
+
+**Description**: Answers `ISS-TIMEAUTH-9.12.0-001` (2026-08-01 Toji session-time-authority audit, 9
+findings/2 HIGH, deferred in full from v9.11.0). Five ADR-gated increments — A1 clock-authority ADR;
+A2 `TimeProvider` + timing-policy primitives (migrated 34 raw `datetime.now()` call sites off
+`session_monitor.py`/`project_state_manager.py`); A3 rolling work-streak + genuine two-phase
+break-resolution model; A4 `AlertReason` codes + structured time envelope (`--json` on
+`check-and-record`, closing the MANDATORY auto-invoked safety-path gap); A5 versioned time-schema
+migrator (`--dry-run`/`--execute`/`--rollback`) — plus Option B read-side `time_schema`/naive-value
+gating and cross-platform riders (B1/B2 POSIX python3-probe with a version floor, B3 report-only CI
+portability matrix, B4 `brain repair-perms` owner-only Cortex storage hardening). A same-day Toji
+audit of the resulting code (13 findings/5 HIGH, release guidance "not ready") was answered in full
+before release, per explicit USER ruling: all 11 P2+P3 findings + 2 riders closed — `SEC-001`/`SEC-002`
+(rolling-streak authority recompute), `DESIGN-001` (idle-expiry archiving uses trusted boundary, not
+fresh `utc_now()`), `DESIGN-002` (CWE-367 TOCTOU — migrator adjudication/report digest-verified),
+`AI-001` (the `--json` gap above), `CODE-001`/`CODE-002`, `IMPL-001`/`IMPL-002`, `SEC-003`
+(CWE-59 symlink/junction rejection in `brain repair-perms`), `SEC-004`, `DESIGN-003` (CWE-362).
+Toji's delta re-review lifted its release hold. **Live time-schema migration executed** against
+project state 2026-08-06 under explicit USER authorization: 5 known-local + 9 adjudicated rows
+converted, 2,000 synthetic benchmark rows permanently excluded, `time_schema=1` set, D7.6 fail-closed
+read-side gating active, 0 mismatches on post-hoc TOCTOU reconciliation.
+
+**Key files** (by category — full file-level ledger in `CHANGELOG.md` `[9.12.0]`):
+`.protocol-state/time_provider.py`, `timing_policy.py`, `time_envelope.py` (new),
+`.protocol-state/session_monitor.py` (migrated), `.protocol-state/migrate_time_schema_9_12.py` (new),
+`.protocol-state/brain/cortex/repair.py` (new), `scripts/lib/python-probe.sh` (new),
+`.github/workflows/portability-matrix.yml` (new, report-only).
+
+**Validation**: full-tree sweep 3,553 passed / 139 skipped / 0 failed (post-remediation);
+`tests/brain/` 1,252 passed / 25 skipped / 0 failed. Per-increment/per-cluster counts in
+`.dzp-domain/domain.record.md` and `.protocol-state/security-review.md`.
+
+**Rollback**: `python .protocol-state/migrate_time_schema_9_12.py --rollback` for the live schema
+migration specifically; branch-level rollback via git (`9e3e87f`..`5ddc303`, Sukuna adversarially
+ratified 2026-08-06 — full trace in `.dzp-domain/domain.record.md`).
+
+---
+
+## v9.11.0 PATCH MANIFEST (2026-08-03): Session Transfer + Trigger 19-R Public Edition + Prompt-Weight Reduction + Docs Content-Currency Review + IDGOV LL/SF Families + 2026-07-30 Toji Backlog-Wave Closure
+
+**Applies To**: v9.10.2 installations
+**Priority**: P1 (`SEC-TRANSFER-9.11.0-001` caller-identity spoof) + supporting P2/P3
+**Category**: New Subsystem (session handoff, sanitized public decision log) / Security / Process
+**Status**: APPLIED (shipped v9.11.0, already in canonical HEAD)
+**Required For**: Upgrades wanting `/session transfer`, the Trigger 19-R public edition, the smaller
+always-on prompt footprint, or the standing docs content-currency review process
+
+**Description**: `FEAT-TRANSFER-9.11.0-001` — `/session transfer`, a fail-closed handoff lifecycle
+event (update + end current session, write a durable handoff brief, mandatory post-transfer
+snapshot) guarded by four independent mechanisms against a partial transfer misreporting the wrong
+session as closed; closes `SEC-TRANSFER-9.11.0-001`..`-006` (P1 caller-identity spoof plus
+ordering/marker-clearing/idempotency defects). `FEAT-TRIGGER19R-9.11.0-001` — Trigger 19-R, the first
+public decision-provenance edition, gated by a fail-closed 3-detector sanitization check
+(untracked-id refusal, live SEC-001/PII pattern scan, verbatim-shingle overlap vs
+`domain.record.md`); closes `SEC-TRIGGER19R-9.11.0-001`..`-006`. **Prompt-weight reduction**:
+`protocol/CLAUDE.md` collapsed from a 73,279-byte content mirror to a 15-line compatibility stub; ROE
++ Tier System relocated to `protocol/skills/gojo/roe-and-tiers.md` (on-demand load); measured
+always-on-load reduction ~45K → ~24.6K tokens. **Docs content-currency review** — `ISS-STALEDOCS-9.11.0-001`
+closed and its root cause ("the version cascade updates stamps, not claims") institutionalized as a
+standing two-layer per-release review (`DISTRO_RELEASE_WORKFLOW.md` §4b + `CLAUDE.md` checklist row):
+mechanical stamp-linter Type 14 (later Type 15, see the v9.12.0 §4b work referenced in this same
+2026-08-07 remediation wave) + a mandatory judgment sweep. `FEAT-IDGOV-003` adds `LL`/`SF` as
+first-class Issue-ID Governance families (Gojo/Megumi writers, no new key material minted).
+Full backlog-wave closure of the 2026-07-30 Toji recent-work audit (4 findings) + its same-day
+cross-check re-audit (1 new LOW) across 8 commits, plus the WP1-WP6 issue-registry reconciliation
+(149 → 0 non-legacy open rows).
+
+**Key files** (by category — full ledger in `CHANGELOG.md` `[9.11.0]`): `.protocol-state/session_monitor.py`
+(`transfer-begin`/`handoff`/`transfer-finalize`), `.protocol-state/file_integrity.py`,
+`scripts/check_trigger19r_sanitization.py` (new), `docs/DESIGN-DECISIONS.md` (new),
+`protocol/skills/trigger19r.md` (new), `protocol/CLAUDE.md` (stub swap),
+`protocol/skills/gojo/roe-and-tiers.md` (new), `scripts/idgov/grammar.py`/`engine.py` (LL/SF).
+
+**Validation**: full suite 3,148 passed / 90 skipped / 0 failed; stamp linter 0 violations / 509
+files; `assert_version.py` 20/20; `validate-protocol.py --check` 29/29.
+
+**Rollback**: branch-level rollback via git (`8241d2e`..`8824394`, Sukuna adversarially ratified
+2026-08-03, zero P0/P1 across the full 45-commit branch — full trace in `.dzp-domain/domain.record.md`).
+
+---
+
+## v9.10.2 PATCH MANIFEST (2026-07-20): Toji Recent-Work Audit Closure + CLAUDE.md Changelog-Retention Policy + `FEAT-PAYLOAD-9.10.2-001` Release Payload Subsystem
+
+**Applies To**: v9.10.1 installations
+**Priority**: P1 (`SEC-PAYLOAD-9.10.2-001`, CWE-345/CWE-829 forged canonical-origin) + supporting P2/P3
+**Category**: New Subsystem (release payload verification) / Security / Process
+**Status**: APPLIED (shipped v9.10.2, already in canonical HEAD)
+**Required For**: Upgrades wanting downstream-verifiable release payloads (`verify-payload.py`) or
+the bounded `CLAUDE.md` changelog-retention policy
+
+**Description**: `FEAT-PAYLOAD-9.10.2-001` — `scripts/distro/dzp_payload.py` (maintainer-only, packages
+a gate-clean `distro/` tree into a zip + SHA-256 manifest) and `scripts/verify-payload.py`
+(ships to consumers, fail-closed check chain incl. canonical-origin cross-check + zip-slip-hardened
+extraction). Megumi's adversarial supply-chain review found and closed 5 findings before ship,
+headlined by `SEC-PAYLOAD-9.10.2-001` (P1): the canonical-origin check resolved `git ls-remote`
+against a manifest field read from the SAME manifest under verification — a forged self-consistent
+zip+manifest pair could point that field at an attacker repo and pass; fixed with a hardcoded
+`CANONICAL_REPO_URL` constant validated before any network call. Also closes: Toji `AI-001` (HIGH —
+`.coderabbit.yaml` had excluded 4 executable AI-instruction/control-surface classes from mandatory
+review on every dev-branch PR, not just release PRs) and `IMPL-001` (MEDIUM, NIST SP 800-53 SI-7 —
+`validation-state.json` stale post-mutation reporting); the v9.10.2 item-5 carried-notes bundle (4
+fixes: session-monitor UTC-normalization parity across 7 call sites, `dzp.py --help` dynamic event
+list, detached-log rotation, `load_registry()` structural guard). **CLAUDE.md changelog-retention
+policy** (`ISS-CLAUDEMD-9.10.2-001`): bounds the root/protocol `CLAUDE.md` changelog duplication
+(`Major Enhancements` = current release only; `Recent Version History` = 5-release hard cap) — zero
+information destroyed, full history preserved in `CHANGELOG.md`/`VERSION.md`.
+
+**Key files**: `scripts/distro/dzp_payload.py` (new, not shipped), `scripts/verify-payload.py` (new,
+shipped), `.coderabbit.yaml`, `.protocol-state/session_monitor.py` (`_parse_utc()` parity),
+`scripts/dzp.py` (dynamic `--help`), `CLAUDE.md`/`protocol/CLAUDE.md` (retention policy).
+
+**Validation**: `FEAT-PAYLOAD-9.10.2-001` re-review 228/228 passed (1 accepted P3 residual); item-5
+notes 206/206 passed; full repo-wide stamp cascade `check_version_stamps.py` 0 violations / 472 files.
+
+**Rollback**: branch-level rollback via git; payload subsystem is additive (new scripts, not shipped
+to `distro/` except `verify-payload.py`) — reverting is a manifest + file removal, no data migration.
+
+---
+
+## v9.10.1 PATCH MANIFEST (2026-07-19): Distro-Integrity Orchestration-Trio Fix + IDGOV Polish + Registry Lock Hardening + `brain reset` UX Fix + `SEC-GUARD-007`
+
+**Applies To**: v9.10.0 installations
+**Priority**: P1 (`SEC-GUARD-007`, CWE-345 stub-marker splice bypass) + supporting P2/P3
+**Category**: Security / Bugfix / Distro-integrity
+**Status**: APPLIED (shipped v9.10.1, already in canonical HEAD)
+**Required For**: Any install whose published distro branches predate this release — the
+orchestration trio (`dzp.py`, `script_coordinator.py`, `script_dependencies.yaml`) was silently
+missing from every prior published `DZP-vX.Y.Z` branch
+
+**Description**: **`BUG-DISTRO-ORCH-TRIO-001`** (distro-integrity root cause) — a stale v9.2.0
+"DEV-ONLY" ignore block in `scripts/distro/distro.gitignore` silently caused every published branch's
+`git add -A` to skip the orchestration trio even though the completeness gates reported green; fixed
+with a new fail-closed, no-override `manifest_tracking_offenders()` gate verifying every
+manifest-shippable file is actually git-tracked post-stage. **`SEC-GUARD-007`** (P1) — closes a
+stub-marker splice bypass in `scripts/check_protected_append_only.py`'s Toji-stub tripwire (a
+`[TOJI AUDIT LOG]` marker split across two no-trailing-newline commits could evade validation);
+fixed by scanning full staged content every time. IDGOV polish closes all 4 findings deferred from
+the v9.10.0 release-gate audit: sanctioned resident-mint tooling for Sukuna/Gojo/Yuuji (6 new
+wrapper scripts), a report-contract validator mechanizing Toji's own report format rules, plus
+registry-lock hardening (`Block C`: a two-reaper race window + a PID-recycle starvation backstop) and
+the product-side `brain reset --yes` hang fix (`BUG-TEST-RESET-HANG-001` Part 2).
+
+**Key files**: `scripts/distro/dzp_publish_core.py` (`manifest_tracking_offenders`),
+`scripts/distro/distro.gitignore`, `scripts/check_protected_append_only.py`,
+`scripts/residentid-{sukuna,gojo,yuuji}.{sh,ps1}` (new), `scripts/check_toji_report_contract.py`
+(new), `scripts/idgov/registry.py` (`Lock.force_break()`), `.protocol-state/brain/brain.py` (`_reset()`).
+
+**Validation**: full repo sweep 2,376 passed / 4 skipped / 0 failed; targeted remediation suites
+198/198; report-contract validator 28/28.
+
+**Rollback**: branch-level rollback via git; `manifest_tracking_offenders()` has no override by design
+(fail-closed, no-override gate) — reverting requires reverting the commit, not a runtime flag.
+
+---
+
+## v9.10.0 MINOR MANIFEST (2026-07-18): `FEAT-IDGOV-001` Issue-ID Governance System + `IMPL-001` Version-Cascade Closure + `BUGREPORT-009` Stamp-Linter Type 8
+
+**Applies To**: v9.9.7 installations
+**Priority**: P0 (`SEC-IDGOV-F-001`, caught and closed pre-ship — legacy mint-and-cite bypass) + supporting
+**Category**: New Subsystem (issue-ID governance) / Bugfix
+**Status**: APPLIED (shipped v9.10.0, already in canonical HEAD)
+**Required For**: Upgrades wanting the fail-closed issue-ID citation gate, or affected by the un-cascaded
+v9.9.7 version-stamp drift this release closes
+
+**Description**: `FEAT-IDGOV-001` — an all-families append-only JSONL registry
+(`.protocol-state/issue-registry.jsonl`) + shared minting/validation engine (`scripts/idgov/`) + a
+fail-closed full-mediation pre-commit/CI gate (mint-before-cite, malformed-id hard block, E5
+digit-gate), Megumi's `secid` mediated-signed-wrapper tool, and a non-destructive 1,229-row
+historical backfill. Megumi Tier-3 `@approved` every phase, catching and closing one P0
+(`SEC-IDGOV-F-001`, legacy mint-and-cite bypass) before ship. `IMPL-001` closes the un-cascaded
+v9.9.7 version-stamp drift (a full repo-wide cascade to v9.10.0, historical/changelog references
+deliberately preserved) plus makes `create-snapshot.py`'s hardcoded `protocol_version: "8.8.0"`
+snapshot-body literal (frozen since v8.8.0) read dynamically from `VERSION.md` instead.
+`BUGREPORT-009` adds stamp-linter Type 8 coverage for the root `dzp.py` module-docstring version
+stamp (previously zero linter coverage; had already drifted silently once, corrected this release).
+
+**Key files**: `.protocol-state/issue-registry.jsonl` (new), `scripts/idgov/` (new package),
+`scripts/check_issue_ids.py` (new), `protocol/skills/megumi-secid.md` (new),
+`scripts/backfill_issue_registry.py` (new), `scripts/distro/check_version_stamps.py` (Type 8),
+`.protocol-state/create-snapshot.py` (dynamic version read).
+
+**Validation**: `assert_version.py`, `check_version_stamps.py`, `validate-protocol.py --check` all
+green at ship time (1 pre-existing, out-of-scope, report-only residual — `audits/**` linter exclusion,
+later added in v9.10.0's own follow-up).
+
+**Rollback**: branch-level rollback via git; the idgov gate has a documented break-glass
+(`DZP_ALLOW_MISSING_ISSUE_ID_GATE`) but registry rows, once minted, are append-only by design and are
+not intended to be rolled back independent of a full git revert.
+
+---
+
+## v9.9.7 PATCH MANIFEST (2026-07-13): `BUG-CORTEX-008` R3 Durable Session-End Fix + Dirty-Source Publish Guard
+
+**Applies To**: v9.9.6 installations
+**Priority**: P1 (`BUG-CORTEX-008`, chronic Cortex session-end timeout) + P2 (`BUG-DISTRO-DIRTY-SOURCE-001`)
+**Category**: Bugfix / Reliability / Distro-integrity
+**Status**: APPLIED (shipped v9.9.7, already in canonical HEAD)
+**Required For**: Any install experiencing Cortex session-end timeouts, or any maintainer running
+`dzp-publish` with an uncommitted working tree
+
+**Description**: `BUG-CORTEX-008` R3 (durable fix, supersedes the R1 stopgap) — root-caused the
+chronic Cortex session-end timeout to a synchronous full `--level high` re-embed + snapshot export
+landing on the session's largest embedding-delta cost; `session-end` now runs `cortex-medium`
+(incremental, no export, 90s) instead, with a new manual/periodic `cortex-rebuild-full` event
+carrying the full re-embed off the critical path. `BUG-DISTRO-DIRTY-SOURCE-001` — `dzp-publish`
+staged `distro/` by copying the dev source tree from disk rather than git, so a dirty working tree
+could silently ship uncommitted content publicly; fixed with a fail-closed
+`dev_source_dirty_offenders()` guard (`DZP_ALLOW_DIRTY_SOURCE=1` loud override, confirmed-clean-dirt
+only — a git-execution failure is never overridable).
+
+**Key files**: `.protocol-state/script_dependencies.yaml` (`session-end` step retarget,
+`cortex-rebuild-full` new event), `scripts/distro/dzp_publish_core.py`
+(`dev_source_dirty_offenders`), `protocol/skills/session.md`.
+
+**Validation**: 17 dirty-source guard tests + 125 distro suite tests green; Cortex R3 doc/config
+regression coverage green.
+
+**Rollback**: branch-level rollback via git; `DZP_ALLOW_DIRTY_SOURCE=1` is the sanctioned override for
+confirmed-benign dirt, not a rollback mechanism.
+
+---
+
+## v9.9.6 PATCH MANIFEST (2026-07-11): Sukuna Adversarial Bug-Hunt Remediation (5 P1s Closed)
+
+**Applies To**: v9.9.5 installations
+**Priority**: P1 x5 (`BUG-HOOK-SELF-DISARM-001`, `BUG-RESTORE-CHECKSUM-NOOP-001`,
+`BUG-CORTEX-ESCROW-HOLLOW-001`, `BUG-CORTEX-ESCROW-RAISE-002`, `BUG-DISTRO-PII-LEAK-001`)
+**Category**: Security / Bugfix
+**Status**: APPLIED (shipped v9.9.6, already in canonical HEAD)
+**Required For**: ALL installations — every finding was live-reachable on any genuine install since
+its respective introduction version
+
+**Description**: Provenance: Sukuna's own 4-front adversarial bug hunt, externally audited by Toji
+(`audits/2026-07-11-toji-sukuna-bughunt-report.md`). `BUG-HOOK-SELF-DISARM-001` — the security-gate
+ENGINE scripts themselves (not just their hook wrappers) are now in `immutable_paths`, closing a gap
+where an unprivileged commit could neuter or delete the scanner engines directly; fails closed on a
+missing guard file. `BUG-RESTORE-CHECKSUM-NOOP-001` — `restore-snapshot.py` now actually compares the
+snapshot checksum against a recompute (previously computed but never compared, with a hardcoded
+"verified" banner regardless of match). `BUG-CORTEX-ESCROW-HOLLOW-001`/`-RAISE-002` — key-recovery
+escrow capture was querying a phantom table/column that never existed on a real `Store` brain, so
+escrow silently captured 0 memories (or hard-raised) on every genuine installation since v9.9.0; now
+points at the real content-addressed store. `BUG-DISTRO-PII-LEAK-001` — publish content-audit now
+scans every staged file regardless of extension, with encoding fallback and case-insensitive matching.
+
+**Key files**: `scripts/scan_protected_records.py`, `scripts/check_protected_append_only.py`,
+`scripts/validate-protocol.py`, `scripts/check_branch_record_isolation.py`,
+`scripts/distro/assert_version.py`, `scripts/distro/check_version_stamps.py` (all added to
+`immutable_paths`), `scripts/restore-snapshot.py`, `.protocol-state/brain/cortex/memory_export.py`,
+`scripts/distro/dzp_publish_core.py` (`content_audit`).
+
+**Validation**: hook self-disarm 14 tests, restore-checksum 14 (+4 preview-display regression, from
+CodeRabbit PR #110), escrow 3 new + 4 de-fabricated suites, distro PII-leak gate 8 tests — all green.
+
+**Rollback**: branch-level rollback via git; `--force-unverified` on `restore-snapshot.py` and
+`DZP_ALLOW_MISSING_APPEND_GUARD` are the sanctioned break-glass overrides, both loud, neither a
+rollback of this patch itself.
+
+---
+
+## v9.9.5 PATCH MANIFEST (2026-07-11): Cortex Ingest Secret-Detector Remediation + Scanner Reconciliation + Publish-Manifest Gap Closure + Same-Day Toji-Audit Remediation + Downstream Snapshot P1 Port
+
+**Applies To**: v9.9.4 installations
+**Priority**: P1 (`BUG-SNAPSHOT-NULLFIELDS-001`/`MF-1`, fail-closed commit-gate blocker) + supporting P2/P3
+**Category**: Security / Bugfix / Distro-integrity
+**Status**: APPLIED (shipped v9.9.5, already in canonical HEAD)
+**Required For**: ALL installations — the publish-manifest gap meant every published `DZP-v9.9.4`
+distro branch shipped **without** the SEC-001 protected-records secret scanner
+
+**Description**: `BUG-CORTEX-INGEST-SECRET-FP-001` — closes `SEC-DZPUP-9.9.4-010`..`-013` (heuristic
+drift, all-or-nothing chunk drop, silent failure, reverted injection-detection patterns) in
+`cortex/ingest.py`'s secret detector. **Publish-manifest gap** — `scan_protected_records.py`,
+`check_branch_record_isolation.py`, and `.github/secret_scanning.yml` existed in the v9.9.4 canonical
+tree but were never added to `publish-manifest.yaml`; every published v9.9.4 distro branch shipped
+without the secret scanner. Same-day addendum closes a same-day Toji audit (2 MEDIUM) plus a
+downstream bug-report port: `BUG-SNAPSHOT-NULLFIELDS-001`/`MF-1` (P1 — `create-snapshot.py` emitted
+null/missing fields that failed the fail-closed commit-gate schema and silently blocked all commits)
+and a 5-cycle SemVer-recognizer entropy-budget hardening closing a disguised-secret admission class
+(`SEC-DZPUP-9.9.5-SEMVER-*`). Adds `FEAT-REQ-002` (`DZP_ALLOW_PROTOCOL_EDIT=1`, scoped protected-path
+bypass for authorized protocol commits).
+
+**Key files**: `.protocol-state/brain/cortex/ingest.py`, `scripts/scan_protected_records.py` (added
+to manifest), `scripts/check_branch_record_isolation.py` (added to manifest),
+`.github/secret_scanning.yml` (added to manifest), `.protocol-state/create-snapshot.py`,
+`protocol/validation-rules.yaml` (`reason` enum widened).
+
+**Validation**: 41 new Cortex regression/observability/adversarial-bypass tests + 2 cross-detector
+vocab-parity tests, all green; SemVer hardening 163/163 required suites; snapshot gate-validation
+18/18; `validate-protocol.py --check` 13/13.
+
+**Rollback**: branch-level rollback via git; `DZP_ALLOW_PROTOCOL_EDIT=1` is the sanctioned scoped
+override for future authorized edits, not a rollback of this patch.
 
 ---
 
