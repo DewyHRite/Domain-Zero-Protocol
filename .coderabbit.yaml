@@ -1,8 +1,20 @@
-# CodeRabbit configuration — Domain Zero Protocol
+# CodeRabbit configuration — DZP-v9.12.0-crbase HELPER BASE (release-PR plumbing ONLY)
+#
+# PURPOSE (DISTRO_RELEASE_WORKFLOW.md §5b): CodeRabbit reads path_filters from
+# the PR BASE branch. This branch exists solely to serve as the base for the
+# DZP-v9.12.1 release PR, whose file count trips the reviewer's 100-file cap
+# purely on version-stamp cascade churn (PR #117: 113 files, review auto-skipped).
+#
+# The filter list below is the dev branch's own list PLUS the four
+# stamp-cascade-only classes that are safe to skip FOR A RELEASE PR ONLY,
+# because the release process's other gates (version-stamp linter, distro
+# manifest/PII/identity audits, Megumi Tier-2 review of the feature work, Sukuna
+# release-gate ratification) already cover them for that PR:
+#   protocol/modules/**, protocol/gojo-procedures/**, .claude/commands/**,
+#   slash-commands/** (per §5b these four must NEVER appear on dev/Main).
+#
+# This branch is never promoted, never a release artifact, never a dev PR base.
 # Schema: https://coderabbit.ai/integrations/schema.v2.json
-# Purpose: formalize CodeRabbit as a MANDATORY review gate on every PR,
-# especially the DZP-vX.Y.Z distribution-release PRs (see
-# docs/guides/DISTRO_RELEASE_WORKFLOW.md).
 language: en-US
 
 reviews:
@@ -49,12 +61,22 @@ reviews:
   # carries it (helper branch DZP-vX.Y.Z-crbase pattern; the frozen
   # DZP-vX.Y.Z artifact itself is never modified).
   path_filters:
+    # dev-branch baseline (pure prose/lore/output-template classes)
     - "!**/.protocol-state/jjk-character-reference/**"
     - "!**/.protocol-state/gojo-templates/**"
     - "!**/.protocol-state/sukuna-templates/**"
     - "!.protocol-state/jjk-character-reference/**"
     - "!.protocol-state/gojo-templates/**"
     - "!.protocol-state/sukuna-templates/**"
+    # crbase-only release-PR relief (stamp-cascade classes; §5b step 2)
+    - "!**/protocol/modules/**"
+    - "!**/protocol/gojo-procedures/**"
+    - "!**/.claude/commands/**"
+    - "!**/slash-commands/**"
+    - "!protocol/modules/**"
+    - "!protocol/gojo-procedures/**"
+    - "!.claude/commands/**"
+    - "!slash-commands/**"
   high_level_summary: true
   review_status: true
   poem: false
