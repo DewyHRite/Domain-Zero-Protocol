@@ -158,7 +158,18 @@ def _harden_windows_acl(path: Path) -> None:
     warning and continues -- the key file still has the 0o600-style bits
     set by the caller. No-op on non-Windows platforms.
     """
-    if sys.platform != "win32":
+    # SEC-STATE-9.12.0-001/-002 (idiom fold-in, v9.12.1 Batch B): mirrors the
+    # same-round fix to this function's documented twin,
+    # cortex/crypto.py::_harden_windows_acl() -- project-wide Windows-
+    # detection idiom is os.name == "nt" (immune to the
+    # platform.system()/platform._uname_cache poisoning class AND to a live
+    # sys.platform monkeypatch around real work -- BUG-STATE-001). This
+    # guard never called platform.system()/uname() to begin with (sys.platform
+    # itself is not the poisoning-prone API), so this is consistency
+    # hardening, not a vulnerability fix -- os.name != "nt" is behaviorally
+    # equivalent to sys.platform != "win32" on every platform this codebase
+    # runs on.
+    if os.name != "nt":
         return
     current_user = os.environ.get("USERNAME") or os.environ.get("USER") or ""
     if not current_user:

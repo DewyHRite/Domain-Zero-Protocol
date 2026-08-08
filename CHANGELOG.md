@@ -13,6 +13,103 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [9.12.1] - 2026-08-08
+
+### PATCH — Release-gate self-enforcement (`IMPL-SUKUNAGATE-9.12.1-001`) + stamp-linter alt-banner currency tightening (`IMPL-STAMPLINT-9.12.1-001`) + secret-scanner distro-context false-alarm fix (`BUG-SCANTOP-9.12.1-001`) + platform-idiom fold-in (`SEC-STATE-9.12.1-001`) + first consumer delivery of `BUG-CORTEXTRIGGER-9.12.0-001`
+
+v9.12.1 closes the disclosed enforcement gap in `protocol/SUKUNA-REPORT.md`'s own accumulation
+policy (rule 4, added 2026-08-07 while closing `TOJI-DOCS-9.12.0-012`), tightens the stamp linter's
+Type 15 alt-banner check from presence-only to currency-checked, fixes a distro-publish-context false
+alarm in the protected-records secret scanner, folds two more sites onto the project's standard
+`os.name == "nt"` platform idiom, and ships `BUG-CORTEXTRIGGER-9.12.0-001` (committed to the v9.12.0
+branch at `0461031`, after that release's own cascade had already shipped) to consumers for the first
+time. Four independent items (Batches A/B/C, `session_20260808_114849`), all Yuuji TDD + Megumi
+Tier-2 `@approved`, zero P0/P1/P2.
+
+#### Added
+
+- **`IMPL-SUKUNAGATE-9.12.1-001` — mechanical enforcement of SUKUNA-REPORT.md accumulation-policy
+  rule 2**: new standalone gate `scripts/distro/check_sukuna_report_currency.py`. Reads the current
+  `protocol_version`, locates that version's `## [X.Y.Z]` section in this file, and — if that section
+  carries a `#### Fixed` or `#### Security` sub-heading (a genuine patch, not a pure version-stamp
+  cascade) — requires a matching `## vX.Y.Z ...` header in `protocol/SUKUNA-REPORT.md`. Silent pass
+  when there is nothing to check (no section yet, or a section with neither sub-heading). Wired as a
+  new `required: true` step into BOTH `pre-release` and `pre-publish` in
+  `.protocol-state/script_dependencies.yaml`, both of which carry event-level `fail_soft: false` (a
+  real hard release gate, not merely logged) — proven wired via 4 dedicated tests
+  (`TestReleaseGateWiring`) that read the actual YAML, RED before the wiring edit and GREEN after.
+  Closes the exact silent-skip failure that recurred for 8 consecutive releases (v9.9.5 → v9.12.0)
+  before the accumulation policy was written down. This release is the first to be governed by the
+  gate it introduces — see the matching `## v9.12.1 PATCH MANIFEST` entry in
+  `protocol/SUKUNA-REPORT.md`, added in the same cascade step so the gate does not fail-close on its
+  own author.
+- **Type 15c — `ALT-BANNER-STALE`** (`scripts/distro/check_version_stamps.py`): `_T15_ALT_BANNER_RX`
+  now captures the version an alt-banner (`[SKILL]`/bare/offline-reference HTML-comment banners)
+  names as a `alt_ver` group; `_scan_type15()` currency-checks it against the current protocol
+  version instead of only checking presence. Closes a disclosed limitation (dev-notes.md, 2026-08-07):
+  before this, an alt-banner's mere presence silenced Type 15 regardless of the version it carried,
+  and no other type's regex matches the alt-banner HTML-comment shape at all.
+
+#### Fixed
+
+- **`BUG-CORTEXTRIGGER-9.12.0-001` — first consumer delivery**: the Windows detached-Cortex-chain
+  console-window suppression fix (committed to this branch's parent at `0461031`, after v9.12.0's own
+  release cascade had already shipped) reaches consumers for the first time via this patch. Also
+  hardened this release: `tests/brain/test_cortex_no_window_creationflags.py`'s AST fail-closed guard
+  closed the two non-blocking gaps Megumi's original review flagged — `**kwargs`-unpack identity
+  (only a genuine `**_no_window_kwargs()` call now satisfies the exemption, not any bare `**unpack`)
+  and spawn-form scope (widened from `subprocess.run`-only to also cover `Popen`/`call`/
+  `check_output`/`check_call`/`os.system`, the last always-flagged since it has no kwarg surface to
+  carry `creationflags` at all). Test-only — no production code touched. 13→18 tests, all green.
+- **`BUG-SCANTOP-9.12.1-001`** — `scripts/scan_protected_records.py`'s `.dzp-domain/domain.record.md`
+  out-of-scope premise ("untracked, no git blob") is true in the dev repo but false in the separate
+  `distro/` publish worktree, which intentionally tracks it as a clean starter materialized
+  byte-identical from `.dzp-domain/domain.record.template.md` at publish time — a real false alarm
+  (full `PREMISE BROKEN` escalation) for a deliberate, verified-clean state. Fix: a new
+  `premise_broken_clean_starter` classification compares both sides via `staged_blob()` (git-index
+  reads, autocrlf-safe) and prints a non-escalating `INFO:` line only when the tracked content is
+  byte-identical to its known template; any divergence, missing mapping, or unreadable
+  template/blob falls through unchanged to the full escalation (fails toward escalation on any
+  doubt — the tripwire is not weakened, only its wording narrows for the one verified-clean case).
+
+#### Security
+
+- **`SEC-STATE-9.12.1-001`** — `.protocol-state/brain/cortex/crypto.py:106`
+  (`_harden_windows_acl()`) and its documented twin `.protocol-state/attestation.py:161` folded from
+  `sys.platform != "win32"` onto the project's standard `os.name != "nt"` idiom, closing a
+  live-spoof-immunity gap for these two sites (Megumi's BUG-CORTEXTRIGGER-9.12.0-001 review,
+  recommendation 3); proven via tests that force `os.name="nt"` while simultaneously spoofing
+  `sys.platform="linux"` and assert hardening still ran. Companion, same review: `creationflags=
+  subprocess.CREATE_NO_WINDOW` added to `scripts/idgov/identity.py:86`'s `icacls` call (not
+  reachable from a detached context today; consistency hardening). An 11-site residual
+  `sys.platform`/`platform.system()` sweep across `.protocol-state/` and `scripts/` was reviewed and
+  **deferred** (Megumi: equivalence holds at all 11, but 7 are deliberately left alone — legitimate
+  test-isolation monkeypatches would break — and the remaining 4 sit in the sealed, untested-path
+  `PLAN-CORTEX-RECOVERY-001` R1 subsystem); tracked as a future SEC-STATE-class disposition round.
+
+#### Changed
+
+- 11 stale `docs/reference/offline/**` and `protocol/skills/gojo/gojo-tier-validation.md` alt-banner
+  version stamps (found by the tightened Type 15c check) brought current to v9.12.0 pre-cascade, then
+  v9.12.1 in this cascade step. Content-reviewed before stamping, not blindly bumped: the 9 offline
+  topic guides are timeless technical reference material with zero DZP-internal citations (no
+  staleness beyond the stamp); `gojo-tier-validation.md` had a real content staleness (a stale "See"
+  pointer to a now-superseded guide) fixed alongside the stamp.
+
+#### Notes
+
+- **Test evidence**: independently re-run (Gojo, this cascade) — 1,744 passed / 31 skipped / 0 failed
+  across `tests/brain/` + `tests/distro/` + all touched suites; `check_version_stamps.py` OK, 0
+  violations, 531 files; `validate-protocol.py --check` OK, 34/34. Per-batch counts from
+  implementation: Batch A 18/18; Batch B 26+1 skipped / 44 / 11+1 skipped; Batch C `tests/distro/`
+  394 passed, scan/coverage/agreement trio 153 passed, coordinator/manifest collateral 155 passed.
+- Megumi Tier-2 review `@approved`, zero P0/P1/P2 across all three batches
+  (`.protocol-state/security-review.md`, "v9.12.1 Patch Bundle (Batches A/B/C)").
+- Sukuna adversarial ratification: see `.dzp-domain/domain.record.md` for the full trace.
+- Sukuna-implemented cascade (System Update Adversary), Gojo-coordinated, USER-approved.
+
+---
+
 ## [9.12.0] - 2026-08-06
 
 ### MINOR — Clock-authority foundations release: response to `ISS-TIMEAUTH-9.12.0-001` (session work-streak/protection-window model, structured time envelope + alert reason codes, versioned time-schema migration with live execution, read-side schema gating, and a same-day Toji audit remediation wave)

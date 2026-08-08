@@ -1,11 +1,56 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Domain Zero Protocol - Version Information
 
-**Version:** 9.12.0
-**Release Date:** 2026-08-06
-**Release Type:** MINOR Release (Clock-authority foundations — work-streak/protection-window model,
-structured time envelope + alert reason codes, versioned time-schema migration with live execution,
-read-side schema gating, and a same-day Toji audit remediation wave closing all 11 P2+P3 findings)
+**Version:** 9.12.1
+**Release Date:** 2026-08-08
+**Release Type:** PATCH Release (Release-gate self-enforcement — a new fail-closed pre-release/
+pre-publish gate closing an 8-release-long disclosed SUKUNA-REPORT.md accumulation-policy gap,
+stamp-linter alt-banner currency tightening, a distro-context secret-scanner false-alarm fix, a
+platform-idiom fold-in, and first consumer delivery of `BUG-CORTEXTRIGGER-9.12.0-001`)
+
+---
+
+## Release Summary — v9.12.1 (PATCH)
+
+v9.12.1 closes the disclosed enforcement gap in `protocol/SUKUNA-REPORT.md`'s own accumulation
+policy (rule 4, added 2026-08-07 while closing `TOJI-DOCS-9.12.0-012`): 8 consecutive releases
+(v9.9.5 → v9.12.0) shipped genuine patches with no manifest entry there, because rule 2 ("every
+release shipping a patch gets a condensed entry") had no mechanical enforcement. Four independent
+items (Batches A/B/C, `session_20260808_114849`), all Yuuji TDD + Megumi Tier-2 `@approved`, zero
+P0/P1/P2. Full narrative and finding-by-finding detail: `CHANGELOG.md` `[9.12.1]`.
+
+- **`IMPL-SUKUNAGATE-9.12.1-001`** — new `scripts/distro/check_sukuna_report_currency.py`, wired as
+  a `required: true` step into both `pre-release` and `pre-publish` (both event-level
+  `fail_soft: false`). Fails closed if `CHANGELOG.md` gains a `#### Fixed`/`#### Security` section
+  for the current version with no matching `## vX.Y.Z ...` header in `protocol/SUKUNA-REPORT.md`.
+  This release is the gate's own first enforcement target — proven wired via 4 dedicated tests
+  reading the real YAML, RED before/GREEN after.
+- **`IMPL-STAMPLINT-9.12.1-001`** — stamp-linter Type 15 gained sub-check 15c (`ALT-BANNER-STALE`):
+  an alt-banner's named version is now currency-checked, not merely its presence. Found and fixed 11
+  real stale banners (9 offline reference guides — content-reviewed, no staleness beyond the stamp —
+  plus `protocol/skills/gojo/gojo-tier-validation.md`, which also had a genuine stale cross-reference
+  fixed alongside).
+- **`BUG-SCANTOP-9.12.1-001`** — `scan_protected_records.py`'s `.dzp-domain/domain.record.md`
+  out-of-scope premise is true in the dev repo but false in the separate `distro/` publish worktree,
+  which intentionally tracks it as a clean starter materialized byte-identical from its template at
+  publish time. Fixed via a new `premise_broken_clean_starter` classification comparing both sides
+  via autocrlf-safe `staged_blob()` reads — prints an informational line only on a verified exact
+  match; any divergence or unreadable input still escalates exactly as before.
+- **`SEC-STATE-9.12.1-001`** — `crypto.py::_harden_windows_acl()` (line 106) and its documented twin
+  `attestation.py::_harden_windows_acl()` (line 161) folded from `sys.platform != "win32"` to
+  `os.name != "nt"`, closing a live-spoof-immunity gap; companion `identity.py:86` `icacls` call
+  gained `creationflags=subprocess.CREATE_NO_WINDOW`. An 11-site residual sweep was reviewed and
+  deferred as a future SEC-STATE-class round (equivalence holds throughout; no active risk).
+- **First consumer delivery of `BUG-CORTEXTRIGGER-9.12.0-001`** — the Windows detached-Cortex-chain
+  console-window suppression fix (committed to this branch's parent after v9.12.0's own release
+  cascade had already shipped) reaches consumers for the first time via this patch, plus AST
+  fail-closed guard test hardening closing its own review's two non-blocking gaps.
+
+**Test evidence**: independently re-run (Gojo, this cascade) — 1,744 passed / 31 skipped / 0 failed
+across `tests/brain/` + `tests/distro/` + all touched suites; stamp linter OK, 0 violations, 531
+files; `validate-protocol.py --check` OK, 34/34.
+
+**Sukuna adversarial ratification**: see `.dzp-domain/domain.record.md` for the full trace.
 
 ---
 

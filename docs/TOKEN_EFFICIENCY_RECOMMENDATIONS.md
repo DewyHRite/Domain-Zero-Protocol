@@ -1,8 +1,8 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Domain Zero Protocol - Token Efficiency Recommendations
 
 > **Classification:** CORE FILE
-> **Version:** 9.12.0
+> **Version:** 9.12.1
 > **Last Updated:** 2026-08-07 (TOJI-DOCS-9.12.0-014: replaced stale `v8.5.1` example version
 > string with a generic `vX.Y.Z` placeholder in §4.1)
 > **Purpose:** Formal guidelines for maintaining token efficiency while preserving full protocol behavior

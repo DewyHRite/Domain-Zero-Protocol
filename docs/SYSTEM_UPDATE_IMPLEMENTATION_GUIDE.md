@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # System Update Framework - Public Implementation Guide
 
 > **Status:** Domain Zero Protocol has been open source since v8.5.1 — the protocol, agents, and

@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Slash Commands
 
 Ready-to-use slash command files for Claude Code CLI.

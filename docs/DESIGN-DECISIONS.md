@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Design Decisions: Why Domain Zero Protocol Works This Way
 
 **Version**: 9.11.0

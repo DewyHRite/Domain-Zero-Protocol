@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Custom Agent Security Policy
 
 **Domain Zero Protocol - Custom Agent Security Policy**

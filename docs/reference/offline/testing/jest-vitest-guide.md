@@ -1,5 +1,5 @@
 # Jest & Vitest Testing Guide
-<!-- Domain Zero Protocol v8.11.0 - Offline Reference -->
+<!-- Domain Zero Protocol v9.12.1 - Offline Reference -->
 
 **Agent**: Yuuji (Implementation Specialist)
 **Last Updated**: 2025-12-26

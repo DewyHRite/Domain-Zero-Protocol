@@ -1,10 +1,10 @@
 # Offline Reference Documentation
-<!-- Domain Zero Protocol v9.0.0 -->
+<!-- Domain Zero Protocol v9.12.1 -->
 
 **Purpose**: Comprehensive offline documentation for DZP agents to reference authoritative best practices without requiring internet access.
 
-**Version**: 9.0.0
-**Last Updated**: 2026-03-20
+**Version**: 9.12.1
+**Last Updated**: 2026-08-08
 
 ---
 
@@ -169,6 +169,8 @@ All offline documents follow this structure:
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-08-08 | 9.12.1 | Version cascade (v9.12.1 patch release, Sukuna-executed): banner + Version field brought to protocol-current |
+| 2026-08-08 | 9.12.0 | Type-15 alt-banner currency tightening (IMPL-STAMPLINT-9.12.1-001): content reviewed for staleness (none found -- all 9 topic guides remain accurate, timeless technical reference material with no DZP-internal citations), version stamp brought current |
 | 2025-12-29 | 8.12.0 | Updated protocol version to v8.12.0 (PATCH-SESSION-004 session monitoring enhancements) |
 | 2025-12-27 | 8.11.0 | Updated protocol version to v8.11.0 (session management + troubleshooting tier system) |
 | 2025-12-26 | 8.10.0 | Initial creation of comprehensive offline documentation |

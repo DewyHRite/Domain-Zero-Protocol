@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # DUAL WORKFLOW ENFORCEMENT GUIDE
-## Domain Zero Protocol v9.12.0 - Mandatory Yuuji-Megumi Collaboration
+## Domain Zero Protocol v9.12.1 - Mandatory Yuuji-Megumi Collaboration
 
 **Version**: 2.0.0
 **Last Updated**: 2026-08-07
@@ -259,6 +259,6 @@ User: "Read yuuji.agent.md --tier critical and implement JWT authentication"
 
 **END OF DUAL_WORKFLOW_ENFORCEMENT_GUIDE.md**
 
-**Domain Zero Protocol v9.12.0** - Perfect Code Through Mandatory Collaboration
+**Domain Zero Protocol v9.12.1** - Perfect Code Through Mandatory Collaboration
 
 *Yuuji and Megumi are an integrated pair for production code. This is the way.*

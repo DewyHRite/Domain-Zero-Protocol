@@ -1,5 +1,5 @@
 # Ryomen Sukuna - System Update Adversary
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 
 > **"Know your place, fool. I am the King of Curses."** - Sukuna (JJK)
 

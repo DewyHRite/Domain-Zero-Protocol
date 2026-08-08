@@ -113,6 +113,29 @@ def _brain_py_path() -> Path:
     return _BRAIN_PY
 
 
+def _no_window_kwargs() -> dict:
+    """Return subprocess.run/Popen kwargs that suppress a new console window
+    on Windows; an empty dict everywhere else (BUG-CORTEXTRIGGER-9.12.0-001).
+
+    Root cause: `script_coordinator.py::_spawn_detached()` correctly launches
+    this file console-LESS (`CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS`,
+    used for the `/session update|end|transfer` background re-index), but a
+    console-subsystem child THIS process then spawns via `subprocess.run()`
+    (brain.py, the rotation-check scripts) allocates a brand-new, VISIBLE
+    console of its own on Windows -- a console-subsystem child of a
+    console-less parent gets one unless explicitly suppressed.
+
+    `subprocess.CREATE_NO_WINDOW` is a Windows-only constant: referencing it
+    on POSIX raises AttributeError on the `subprocess` module itself, so the
+    "off" branch below must never evaluate it -- keeping POSIX callers'
+    kwargs byte-identical to before this fix (no `creationflags` key at all,
+    never `creationflags=0`).
+    """
+    if os.name == "nt":
+        return {"creationflags": subprocess.CREATE_NO_WINDOW}
+    return {}
+
+
 def _run_brain(repo: Path, *args: str) -> tuple[int, str, str]:
     """Run brain.py as a subprocess. Returns (returncode, stdout, stderr)."""
     brain = _brain_py_path()
@@ -124,6 +147,7 @@ def _run_brain(repo: Path, *args: str) -> tuple[int, str, str]:
         encoding="utf-8",
         errors="replace",
         capture_output=True,
+        **_no_window_kwargs(),
     )
     return result.returncode, result.stdout, result.stderr
 
@@ -324,6 +348,7 @@ def _run_rotation_check(
                 text=True,
                 encoding="utf-8",
                 capture_output=True,
+                **_no_window_kwargs(),
             )
         except Exception as exc:
             print(f"[CORTEX-TRIGGER:rotation-check] error running {script_path.name}: {exc}", file=sys.stderr)

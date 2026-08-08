@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Domain Zero Protocol — compatibility pointer
 
-**Version**: 9.12.0
+**Version**: 9.12.1
 **Status**: Compatibility pointer (v9.11.0+)
 
 This file is NOT the protocol. It is a retained path so that existing

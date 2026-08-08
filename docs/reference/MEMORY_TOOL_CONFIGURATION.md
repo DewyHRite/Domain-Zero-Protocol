@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Memory Tool Configuration Guide
 ## Configuring Anthropic's Claude Memory Tool — and What DZP Actually Does With It
 

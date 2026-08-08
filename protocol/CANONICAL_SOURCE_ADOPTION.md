@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Canonical Source Adoption & Repository Referencing Strategy
 ## Repository: <https://github.com/DewyHRite/Domain-Zero-Protocol>
 

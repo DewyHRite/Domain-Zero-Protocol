@@ -1,15 +1,15 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 ---
 title: "Instruction Confirmation Protocol"
 version: "1.0.1"
-protocol_version: "9.12.0"
+protocol_version: "9.12.1"
 last_updated: "2026-08-07"
 status: "Production-Ready"
 ---
 
 # Instruction Confirmation Protocol- Must be followed verbatim!!!
 
-## Domain Zero Protocol v9.12.0
+## Domain Zero Protocol v9.12.1
 
 **Version**: 1.0.1
 **Created**: November 24, 2025

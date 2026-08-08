@@ -1,7 +1,7 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # AI Instructions - Domain Zero Protocol
 
-**Version**: 9.12.0 | **Last Updated**: 2026-08-06
+**Version**: 9.12.1 | **Last Updated**: 2026-08-08
 **Purpose**: Complete installation and verification guide for AI assistants
 
 ---
@@ -1707,7 +1707,7 @@ See `protocol/skills/megumi-secid.md` for the Megumi-mediated `secid` tool workf
 ## Canonical Source
 
 > **Repository**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Version**: 9.12.0
+> **Version**: 9.12.1
 > **Canonical Local Authority**: `./CLAUDE.md`
 
 All protocol updates originate from the canonical source.
@@ -1736,5 +1736,5 @@ All protocol updates originate from the canonical source.
 
 ---
 
-**Domain Zero Protocol v9.12.0 - Complete Installation Guide**
+**Domain Zero Protocol v9.12.1 - Complete Installation Guide**
 **Updated**: 2026-08-06

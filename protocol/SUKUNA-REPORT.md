@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # SUKUNA REPORT - System Update & Patch Manifest
 ## Self-Service Patch Implementation for AI Agents
 
-**Version**: 9.12.0
+**Version**: 9.12.1
 **Status**: Production
-**Last Updated**: 2026-08-07
+**Last Updated**: 2026-08-08
 **Authority**: MAXIMUM (Gojo-invoked with User approval)
 
 ---
@@ -102,6 +102,62 @@ combined with a one-time retroactive catch-up per option (a))**:
 5. **Catch-up below**: the 8-release gap (v9.9.5 → v9.12.0) is closed once, retroactively, by the 8
    entries immediately following this note — condensed, sourced from `CHANGELOG.md`. This is the last
    retroactive catch-up; rule 2 governs every release from v9.12.0 onward.
+
+---
+
+## v9.12.1 PATCH MANIFEST (2026-08-08): Release-Gate Self-Enforcement (`IMPL-SUKUNAGATE-9.12.1-001`) + Stamp-Linter Alt-Banner Currency (`IMPL-STAMPLINT-9.12.1-001`) + Scanner False-Alarm Fix (`BUG-SCANTOP-9.12.1-001`) + Platform-Idiom Fold-In (`SEC-STATE-9.12.1-001`)
+
+**Applies To**: v9.12.0 installations
+**Priority**: P2 (mechanical rule-2 enforcement gap, disclosed 2026-08-07) + supporting P2/P3
+**Category**: Release-Process Integrity / Tooling / Security (platform-idiom consistency)
+**Status**: APPLIED (shipped v9.12.1, already in canonical HEAD)
+**Required For**: All upgrades — closes the exact silent-skip failure this file's own accumulation
+policy (rule 4, above) disclosed as unenforced, tightens the stamp linter, fixes a distro-publish
+false alarm, and delivers `BUG-CORTEXTRIGGER-9.12.0-001` to consumers for the first time
+
+**Description**: Four independent items (Batches A/B/C, `session_20260808_114849`), all Yuuji TDD +
+Megumi Tier-2 `@approved`, zero P0/P1/P2. **`IMPL-SUKUNAGATE-9.12.1-001`**: new
+`scripts/distro/check_sukuna_report_currency.py` — fails closed on `pre-release`/`pre-publish`
+(both event-level `fail_soft: false`) if `CHANGELOG.md` gains a `#### Fixed`/`#### Security` section
+for the current version with no matching `## vX.Y.Z ...` header here, closing rule 4's disclosed gap
+after 8 consecutive releases (v9.9.5 → v9.12.0) shipped genuine patches with no entry in this file.
+This release is the gate's own first enforcement target — this entry exists because the gate
+required it. **`IMPL-STAMPLINT-9.12.1-001`**: stamp linter Type 15 gained sub-check 15c
+(`ALT-BANNER-STALE`) — an alt-banner's named version is now currency-checked, not merely its
+presence; found and fixed 11 real stale banners (9 offline reference guides + 1 skill doc),
+content-reviewed before stamping. **`BUG-SCANTOP-9.12.1-001`**: `scan_protected_records.py`'s
+`.dzp-domain/domain.record.md` out-of-scope premise is genuinely broken in dev but a deliberate,
+verified-clean state in the `distro/` publish worktree (tracks a byte-identical clean-starter
+template) — new `premise_broken_clean_starter` classification (autocrlf-safe `staged_blob()`
+comparison, fails toward escalation on any doubt) prints an informational line instead of a false
+`PREMISE BROKEN` escalation for that one verified case only. **`SEC-STATE-9.12.1-001`**:
+`crypto.py::_harden_windows_acl()` (line 106) and its documented twin
+`attestation.py::_harden_windows_acl()` (line 161) folded from `sys.platform != "win32"` to
+`os.name != "nt"`, closing a live-spoof-immunity gap; companion `identity.py:86` `icacls` call gained
+`creationflags=subprocess.CREATE_NO_WINDOW` for consistency. An 11-site residual
+`sys.platform`/`platform.system()` sweep was reviewed and **deferred** as a future SEC-STATE-class
+round (Megumi: equivalence holds throughout; 7 sites are legitimate test-isolation monkeypatch
+targets, 4 sit in the sealed/untested `PLAN-CORTEX-RECOVERY-001` R1 subsystem). Also ships
+`BUG-CORTEXTRIGGER-9.12.0-001` (Windows detached-Cortex-chain console-window fix, committed to the
+v9.12.0 branch at `0461031` after that release's own cascade had already shipped) to consumers for
+the first time, plus AST fail-closed guard hardening closing its own review's two non-blocking test
+gaps (test-only, no production code).
+
+**Key files** (by category — full file-level ledger in `CHANGELOG.md` `[9.12.1]`):
+`scripts/distro/check_sukuna_report_currency.py` (new), `scripts/distro/check_version_stamps.py`,
+`scripts/scan_protected_records.py`, `.protocol-state/brain/cortex/crypto.py`,
+`.protocol-state/attestation.py`, `scripts/idgov/identity.py`,
+`tests/brain/test_cortex_no_window_creationflags.py`, `.protocol-state/script_dependencies.yaml`.
+
+**Validation**: independently re-run (Gojo, this cascade) — 1,744 passed / 31 skipped / 0 failed
+across `tests/brain/` + `tests/distro/` + all touched suites; `check_version_stamps.py` OK, 0
+violations, 531 files; `check_sukuna_report_currency.py` self-check OK (proves this entry against the
+`CHANGELOG.md` `[9.12.1]` section); `validate-protocol.py --check` OK, 34/34.
+
+**Rollback**: per-item `.bak` restoration (<5 min each, all documented in
+`.protocol-state/dev-notes.md`, no schema/state touched beyond the append-only issue registry);
+branch-level rollback via git (Sukuna adversarially ratified 2026-08-08 — full trace in
+`.dzp-domain/domain.record.md`).
 
 ---
 

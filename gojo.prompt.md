@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # 🌀 SATORU GOJO - DZP Prompt Master
 ## Domain Expansion: Domain Zero Protocol Orchestration
 

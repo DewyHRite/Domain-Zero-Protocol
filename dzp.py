@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 dzp.py — DZP Script Orchestration Entry Point
-Domain Zero Protocol v9.12.0
+Domain Zero Protocol v9.12.1
 
 Thin entry point that resolves the repo root from its own __file__ location
 and delegates ALL logic to .protocol-state/script_coordinator.py.

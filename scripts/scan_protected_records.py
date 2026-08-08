@@ -125,6 +125,68 @@ OUT_OF_SCOPE_RECORDS: tuple[tuple[str, str], ...] = (
     ),
 )
 
+# DISTRO-CONTEXT FALSE ALARM (BUG-SCANTOP-9.12.1-001, fixed 2026-08, per the
+# 2026-08-07 session handoff trap list). The premise above ("untracked in THIS repo") is true of the DEV
+# repo, but the distro publish worktree (`distro/`, its own separate git
+# repository -- see scripts/distro/publish-manifest.yaml materialize_templates)
+# INTENTIONALLY tracks `.dzp-domain/domain.record.md` as a clean starter file
+# for end-user installs, materialized byte-identical from
+# `.dzp-domain/domain.record.template.md` at publish time. `scripts/git-hooks/
+# pre-commit` runs THIS scanner on every commit in whichever repo it is
+# installed into -- including the distro worktree during a publish commit --
+# so `coverage_report()` genuinely observes the file as tracked there, and the
+# ORIGINAL escalation wording ("PREMISE BROKEN ... NOW TRACKED") read as a real
+# incident for a state that is deliberate, expected, and verified clean.
+#
+# Fix, scoped to be non-weakening: when an out-of-scope path that BECOMES
+# tracked has a KNOWN canonical template (mapped below) and its tracked
+# content is BYTE-IDENTICAL to that template, coverage_report() classifies it
+# as an informational, non-escalating "clean starter" rather than a premise
+# break (see `premise_broken_clean_starter` on `CoverageReport` and
+# `_is_clean_template_starter()` below). Any DIVERGENCE from the template --
+# including a path with no known template mapping, or a template that cannot
+# be read at all -- falls through to the ORIGINAL, full PREMISE BROKEN
+# escalation unchanged. This narrows the WORDING for the one verified-clean
+# case; it never widens what counts as "safe". See
+# tests/test_protected_records_scan_coverage.py for the identical/diverged/
+# unreadable-template behavior contract this establishes.
+_OUT_OF_SCOPE_TEMPLATE_MAP: dict[str, str] = {
+    ".dzp-domain/domain.record.md": ".dzp-domain/domain.record.template.md",
+}
+
+
+def _is_clean_template_starter(repo_root: Path, rel_path: str) -> bool:
+    """True iff `rel_path` (already confirmed TRACKED by the caller) is
+    byte-identical to its known canonical distro template. Fails toward
+    escalation (returns False) on any doubt whatsoever: no known template
+    mapping for this path, a template that is not itself tracked/readable, or
+    a tracked record blob that cannot be read all return False -- ONLY a
+    positively-verified exact byte match returns True.
+
+    BOTH sides are read via `staged_blob()` (the same git-INDEX read every
+    other check in this module uses), never a raw working-tree file read.
+    This is deliberate, not merely consistent-for-its-own-sake: this repo runs
+    with `core.autocrlf=true` on Windows, which normalizes CRLF -> LF when a
+    file is staged/committed but restores CRLF on working-tree checkout. A
+    disk read of one side and a git-index read of the other would compare
+    LF-normalized bytes against CRLF-translated bytes for content that is
+    otherwise byte-for-byte identical -- a false DIVERGENCE finding purely
+    from a line-ending sourcing mismatch, not a real content difference. Using
+    `staged_blob()` for both sides compares what git actually has stored for
+    each, so this holds regardless of the platform's checkout line-ending
+    behavior. An untracked/uncommitted template is treated exactly like an
+    unreadable one -- staged_blob() returns None and this escalates."""
+    template_rel = _OUT_OF_SCOPE_TEMPLATE_MAP.get(rel_path)
+    if template_rel is None:
+        return False
+    template_bytes = staged_blob(repo_root, template_rel)
+    if template_bytes is None:
+        return False
+    tracked_bytes = staged_blob(repo_root, rel_path)
+    if tracked_bytes is None:
+        return False
+    return tracked_bytes == template_bytes
+
 # The single already-triaged, known-invalid literal this scanner must NOT flag --
 # SCOPED TO ITS OWN HOME FILE. Anything else -- including a DIFFERENT sk_live_/
 # sk_test_-shaped token, OR a byte-identical COPY of this same literal found in a
@@ -756,7 +818,13 @@ class CoverageReport(NamedTuple):
     in_scope_tracked: list          # in PROTECTED_RECORDS and tracked
     in_scope_untracked: list        # in PROTECTED_RECORDS but NOT tracked (inert!)
     out_of_scope: list              # (path, reason) -- declared, premise holding
-    premise_broken: list            # out-of-scope paths that are NOW tracked
+    premise_broken: list            # out-of-scope paths that are NOW tracked AND
+                                     # diverged from (or unverifiable against) their
+                                     # known clean-starter template -- escalates
+    premise_broken_clean_starter: list  # out-of-scope paths that are NOW tracked but
+                                         # VERIFIED byte-identical to their known
+                                         # distro clean-starter template -- informational
+                                         # only, e.g. distro/.dzp-domain/domain.record.md
     protected_set_size: int         # the real denominator: 3
 
 
@@ -774,10 +842,13 @@ def coverage_report(repo_root: Path) -> CoverageReport:
         (in_scope_tracked if is_path_tracked(repo_root, rel_path)
          else in_scope_untracked).append(rel_path)
 
-    out_of_scope, premise_broken = [], []
+    out_of_scope, premise_broken, premise_broken_clean_starter = [], [], []
     for rel_path, reason in OUT_OF_SCOPE_RECORDS:
         if is_path_tracked(repo_root, rel_path):
-            premise_broken.append(rel_path)
+            if _is_clean_template_starter(repo_root, rel_path):
+                premise_broken_clean_starter.append(rel_path)
+            else:
+                premise_broken.append(rel_path)
         else:
             out_of_scope.append((rel_path, reason))
 
@@ -786,6 +857,7 @@ def coverage_report(repo_root: Path) -> CoverageReport:
         in_scope_untracked=in_scope_untracked,
         out_of_scope=out_of_scope,
         premise_broken=premise_broken,
+        premise_broken_clean_starter=premise_broken_clean_starter,
         protected_set_size=len(PROTECTED_RECORDS) + len(OUT_OF_SCOPE_RECORDS),
     )
 
@@ -871,9 +943,18 @@ def main(argv: Optional[list[str]] = None, repo_root: Optional[Path] = None) -> 
         for rel_path in report.premise_broken:
             lines.append(
                 f"   *** PREMISE BROKEN: {rel_path} is declared OUT OF SCOPE because it is\n"
-                "       untracked -- but it is NOW TRACKED. Both halves of that reasoning\n"
-                "       (no git blob to scan; outside GitHub's scanning surface) have\n"
-                "       stopped holding. Re-decide whether it belongs in PROTECTED_RECORDS."
+                "       untracked -- but it is NOW TRACKED, and its tracked content DIFFERS\n"
+                "       from (or could not be verified against) its known distro clean-\n"
+                "       starter template. Both halves of the untracked-file reasoning (no\n"
+                "       git blob to scan; outside GitHub's scanning surface) have stopped\n"
+                "       holding. Re-decide whether it belongs in PROTECTED_RECORDS."
+            )
+        for rel_path in report.premise_broken_clean_starter:
+            lines.append(
+                f"   INFO: {rel_path} is tracked, but its content is byte-identical to its\n"
+                "       known distro clean-starter template -- EXPECTED in a distro publish\n"
+                "       context (see scripts/distro/publish-manifest.yaml\n"
+                "       materialize_templates). Not a premise violation; no action needed."
             )
         print("\n".join(lines), file=sys.stderr)
 

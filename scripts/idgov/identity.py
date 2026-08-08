@@ -83,8 +83,17 @@ def _harden_owner_only(path) -> bool:
     try:
         if os.name == "nt":
             import subprocess, getpass
+            # BUG-CORTEXTRIGGER-9.12.0-001 consistency follow-up (Megumi
+            # out-of-scope awareness note, security-review.md ~line 7246):
+            # this branch is already gated on os.name == "nt", so
+            # subprocess.CREATE_NO_WINDOW (a Windows-only constant) is
+            # always safe to reference here. Without it, icacls.exe -- a
+            # console-subsystem child -- would pop a new visible console if
+            # this ever ran under a console-less detached parent (not
+            # reachable today: secid/pre-commit run in the foreground only).
             subprocess.run(["icacls", str(path), "/inheritance:r", "/grant:r",
-                            f"{getpass.getuser()}:F"], check=True, capture_output=True)
+                            f"{getpass.getuser()}:F"], check=True, capture_output=True,
+                            creationflags=subprocess.CREATE_NO_WINDOW)
         else:
             os.chmod(path, 0o600)
         return True

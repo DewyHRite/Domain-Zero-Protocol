@@ -1,11 +1,11 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
-# JUJUTSU KAISEN AI PROTOCOL SYSTEM v9.12.0
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
+# JUJUTSU KAISEN AI PROTOCOL SYSTEM v9.12.1
 ## Main Protocol File - Domain Zero
 
-**Version**: 9.12.0
+**Version**: 9.12.1
 **Status**: Production-Ready
-**Last Updated**: 2026-08-06
-**Major Enhancements**: v9.12.0 (MINOR) clock-authority foundations release — response to `ISS-TIMEAUTH-9.12.0-001` (2026-08-01 Toji session-time-authority audit, 9 findings/2 HIGH): A3 work-streak/protection-window model (rolling-streak authority, two-phase break resolution, idle-expiry archiving fix), A4 alert reason codes + ADR D5 structured time envelope (`--json` closes the MANDATORY auto-invoked safety-path gap, `AI-001`), A5 versioned time-schema migrator with single-source defaults, Option B (ADR D8.5 read-side `time_schema`/naive-value gating), C1 riders (EOL-normalized deep-verify, fcntl platform-poisoning root fix), and a hardening package (`SEC-CLOCKADR-9.12.0-026` adjudication bucket-scope refusal + platform-idiom + binary-guard findings). **Live time-schema migration executed 2026-08-06** under explicit USER authorization (5 known-local + 9 adjudicated rows converted, 2,000 synthetic rows permanently excluded, `time_schema=1`, D7.6 fail-closed gating now active; post-hoc TOCTOU verification found 0 mismatches). A same-day Toji audit (`audits/2026-08-06-toji-v9-12-0-recent-work.md`, 13 findings/5 HIGH, overall risk HIGH, release guidance "not ready") was answered with a full remediation wave closing all 11 P2+P3 findings plus 2 non-blocking riders (`SEC-004`, C2); Megumi Tier-3 @approved 10/10 + focused @re-review 4/4; Toji's delta re-review (`audits/2026-08-06-toji-v9-12-0-remediation-delta-rereview.md`) **lifted its release hold**. Deferred out of scope by USER ruling: B3 CI-lane bring-up, remaining B4 items (keyring defined-failure, macOS storage/README), B5 script parity + C2/C3 riders, C4 idgov backfill, A6 cross-platform matrix, A7 full-scope close-out audits, and the browser control plane (design-only). Sukuna adversarially ratified the branch. See `CHANGELOG.md` `[9.12.0]` for the full reasoning. Sukuna-implemented, Gojo-coordinated, USER-approved.
+**Last Updated**: 2026-08-08
+**Major Enhancements**: v9.12.1 (PATCH) release-gate self-enforcement + release-hygiene bundle, `session_20260808_114849`: `IMPL-SUKUNAGATE-9.12.1-001` — a new fail-closed `pre-release`/`pre-publish` gate (`scripts/distro/check_sukuna_report_currency.py`, both events `fail_soft: false`) that requires a matching `protocol/SUKUNA-REPORT.md` entry whenever `CHANGELOG.md` gains a `#### Fixed`/`#### Security` section, mechanically closing the accumulation-policy rule-2 gap disclosed 2026-08-07 after 8 consecutive releases (v9.9.5→v9.12.0) shipped genuine patches with no manifest entry — this release is the gate's own first enforcement target. `IMPL-STAMPLINT-9.12.1-001` — stamp linter Type 15c (`ALT-BANNER-STALE`): an alt-banner's named version is now currency-checked, not merely its presence; found and fixed 11 real stale banners (9 offline reference guides, content-reviewed, no staleness beyond the stamp, + 1 skill doc with a genuine stale cross-reference). `BUG-SCANTOP-9.12.1-001` — `scan_protected_records.py`'s distro-publish-context false alarm on a byte-identical tracked clean-starter `domain.record.md` fixed via an autocrlf-safe `staged_blob()` comparison that fails toward escalation on any doubt. `SEC-STATE-9.12.1-001` — `crypto.py`/`attestation.py` `_harden_windows_acl()` (documented twins) folded onto the project's standard `os.name == "nt"` idiom, closing a live-spoof-immunity gap, plus a companion `identity.py` `creationflags` hardening; an 11-site residual sweep reviewed and deferred as a future SEC-STATE-class round (Megumi: equivalence holds throughout, no active risk). Also ships `BUG-CORTEXTRIGGER-9.12.0-001` (Windows detached-Cortex-chain console-window fix, committed to the v9.12.0 branch after that release's own cascade had already shipped) to consumers for the first time, plus AST guard test hardening closing its own review's two non-blocking gaps. Four independent items, Yuuji TDD + Megumi Tier-2 @approved, zero P0/P1/P2. Sukuna adversarially ratified. See `CHANGELOG.md` `[9.12.1]` for the full reasoning. Sukuna-implemented, Gojo-coordinated, USER-approved.
 
 > **Changelog retention policy (v9.10.2+, USER-approved)**: this header carries ONLY the current release's summary. The complete release narrative lives in `CHANGELOG.md` (canonical) and `VERSION.md`; the section "Recent Version History" below carries a hard cap of the 5 most recent releases.
 
@@ -14,7 +14,7 @@
 ## 📍 CANONICAL SOURCE
 
 > **Canonical Source**: <https://github.com/DewyHRite/Domain-Zero-Protocol>
-> **Current Local Protocol Version**: v9.12.0
+> **Current Local Protocol Version**: v9.12.1
 > **Verification**: Run `./scripts/verify-protocol.(ps1|sh)` – checks canonical alignment
 
 This project references the canonical Domain Zero Protocol repository. All protocol updates originate from the canonical source to ensure consistency, eliminate drift, and maintain security posture across all implementations.
@@ -1593,17 +1593,17 @@ Domain_Zero/
 ## VERSION INFORMATION
 
 **System Name**: Domain Protocol (Domain Zero)
-**Current Version**: 9.12.0
-**Protocol Version**: 9.12.0
-**Release Date**: 2026-08-06
-**Last Updated**: 2026-08-06
+**Current Version**: 9.12.1
+**Protocol Version**: 9.12.1
+**Release Date**: 2026-08-08
+**Last Updated**: 2026-08-08
 
 **Recent Version History** (hard cap: 5 most recent, 1-3 lines each; full history in `CHANGELOG.md` + `VERSION.md`):
+- v9.12.1 - **PATCH**: release-gate self-enforcement — `IMPL-SUKUNAGATE-9.12.1-001` (new fail-closed `pre-release`/`pre-publish` gate requiring a matching `SUKUNA-REPORT.md` entry whenever `CHANGELOG.md` gains a Fixed/Security section, closing an 8-release-long disclosed enforcement gap) + `IMPL-STAMPLINT-9.12.1-001` (stamp-linter Type 15c alt-banner currency check, 11 stale banners fixed) + `BUG-SCANTOP-9.12.1-001` (distro-context secret-scanner false-alarm fix) + `SEC-STATE-9.12.1-001` (crypto.py/attestation.py platform-idiom fold-in) + first consumer delivery of `BUG-CORTEXTRIGGER-9.12.0-001`. Megumi Tier-2 @approved, zero P0/P1/P2. Sukuna adversarially ratified. See `CHANGELOG.md` `[9.12.1]`.
 - v9.12.0 - **MINOR**: clock-authority foundations — response to `ISS-TIMEAUTH-9.12.0-001` (9 findings/2 HIGH): A3 work-streak/protection-window model, A4 alert reason codes + ADR D5 time envelope (`AI-001` closure), A5 versioned time-schema migrator + single-source defaults, Option B read-side gating (ADR D8.5), C1 riders (EOL-normalized deep-verify, fcntl fix), hardening package (`SEC-CLOCKADR-9.12.0-026`). Live migration executed (5 known-local + 9 adjudicated converted, 2,000 excluded, `time_schema=1`, 0 TOCTOU mismatches). Same-day Toji audit (13 findings/5 HIGH, "not ready") answered with full remediation wave (11 P2+P3 + 2 riders closed, Megumi 10/10 + 4/4 @approved); Toji delta re-review lifted its hold. B3/B4-remainder/B5/C4/A6/A7/browser-control-plane USER-deferred. See `CHANGELOG.md` `[9.12.0]`.
 - v9.11.0 - **MINOR**: release train — `FEAT-TRANSFER-9.11.0-001` (`/session transfer`) + `FEAT-TRIGGER19R-9.11.0-001` (public decision-provenance edition) + prompt-weight reduction (`protocol/CLAUDE.md` stub) + standing docs content-currency review (`DISTRO_RELEASE_WORKFLOW.md` §4b) + `FEAT-IDGOV-002`/`-003` + 8-commit backlog-wave closure (2026-07-30 Toji audit, 149→0 registry reconciliation) + `BUG-SESSION-005`/`IMPL-SESSIONMON-001`/`BUG-COORD-9.11.0-001`. Sukuna ratified the full 45-commit branch, zero P0/P1. `ISS-TIMEAUTH-9.12.0-001` (2 HIGH) USER-deferred to v9.12.0. See `CHANGELOG.md` `[9.11.0]`.
 - v9.10.2 - **PATCH**: Toji recent-work audit closure (`AI-001`/`IMPL-001`/`IMPL-002`, all @approved) + CLAUDE.md changelog-retention policy (`ISS-CLAUDEMD-9.10.2-001`) + queue items 1-4 + item-5 carried notes (4 fixes) + new `FEAT-PAYLOAD-9.10.2-001` release payload subsystem with full `SEC-PAYLOAD-9.10.2-001..005` remediation (1 P1 + 2 P2 + 2 P3, all @approved). PATCH by Sukuna adversarial ruling despite the net-new subsystem. See `CHANGELOG.md` `[9.10.2]`.
 - v9.10.1 - **PATCH**: 9-item remediation bundle from the v9.10.0 Toji release-gate hold — distro manifest-tracking gate (`BUG-DISTRO-ORCH-TRIO-001`; orchestration trio ships, `ISS-084`/`ISS-085`), idgov polish (4 Toji findings closed) + registry lock hardening, `brain reset --yes` no-prompt fix, `SEC-GUARD-007` splice-bypass fix. Megumi Tier-3 @approved x2; full sweep 2,376 passed / 0 failed. See `CHANGELOG.md` `[9.10.1]`.
-- v9.10.0 - **MINOR**: `FEAT-IDGOV-001` Issue-ID Governance System — all-families append-only JSONL registry, shared minting/validation engine, fail-closed pre-commit/CI gate, Megumi `secid` tool, 1,229-row historical backfill, Cortex fail-soft advisory. Plus repo-wide version-cascade closure + `BUGREPORT-009` stamp-linter Type 8. 4 Toji findings deferred to v9.10.1. See `CHANGELOG.md` `[9.10.0]`.
 
 **Complete version history**: See `VERSION.md`
 

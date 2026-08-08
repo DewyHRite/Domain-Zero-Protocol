@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Resident Mint Wrappers — Issue-ID Governance (Sukuna / Gojo / Yuuji)
 
 **Name:** resident-mint

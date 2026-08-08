@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Agent Mode Indicators & Display Systems
 
 ## Overview
@@ -221,7 +221,7 @@ For environments where emoji display is inconsistent or inaccessible:
 ## Version Information
 
 **Document Version**: 1.1
-**Protocol Version**: 9.12.0
+**Protocol Version**: 9.12.1
 **Last Updated**: 2026-08-07
 **Status**: Active (content-currency review: extended-agent table + config example added; footer version corrected, was stale at 6.2.3 and had a malformed bold marker)
 

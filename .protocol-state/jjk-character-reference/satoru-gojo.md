@@ -1,10 +1,10 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 
 # Satoru Gojo - JJK Character Reference
 **Source**: Jujutsu Kaisen Fandom Wiki
 **URL**: <https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo>
 **Downloaded**: 2025-11-25
-**Protocol Version**: v9.12.0
+**Protocol Version**: v9.12.1
 
 ---
 

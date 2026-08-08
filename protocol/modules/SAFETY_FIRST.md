@@ -1,6 +1,6 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Safety-First Principles
-## Domain Zero Protocol v9.12.0
+## Domain Zero Protocol v9.12.1
 
 > **Module Type:** Shared Protocol Behavior
 > **Referenced By:** All 9 agents

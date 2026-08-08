@@ -425,6 +425,17 @@ events:
         command: ["python", "scripts/distro/check_version_stamps.py", "--root", "."]
         timeout_seconds: 120
         required: true
+      - name: check-sukuna-report-currency
+        # v9.12.1 (IMPL-SUKUNAGATE-9.12.1-001): mechanical enforcement of SUKUNA-REPORT.md's own
+        # accumulation-policy rule 2 (protocol/SUKUNA-REPORT.md, rule 4's
+        # disclosed gap) — fails closed if CHANGELOG.md gains a #### Fixed /
+        # #### Security section for the current version with no matching
+        # SUKUNA-REPORT.md "## vX.Y.Z ..." header. Closes the exact
+        # silent-skip failure that recurred for 8 consecutive releases
+        # (v9.9.5 -> v9.12.0) before this policy existed.
+        command: ["python", "scripts/distro/check_sukuna_report_currency.py", "--root", "."]
+        timeout_seconds: 30
+        required: true
       - name: cortex-high
         # HIGH-002: full high trigger, fail-CLOSED (--strict). Cortex health is a release gate.
         # BUG-CORTEX-008 (2026-07-13, Sukuna R1 stopgap): timeout raised 180->300s.
@@ -485,6 +496,14 @@ events:
         # Keeps drifted stamps from shipping in the public distro.
         command: ["python", "scripts/distro/check_version_stamps.py", "--root", "."]
         timeout_seconds: 120
+        required: true
+      - name: check-sukuna-report-currency
+        # v9.12.1 (IMPL-SUKUNAGATE-9.12.1-001): same rule-2 accumulation-policy gate as pre-release (see
+        # that event's step for the full rationale) — repeated here, not
+        # merely relied upon transitively, so a publish invoked without a
+        # preceding pre-release run still cannot ship a missed entry.
+        command: ["python", "scripts/distro/check_sukuna_report_currency.py", "--root", "."]
+        timeout_seconds: 30
         required: true
 
   post-migration:

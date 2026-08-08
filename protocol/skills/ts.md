@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # TS (Tier Shift) - Troubleshooting Tier Management
 ## Context-Aware Bug Resolution with Hybrid Escalation
 

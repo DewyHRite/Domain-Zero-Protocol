@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # Domain Zero Protocol - Quick Start Guide
 
 ## Get Up and Running with Domain Zero in 2 Minutes
@@ -62,7 +62,7 @@ cp "Domain Zero Protocol/CLAUDE.md" your-project/
 ```
 Add to memory: Domain Zero Protocol
 
-I use Domain Zero Protocol v9.12.0 for AI development. Nine resident agents
+I use Domain Zero Protocol v9.12.1 for AI development. Nine resident agents
 plus one external, non-resident auditor:
 
 Core Four:
@@ -99,7 +99,7 @@ Canonical source: https://github.com/DewyHRite/Domain-Zero-Protocol
 **ChatGPT (Custom Instructions)**:
 Add to Settings → Personalization → Custom Instructions:
 ```
-I use Domain Zero Protocol v9.12.0 (nine resident agents + one external,
+I use Domain Zero Protocol v9.12.1 (nine resident agents + one external,
 non-resident auditor).
 Main protocol: CLAUDE.md (repository root).
 Agent files: protocol/yuuji.agent.md, protocol/megumi.agent.md, protocol/nobara.agent.md, protocol/gojo.agent.md, protocol/todo.agent.md, protocol/maki.agent.md, protocol/panda.agent.md, protocol/inumaki.agent.md, protocol/sukuna.agent.md, protocol/toji.agent.md.
@@ -601,6 +601,6 @@ You'll know Domain Zero is working when:
 
 ---
 
-**Domain Zero Protocol v9.12.0** - Perfect Code Through Infinite Collaboration
+**Domain Zero Protocol v9.12.1** - Perfect Code Through Infinite Collaboration
 
 *The weight is real. The protocol is absolute. Domain Zero is active.*

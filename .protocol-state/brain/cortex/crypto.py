@@ -103,7 +103,16 @@ def _harden_windows_acl(path: Path, *, is_dir: bool = False) -> None:
     `recovery.write_owner_only`'s Windows branch which uses a different
     primitive entirely) is unaffected.
     """
-    if sys.platform != "win32":
+    # SEC-STATE-9.12.0-001/-002 (idiom fold-in, v9.12.1 Batch B): project-wide
+    # Windows-detection idiom is os.name == "nt" (immune to the
+    # platform.system()/platform._uname_cache poisoning class AND to a live
+    # sys.platform monkeypatch around real work -- BUG-STATE-001). This
+    # guard never called platform.system()/uname() to begin with (sys.platform
+    # itself is not the poisoning-prone API), so this is consistency
+    # hardening, not a vulnerability fix -- os.name != "nt" is behaviorally
+    # equivalent to sys.platform != "win32" on every platform this codebase
+    # runs on.
+    if os.name != "nt":
         return
     current_user = os.environ.get("USERNAME") or os.environ.get("USER") or ""
     if not current_user:
@@ -139,6 +148,14 @@ def _harden_windows_acl(path: Path, *, is_dir: bool = False) -> None:
             capture_output=True,
             text=True,
             timeout=10,
+            # BUG-CORTEXTRIGGER-9.12.0-001: this function already early-returns
+            # above on any non-Windows platform, so `subprocess.CREATE_NO_WINDOW`
+            # (a Windows-only constant) is always safe to reference here.
+            # Without it, icacls.exe -- a console-subsystem child -- pops a new
+            # visible console when this runs under a console-less detached
+            # parent (cortex_trigger.py via script_coordinator.py's
+            # _spawn_detached).
+            creationflags=subprocess.CREATE_NO_WINDOW,
         )
         if result.returncode != 0:
             print(

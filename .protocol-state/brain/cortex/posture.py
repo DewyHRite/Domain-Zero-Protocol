@@ -41,7 +41,20 @@ def _disk_encryption_status() -> str:
             if "Off" in out.stdout:
                 return "off"
         elif os.name == "nt" and shutil.which("manage-bde"):
-            out = subprocess.run(["manage-bde", "-status", "C:"], capture_output=True, text=True, timeout=8)
+            # BUG-CORTEXTRIGGER-9.12.0-001: this branch is already gated on
+            # os.name == "nt", so subprocess.CREATE_NO_WINDOW (Windows-only
+            # constant) is always safe to reference here. Without it,
+            # manage-bde.exe -- a console-subsystem child -- pops a new
+            # visible console when this runs under a console-less detached
+            # parent (cortex_trigger.py via script_coordinator.py's
+            # _spawn_detached).
+            out = subprocess.run(
+                ["manage-bde", "-status", "C:"],
+                capture_output=True,
+                text=True,
+                timeout=8,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
             low = out.stdout.lower()
             if "percentage encrypted:  100" in low or "fully encrypted" in low:
                 return "on"

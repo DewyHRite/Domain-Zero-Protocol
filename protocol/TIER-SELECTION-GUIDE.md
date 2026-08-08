@@ -1,4 +1,4 @@
-<!-- [CORE FILE] - Domain Zero Protocol v9.12.0 -->
+<!-- [CORE FILE] - Domain Zero Protocol v9.12.1 -->
 # TIER SELECTION QUICK REFERENCE
 ## Domain Zero v6.0 - Adaptive Workflow Complexity
 

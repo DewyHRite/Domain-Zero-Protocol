@@ -1,5 +1,5 @@
 # Gojo Tier Validation Skill
-<!-- [SKILL] - Domain Zero Protocol v8.10.0 -->
+<!-- [SKILL] - Domain Zero Protocol v9.12.1 -->
 
 **Skill Name**: gojo-tier-validation
 **Owner**: Gojo (Mission Control)
@@ -230,7 +230,10 @@ python scripts/tier-statistics.py --report --format markdown
 
 **See**:
 - `protocol/tier-defaults.yaml` - Tier profile definitions
-- `protocol/TIER-SELECTION-GUIDE.md` - User guidance on tier selection
+- `protocol/skills/gojo/roe-and-tiers.md` - Current authoritative tier decision tree, tier
+  characteristics, and invocation examples (relocated here in v9.11.0 Increment 3)
+- `protocol/TIER-SELECTION-GUIDE.md` - Superseded historical reference; retained for context
+  only -- if it ever disagrees with `roe-and-tiers.md`, `roe-and-tiers.md` wins
 - `protocol/gojo.agent.md` - Mission Control operational procedures
 
 ---
