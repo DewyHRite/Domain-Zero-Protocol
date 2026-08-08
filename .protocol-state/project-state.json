@@ -336,10 +336,10 @@
       "session_active": true,
       "start_time": "2026-08-08T11:48:49.690845+00:00",
       "last_interaction_time": "2026-08-08T11:56:18.280086+00:00",
-      "last_alert_time": null,
-      "alert_count": 0,
-      "escalation_level": 0,
-      "user_last_choice": null,
+      "last_alert_time": "2026-08-08T16:26:20.967165+00:00",
+      "alert_count": 2,
+      "escalation_level": 1,
+      "user_last_choice": "continue",
       "break_acknowledged": false,
       "high_risk_operations_blocked": false,
       "streak_contribution_start_time": null,
@@ -351,9 +351,9 @@
       "continuous_work_minutes": 0,
       "break_timestamps": [],
       "total_breaks": 0,
-      "alerts_issued": 0,
+      "alerts_issued": 2,
       "alerts_ignored": 0,
-      "continues_chosen": 0,
+      "continues_chosen": 1,
       "breaks_chosen": 0
     },
     "thresholds": {
@@ -637,7 +637,7 @@
         "continues_chosen": 0
       }
     ],
-    "last_updated": "2026-08-08T11:56:18.291856+00:00",
+    "last_updated": "2026-08-08T16:26:20.984535+00:00",
     "protocol_version": "9.12.1"
   },
   "troubleshooting": {

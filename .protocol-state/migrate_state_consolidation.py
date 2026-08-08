@@ -231,8 +231,13 @@ class StateMigration:
 
             merged_session_tracking["session_history"] = merged_history
 
-            # Preserve other fields from legacy data
-            for key in ["last_updated", "alert_history", "protocol_version"]:
+            # Preserve other fields from legacy data.
+            # CodeRabbit PR#117 round-2 (IMPL-CRPR117FIX-9.12.1-001): deliberately
+            # excludes "protocol_version" -- that field means "current protocol
+            # version", not migrated source metadata, so the current-release
+            # default seeded by _default_session_tracking() above must win over
+            # whatever stale version a legacy session-state.json happens to carry.
+            for key in ["last_updated", "alert_history"]:
                 if key in legacy_data:
                     merged_session_tracking[key] = legacy_data[key]
 
