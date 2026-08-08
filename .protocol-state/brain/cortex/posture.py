@@ -48,8 +48,23 @@ def _disk_encryption_status() -> str:
             # visible console when this runs under a console-less detached
             # parent (cortex_trigger.py via script_coordinator.py's
             # _spawn_detached).
+            #
+            # CodeRabbit PR#117 round-1 nitpick (verified valid): the actual
+            # subprocess.run call must not invoke the bare "manage-bde" name
+            # (a writable dir earlier in PATH could shadow the real system
+            # binary), matching the fix applied to cortex/crypto.py:134-139
+            # and scripts/idgov/identity.py's icacls calls. `shutil.which`
+            # is kept as the FEATURE-AVAILABILITY gate only (best-effort:
+            # "is manage-bde plausibly installed at all, so it's worth
+            # trying"), deliberately independent of the SECURITY-hardened
+            # path actually invoked below -- even if `shutil.which` resolved
+            # a shadowed/unexpected binary on PATH, the call still only ever
+            # executes the trusted, fully-qualified System32 binary.
+            manage_bde_exe = os.path.join(
+                os.environ.get("SystemRoot", r"C:\Windows"), "System32", "manage-bde.exe"
+            )
             out = subprocess.run(
-                ["manage-bde", "-status", "C:"],
+                [manage_bde_exe, "-status", "C:"],
                 capture_output=True,
                 text=True,
                 timeout=8,

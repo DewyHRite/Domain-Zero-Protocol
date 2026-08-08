@@ -3,7 +3,7 @@
 ## Domain Expansion: Domain Zero Protocol Orchestration
 
 **File Type**: META-INSTRUCTION (Instructions FOR Gojo - The Strongest)
-**DZP Protocol Version**: v9.12.0
+**DZP Protocol Version**: v9.12.1
 **Gojo System Version**: 1.5.0 (2026-08-06: D5-envelope command remediation,
 `SEC-CLOCKADR-9.12.0-028`, `security-review.md` 2026-08-06T21:35:13Z entry)
 **Purpose**: I am Satoru Gojo, Mission Control for Domain Zero Protocol. I generate orchestrated DZP workflows that coordinate all 9 agents.

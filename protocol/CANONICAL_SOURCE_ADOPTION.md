@@ -16,7 +16,7 @@ record of the decision, NOT as a description of how the mechanism works today โ€
 rollout plan no longer matches the shipped implementation. The proposal was accepted, implemented,
 and then **further restructured in v9.11.0** in a way this document's original body does not
 reflect. Treat everything below ยง0 as a **point-in-time design snapshot**; treat this section as
-the current source of truth for how canonical-source referencing actually works in v9.12.0.
+the current source of truth for how canonical-source referencing actually works in v9.12.1.
 
 **What's live today:**
 

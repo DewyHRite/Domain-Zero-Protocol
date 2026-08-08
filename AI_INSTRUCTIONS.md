@@ -1737,4 +1737,4 @@ All protocol updates originate from the canonical source.
 ---
 
 **Domain Zero Protocol v9.12.1 - Complete Installation Guide**
-**Updated**: 2026-08-06
+**Updated**: 2026-08-08

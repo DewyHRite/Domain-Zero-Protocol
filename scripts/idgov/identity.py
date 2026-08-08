@@ -91,7 +91,17 @@ def _harden_owner_only(path) -> bool:
             # console-subsystem child -- would pop a new visible console if
             # this ever ran under a console-less detached parent (not
             # reachable today: secid/pre-commit run in the foreground only).
-            subprocess.run(["icacls", str(path), "/inheritance:r", "/grant:r",
+            #
+            # CodeRabbit PR#117 round-1 nitpick (verified valid): the bare
+            # "icacls" argv[0] let a writable directory earlier in PATH
+            # shadow the real system binary. Fully-qualified via SystemRoot,
+            # mirroring the identical fix already applied to
+            # cortex/crypto.py:134-139 (CodeRabbit PR#105 round-2, ruff
+            # S607) -- same rationale, same resolution pattern.
+            icacls_exe = os.path.join(
+                os.environ.get("SystemRoot", r"C:\Windows"), "System32", "icacls.exe"
+            )
+            subprocess.run([icacls_exe, str(path), "/inheritance:r", "/grant:r",
                             f"{getpass.getuser()}:F"], check=True, capture_output=True,
                             creationflags=subprocess.CREATE_NO_WINDOW)
         else:
